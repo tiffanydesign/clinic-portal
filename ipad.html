@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Phenome Portal — iPad Air 13″ Preview</title>
+<style>
+  :root {
+    --bezel: 46px;                 /* uniform bezel, iPad Air style */
+    --screen-w: 1366px;            /* iPad Air 13" landscape logical pts (2732 @2x) */
+    --screen-h: 1024px;            /* 2048 @2x */
+    --shell-radius: 58px;
+    --screen-radius: 26px;
+    --backdrop: oklch(0.23 0.012 260);
+    --backdrop-deep: oklch(0.16 0.014 262);
+    --aluminum: oklch(0.85 0.005 250);
+    --aluminum-dark: oklch(0.62 0.008 250);
+    --ink: oklch(0.97 0.003 250);
+    --muted: oklch(0.72 0.01 255);
+    --accent: oklch(0.72 0.12 230);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font: 14px/1.5 -apple-system, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(120% 90% at 50% 0%, var(--backdrop) 0%, var(--backdrop-deep) 78%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+
+  /* ---- stage scales the whole device to fit the window ---- */
+  #stage {
+    width: calc(var(--screen-w) + var(--bezel) * 2);
+    height: calc(var(--screen-h) + var(--bezel) * 2);
+    transform-origin: center center;
+    flex: none;
+  }
+
+  /* ---- device shell ---- */
+  .device {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: var(--shell-radius);
+    background:
+      linear-gradient(145deg, oklch(0.30 0.006 255), oklch(0.20 0.008 258) 55%, oklch(0.26 0.006 255));
+    box-shadow:
+      0 2px 0 0 oklch(1 0 0 / 0.08) inset,
+      0 -2px 0 0 oklch(0 0 0 / 0.45) inset,
+      0 40px 90px -20px oklch(0 0 0 / 0.65),
+      0 12px 28px -12px oklch(0 0 0 / 0.5);
+  }
+  /* aluminum rim */
+  .device::before {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: calc(var(--shell-radius) + 3px);
+    background: linear-gradient(150deg, var(--aluminum) 0%, var(--aluminum-dark) 45%, oklch(0.45 0.006 250) 60%, var(--aluminum) 100%);
+    z-index: -1;
+  }
+  /* physical buttons — landscape: top edge holds power (left) + volume (right side of top) */
+  .btn-power, .btn-vol-up, .btn-vol-down {
+    position: absolute;
+    top: -7px;
+    height: 5px;
+    border-radius: 3px 3px 0 0;
+    background: linear-gradient(180deg, var(--aluminum), var(--aluminum-dark));
+  }
+  .btn-power    { left: 76px;  width: 74px; }
+  .btn-vol-up   { right: 178px; width: 52px; }
+  .btn-vol-down { right: 112px; width: 52px; }
+  /* front camera — centered on the long (top) edge, like iPad Air M2/M3 landscape */
+  .camera {
+    position: absolute;
+    top: calc(var(--bezel) / 2 - 5px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 35%, oklch(0.45 0.05 250), oklch(0.12 0.02 260) 65%);
+    box-shadow: 0 0 0 2px oklch(0.10 0 0 / 0.9), 0 0 0 3px oklch(1 0 0 / 0.05);
+  }
+
+  /* ---- screen ---- */
+  .screen {
+    position: absolute;
+    inset: var(--bezel);
+    border-radius: var(--screen-radius);
+    overflow: hidden;
+    background: #000;
+    box-shadow: 0 0 0 1px oklch(0 0 0 / 0.9);
+  }
+  .screen iframe {
+    width: var(--screen-w);
+    height: var(--screen-h);
+    border: 0;
+    display: block;
+    background: #fff;
+  }
+  /* glass glare */
+  .screen::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: linear-gradient(115deg, oklch(1 0 0 / 0.045) 0%, oklch(1 0 0 / 0.012) 28%, transparent 42%);
+  }
+
+  /* ---- control bar ---- */
+  #controls {
+    position: fixed;
+    left: 50%;
+    bottom: 14px;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: oklch(0.19 0.01 260 / 0.88);
+    border: 1px solid oklch(1 0 0 / 0.09);
+    backdrop-filter: blur(14px);
+    box-shadow: 0 10px 30px -10px oklch(0 0 0 / 0.6);
+    z-index: 10;
+    white-space: nowrap;
+  }
+  #controls .label {
+    color: var(--muted);
+    font-size: 12px;
+    padding: 0 8px 0 4px;
+    border-right: 1px solid oklch(1 0 0 / 0.12);
+    margin-right: 4px;
+  }
+  #controls button, #controls a {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    font: inherit;
+    font-size: 13px;
+    padding: 5px 11px;
+    border-radius: 999px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 160ms cubic-bezier(0.22, 1, 0.36, 1), color 160ms;
+  }
+  #controls button:hover, #controls a:hover { background: oklch(1 0 0 / 0.10); }
+  #controls button.active { background: var(--accent); color: oklch(0.16 0.02 250); font-weight: 600; }
+  #controls .zoom {
+    color: var(--muted);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    padding: 0 6px 0 10px;
+    border-left: 1px solid oklch(1 0 0 / 0.12);
+    margin-left: 4px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #controls button, #controls a { transition: none; }
+  }
+</style>
+</head>
+<body>
+  <div id="stage">
+    <div class="device">
+      <span class="btn-power"></span>
+      <span class="btn-vol-up"></span>
+      <span class="btn-vol-down"></span>
+      <span class="camera"></span>
+      <div class="screen">
+        <iframe id="app" src="/login" title="Phenome Portal prototype"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <nav id="controls" aria-label="Prototype navigation">
+    <span class="label">iPad Air 13″ · 2732×2048 · landscape</span>
+    <button data-route="/login">Login</button>
+    <button data-route="/dashboard">Dashboard</button>
+    <button data-route="/calendar/schedule">Calendar</button>
+    <button data-route="/patients">Patients</button>
+    <button data-route="/billing">Billing</button>
+    <button data-route="/clinic-settings/reports">Settings</button>
+    <button data-route="/site-map">Site&nbsp;Map</button>
+    <button id="reload" title="Reload prototype">⟳</button>
+    <a href="/login" target="_blank" title="Open full-screen in a new tab">⤢</a>
+    <span class="zoom" id="zoom">100%</span>
+  </nav>
+
+<script>
+  const stage = document.getElementById("stage");
+  const frame = document.getElementById("app");
+  const zoomEl = document.getElementById("zoom");
+  const controls = document.getElementById("controls");
+
+  const DEVICE_W = stage.offsetWidth;
+  const DEVICE_H = stage.offsetHeight;
+  const CONTROLS_SPACE = 64; /* keep the control bar clear */
+
+  function fit() {
+    const s = Math.min(
+      (window.innerWidth - 48) / DEVICE_W,
+      (window.innerHeight - 48 - CONTROLS_SPACE) / DEVICE_H
+    );
+    stage.style.transform = `scale(${s})`;
+    /* the stage keeps layout size; recenter via margins */
+    stage.style.marginTop = `${(window.innerHeight - CONTROLS_SPACE - DEVICE_H) / 2}px`;
+    stage.style.marginBottom = "auto";
+    zoomEl.textContent = Math.round(s * 100) + "%";
+  }
+  window.addEventListener("resize", fit);
+  fit();
+
+  controls.addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    if (btn.id === "reload") {
+      frame.contentWindow.location.reload();
+      return;
+    }
+    const route = btn.dataset.route;
+    if (route) frame.contentWindow.location.href = route;
+  });
+
+  /* highlight the tab matching the iframe's current section */
+  function syncActive() {
+    let path = "";
+    try { path = frame.contentWindow.location.pathname; } catch { return; }
+    const base = "/" + (path.split("/")[1] || "");
+    for (const b of controls.querySelectorAll("button[data-route]")) {
+      b.classList.toggle("active", b.dataset.route.startsWith(base) && base !== "/");
+    }
+  }
+  setInterval(syncActive, 600);
+</script>
+</body>
+</html>
