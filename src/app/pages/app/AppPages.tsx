@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, Outlet, useLocation, useParams, useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useAppContext } from "../../context/AppContext";
 
 export function SkeletonPage({ title, children }: { title: string, children: React.ReactNode }) {
@@ -57,42 +57,13 @@ export function AppointmentDrawerSkeleton() {
 export { PatientsPage } from "./PatientsPage";
 export { PatientRecordLayout } from "./PatientRecordLayout";
 
-export function StaffLayout({ children }: { children?: React.ReactNode }) {
-  const { staffId } = useParams();
-  const location = useLocation();
-
-  const tabs = [
-    { label: "Overview", path: `/staff/${staffId}/overview` },
-    { label: "Availability", path: `/staff/${staffId}/availability` },
-    { label: "Permissions", path: `/staff/${staffId}/permissions` },
-    { label: "Workload", path: `/staff/${staffId}/workload` },
-  ];
-
-  return (
-    <div className="flex flex-col h-full">
-      <div className="p-8 pb-4 shrink-0">
-        <Link to="/staff" className="text-sm text-slate-500 hover:underline mb-4 inline-block">← Back to Staff</Link>
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">Staff Profile {staffId}</h1>
-      </div>
-
-      <div className="px-8 border-b border-gray-300 flex space-x-8 shrink-0">
-        {tabs.map(tab => (
-          <Link
-            key={tab.path}
-            to={tab.path}
-            className={`py-3 text-sm font-medium ${location.pathname.startsWith(tab.path) ? 'border-b-2 border-slate-600 text-slate-800' : 'text-gray-500 border-b-2 border-transparent'}`}
-          >
-            {tab.label}
-          </Link>
-        ))}
-      </div>
-
-      <div className="p-8 flex-1 overflow-auto">
-        {children || <Outlet />}
-      </div>
-    </div>
-  );
-}
+// Staff Management module
+export { StaffListPage } from "./staff/StaffListPage";
+export { StaffDetailLayout } from "./staff/StaffDetailLayout";
+export { StaffOverviewTab } from "./staff/StaffOverviewTab";
+export { StaffAvailabilityTab } from "./staff/StaffAvailabilityTab";
+export { StaffPermissionsTab } from "./staff/StaffPermissionsTab";
+export { StaffWorkloadTab } from "./staff/StaffWorkloadTab";
 
 export { SettingsLayout } from "./clinic-settings/SettingsLayout";
 export { ReportsPage } from "./clinic-settings/Reports";
@@ -107,7 +78,6 @@ export { ProfilePage } from "./ProfilePage";
 export const TabContentSkeleton = ({ label }: { label: string }) => <PlaceholderBlock label={label} className="h-64 border-dashed bg-gray-50" />;
 export const NewPatientSkeleton = () => <SkeletonPage title="New Patient"><PlaceholderBlock label="Patient Intake Form" className="h-96" /></SkeletonPage>;
 export const JourneyDetailSkeleton = () => <SkeletonPage title="Journey Detail"><PlaceholderBlock label="Journey Steps & Updates" className="h-96" /></SkeletonPage>;
-export const StaffListSkeleton = () => <SkeletonPage title="Staff Management"><PlaceholderBlock label="Staff List" className="h-96" /><div className="mt-4"><Link to="/staff/S-001" className="text-slate-600 hover:underline">Demo: View Staff S-001</Link></div></SkeletonPage>;
 export { BillingPage } from "./BillingPage";
 export { FeedbackAdminPage } from "./FeedbackAdminPage";
 export { TimesheetPage } from "./Timesheet";
@@ -150,7 +120,7 @@ export function SiteMap() {
     ]},
     { section: "Admin & Clinician Only", links: [
       { path: "/staff", label: "Staff List" },
-      { path: "/staff/S-001", label: "Staff Detail -> Redirects to Overview" },
+      { path: "/staff/EMP-003", label: "Staff Detail -> Redirects to Overview" },
       { path: "/clinic-settings", label: "Clinic Settings -> Redirects to Reports" },
       { path: "/clinic-settings/form-templates", label: "Clinic Settings (Form Templates)" },
       { path: "/feedback", label: "Feedback" },

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation, useNavigate, Link } from "react-router";
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation, useNavigate, useParams, Link } from "react-router";
 import { AppProvider, useAppContext } from "./context/AppContext";
 import { Toaster, toast } from 'sonner';
 
@@ -12,9 +12,10 @@ import { ForgotPasswordPage } from "./pages/auth/ForgotPasswordPage";
 // App components
 import { AppShell } from "./components/AppShell";
 import { Dashboard } from "./components/Dashboard";
-import { 
+import {
   AppointmentDrawerSkeleton, PatientsPage, PatientRecordLayout,
-  StaffLayout, StaffListSkeleton,   SettingsLayout, ReportsPage, DiagnosesPage, FormTemplatesPage, ConsentFilesPage, BillingPage, FeedbackAdminPage, TimesheetSkeleton,
+  StaffListPage, StaffDetailLayout, StaffOverviewTab, StaffAvailabilityTab, StaffPermissionsTab, StaffWorkloadTab,
+  SettingsLayout, ReportsPage, DiagnosesPage, FormTemplatesPage, ConsentFilesPage, BillingPage, FeedbackAdminPage,
   NotificationsSkeleton, ApprovalSkeleton, ApprovalDetailSkeleton, ProfilePage, SiteMap, TabContentSkeleton,
   NewPatientSkeleton, JourneyDetailSkeleton, CalendarLayout, CalendarScheduleSkeleton, AvailabilityList, AvailabilityEdit, TeamAvailability,
   TimesheetPage
@@ -67,6 +68,12 @@ function AppShellLayout({ children }: { children?: React.ReactNode }) {
 // Redirect helpers for nested default routes
 const RedirectTo = ({ to }: { to: string }) => <Navigate to={to} replace />;
 
+// Param-aware redirect: /staff/:staffId -> /staff/:staffId/overview
+function StaffDetailRedirect() {
+  const { staffId } = useParams();
+  return <Navigate to={`/staff/${staffId}/overview`} replace />;
+}
+
 export default function App() {
   return (
     <AppProvider>
@@ -102,12 +109,12 @@ export default function App() {
           <Route path="/patients/P-001/notes" element={<AppShellLayout><PatientRecordLayout><TabContentSkeleton label="Clinician Notes Editor" /></PatientRecordLayout></AppShellLayout>} />
           <Route path="/patients/P-001/appointments" element={<AppShellLayout><PatientRecordLayout><TabContentSkeleton label="Patient Appointments History" /></PatientRecordLayout></AppShellLayout>} />
           <Route path="/patients/P-001/journeys/J-123" element={<AppShellLayout><JourneyDetailSkeleton /></AppShellLayout>} />
-          <Route path="/staff" element={<AppShellLayout><StaffListSkeleton /></AppShellLayout>} />
-          <Route path="/staff/S-001" element={<RedirectTo to="/staff/S-001/overview" />} />
-          <Route path="/staff/S-001/overview" element={<AppShellLayout><StaffLayout><TabContentSkeleton label="Staff Overview" /></StaffLayout></AppShellLayout>} />
-          <Route path="/staff/S-001/availability" element={<AppShellLayout><StaffLayout><TabContentSkeleton label="Staff Availability Schedule" /></StaffLayout></AppShellLayout>} />
-          <Route path="/staff/S-001/permissions" element={<AppShellLayout><StaffLayout><TabContentSkeleton label="Staff System Permissions" /></StaffLayout></AppShellLayout>} />
-          <Route path="/staff/S-001/workload" element={<AppShellLayout><StaffLayout><TabContentSkeleton label="Staff Workload Metrics" /></StaffLayout></AppShellLayout>} />
+          <Route path="/staff" element={<AppShellLayout><StaffListPage /></AppShellLayout>} />
+          <Route path="/staff/:staffId" element={<StaffDetailRedirect />} />
+          <Route path="/staff/:staffId/overview" element={<AppShellLayout><StaffDetailLayout><StaffOverviewTab /></StaffDetailLayout></AppShellLayout>} />
+          <Route path="/staff/:staffId/availability" element={<AppShellLayout><StaffDetailLayout><StaffAvailabilityTab /></StaffDetailLayout></AppShellLayout>} />
+          <Route path="/staff/:staffId/permissions" element={<AppShellLayout><StaffDetailLayout><StaffPermissionsTab /></StaffDetailLayout></AppShellLayout>} />
+          <Route path="/staff/:staffId/workload" element={<AppShellLayout><StaffDetailLayout><StaffWorkloadTab /></StaffDetailLayout></AppShellLayout>} />
           <Route path="/clinic-settings" element={<RedirectTo to="/clinic-settings/reports" />} />
           <Route path="/clinic-settings/reports" element={<AppShellLayout><SettingsLayout><ReportsPage /></SettingsLayout></AppShellLayout>} />
           <Route path="/clinic-settings/diagnoses" element={<AppShellLayout><SettingsLayout><DiagnosesPage /></SettingsLayout></AppShellLayout>} />
