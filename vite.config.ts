@@ -17,6 +17,8 @@ function figmaAssetResolver() {
 }
 
 export default defineConfig({
+  // Set GITHUB_PAGES=1 when building for https://tiffanydesign.github.io/clinic-portal/
+  base: process.env.GITHUB_PAGES ? '/clinic-portal/' : '/',
   build: {
     rollupOptions: {
       input: {
