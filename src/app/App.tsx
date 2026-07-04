@@ -78,7 +78,7 @@ export default function App() {
   return (
     <AppProvider>
       <Toaster position="top-center" />
-      <BrowserRouter>
+      <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, "")}>
         <Routes>
           <Route path="/" element={<RedirectTo to="/dashboard" />} />
           <Route path="/login" element={<LoginPage />} />

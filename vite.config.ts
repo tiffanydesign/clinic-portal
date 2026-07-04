@@ -17,6 +17,14 @@ function figmaAssetResolver() {
 }
 
 export default defineConfig({
+  build: {
+    rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+        ipad: path.resolve(__dirname, 'ipad.html'),
+      },
+    },
+  },
   plugins: [
     figmaAssetResolver(),
     // The React and Tailwind plugins are both required for Make, even if

@@ -174,7 +174,7 @@
       <span class="btn-vol-down"></span>
       <span class="camera"></span>
       <div class="screen">
-        <iframe id="app" src="/login" title="Phenome Portal prototype"></iframe>
+        <iframe id="app" title="Phenome Portal prototype"></iframe>
       </div>
     </div>
   </div>
@@ -185,11 +185,12 @@
     <button data-route="/dashboard">Dashboard</button>
     <button data-route="/calendar/schedule">Calendar</button>
     <button data-route="/patients">Patients</button>
+    <button data-route="/staff">Staff</button>
     <button data-route="/billing">Billing</button>
     <button data-route="/clinic-settings/reports">Settings</button>
     <button data-route="/site-map">Site&nbsp;Map</button>
     <button id="reload" title="Reload prototype">⟳</button>
-    <a href="/login" target="_blank" title="Open full-screen in a new tab">⤢</a>
+    <a id="fullscreen" href="/login" target="_blank" title="Open full-screen in a new tab">⤢</a>
     <span class="zoom" id="zoom">100%</span>
   </nav>
 
@@ -198,6 +199,12 @@
   const frame = document.getElementById("app");
   const zoomEl = document.getElementById("zoom");
   const controls = document.getElementById("controls");
+
+  /* Base path: "/" locally, "/clinic-portal/" on GitHub Pages */
+  const BASE = location.pathname.replace(/ipad\.html$/, "");
+  const routeUrl = (route) => BASE.replace(/\/$/, "") + route;
+  frame.src = routeUrl("/login");
+  document.getElementById("fullscreen").href = routeUrl("/login");
 
   const DEVICE_W = stage.offsetWidth;
   const DEVICE_H = stage.offsetHeight;
@@ -225,13 +232,14 @@
       return;
     }
     const route = btn.dataset.route;
-    if (route) frame.contentWindow.location.href = route;
+    if (route) frame.contentWindow.location.href = routeUrl(route);
   });
 
   /* highlight the tab matching the iframe's current section */
   function syncActive() {
     let path = "";
     try { path = frame.contentWindow.location.pathname; } catch { return; }
+    if (BASE !== "/" && path.startsWith(BASE.replace(/\/$/, ""))) path = path.slice(BASE.replace(/\/$/, "").length) || "/";
     const base = "/" + (path.split("/")[1] || "");
     for (const b of controls.querySelectorAll("button[data-route]")) {
       b.classList.toggle("active", b.dataset.route.startsWith(base) && base !== "/");
