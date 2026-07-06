@@ -36,7 +36,8 @@ export function DashboardSkeleton() {
   );
 }
 
-export { CalendarLayout, CalendarScheduleSkeleton, AvailabilityList, AvailabilityEdit } from "./CalendarViews";
+export { CalendarLayout, CalendarScheduleSkeleton, AvailabilityList } from "./CalendarViews";
+export { AvailabilityEditorPage as AvailabilityEdit } from "./availability/AvailabilityEditorPage";
 export { SchedulePage } from "./calendar/SchedulePage";
 export { TeamAvailability } from "./TeamAvailability";
 
