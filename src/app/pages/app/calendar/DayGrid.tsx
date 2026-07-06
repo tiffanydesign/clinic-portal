@@ -1,0 +1,215 @@
+import React, { useRef, useState } from "react";
+import { Video } from "lucide-react";
+import {
+  Appt, TimeBlock, DAY_START_HOUR, DAY_END_HOUR, HOUR_PX, NOW_MINUTES,
+  apptBlockClass, minToClock,
+} from "./scheduleData";
+
+export type GridColumn = { key: string; title: string; sub?: string; avatar?: string; count?: number; muted?: boolean };
+export type PlacedAppt = { appt: Appt; colKey: string; overlay?: boolean };
+export type PlacedBlock = { block: TimeBlock; colKey: string };
+
+const SNAP = 15; // minutes
+const snap = (min: number) => Math.round(min / SNAP) * SNAP;
+const MIN_MIN = DAY_START_HOUR * 60;
+const MAX_MIN = DAY_END_HOUR * 60;
+
+export function DayGrid({
+  columns, placed, blocks = [], editable = false, allowReassign = false, allowResize = false,
+  onApptClick, onEmptyClick, onDragEnd, onResizeEnd, showNow = true,
+}: {
+  columns: GridColumn[];
+  placed: PlacedAppt[];
+  blocks?: PlacedBlock[];
+  editable?: boolean;
+  allowReassign?: boolean;
+  allowResize?: boolean;
+  onApptClick: (appt: Appt, overlay?: boolean) => void;
+  onEmptyClick?: (colKey: string, startMin: number) => void;
+  onDragEnd?: (appt: Appt, newColKey: string, newStartMin: number) => void;
+  onResizeEnd?: (appt: Appt, newDuration: number) => void;
+  showNow?: boolean;
+}) {
+  const contentRef = useRef<HTMLDivElement>(null);
+  const hours = Array.from({ length: DAY_END_HOUR - DAY_START_HOUR + 1 }, (_, i) => DAY_START_HOUR + i);
+  const halfRows = (DAY_END_HOUR - DAY_START_HOUR) * 2;
+  const gridHeight = (DAY_END_HOUR - DAY_START_HOUR) * HOUR_PX;
+  const nowTop = ((NOW_MINUTES - MIN_MIN) / 60) * HOUR_PX;
+
+  // live drag / resize preview (does not commit until the parent confirms)
+  const [drag, setDrag] = useState<{ id: string; startMin: number; colKey: string } | null>(null);
+  const [resize, setResize] = useState<{ id: string; durationMin: number } | null>(null);
+  const moved = useRef(false);
+
+  const pointerToMin = (clientY: number) => {
+    const rect = contentRef.current!.getBoundingClientRect();
+    const y = clientY - rect.top;
+    return Math.min(MAX_MIN, Math.max(MIN_MIN, snap(MIN_MIN + (y / HOUR_PX) * 60)));
+  };
+  const pointerToCol = (clientX: number) => {
+    const rect = contentRef.current!.getBoundingClientRect();
+    const idx = Math.floor(((clientX - rect.left) / rect.width) * columns.length);
+    return columns[Math.min(columns.length - 1, Math.max(0, idx))].key;
+  };
+
+  const startDrag = (e: React.MouseEvent, p: PlacedAppt) => {
+    if (!editable || p.overlay) return;
+    e.preventDefault();
+    e.stopPropagation();
+    moved.current = false;
+    const rect = contentRef.current!.getBoundingClientRect();
+    const topPx = ((p.appt.startMin - MIN_MIN) / 60) * HOUR_PX;
+    const grabDy = e.clientY - rect.top - topPx;
+    const onMove = (ev: MouseEvent) => {
+      moved.current = true;
+      const y = ev.clientY - rect.top - grabDy;
+      const startMin = Math.min(MAX_MIN - p.appt.durationMin, Math.max(MIN_MIN, snap(MIN_MIN + (y / HOUR_PX) * 60)));
+      const colKey = allowReassign ? pointerToCol(ev.clientX) : p.colKey;
+      setDrag({ id: p.appt.id, startMin, colKey });
+    };
+    const onUp = (ev: MouseEvent) => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      if (!moved.current) { onApptClick(p.appt, p.overlay); setDrag(null); return; }
+      const startMin = Math.min(MAX_MIN - p.appt.durationMin, Math.max(MIN_MIN, pointerToMin(ev.clientY) - 0));
+      const colKey = allowReassign ? pointerToCol(ev.clientX) : p.colKey;
+      const changed = startMin !== p.appt.startMin || colKey !== p.colKey;
+      setDrag(null);
+      if (changed && onDragEnd) onDragEnd(p.appt, colKey, startMin);
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  };
+
+  const startResize = (e: React.MouseEvent, p: PlacedAppt) => {
+    if (!editable || p.overlay || !allowResize) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const topPx = ((p.appt.startMin - MIN_MIN) / 60) * HOUR_PX;
+    const onMove = (ev: MouseEvent) => {
+      const rect = contentRef.current!.getBoundingClientRect();
+      const bottomMin = snap(MIN_MIN + ((ev.clientY - rect.top) / HOUR_PX) * 60);
+      const durationMin = Math.max(SNAP, Math.min(MAX_MIN - p.appt.startMin, bottomMin - p.appt.startMin));
+      setResize({ id: p.appt.id, durationMin });
+    };
+    const onUp = () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+      setResize((r) => {
+        if (r && r.durationMin !== p.appt.durationMin && onResizeEnd) onResizeEnd(p.appt, r.durationMin);
+        return null;
+      });
+    };
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+  };
+
+  const colBackgroundClick = (e: React.MouseEvent, colKey: string) => {
+    if (!editable || !onEmptyClick) return;
+    const startMin = pointerToMin(e.clientY);
+    onEmptyClick(colKey, Math.min(MAX_MIN - 30, startMin));
+  };
+
+  return (
+    <div className="border border-gray-300 rounded bg-white flex flex-col h-full min-h-0 overflow-hidden">
+      {/* column headers */}
+      <div className="flex border-b border-gray-200 shrink-0 pl-14">
+        {columns.map((c) => (
+          <div key={c.key} className={`flex-1 px-2 py-2 text-center border-l border-gray-100 min-w-0 ${c.muted ? "opacity-60" : ""}`}>
+            <div className="flex items-center justify-center gap-1.5">
+              {c.avatar && <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-700 text-[9px] font-bold flex items-center justify-center shrink-0">{c.avatar}</span>}
+              <span className="text-xs font-bold text-gray-700 truncate">{c.title}</span>
+            </div>
+            {c.sub && <div className="text-[10px] text-gray-400 truncate">{c.sub}</div>}
+            {c.count !== undefined && <div className="text-[10px] text-gray-400">{c.count} appt{c.count === 1 ? "" : "s"}</div>}
+          </div>
+        ))}
+      </div>
+
+      {/* scrollable body */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="flex" style={{ height: gridHeight }}>
+          {/* hour gutter */}
+          <div className="w-14 shrink-0 relative border-r border-gray-200">
+            {hours.map((h, i) => (
+              <div key={h} className="absolute right-2 text-[10px] text-gray-400" style={{ top: i * HOUR_PX - 6 }}>{i === 0 ? "" : `${String(h).padStart(2, "0")}:00`}</div>
+            ))}
+          </div>
+
+          {/* columns area */}
+          <div ref={contentRef} className="flex-1 relative">
+            {/* half-hour gridlines */}
+            {Array.from({ length: halfRows + 1 }).map((_, i) => (
+              <div key={i} className={`absolute left-0 right-0 ${i % 2 === 0 ? "border-t border-gray-100" : "border-t border-dashed border-gray-50"}`} style={{ top: (i * HOUR_PX) / 2 }} />
+            ))}
+            {/* now line */}
+            {showNow && (
+              <div className="absolute left-0 right-0 z-20 pointer-events-none" style={{ top: nowTop }}>
+                <div className="relative border-t border-red-500">
+                  <span className="absolute -left-[3px] -top-[4px] w-2 h-2 rounded-full bg-red-500" />
+                  <span className="absolute right-1 -top-[8px] text-[9px] font-bold text-red-500 bg-white px-1">{minToClock(NOW_MINUTES)}</span>
+                </div>
+              </div>
+            )}
+
+            <div className="flex h-full">
+              {columns.map((col) => (
+                <div key={col.key} className="flex-1 relative border-l border-gray-100" onClick={(e) => colBackgroundClick(e, col.key)}>
+                  {/* blocked time */}
+                  {blocks.filter((b) => b.colKey === col.key).map(({ block }) => {
+                    const top = ((block.startMin - MIN_MIN) / 60) * HOUR_PX;
+                    const height = Math.max(16, (block.durationMin / 60) * HOUR_PX - 2);
+                    return (
+                      <div key={block.id} style={{ top, height }} className="absolute left-0.5 right-0.5 rounded bg-[repeating-linear-gradient(45deg,#f3f4f6,#f3f4f6_6px,#e5e7eb_6px,#e5e7eb_12px)] border border-gray-300 px-2 py-1 overflow-hidden">
+                        <div className="text-[10px] font-bold text-gray-500 truncate">{block.reason}</div>
+                        <div className="text-[9px] text-gray-400 truncate">Blocked</div>
+                      </div>
+                    );
+                  })}
+
+                  {/* appointments */}
+                  {placed.filter((p) => p.colKey === col.key).map((p) => {
+                    const isDragging = drag?.id === p.appt.id;
+                    const isResizing = resize?.id === p.appt.id;
+                    const startMin = isDragging ? drag!.startMin : p.appt.startMin;
+                    const durationMin = isResizing ? resize!.durationMin : p.appt.durationMin;
+                    const top = ((startMin - MIN_MIN) / 60) * HOUR_PX;
+                    const height = Math.max(22, (durationMin / 60) * HOUR_PX - 2);
+                    const showDetail = height >= 40;
+                    if (p.overlay) {
+                      return (
+                        <button key={p.appt.id} onClick={(e) => { e.stopPropagation(); onApptClick(p.appt, true); }} style={{ top, height }}
+                          className="absolute left-0.5 right-0.5 rounded px-2 py-1 text-left overflow-hidden bg-gray-100/70 border border-gray-200 opacity-70 hover:opacity-90">
+                          <div className="text-[10px] font-bold text-gray-500 truncate">{minToClock(p.appt.startMin)}</div>
+                          <div className="text-[9px] text-gray-400 truncate">Other clinician</div>
+                        </button>
+                      );
+                    }
+                    return (
+                      <div
+                        key={p.appt.id}
+                        onMouseDown={(e) => (editable ? startDrag(e, p) : undefined)}
+                        onClick={(e) => { e.stopPropagation(); if (!editable) onApptClick(p.appt); }}
+                        style={{ top, height, zIndex: isDragging || isResizing ? 30 : undefined }}
+                        className={`absolute left-0.5 right-0.5 rounded px-2 py-1 text-left overflow-hidden ${editable ? "cursor-grab active:cursor-grabbing" : "cursor-pointer"} hover:shadow-md ${apptBlockClass(p.appt.status)} ${isDragging ? "shadow-lg ring-2 ring-slate-400" : ""}`}
+                      >
+                        <div className="flex items-center gap-1 min-w-0">
+                          {p.appt.isVideo && <Video className="w-3 h-3 text-slate-500 shrink-0" />}
+                          <span className="text-[11px] font-bold text-gray-800 truncate">{p.appt.patient.name}</span>
+                        </div>
+                        {showDetail && <div className="text-[10px] text-gray-500 truncate">{p.appt.type.replace(" (in-person)", "").replace(" (video)", "")} · {durationMin}m</div>}
+                        {editable && allowResize && (
+                          <div onMouseDown={(e) => startResize(e, p)} className="absolute bottom-0 left-0 right-0 h-2 cursor-ns-resize" />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

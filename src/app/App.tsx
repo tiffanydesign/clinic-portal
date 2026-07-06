@@ -18,7 +18,7 @@ import {
   SettingsLayout, ReportsPage, DiagnosesPage, FormTemplatesPage, ConsentFilesPage, BillingPage, FeedbackAdminPage,
   NotificationsSkeleton, ApprovalSkeleton, ApprovalDetailSkeleton, ProfilePage, SiteMap, TabContentSkeleton,
   NewPatientSkeleton, JourneyDetailSkeleton, CalendarLayout, CalendarScheduleSkeleton, AvailabilityList, AvailabilityEdit, TeamAvailability,
-  TimesheetPage
+  TimesheetPage, SchedulePage
 } from "./pages/app/AppPages";
 
 // Route Guard Data
@@ -90,10 +90,11 @@ export default function App() {
           <Route path="/reset-password/done" element={<ForgotPasswordPage />} />
           <Route path="/site-map" element={<AppShellLayout><SiteMap /></AppShellLayout>} />
           <Route path="/dashboard" element={<AppShellLayout><Dashboard /></AppShellLayout>} />
+          <Route path="/dashboard/appointment/:apptId" element={<AppShellLayout><Dashboard /></AppShellLayout>} />
           <Route path="/calendar" element={<RedirectTo to="/calendar/schedule" />} />
-          <Route path="/calendar/schedule" element={<AppShellLayout><CalendarLayout><CalendarScheduleSkeleton /></CalendarLayout></AppShellLayout>} />
-          <Route path="/calendar/schedule/appointment/A-101" element={<AppShellLayout><CalendarLayout><CalendarScheduleSkeleton><AppointmentDrawerSkeleton /></CalendarScheduleSkeleton></CalendarLayout></AppShellLayout>} />
-          
+          <Route path="/calendar/schedule" element={<AppShellLayout><SchedulePage /></AppShellLayout>} />
+          <Route path="/calendar/schedule/appointment/:apptId" element={<AppShellLayout><SchedulePage /></AppShellLayout>} />
+
           <Route path="/calendar/team-availability" element={<AppShellLayout><CalendarLayout><TeamAvailability /></CalendarLayout></AppShellLayout>} />
 
           {/* New Availability Routes */}
