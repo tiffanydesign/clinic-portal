@@ -13,11 +13,13 @@ import { ForgotPasswordPage } from "./pages/auth/ForgotPasswordPage";
 import { AppShell } from "./components/AppShell";
 import { Dashboard } from "./components/Dashboard";
 import {
-  AppointmentDrawerSkeleton, PatientsPage, PatientRecordLayout,
+  AppointmentDrawerSkeleton, PatientsPage, PatientRecordLayout, PatientRecordRedirect,
+  PatientOverviewTab, PatientResultsTab, PatientJourneysTab, PatientJourneyDetailPage,
+  PatientSignedFormsTab, PatientClinicianNotesTab, PatientAppointmentsTab,
   StaffListPage, StaffDetailLayout, StaffOverviewTab, StaffAvailabilityTab, StaffPermissionsTab, StaffWorkloadTab,
   SettingsLayout, ReportsPage, DiagnosesPage, FormTemplatesPage, ConsentFilesPage, BillingPage, FeedbackAdminPage,
-  NotificationsSkeleton, ApprovalSkeleton, ApprovalDetailSkeleton, ProfilePage, SiteMap, TabContentSkeleton,
-  NewPatientSkeleton, JourneyDetailSkeleton, CalendarLayout, CalendarScheduleSkeleton, AvailabilityList, AvailabilityEdit, TeamAvailability,
+  NotificationsSkeleton, ApprovalSkeleton, ApprovalDetailSkeleton, ProfilePage, SiteMap,
+  NewPatientSkeleton, CalendarLayout, CalendarScheduleSkeleton, AvailabilityList, AvailabilityEdit, TeamAvailability,
   TimesheetPage, SchedulePage
 } from "./pages/app/AppPages";
 
@@ -102,14 +104,14 @@ export default function App() {
           <Route path="/calendar/my-availability/:id" element={<AppShellLayout><CalendarLayout><AvailabilityEdit /></CalendarLayout></AppShellLayout>} />
           <Route path="/patients" element={<AppShellLayout><PatientsPage /></AppShellLayout>} />
           <Route path="/patients/new" element={<AppShellLayout><NewPatientSkeleton /></AppShellLayout>} />
-          <Route path="/patients/P-001" element={<RedirectTo to="/patients/P-001/overview" />} />
-          <Route path="/patients/P-001/overview" element={<AppShellLayout><PatientRecordLayout><TabContentSkeleton label="Overview Tab Content" /></PatientRecordLayout></AppShellLayout>} />
-          <Route path="/patients/P-001/results" element={<AppShellLayout><PatientRecordLayout><TabContentSkeleton label="Results Tab Content" /></PatientRecordLayout></AppShellLayout>} />
-          <Route path="/patients/P-001/journeys" element={<AppShellLayout><PatientRecordLayout><TabContentSkeleton label="Journeys Tab Content" /></PatientRecordLayout></AppShellLayout>} />
-          <Route path="/patients/P-001/signed-forms" element={<AppShellLayout><PatientRecordLayout><TabContentSkeleton label="Signed Forms Table" /></PatientRecordLayout></AppShellLayout>} />
-          <Route path="/patients/P-001/notes" element={<AppShellLayout><PatientRecordLayout><TabContentSkeleton label="Clinician Notes Editor" /></PatientRecordLayout></AppShellLayout>} />
-          <Route path="/patients/P-001/appointments" element={<AppShellLayout><PatientRecordLayout><TabContentSkeleton label="Patient Appointments History" /></PatientRecordLayout></AppShellLayout>} />
-          <Route path="/patients/P-001/journeys/J-123" element={<AppShellLayout><JourneyDetailSkeleton /></AppShellLayout>} />
+          <Route path="/patients/:patientId" element={<AppShellLayout><PatientRecordRedirect /></AppShellLayout>} />
+          <Route path="/patients/:patientId/overview" element={<AppShellLayout><PatientRecordLayout><PatientOverviewTab /></PatientRecordLayout></AppShellLayout>} />
+          <Route path="/patients/:patientId/results" element={<AppShellLayout><PatientRecordLayout><PatientResultsTab /></PatientRecordLayout></AppShellLayout>} />
+          <Route path="/patients/:patientId/journeys" element={<AppShellLayout><PatientRecordLayout><PatientJourneysTab /></PatientRecordLayout></AppShellLayout>} />
+          <Route path="/patients/:patientId/journeys/:journeyId" element={<AppShellLayout><PatientRecordLayout><PatientJourneyDetailPage /></PatientRecordLayout></AppShellLayout>} />
+          <Route path="/patients/:patientId/signed-forms" element={<AppShellLayout><PatientRecordLayout><PatientSignedFormsTab /></PatientRecordLayout></AppShellLayout>} />
+          <Route path="/patients/:patientId/notes" element={<AppShellLayout><PatientRecordLayout><PatientClinicianNotesTab /></PatientRecordLayout></AppShellLayout>} />
+          <Route path="/patients/:patientId/appointments" element={<AppShellLayout><PatientRecordLayout><PatientAppointmentsTab /></PatientRecordLayout></AppShellLayout>} />
           <Route path="/staff" element={<AppShellLayout><StaffListPage /></AppShellLayout>} />
           <Route path="/staff/:staffId" element={<StaffDetailRedirect />} />
           <Route path="/staff/:staffId/overview" element={<AppShellLayout><StaffDetailLayout><StaffOverviewTab /></StaffDetailLayout></AppShellLayout>} />

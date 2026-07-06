@@ -367,9 +367,6 @@ export function PatientsPage() {
                   let rowBg = "bg-white hover:bg-slate-50";
                   if (isSelected) rowBg = "bg-slate-50";
 
-                  // Admin visual cues
-                  const isUnassignedAdmin = role === 'Admin' && !p.clinician;
-                  
                   // Reception visual cues
                   const isTodayRec = role === 'Reception' && p.nextAppt?.includes("3 Jul");
                   const hasIssueRec = role === 'Reception' && isTodayRec && (p.consent !== 'Signed' || p.payment === 'Unpaid');
@@ -378,11 +375,9 @@ export function PatientsPage() {
                   return (
                     <tr 
                       key={p.id} 
-                      onClick={() => navigate(`/patients/${p.id}`)} 
+                      onClick={() => navigate(`/patients/${p.patientId}`)}
                       className={`cursor-pointer group relative transition-colors ${rowBg}`}
                     >
-                      {isUnassignedAdmin && <td className="absolute left-0 top-0 bottom-0 w-[3px] bg-orange-400 z-40"></td>}
-
                       {role === 'Admin' && (
                         <td className="p-4 border-r border-gray-200 sticky left-0 z-10 shadow-[1px_0_0_#e5e7eb] bg-white group-hover:bg-slate-50 transition-colors w-[40px]" onClick={e => e.stopPropagation()}>
                           <input type="checkbox" checked={isSelected} onChange={(e) => toggleSelect(p.id, e as any)} className="rounded text-slate-600 focus:ring-slate-500" />

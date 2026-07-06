@@ -56,7 +56,16 @@ export function AppointmentDrawerSkeleton() {
 }
 
 export { PatientsPage } from "./PatientsPage";
-export { PatientRecordLayout } from "./PatientRecordLayout";
+
+// Patient Record module
+export { PatientRecordLayout, PatientRecordRedirect } from "./patient-record/PatientRecordLayout";
+export { OverviewTab as PatientOverviewTab } from "./patient-record/OverviewTab";
+export { ResultsTab as PatientResultsTab } from "./patient-record/ResultsTab";
+export { JourneysTab as PatientJourneysTab } from "./patient-record/JourneysTab";
+export { JourneyDetailPage as PatientJourneyDetailPage } from "./patient-record/JourneyDetailPage";
+export { SignedFormsTab as PatientSignedFormsTab } from "./patient-record/SignedFormsTab";
+export { ClinicianNotesTab as PatientClinicianNotesTab } from "./patient-record/ClinicianNotesTab";
+export { AppointmentsTab as PatientAppointmentsTab } from "./patient-record/AppointmentsTab";
 
 // Staff Management module
 export { StaffListPage } from "./staff/StaffListPage";
@@ -76,9 +85,7 @@ export { ConsentFilesPage } from "./clinic-settings/ConsentFiles";
 export { ProfilePage } from "./ProfilePage";
 
 // Generic Skeletons
-export const TabContentSkeleton = ({ label }: { label: string }) => <PlaceholderBlock label={label} className="h-64 border-dashed bg-gray-50" />;
 export const NewPatientSkeleton = () => <SkeletonPage title="New Patient"><PlaceholderBlock label="Patient Intake Form" className="h-96" /></SkeletonPage>;
-export const JourneyDetailSkeleton = () => <SkeletonPage title="Journey Detail"><PlaceholderBlock label="Journey Steps & Updates" className="h-96" /></SkeletonPage>;
 export { BillingPage } from "./BillingPage";
 export { FeedbackAdminPage } from "./FeedbackAdminPage";
 export { TimesheetPage } from "./Timesheet";
@@ -114,7 +121,7 @@ export function SiteMap() {
       { path: "/patients/P-001/overview", label: "Overview Tab" },
       { path: "/patients/P-001/results", label: "Results Tab" },
       { path: "/patients/P-001/journeys", label: "Journeys Tab" },
-      { path: "/patients/P-001/journeys/J-123", label: "Journey Details" },
+      { path: "/patients/P-001/journeys/J-7OMICS", label: "Journey Details" },
       { path: "/patients/P-001/signed-forms", label: "Signed Forms Tab" },
       { path: "/patients/P-001/notes", label: "Clinician Notes Tab" },
       { path: "/patients/P-001/appointments", label: "Appointments Tab" },

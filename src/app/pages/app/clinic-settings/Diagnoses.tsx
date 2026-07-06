@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Plus, MoreHorizontal, Search, Download, X, Pin } from "lucide-react";
 import { toast } from "sonner";
 
-type Diagnosis = {
+export type Diagnosis = {
   id: string;
   name: string;
   code: string;
@@ -12,7 +12,7 @@ type Diagnosis = {
   pinned?: boolean;
 };
 
-const MOCK_DATA: Diagnosis[] = [
+export const DIAGNOSIS_LIBRARY: Diagnosis[] = [
   { id: "1", name: "Essential Hypertension", code: "I10", category: "Cardiovascular", frequency: 23, status: "Active", pinned: true },
   { id: "2", name: "Type 2 Diabetes Mellitus", code: "E11", category: "Metabolic", frequency: 18, status: "Active", pinned: true },
   { id: "3", name: "Hyperlipidemia", code: "E78.5", category: "Metabolic", frequency: 15, status: "Active" },
@@ -96,7 +96,7 @@ export function DiagnosesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {MOCK_DATA.map((t) => (
+              {DIAGNOSIS_LIBRARY.map((t) => (
                 <tr key={t.id} className={`hover:bg-slate-50 transition-colors ${t.status === 'Inactive' ? 'text-gray-400' : 'text-gray-800'}`}>
                   <td className={`p-4 font-bold ${t.status === 'Inactive' ? 'text-gray-500' : 'text-slate-800'} flex items-center`}>
                     {t.pinned && <Pin className="w-4 h-4 mr-2 text-blue-500 fill-current" />}

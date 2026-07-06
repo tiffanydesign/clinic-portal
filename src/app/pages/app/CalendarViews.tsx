@@ -55,9 +55,8 @@ export function AvailabilityList() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Card 1 */}
-        <div 
+      <div className="max-w-md">
+        <div
           onClick={() => navigate("/calendar/my-availability/clinic")}
           className="bg-white border border-gray-300 rounded-lg p-6 cursor-pointer hover:border-slate-500 transition-colors shadow-sm group"
         >
@@ -67,21 +66,6 @@ export function AvailabilityList() {
           </div>
           <div className="space-y-2">
             <p className="text-sm text-gray-700 font-medium">Mon – Fri, 9:00 AM – 5:00 PM</p>
-            <p className="text-sm text-gray-500 flex items-center">🌐 Europe/Istanbul</p>
-          </div>
-        </div>
-
-        {/* Card 2 */}
-        <div 
-          onClick={() => navigate("/calendar/my-availability/video")}
-          className="bg-white border border-gray-300 rounded-lg p-6 cursor-pointer hover:border-slate-500 transition-colors shadow-sm group"
-        >
-          <div className="flex justify-between items-start mb-4">
-            <h3 className="text-lg font-bold text-gray-800 group-hover:text-slate-700">Video Call Availability</h3>
-            <span className="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wider rounded">Default</span>
-          </div>
-          <div className="space-y-2">
-            <p className="text-sm text-gray-700 font-medium">Mon – Fri, 10:00 AM – 4:00 PM</p>
             <p className="text-sm text-gray-500 flex items-center">🌐 Europe/Istanbul</p>
           </div>
         </div>
@@ -449,7 +433,7 @@ function DateOverrideModal({ onClose, onApply, existingDates = [] }: { onClose: 
 
           {/* Right: Time slots */}
           <div className="w-1/2 p-8 bg-gray-50 overflow-y-auto flex flex-col">
-            <h3 className="text-base font-bold text-gray-800 mb-6">Which hours are you free?</h3>
+            <h3 className="text-base font-bold text-gray-800 mb-6">Unavailable Hours</h3>
             
             {isUnavailable ? (
               <div className="flex-1 flex flex-col">
