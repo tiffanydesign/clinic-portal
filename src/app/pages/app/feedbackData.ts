@@ -55,11 +55,11 @@ export const MOCK_DATA: FeedbackItem[] = [
       { time: "1 day ago", label: "Received", kind: "received" },
       { time: "20 hours ago", label: "Marked In Review", by: CURRENT_ADMIN_NAME, kind: "in_review" },
     ] },
-  { id: "4", source: "Nurse", type: "Suggestion", title: "iPad freezes when updating journey checklist", body: "Several times today, the ward iPad app froze while I was trying to mark a patient's journey step as complete. Please look into this.", urgency: "Medium", authorName: "Berna Koç", authorRole: "Nurse", timeAgo: "1 day ago", receivedHoursAgo: 24, status: "In Review", internalNotes: [{ author: "System Admin", time: "1 day ago", text: "Engineering team notified, ticket #2847" }],
+  { id: "4", source: "Nurse", type: "Suggestion", title: "iPad freezes when updating journey checklist", body: "Several times today, the ward iPad app froze while I was trying to mark a patient's journey step as complete. Please look into this.", urgency: "Medium", authorName: "Berna Koç", authorRole: "Nurse", timeAgo: "1 day ago", receivedHoursAgo: 24, status: "In Review", internalNotes: [{ author: CURRENT_ADMIN_NAME, time: "1 day ago", text: "Engineering team notified, ticket #2847" }],
     changeHistory: [
       { time: "1 day ago", label: "Received", kind: "received" },
       { time: "22 hours ago", label: "Marked In Review", by: CURRENT_ADMIN_NAME, kind: "in_review" },
-      { time: "20 hours ago", label: "Internal note added", by: "System Admin", kind: "note" },
+      { time: "20 hours ago", label: "Internal note added", by: CURRENT_ADMIN_NAME, kind: "note" },
     ] },
   { id: "5", source: "Patient", type: "Compliment", rating: 5, title: "Berna was incredibly attentive throughout", body: "The nurse Berna made sure I was comfortable the entire time. Huge thanks to her!", patientName: "Arysse Arcerola", nurse: "Berna Koç", visitDate: "29 Jun 2026", timeAgo: "2 days ago", receivedHoursAgo: 48, authorName: "Arysse Arcerola", status: "Resolved",
     changeHistory: [
@@ -71,11 +71,11 @@ export const MOCK_DATA: FeedbackItem[] = [
       { time: "3 days ago", label: "Received", kind: "received" },
       { time: "2 days ago", label: "Marked In Review", by: CURRENT_ADMIN_NAME, kind: "in_review" },
     ] },
-  { id: "7", source: "Clinician", type: "Incident Report", title: "Patient reported dizziness after blood draw", body: "Patient felt lightheaded immediately after the blood draw procedure. We provided juice and observed them for 30 minutes until symptoms cleared.", urgency: "High", authorName: "Dr. Chad Okonkwo", authorRole: "Clinician", timeAgo: "3 days ago", receivedHoursAgo: 72, status: "Resolved", internalNotes: [{ author: "Admin Sarah", time: "2 days ago", text: "Followed up with patient by phone, no further issues reported." }],
+  { id: "7", source: "Clinician", type: "Incident Report", title: "Patient reported dizziness after blood draw", body: "Patient felt lightheaded immediately after the blood draw procedure. We provided juice and observed them for 30 minutes until symptoms cleared.", urgency: "High", authorName: "Dr. Chad Okonkwo", authorRole: "Clinician", timeAgo: "3 days ago", receivedHoursAgo: 72, status: "Resolved", internalNotes: [{ author: CURRENT_ADMIN_NAME, time: "2 days ago", text: "Followed up with patient by phone, no further issues reported." }],
     changeHistory: [
       { time: "3 days ago", label: "Received", kind: "received" },
       { time: "3 days ago", label: "Marked In Review", by: CURRENT_ADMIN_NAME, kind: "in_review" },
-      { time: "2 days ago", label: "Internal note added", by: "Admin Sarah", kind: "note" },
+      { time: "2 days ago", label: "Internal note added", by: CURRENT_ADMIN_NAME, kind: "note" },
       { time: "2 days ago", label: "Marked Resolved", by: CURRENT_ADMIN_NAME, kind: "resolved" },
     ] },
   { id: "8", source: "Patient", type: "Visit Feedback", rating: 3, title: "Good results explanation but facility felt rushed", body: "The doctor explained my test results well, but the clinic felt very busy and chaotic today.", patientName: "Bob Bromelain", clinician: "Dr. Adobe", visitDate: "27 Jun 2026", timeAgo: "4 days ago", receivedHoursAgo: 96, authorName: "Bob Bromelain", status: "Archived",

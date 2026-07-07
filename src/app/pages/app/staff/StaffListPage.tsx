@@ -139,7 +139,13 @@ export function StaffListPage() {
         <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
           <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Total Staff</div>
           <div className="text-3xl font-bold text-gray-800">{allStaff.length}</div>
-          <div className="text-sm text-gray-500 mt-1 font-medium">4 clinicians · 3 nurses · 3 receptionists · 2 admin</div>
+          <div className="text-sm text-gray-500 mt-1 font-medium">
+            {ROLE_GROUP_ORDER.map((role) => {
+              const count = allStaff.filter((s) => s.role === role).length;
+              const label = ROLE_GROUP_LABEL[role].toLowerCase();
+              return `${count} ${count === 1 ? label.replace(/s$/, "") : label}`;
+            }).join(" · ")}
+          </div>
         </div>
         <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
           <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">On Duty Today</div>

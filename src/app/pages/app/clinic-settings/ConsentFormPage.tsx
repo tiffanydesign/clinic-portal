@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Pencil, History, X, AlertTriangle } from "lucide-react";
+import { Pencil, History, X, AlertTriangle, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import {
   CONSENT_FORM_VERSIONS,
@@ -12,46 +12,88 @@ import { ConsentFormEditor } from "./ConsentFormEditor";
 import { ConsentFormReadView } from "./ConsentFormReadView";
 import { ConsentFormPreview } from "./ConsentFormPreview";
 import { VersionHistoryPanel } from "./VersionHistoryPanel";
+import { ContentDiff } from "./VersionCompare";
+import { summarizeContentChanges } from "./richTextDiff";
 
 function SaveVersionModal({
   nextVersion,
+  activeVersion,
+  restoredFrom,
+  draft,
   onCancel,
   onConfirm,
 }: {
   nextVersion: number;
+  activeVersion: ConsentFormVersion;
+  restoredFrom: ConsentFormVersion | null;
+  draft: ConsentFormContent;
   onCancel: () => void;
-  onConfirm: (changeSummary: string) => void;
+  onConfirm: (changeSummary: string, adminNote: string) => void;
 }) {
-  const [summary, setSummary] = useState("");
-  const canConfirm = summary.trim().length > 0;
+  const [adminNote, setAdminNote] = useState("");
+
+  // Two-stage summary when the draft started from a restored version: what
+  // the restore itself changed vs. the currently active content, then
+  // whatever the Admin additionally edited on top of that restored content.
+  const restoreBullets = restoredFrom ? summarizeContentChanges(activeVersion.content, restoredFrom.content) : [];
+  const furtherBullets = restoredFrom ? summarizeContentChanges(restoredFrom.content, draft) : [];
+  const directBullets = restoredFrom ? [] : summarizeContentChanges(activeVersion.content, draft);
+
+  const autoSummary = restoredFrom
+    ? `Restored from Version ${restoredFrom.version}${furtherBullets.length ? "; " + furtherBullets.join("; ") : ""}`
+    : directBullets.join("; ");
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-6" onClick={onCancel}>
       <div
-        className="bg-white rounded-xl shadow-2xl border border-gray-200 w-full max-w-md flex flex-col overflow-hidden animate-in fade-in zoom-in-95"
+        className="bg-white rounded-xl shadow-2xl border border-gray-200 w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 shrink-0">
           <h2 className="text-lg font-bold text-gray-800">Save New Version</h2>
           <button onClick={onCancel} className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="p-6 space-y-4">
+        <div className="flex-1 overflow-y-auto p-6 space-y-5">
           <p className="text-sm text-gray-600">
             This will create <span className="font-bold text-gray-800">Version {nextVersion}</span> and set it as the active consent form.
           </p>
 
           <div>
-            <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">
-              Change Summary <span className="text-red-500">*</span>
-            </label>
+            <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Change Summary — detected automatically</label>
+
+            {restoredFrom ? (
+              <div className="space-y-4">
+                <div>
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-2">
+                    <RotateCcw className="w-3.5 h-3.5" /> Restored from Version {restoredFrom.version}
+                  </div>
+                  <ContentDiff from={activeVersion.content} to={restoredFrom.content} />
+                </div>
+
+                <div>
+                  <div className="text-xs font-bold text-slate-700 mb-2">Additional edits after restoring</div>
+                  {furtherBullets.length > 0 ? (
+                    <ContentDiff from={restoredFrom.content} to={draft} />
+                  ) : (
+                    <p className="text-sm text-gray-400 italic">No further edits made after restoring this version.</p>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <ContentDiff from={activeVersion.content} to={draft} />
+            )}
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Admin Notes (optional)</label>
             <textarea
-              value={summary}
-              onChange={(e) => setSummary(e.target.value)}
-              rows={3}
-              placeholder="Describe what changed in this version..."
+              value={adminNote}
+              onChange={(e) => setAdminNote(e.target.value)}
+              rows={2}
+              placeholder="Add any context for this change (optional)..."
               className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-slate-500 resize-none"
             />
           </div>
@@ -65,14 +107,13 @@ function SaveVersionModal({
           </div>
         </div>
 
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
+        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3 shrink-0">
           <button onClick={onCancel} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100">
             Cancel
           </button>
           <button
-            onClick={() => canConfirm && onConfirm(summary.trim())}
-            disabled={!canConfirm}
-            className={`px-5 py-2 rounded text-sm font-bold text-white transition-colors ${canConfirm ? "bg-slate-600 hover:bg-slate-700" : "bg-gray-300 cursor-not-allowed"}`}
+            onClick={() => onConfirm(autoSummary, adminNote.trim())}
+            className="px-5 py-2 rounded text-sm font-bold text-white bg-slate-600 hover:bg-slate-700 transition-colors"
           >
             Confirm &amp; Activate
           </button>
@@ -111,6 +152,7 @@ export function ConsentFormPage() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState<ConsentFormContent | null>(null);
+  const [restoredFrom, setRestoredFrom] = useState<ConsentFormVersion | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [discardConfirmOpen, setDiscardConfirmOpen] = useState(false);
@@ -120,6 +162,7 @@ export function ConsentFormPage() {
   const exitEdit = () => {
     setIsEditing(false);
     setDraft(null);
+    setRestoredFrom(null);
   };
 
   const handleEditClick = () => {
@@ -134,12 +177,13 @@ export function ConsentFormPage() {
 
   const handleRestore = (version: ConsentFormVersion) => {
     setDraft(cloneContent(version.content));
+    setRestoredFrom(version);
     setIsEditing(true);
     setHistoryOpen(false);
     toast(`Version ${version.version} content loaded into a new draft — review and save when ready.`);
   };
 
-  const handleConfirmSave = (changeSummary: string) => {
+  const handleConfirmSave = (changeSummary: string, adminNote: string) => {
     const nextNumber = activeVersion.version + 1;
     const now = new Date();
     const editedAtShort = now.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
@@ -153,6 +197,7 @@ export function ConsentFormPage() {
         editedAtShort,
         editedAtFull,
         changeSummary,
+        adminNote: adminNote || undefined,
         signedCount: 0,
         content: draft!,
       },
@@ -230,7 +275,16 @@ export function ConsentFormPage() {
       )}
 
       {historyOpen && <VersionHistoryPanel versions={versions} onClose={() => setHistoryOpen(false)} onRestore={handleRestore} />}
-      {saveModalOpen && <SaveVersionModal nextVersion={activeVersion.version + 1} onCancel={() => setSaveModalOpen(false)} onConfirm={handleConfirmSave} />}
+      {saveModalOpen && draft && (
+        <SaveVersionModal
+          nextVersion={activeVersion.version + 1}
+          activeVersion={activeVersion}
+          restoredFrom={restoredFrom}
+          draft={draft}
+          onCancel={() => setSaveModalOpen(false)}
+          onConfirm={handleConfirmSave}
+        />
+      )}
       {discardConfirmOpen && (
         <DiscardConfirmModal
           onCancel={() => setDiscardConfirmOpen(false)}

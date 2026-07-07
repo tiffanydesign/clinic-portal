@@ -1,5 +1,5 @@
 import React from "react";
-import type { ConsentFormVersion } from "./consentFormData";
+import type { ConsentFormContent, ConsentFormVersion } from "./consentFormData";
 import { diffWords, hasDiff, type DiffToken } from "./richTextDiff";
 
 function DiffText({ tokens }: { tokens: DiffToken[] }) {
@@ -40,9 +40,11 @@ function ToggleDiffRow({ label, oldValue, newValue }: { label: string; oldValue:
   );
 }
 
-export function VersionCompare({ from, to }: { from: ConsentFormVersion; to: ConsentFormVersion }) {
-  const oldSections = from.content.sections;
-  const newSections = to.content.sections;
+// The visual diff body, reused by the full version-to-version Compare view
+// below and by the Save modal's auto-detected Change Summary.
+export function ContentDiff({ from, to }: { from: ConsentFormContent; to: ConsentFormContent }) {
+  const oldSections = from.sections;
+  const newSections = to.sections;
   const oldIds = new Set(oldSections.map((s) => s.id));
   const newIds = new Set(newSections.map((s) => s.id));
 
@@ -50,6 +52,45 @@ export function VersionCompare({ from, to }: { from: ConsentFormVersion; to: Con
   const addedSections = newSections.filter((s) => !oldIds.has(s.id));
   const commonSections = newSections.filter((s) => oldIds.has(s.id));
 
+  return (
+    <div className="space-y-3">
+      <FieldDiffRow label="Form Title" oldText={from.title} newText={to.title} />
+      <FieldDiffRow label="Introduction" oldText={from.introductionHtml} newText={to.introductionHtml} />
+
+      {removedSections.map((s) => (
+        <div key={s.id} className="border border-red-200 bg-red-50 rounded p-3">
+          <div className="text-[11px] font-bold text-red-700 uppercase tracking-wider mb-1.5">Removed Section</div>
+          <div className="text-sm font-bold text-gray-800 line-through">{s.title}</div>
+        </div>
+      ))}
+
+      {commonSections.map((s) => {
+        const old = oldSections.find((o) => o.id === s.id)!;
+        return (
+          <React.Fragment key={s.id}>
+            <FieldDiffRow label={`Section: ${s.title}`} oldText={old.bodyHtml} newText={s.bodyHtml} />
+          </React.Fragment>
+        );
+      })}
+
+      {addedSections.map((s) => (
+        <div key={s.id} className="border border-emerald-200 bg-emerald-50 rounded p-3">
+          <div className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider mb-1.5">Added Section</div>
+          <div className="text-sm font-bold text-gray-800">
+            {s.title}
+            {s.required && <span className="text-red-500 ml-1">*</span>}
+          </div>
+        </div>
+      ))}
+
+      <ToggleDiffRow label="ID Number field" oldValue={from.signatureBlock.idNumber} newValue={to.signatureBlock.idNumber} />
+      <ToggleDiffRow label="Witness Signature field" oldValue={from.signatureBlock.witnessSignature} newValue={to.signatureBlock.witnessSignature} />
+      <FieldDiffRow label="Footer" oldText={from.footerHtml} newText={to.footerHtml} />
+    </div>
+  );
+}
+
+export function VersionCompare({ from, to }: { from: ConsentFormVersion; to: ConsentFormVersion }) {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4 pb-4 border-b border-gray-200">
@@ -66,40 +107,7 @@ export function VersionCompare({ from, to }: { from: ConsentFormVersion; to: Con
         </div>
       </div>
 
-      <div className="space-y-3">
-        <FieldDiffRow label="Form Title" oldText={from.content.title} newText={to.content.title} />
-        <FieldDiffRow label="Introduction" oldText={from.content.introductionHtml} newText={to.content.introductionHtml} />
-
-        {removedSections.map((s) => (
-          <div key={s.id} className="border border-red-200 bg-red-50 rounded p-3">
-            <div className="text-[11px] font-bold text-red-700 uppercase tracking-wider mb-1.5">Removed Section</div>
-            <div className="text-sm font-bold text-gray-800 line-through">{s.title}</div>
-          </div>
-        ))}
-
-        {commonSections.map((s) => {
-          const old = oldSections.find((o) => o.id === s.id)!;
-          return (
-            <React.Fragment key={s.id}>
-              <FieldDiffRow label={`Section: ${s.title}`} oldText={old.bodyHtml} newText={s.bodyHtml} />
-            </React.Fragment>
-          );
-        })}
-
-        {addedSections.map((s) => (
-          <div key={s.id} className="border border-emerald-200 bg-emerald-50 rounded p-3">
-            <div className="text-[11px] font-bold text-emerald-700 uppercase tracking-wider mb-1.5">Added Section</div>
-            <div className="text-sm font-bold text-gray-800">
-              {s.title}
-              {s.required && <span className="text-red-500 ml-1">*</span>}
-            </div>
-          </div>
-        ))}
-
-        <ToggleDiffRow label="ID Number field" oldValue={from.content.signatureBlock.idNumber} newValue={to.content.signatureBlock.idNumber} />
-        <ToggleDiffRow label="Witness Signature field" oldValue={from.content.signatureBlock.witnessSignature} newValue={to.content.signatureBlock.witnessSignature} />
-        <FieldDiffRow label="Footer" oldText={from.content.footerHtml} newText={to.content.footerHtml} />
-      </div>
+      <ContentDiff from={from.content} to={to.content} />
     </div>
   );
 }

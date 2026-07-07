@@ -155,7 +155,7 @@ export function RangeDatePicker({ initialStart, initialEnd, initialPreset, onApp
   };
 
   return (
-    <div className="absolute top-full left-1/2 -translate-x-[40%] mt-2 bg-white border border-gray-200 shadow-[0_4px_24px_rgba(0,0,0,0.08)] rounded-xl z-30 flex overflow-hidden w-[680px]" onClick={e => e.stopPropagation()}>
+    <div className="absolute top-full left-1/2 -translate-x-[40%] mt-2 bg-white border border-gray-200 shadow-[0_4px_24px_rgba(0,0,0,0.08)] rounded-xl z-30 flex overflow-hidden w-[800px]" onClick={e => e.stopPropagation()}>
       {/* Left: Calendars */}
       <div className="flex p-6 border-r border-gray-100 relative">
         <button onClick={handlePrevMonth} className="absolute left-6 top-6 p-1 hover:bg-gray-100 rounded text-gray-500"><ChevronLeft className="w-5 h-5" /></button>

@@ -30,7 +30,8 @@ export type ConsentFormVersion = {
   editedBy: string;
   editedAtShort: string; // "28 Jun 2026" — header / card date
   editedAtFull: string; // "28 Jun 2026, 14:30" — card timestamp
-  changeSummary: string;
+  changeSummary: string; // auto-detected by the system — never hand-typed
+  adminNote?: string; // optional free-text context the Admin chose to record
   signedCount: number;
   content: ConsentFormContent;
 };
@@ -145,7 +146,7 @@ export const CONSENT_FORM_VERSIONS: ConsentFormVersion[] = [
   {
     version: 2,
     status: "archived",
-    editedBy: "Can Demir",
+    editedBy: "Ayşe Hançer",
     editedAtShort: "1 May 2026",
     editedAtFull: "1 May 2026, 11:20",
     changeSummary: "Added genetic testing consent section",

@@ -53,3 +53,35 @@ export function diffWords(oldText: string, newText: string): DiffToken[] {
 export function hasDiff(tokens: DiffToken[]): boolean {
   return tokens.some((t) => t.type !== "same");
 }
+
+// Auto-detected, human-readable bullet list of what changed between two
+// content snapshots — this is what the system shows in the Save modal
+// instead of asking the Admin to describe the change themselves.
+export function summarizeContentChanges(
+  from: { title: string; introductionHtml: string; sections: { id: string; title: string; bodyHtml: string }[]; signatureBlock: { idNumber: boolean; witnessSignature: boolean }; footerHtml: string },
+  to: { title: string; introductionHtml: string; sections: { id: string; title: string; bodyHtml: string }[]; signatureBlock: { idNumber: boolean; witnessSignature: boolean }; footerHtml: string }
+): string[] {
+  const notes: string[] = [];
+
+  if (hasDiff(diffWords(from.title, to.title))) notes.push("Updated form title");
+  if (hasDiff(diffWords(from.introductionHtml, to.introductionHtml))) notes.push("Updated introduction text");
+
+  const oldIds = new Set(from.sections.map((s) => s.id));
+  const newIds = new Set(to.sections.map((s) => s.id));
+  to.sections.filter((s) => !oldIds.has(s.id)).forEach((s) => notes.push(`Added section: ${s.title}`));
+  from.sections.filter((s) => !newIds.has(s.id)).forEach((s) => notes.push(`Removed section: ${s.title}`));
+  to.sections.filter((s) => oldIds.has(s.id)).forEach((s) => {
+    const old = from.sections.find((o) => o.id === s.id)!;
+    if (old.title !== s.title || hasDiff(diffWords(old.bodyHtml, s.bodyHtml))) notes.push(`Updated section: ${s.title}`);
+  });
+
+  if (from.signatureBlock.idNumber !== to.signatureBlock.idNumber) {
+    notes.push(`${to.signatureBlock.idNumber ? "Enabled" : "Disabled"} ID Number field`);
+  }
+  if (from.signatureBlock.witnessSignature !== to.signatureBlock.witnessSignature) {
+    notes.push(`${to.signatureBlock.witnessSignature ? "Enabled" : "Disabled"} Witness Signature field`);
+  }
+  if (hasDiff(diffWords(from.footerHtml, to.footerHtml))) notes.push("Updated footer");
+
+  return notes;
+}

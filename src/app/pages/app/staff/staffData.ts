@@ -42,9 +42,8 @@ export const MOCK_STAFF: Staff[] = [
   { id: "EMP-010", name: "Elif Yıldız", avatar: "EY", role: "Receptionist", email: "elif@phenome.com", phone: "+90 532 555 0110", status: "Active", today: "On Duty", patients: null, workload: null, nextShift: "Today, 7:30", lastActive: "20min ago", lastActiveDays: 0, joined: "10 Feb 2025" },
   { id: "EMP-011", name: "Deniz Arslan", avatar: "DA", role: "Receptionist", email: "deniz@phenome.com", phone: "+90 532 555 0111", status: "Active", today: "On Duty", patients: null, workload: null, nextShift: "Today, 7:30", lastActive: "1h ago", lastActiveDays: 0, joined: "10 Feb 2025" },
   { id: "EMP-012", name: "Zeynep Kaya", avatar: "ZK", role: "Receptionist", email: "zeynep@phenome.com", phone: "+90 532 555 0112", status: "Inactive", today: "Off", patients: null, workload: null, nextShift: "—", lastActive: "14 days ago", lastActiveDays: 14, joined: "05 Jan 2025" },
-  // Admins
+  // Admin — the clinic has exactly one Admin account, ever.
   { id: "EMP-001", name: "Ayşe Hançer", avatar: "AH", role: "Admin", email: "ayse@phenome.com", phone: "+90 532 555 0101", status: "Active", today: "On Duty", patients: null, workload: null, nextShift: "Today, 8:00", lastActive: "Now", lastActiveDays: 0, joined: "01 Jan 2025" },
-  { id: "EMP-002", name: "Can Demir", avatar: "CD", role: "Admin", email: "can@phenome.com", phone: "+90 532 555 0102", status: "Active", today: "On Duty", patients: null, workload: null, nextShift: "Today, 8:00", lastActive: "3h ago", lastActiveDays: 0, joined: "01 Jan 2025" },
   // Invited — imported via Staff Management's "Import Staff" flow, not yet activated.
   // (Deliberately distinct emails from the /register whitelist demo data, which
   // reuses existing active staff like berna@phenome.com for its own scenarios.)

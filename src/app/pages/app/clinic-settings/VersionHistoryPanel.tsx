@@ -52,6 +52,9 @@ export function VersionHistoryPanel({
               </div>
               <div className="text-xs text-gray-500">{v.editedBy} · {v.editedAtFull}</div>
               <div className="text-sm text-gray-700 mt-2 leading-snug">{v.changeSummary}</div>
+              {v.adminNote && (
+                <div className="text-xs text-gray-500 italic mt-1.5 pl-2.5 border-l-2 border-gray-200">{v.adminNote}</div>
+              )}
               <div className="text-xs text-gray-400 mt-1.5">{v.signedCount} patients signed this version</div>
 
               <div className="flex items-center gap-2 mt-3 pt-3 border-t border-gray-100">

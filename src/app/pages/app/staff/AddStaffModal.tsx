@@ -109,8 +109,8 @@ export function AddStaffModal({ onClose, onCreated }: { onClose: () => void; onC
                     <option>Clinician</option>
                     <option>Nurse</option>
                     <option>Receptionist</option>
-                    <option>Admin</option>
                   </select>
+                  <p className="text-[10px] text-gray-400 mt-1">Admin accounts cannot be created here — the clinic has exactly one.</p>
                 </div>
               </div>
               <div>
@@ -159,7 +159,7 @@ export function AddStaffModal({ onClose, onCreated }: { onClose: () => void; onC
                 </div>
               )}
 
-              {(role === "Receptionist" || role === "Admin") && (
+              {role === "Receptionist" && (
                 <div className="text-sm text-gray-500 bg-gray-50 border border-gray-200 rounded p-4">
                   No additional setup is required for the {role} role.
                 </div>

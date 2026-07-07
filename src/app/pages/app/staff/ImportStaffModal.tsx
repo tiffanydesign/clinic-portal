@@ -14,7 +14,9 @@ type ParsedEntry = {
   status: EntryStatus;
 };
 
-const ROLE_OPTIONS: StaffRole[] = ["Clinician", "Nurse", "Receptionist", "Admin"];
+// Admin is intentionally excluded — the clinic has exactly one Admin account,
+// already provisioned; bulk import can never create another one.
+const ROLE_OPTIONS: StaffRole[] = ["Clinician", "Nurse", "Receptionist"];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function matchRole(token: string | undefined): StaffRole | "" {
