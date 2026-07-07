@@ -129,6 +129,7 @@ export default function App() {
           <Route path="/clinic-settings" element={<AppShellLayout><ConsentFormPage /></AppShellLayout>} />
           <Route path="/billing" element={<AppShellLayout><BillingPage /></AppShellLayout>} />
           <Route path="/feedback" element={<AppShellLayout><FeedbackAdminPage /></AppShellLayout>} />
+          <Route path="/feedback/:feedbackId" element={<AppShellLayout><FeedbackAdminPage /></AppShellLayout>} />
           <Route path="/timesheet" element={<AppShellLayout><TimesheetPage /></AppShellLayout>} />
           <Route path="/notifications" element={<AppShellLayout><NotificationsSkeleton /></AppShellLayout>} />
           <Route path="/approval" element={<AppShellLayout><ApprovalRouter /></AppShellLayout>} />

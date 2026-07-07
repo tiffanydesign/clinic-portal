@@ -2,7 +2,7 @@
 // and FeedbackAdminPage — a submission needs to actually land in the Admin
 // list, not just show a toast, since there's no backend here.
 import { useSyncExternalStore } from "react";
-import { MOCK_DATA, FeedbackItem, Source, FeedbackType, Urgency, Status } from "./feedbackData";
+import { MOCK_DATA, FeedbackItem, Source, FeedbackType, Urgency, Status, ChangeHistoryEntry, HistoryKind } from "./feedbackData";
 
 let items: FeedbackItem[] = [...MOCK_DATA];
 const listeners = new Set<() => void>();
@@ -44,14 +44,54 @@ export function addFeedback(input: NewFeedbackInput): FeedbackItem {
     authorName: input.authorName,
     authorRole: input.authorRole,
     timeAgo: "Just now",
+    receivedHoursAgo: 0,
     status: "New" as Status,
+    changeHistory: [{ time: "Just now", label: "Received", kind: "received" }],
   };
   items = [newItem, ...items];
   emit();
   return newItem;
 }
 
-export function updateFeedback(id: string, patch: Partial<FeedbackItem>) {
-  items = items.map((f) => (f.id === id ? { ...f, ...patch } : f));
+// STATUS_LABELS/KINDS keep the append-only history entry consistent with
+// whatever transition the Admin just made from the detail panel's dropdown.
+const STATUS_KIND: Record<Status, HistoryKind> = {
+  "New": "received",
+  "In Review": "in_review",
+  "Resolved": "resolved",
+  "Archived": "archived",
+  "Addressed": "addressed",
+};
+
+function appendHistory(f: FeedbackItem, entry: ChangeHistoryEntry): FeedbackItem {
+  return { ...f, changeHistory: [...f.changeHistory, entry] };
+}
+
+export function changeStatus(id: string, newStatus: Status, actor: string) {
+  items = items.map((f) => {
+    if (f.id !== id) return f;
+    const updated = { ...f, status: newStatus };
+    return appendHistory(updated, { time: "Just now", label: `Marked ${newStatus}`, by: actor, kind: STATUS_KIND[newStatus] });
+  });
+  emit();
+}
+
+export function toggleFlag(id: string, actor: string) {
+  items = items.map((f) => {
+    if (f.id !== id) return f;
+    const next = !f.flagged;
+    const updated = { ...f, flagged: next };
+    return appendHistory(updated, { time: "Just now", label: next ? "Flagged for follow-up" : "Unflagged", by: actor, kind: next ? "flagged" : "unflagged" });
+  });
+  emit();
+}
+
+export function addInternalNote(id: string, text: string, actor: string) {
+  items = items.map((f) => {
+    if (f.id !== id) return f;
+    const notes = f.internalNotes || [];
+    const updated = { ...f, internalNotes: [{ author: actor, time: "Just now", text }, ...notes] };
+    return appendHistory(updated, { time: "Just now", label: "Internal note added", by: actor, kind: "note" });
+  });
   emit();
 }
