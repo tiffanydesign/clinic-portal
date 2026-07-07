@@ -3,7 +3,7 @@ import { Bold, Italic, List, Heading2, Paperclip, X, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { usePatientOutletContext } from "./PatientRecordLayout";
 import { ClinicianNote } from "./patientRecordData";
-import { DIAGNOSIS_LIBRARY } from "../clinic-settings/Diagnoses";
+import { DIAGNOSIS_LIBRARY } from "../clinic-settings/diagnosesData";
 
 const CURRENT_CLINICIAN_ID = "EMP-003"; // Dr. Claudia Reis (signed-in clinician)
 

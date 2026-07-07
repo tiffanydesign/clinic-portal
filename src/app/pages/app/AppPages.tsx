@@ -1,6 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router";
 import { useAppContext } from "../../context/AppContext";
+import { AvailabilityApprovalPage } from "./availability/AvailabilityApprovalPage";
 
 export function SkeletonPage({ title, children }: { title: string, children: React.ReactNode }) {
   return (
@@ -76,11 +77,7 @@ export { StaffAvailabilityTab } from "./staff/StaffAvailabilityTab";
 export { StaffPermissionsTab } from "./staff/StaffPermissionsTab";
 export { StaffWorkloadTab } from "./staff/StaffWorkloadTab";
 
-export { SettingsLayout } from "./clinic-settings/SettingsLayout";
-export { ReportsPage } from "./clinic-settings/Reports";
-export { DiagnosesPage } from "./clinic-settings/Diagnoses";
-export { FormTemplatesPage } from "./clinic-settings/FormTemplates";
-export { ConsentFilesPage } from "./clinic-settings/ConsentFiles";
+export { ConsentFormPage } from "./clinic-settings/ConsentFormPage";
 
 // Expose the Profile Page instead of the skeleton
 export { ProfilePage } from "./ProfilePage";
@@ -93,6 +90,13 @@ export { TimesheetPage } from "./Timesheet";
 export const NotificationsSkeleton = () => <SkeletonPage title="Notifications"><PlaceholderBlock label="Unread / All Notifications List" className="h-96" /></SkeletonPage>;
 export const ApprovalSkeleton = () => <SkeletonPage title="Approvals"><PlaceholderBlock label="Pending Clinician Access Requests" className="h-96" /><div className="mt-4"><Link to="/approval/REQ-1" className="text-slate-600 hover:underline">Demo: View Request REQ-1</Link></div></SkeletonPage>;
 export const ApprovalDetailSkeleton = () => <SkeletonPage title="Approval Request"><Link to="/approval" className="mb-4 inline-block text-sm text-slate-500">← Back</Link><PlaceholderBlock label="Request Details & Actions" className="h-96" /></SkeletonPage>;
+
+// Admin sees the real Availability approval queue; other roles with access
+// to /approval (currently Clinician) keep the pre-existing placeholder.
+export function ApprovalRouter() {
+  const { role } = useAppContext();
+  return role === "Admin" ? <AvailabilityApprovalPage /> : <ApprovalSkeleton />;
+}
 export const AvailabilitySkeleton = () => <SkeletonPage title="Availability"><PlaceholderBlock label="Slot Editor" className="h-96" /></SkeletonPage>;
 
 // Site Map
@@ -130,8 +134,7 @@ export function SiteMap() {
     { section: "Admin & Clinician Only", links: [
       { path: "/staff", label: "Staff List" },
       { path: "/staff/EMP-003", label: "Staff Detail -> Redirects to Overview" },
-      { path: "/clinic-settings", label: "Clinic Settings -> Redirects to Reports" },
-      { path: "/clinic-settings/form-templates", label: "Clinic Settings (Form Templates)" },
+      { path: "/clinic-settings", label: "Clinic Settings (Consent Form Template)" },
       { path: "/feedback", label: "Feedback" },
       { path: "/timesheet", label: "Timesheet" },
       { path: "/approval", label: "Approvals" },

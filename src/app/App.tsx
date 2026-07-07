@@ -17,8 +17,8 @@ import {
   PatientOverviewTab, PatientResultsTab, PatientJourneysTab, PatientJourneyDetailPage,
   PatientSignedFormsTab, PatientClinicianNotesTab, PatientAppointmentsTab,
   StaffListPage, StaffDetailLayout, StaffOverviewTab, StaffAvailabilityTab, StaffPermissionsTab, StaffWorkloadTab,
-  SettingsLayout, ReportsPage, DiagnosesPage, FormTemplatesPage, ConsentFilesPage, BillingPage, FeedbackAdminPage,
-  NotificationsSkeleton, ApprovalSkeleton, ApprovalDetailSkeleton, ProfilePage, SiteMap,
+  ConsentFormPage, BillingPage, FeedbackAdminPage,
+  NotificationsSkeleton, ApprovalRouter, ApprovalDetailSkeleton, ProfilePage, SiteMap,
   NewPatientSkeleton, CalendarLayout, CalendarScheduleSkeleton, AvailabilityList, AvailabilityEdit, TeamAvailability,
   TimesheetPage, SchedulePage
 } from "./pages/app/AppPages";
@@ -118,16 +118,12 @@ export default function App() {
           <Route path="/staff/:staffId/availability" element={<AppShellLayout><StaffDetailLayout><StaffAvailabilityTab /></StaffDetailLayout></AppShellLayout>} />
           <Route path="/staff/:staffId/permissions" element={<AppShellLayout><StaffDetailLayout><StaffPermissionsTab /></StaffDetailLayout></AppShellLayout>} />
           <Route path="/staff/:staffId/workload" element={<AppShellLayout><StaffDetailLayout><StaffWorkloadTab /></StaffDetailLayout></AppShellLayout>} />
-          <Route path="/clinic-settings" element={<RedirectTo to="/clinic-settings/reports" />} />
-          <Route path="/clinic-settings/reports" element={<AppShellLayout><SettingsLayout><ReportsPage /></SettingsLayout></AppShellLayout>} />
-          <Route path="/clinic-settings/diagnoses" element={<AppShellLayout><SettingsLayout><DiagnosesPage /></SettingsLayout></AppShellLayout>} />
-          <Route path="/clinic-settings/form-templates" element={<AppShellLayout><SettingsLayout><FormTemplatesPage /></SettingsLayout></AppShellLayout>} />
-          <Route path="/clinic-settings/consent-files" element={<AppShellLayout><SettingsLayout><ConsentFilesPage /></SettingsLayout></AppShellLayout>} />
+          <Route path="/clinic-settings" element={<AppShellLayout><ConsentFormPage /></AppShellLayout>} />
           <Route path="/billing" element={<AppShellLayout><BillingPage /></AppShellLayout>} />
           <Route path="/feedback" element={<AppShellLayout><FeedbackAdminPage /></AppShellLayout>} />
           <Route path="/timesheet" element={<AppShellLayout><TimesheetPage /></AppShellLayout>} />
           <Route path="/notifications" element={<AppShellLayout><NotificationsSkeleton /></AppShellLayout>} />
-          <Route path="/approval" element={<AppShellLayout><ApprovalSkeleton /></AppShellLayout>} />
+          <Route path="/approval" element={<AppShellLayout><ApprovalRouter /></AppShellLayout>} />
           <Route path="/approval/REQ-1" element={<AppShellLayout><ApprovalDetailSkeleton /></AppShellLayout>} />
           <Route path="/profile" element={<AppShellLayout><ProfilePage /></AppShellLayout>} />
           <Route path="*" element={<AppShellLayout><div className="p-8"><h1 className="text-2xl font-bold mb-4">404 - Not Found</h1><Link to="/site-map" className="text-slate-600 hover:underline">Go to Site Map</Link></div></AppShellLayout>} />
