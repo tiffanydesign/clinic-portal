@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 // --- Mock Data ---
 
-const ROLE_DATA: Record<Role, { first: string; last: string; email: string; phone: string; roleLabel: string; assignment: string | null }> = {
+export const ROLE_DATA: Record<Role, { first: string; last: string; email: string; phone: string; roleLabel: string; assignment: string | null }> = {
   Admin: { first: "Ayşe", last: "Hançer", email: "ayse@phenome.com", phone: "532 123 4567", roleLabel: "Admin", assignment: null },
   Clinician: { first: "Claudia", last: "Reis", email: "claudia@phenome.com", phone: "555 987 6543", roleLabel: "Clinician", assignment: "Assigned patients: 24" },
   Reception: { first: "Elif", last: "Yıldız", email: "elif@phenome.com", phone: "533 456 7890", roleLabel: "Receptionist", assignment: null },
@@ -266,8 +266,8 @@ function Button({ children, variant = "primary", onClick, className = "" }: any)
             <div className="text-sm font-medium text-gray-800 mt-3 cursor-default">a****z@example.com</div>
           </div>
           <div className="flex items-center gap-2 shrink-0 mt-0.5" title="Two-factor authentication is required and cannot be disabled">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Enabled</span>
-            <button type="button" disabled className="w-9 h-5 rounded-full relative shrink-0 bg-slate-600 opacity-50 cursor-not-allowed">
+            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Enabled</span>
+            <button type="button" disabled className="w-9 h-5 rounded-full relative shrink-0 bg-emerald-600 cursor-not-allowed">
               <span className="w-3.5 h-3.5 bg-white rounded-full absolute top-[3px] left-[19px]" />
             </button>
           </div>

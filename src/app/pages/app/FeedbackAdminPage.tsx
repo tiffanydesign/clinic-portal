@@ -1,89 +1,31 @@
 import React, { useState } from "react";
-import { Download, Settings, Search, Star, Flag, MessageSquare } from "lucide-react";
-
-type Source = "Patient" | "Clinician" | "Nurse" | "Receptionist";
-type FeedbackType = "Visit Feedback" | "Complaint" | "Suggestion" | "System Issue" | "Incident Report" | "Compliment";
-type Status = "New" | "In Review" | "Resolved" | "Archived";
-
-type FeedbackItem = {
-  id: string;
-  source: Source;
-  type: FeedbackType;
-  title: string;
-  body: string;
-  rating?: number; // 1-5
-  authorName: string;
-  authorRole?: string;
-  patientName?: string;
-  clinician?: string;
-  nurse?: string;
-  visitDate?: string;
-  timeAgo: string;
-  status: Status;
-  flagged?: boolean;
-  internalNotes?: { author: string; time: string; text: string }[];
-};
-
-const MOCK_DATA: FeedbackItem[] = [
-  { id: "1", source: "Patient", type: "Visit Feedback", rating: 5, title: "Excellent care during my body scan", body: "The entire process was smooth. The nurse was very polite and the doctor explained everything clearly. I felt completely taken care of.", patientName: "Mackenzie Messineo", clinician: "Dr. Claudia", visitDate: "1 Jul 2026", timeAgo: "2 hours ago", authorName: "Mackenzie Messineo", status: "New" },
-  { id: "2", source: "Patient", type: "Complaint", rating: 2, title: "Waited over 40 minutes past appointment time", body: "I arrived on time but was left waiting in the reception area for almost 45 minutes with no updates. This is unacceptable.", patientName: "Penny Pelargonium", clinician: "Dr. Higgs", visitDate: "1 Jul 2026", timeAgo: "5 hours ago", authorName: "Penny Pelargonium", status: "New", flagged: true },
-  { id: "3", source: "Patient", type: "Visit Feedback", rating: 4, title: "Very thorough consultation, minor wait", body: "The doctor was great and answered all my questions. I just wish the initial check-in process was a bit faster.", patientName: "Riley Guarana", clinician: "Dr. Claudia", visitDate: "30 Jun 2026", timeAgo: "1 day ago", authorName: "Riley Guarana", status: "In Review" },
-  { id: "4", source: "Nurse", type: "Suggestion", title: "iPad freezes when updating journey checklist", body: "Several times today, the ward iPad app froze while I was trying to mark a patient's journey step as complete. Please look into this.", authorName: "Berna Koç", authorRole: "Nurse", timeAgo: "1 day ago", status: "In Review", internalNotes: [{ author: "System Admin", time: "1 day ago", text: "Engineering team notified, ticket #2847" }] },
-  { id: "5", source: "Patient", type: "Compliment", rating: 5, title: "Berna was incredibly attentive throughout", body: "The nurse Berna made sure I was comfortable the entire time. Huge thanks to her!", patientName: "Arysse Arcerola", nurse: "Berna Koç", visitDate: "29 Jun 2026", timeAgo: "2 days ago", authorName: "Arysse Arcerola", status: "Resolved" },
-  { id: "6", source: "Receptionist", type: "System Issue", title: "Payment terminal disconnects intermittently", body: "We keep losing connection to the main payment terminal at desk 2. We've had to restart it 3 times today.", authorName: "Elif Yıldız", authorRole: "Receptionist", timeAgo: "3 days ago", status: "In Review" },
-  { id: "7", source: "Clinician", type: "Incident Report", title: "Patient reported dizziness after blood draw", body: "Patient felt lightheaded immediately after the blood draw procedure. We provided juice and observed them for 30 minutes until symptoms cleared.", authorName: "Dr. Chad Okonkwo", authorRole: "Clinician", timeAgo: "3 days ago", status: "Resolved", internalNotes: [{ author: "Admin Sarah", time: "2 days ago", text: "Followed up with patient by phone, no further issues reported." }] },
-  { id: "8", source: "Patient", type: "Visit Feedback", rating: 3, title: "Good results explanation but facility felt rushed", body: "The doctor explained my test results well, but the clinic felt very busy and chaotic today.", patientName: "Bob Bromelain", clinician: "Dr. Adobe", visitDate: "27 Jun 2026", timeAgo: "4 days ago", authorName: "Bob Bromelain", status: "Archived" },
-  { id: "9", source: "Nurse", type: "Suggestion", title: "Need a way to message clinician when patient is ready", body: "Currently we have to walk down the hall to tell the doctor the patient is in the room. A simple ping button in the app would save time.", authorName: "Aylin Demir", authorRole: "Nurse", timeAgo: "5 days ago", status: "New" },
-  { id: "10", source: "Patient", type: "Visit Feedback", rating: 5, title: "Life-changing health insights", body: "The digital twin visualization was amazing. I finally understand my health metrics clearly.", patientName: "Dylan Daniel", clinician: "Dr. Felix", visitDate: "25 Jun 2026", timeAgo: "6 days ago", authorName: "Dylan Daniel", status: "Resolved" }
-];
-
-const SOURCE_COLORS: Record<string, string> = {
-  "Patient": "bg-blue-500",
-  "Clinician": "bg-purple-500",
-  "Nurse": "bg-emerald-500",
-  "Receptionist": "bg-orange-500"
-};
-
-const TYPE_COLORS: Record<string, string> = {
-  "Visit Feedback": "bg-blue-50 text-blue-700 border-blue-200",
-  "Complaint": "bg-red-50 text-red-700 border-red-200",
-  "Suggestion": "bg-blue-50 text-blue-700 border-blue-200",
-  "System Issue": "bg-orange-50 text-orange-700 border-orange-200",
-  "Incident Report": "bg-red-50 text-red-700 border-red-200",
-  "Compliment": "bg-emerald-50 text-emerald-700 border-emerald-200"
-};
-
-const STATUS_PILLS: Record<string, string> = {
-  "New": "bg-blue-600 text-white border-transparent",
-  "In Review": "bg-orange-100 text-orange-800 border-orange-300",
-  "Resolved": "bg-emerald-100 text-emerald-800 border-emerald-300",
-  "Archived": "bg-gray-100 text-gray-600 border-gray-300"
-};
+import { Download, Settings, Search, Star, Flag, MessageSquare, AlertCircle } from "lucide-react";
+import { Status, SOURCE_COLORS, TYPE_COLORS, STATUS_PILLS, URGENCY_COLORS, submitterDisplayName } from "./feedbackData";
+import { useFeedbackList, updateFeedback } from "./feedbackStore";
 
 export function FeedbackAdminPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>(MOCK_DATA);
+  const feedbacks = useFeedbackList();
   const [newNote, setNewNote] = useState("");
 
   const selectedItem = feedbacks.find(f => f.id === selectedId);
 
   const handleUpdateStatus = (id: string, newStatus: Status) => {
-    setFeedbacks(prev => prev.map(f => f.id === id ? { ...f, status: newStatus } : f));
+    updateFeedback(id, { status: newStatus });
   };
 
   const handleToggleFlag = (id: string) => {
-    setFeedbacks(prev => prev.map(f => f.id === id ? { ...f, flagged: !f.flagged } : f));
+    const item = feedbacks.find(f => f.id === id);
+    if (!item) return;
+    updateFeedback(id, { flagged: !item.flagged });
   };
 
   const handleAddNote = () => {
     if (!newNote.trim() || !selectedId) return;
-    setFeedbacks(prev => prev.map(f => {
-      if (f.id === selectedId) {
-        const notes = f.internalNotes || [];
-        return { ...f, internalNotes: [{ author: "Current Admin", time: "Just now", text: newNote }, ...notes] };
-      }
-      return f;
-    }));
+    const item = feedbacks.find(f => f.id === selectedId);
+    if (!item) return;
+    const notes = item.internalNotes || [];
+    updateFeedback(selectedId, { internalNotes: [{ author: "Current Admin", time: "Just now", text: newNote }, ...notes] });
     setNewNote("");
   };
 
@@ -201,6 +143,11 @@ export function FeedbackAdminPage() {
                       <div className="flex flex-wrap items-center gap-2">
                         <span className={`text-[10px] font-bold uppercase tracking-wider text-gray-600`}>{f.source}</span>
                         <span className={`px-2 py-0.5 border text-[10px] font-bold rounded ${typeStyle}`}>{f.type}</span>
+                        {f.urgency === "High" && (
+                          <span title="High urgency" className="flex items-center text-red-600">
+                            <AlertCircle className="w-3.5 h-3.5" />
+                          </span>
+                        )}
                         <span className="text-[10px] text-gray-400 font-medium ml-1">{f.timeAgo}</span>
                         {f.flagged && <Flag className="w-3.5 h-3.5 text-orange-500 ml-1 fill-current" />}
                       </div>
@@ -221,7 +168,7 @@ export function FeedbackAdminPage() {
                       {f.source === 'Patient' ? (
                         <>Patient: {f.patientName} · Visit: {f.visitDate} {f.clinician && `· Clinician: ${f.clinician}`}</>
                       ) : (
-                        <>Submitted by: {f.authorName} · {f.authorRole}</>
+                        <>Submitted by: {submitterDisplayName(f)} · {f.authorRole}</>
                       )}
                     </div>
                   </div>
@@ -251,6 +198,11 @@ export function FeedbackAdminPage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-xs font-bold text-gray-500 uppercase tracking-wider">{selectedItem.source}</span>
                       <span className={`px-2 py-0.5 border text-[10px] font-bold rounded ${TYPE_COLORS[selectedItem.type]}`}>{selectedItem.type}</span>
+                      {selectedItem.urgency && (
+                        <span className={`px-2 py-0.5 border text-[10px] font-bold uppercase tracking-wider rounded ${URGENCY_COLORS[selectedItem.urgency]}`}>
+                          {selectedItem.urgency} Urgency
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center space-x-3">
                       <span className="text-xs font-medium text-gray-400">{selectedItem.timeAgo}</span>
@@ -277,27 +229,36 @@ export function FeedbackAdminPage() {
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center">
-                        <div className="w-10 h-10 rounded-full bg-white border border-gray-300 flex items-center justify-center text-sm font-bold text-gray-600 mr-3 shrink-0">
-                          {selectedItem.authorName.split(' ').map(n=>n[0]).join('')}
-                        </div>
+                        {selectedItem.isAnonymous ? (
+                          <div className="w-10 h-10 rounded-full bg-gray-200 border border-gray-300 flex items-center justify-center text-sm font-bold text-gray-500 mr-3 shrink-0">
+                            ?
+                          </div>
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-white border border-gray-300 flex items-center justify-center text-sm font-bold text-gray-600 mr-3 shrink-0">
+                            {selectedItem.authorName.split(' ').map(n=>n[0]).join('')}
+                          </div>
+                        )}
                         <div>
                           <div className="font-bold text-gray-800 text-sm flex items-center">
-                            {selectedItem.authorName}
+                            {submitterDisplayName(selectedItem)}
                             {selectedItem.source !== 'Patient' && (
-                              <span className={`ml-2 px-1.5 py-0.5 text-[9px] font-bold rounded 
-                                ${selectedItem.source === 'Clinician' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 
-                                  selectedItem.source === 'Nurse' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 
+                              <span className={`ml-2 px-1.5 py-0.5 text-[9px] font-bold rounded
+                                ${selectedItem.source === 'Clinician' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                                  selectedItem.source === 'Nurse' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
                                   'bg-purple-50 text-purple-700 border border-purple-200'}`}>
                                 {selectedItem.authorRole}
                               </span>
                             )}
                           </div>
                           {selectedItem.source === 'Patient' && <div className="text-xs text-gray-500 mt-0.5">Patient Account</div>}
+                          {selectedItem.isAnonymous && <div className="text-xs text-gray-500 mt-0.5">Submitted anonymously</div>}
                         </div>
                       </div>
-                      <button className="text-xs font-bold text-slate-600 hover:underline">
-                        {selectedItem.source === 'Patient' ? 'View Patient Record' : 'View Staff Profile'}
-                      </button>
+                      {!selectedItem.isAnonymous && (
+                        <button className="text-xs font-bold text-slate-600 hover:underline">
+                          {selectedItem.source === 'Patient' ? 'View Patient Record' : 'View Staff Profile'}
+                        </button>
+                      )}
                     </div>
                     {selectedItem.source === 'Patient' && (
                       <div className="pt-3 border-t border-gray-200 text-xs text-gray-600 space-y-1.5 font-medium">

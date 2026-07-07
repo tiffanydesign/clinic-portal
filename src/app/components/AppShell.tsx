@@ -164,9 +164,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
           
           <div className="flex items-center space-x-6">
-            <button onClick={() => setFeedbackModalOpen(true)} className="flex items-center text-sm font-semibold text-slate-600 hover:text-slate-800 transition-colors">
-              <HelpCircle className="w-4 h-4 mr-1.5" /> Help
-            </button>
+            {role !== "Admin" && (
+              <button onClick={() => setFeedbackModalOpen(true)} className="flex items-center text-sm font-semibold text-slate-600 hover:text-slate-800 transition-colors">
+                <HelpCircle className="w-4 h-4 mr-1.5" /> Help
+              </button>
+            )}
             
             <Link to="/site-map" className="flex items-center text-sm font-semibold text-slate-600 hover:text-slate-800">
               <Map className="w-4 h-4 mr-1.5" /> Site Map

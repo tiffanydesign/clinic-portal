@@ -2,13 +2,24 @@ import React, { useState } from "react";
 import { X } from "lucide-react";
 import { toast } from "sonner";
 import { useAppContext } from "../context/AppContext";
+import { ROLE_DATA } from "../pages/app/ProfilePage";
+import { addFeedback } from "../pages/app/feedbackStore";
+import { FeedbackType, Source, Urgency } from "../pages/app/feedbackData";
 
 export function SubmitFeedbackModal() {
-  const { setFeedbackModalOpen } = useAppContext();
-  const [type, setType] = useState("Suggestion");
+  const { role, setFeedbackModalOpen } = useAppContext();
+  const [type, setType] = useState<FeedbackType>("Suggestion");
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
-  const [urgency, setUrgency] = useState("Low");
+  const [urgency, setUrgency] = useState<Urgency>("Low");
+  const [isAnonymous, setIsAnonymous] = useState(false);
+
+  const profile = ROLE_DATA[role];
+  const authorName = `${profile.first} ${profile.last}`;
+  // roleLabel matches the Feedback module's Source type exactly for every
+  // non-Admin role (Reception -> "Receptionist", etc.) — this modal is never
+  // rendered for Admin, so the cast is safe.
+  const source = profile.roleLabel as Source;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -16,6 +27,16 @@ export function SubmitFeedbackModal() {
       toast.error("Please fill out both subject and description.");
       return;
     }
+    addFeedback({
+      source,
+      type,
+      subject: subject.trim(),
+      description: description.trim(),
+      urgency,
+      isAnonymous,
+      authorName,
+      authorRole: profile.roleLabel,
+    });
     toast.success("Feedback submitted. Your clinic administrator will review it.");
     setFeedbackModalOpen(false);
   };
@@ -29,13 +50,13 @@ export function SubmitFeedbackModal() {
             <X className="w-5 h-5" />
           </button>
         </div>
-        
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[75vh] overflow-y-auto">
           <div>
             <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Type</label>
-            <select 
-              value={type} 
-              onChange={e => setType(e.target.value)}
+            <select
+              value={type}
+              onChange={e => setType(e.target.value as FeedbackType)}
               className="w-full px-3 py-2 border border-gray-300 rounded text-sm text-gray-800 outline-none focus:border-slate-500 bg-white"
             >
               <option value="Suggestion">Suggestion</option>
@@ -48,8 +69,8 @@ export function SubmitFeedbackModal() {
 
           <div>
             <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Subject</label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={subject}
               onChange={e => setSubject(e.target.value)}
               placeholder="Brief summary..."
@@ -59,7 +80,7 @@ export function SubmitFeedbackModal() {
 
           <div>
             <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Description</label>
-            <textarea 
+            <textarea
               value={description}
               onChange={e => setDescription(e.target.value)}
               placeholder="Describe in detail..."
@@ -72,17 +93,36 @@ export function SubmitFeedbackModal() {
             <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Urgency</label>
             <div className="flex space-x-6 mt-1">
               <label className="flex items-center space-x-2 cursor-pointer">
-                <input type="radio" name="urgency" value="Low" checked={urgency === "Low"} onChange={e => setUrgency(e.target.value)} className="text-slate-600 focus:ring-slate-500" />
+                <input type="radio" name="urgency" value="Low" checked={urgency === "Low"} onChange={e => setUrgency(e.target.value as Urgency)} className="text-slate-600 focus:ring-slate-500" />
                 <span className="text-sm text-gray-700">Low</span>
               </label>
               <label className="flex items-center space-x-2 cursor-pointer">
-                <input type="radio" name="urgency" value="Medium" checked={urgency === "Medium"} onChange={e => setUrgency(e.target.value)} className="text-slate-600 focus:ring-slate-500" />
+                <input type="radio" name="urgency" value="Medium" checked={urgency === "Medium"} onChange={e => setUrgency(e.target.value as Urgency)} className="text-slate-600 focus:ring-slate-500" />
                 <span className="text-sm text-gray-700">Medium</span>
               </label>
               <label className="flex items-center space-x-2 cursor-pointer">
-                <input type="radio" name="urgency" value="High" checked={urgency === "High"} onChange={e => setUrgency(e.target.value)} className="text-slate-600 focus:ring-slate-500" />
+                <input type="radio" name="urgency" value="High" checked={urgency === "High"} onChange={e => setUrgency(e.target.value as Urgency)} className="text-slate-600 focus:ring-slate-500" />
                 <span className="text-sm text-gray-700">High</span>
               </label>
+            </div>
+          </div>
+
+          <div className="pt-1 border-t border-gray-100">
+            <label className="flex items-center space-x-2 cursor-pointer mt-4">
+              <input
+                type="checkbox"
+                checked={isAnonymous}
+                onChange={e => setIsAnonymous(e.target.checked)}
+                className="rounded text-slate-600 focus:ring-slate-500"
+              />
+              <span className="text-sm font-semibold text-gray-700">Submit anonymously</span>
+            </label>
+            <p className="text-xs text-gray-500 mt-1.5 leading-relaxed">
+              Your name and role will not be shown to the reviewer. Your clinic administrator will still be able to follow up on serious issues.
+            </p>
+
+            <div className="mt-3 px-3 py-2.5 bg-gray-50 border border-gray-200 rounded text-xs font-medium text-gray-500">
+              Submitting as: <span className="text-gray-800 font-bold">{isAnonymous ? "Anonymous" : authorName}</span> · {profile.roleLabel}
             </div>
           </div>
         </form>

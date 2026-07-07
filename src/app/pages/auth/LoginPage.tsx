@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { AuthLayout, LogoMark } from "../../layouts/AuthLayout";
 import { useAppContext, Role } from "../../context/AppContext";
-import { ALLOWED_DOMAIN } from "./registrationData";
+import { ALLOWED_DOMAIN, MOCK_VERIFICATION_CODE } from "./registrationData";
 
 export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -25,7 +25,7 @@ export function LoginPage() {
       return;
     }
 
-    if (!email.trim().toLowerCase().endsWith(ALLOWED_DOMAIN) || password === "wrong") {
+    if (!email.trim().toLowerCase().endsWith(ALLOWED_DOMAIN) || password !== MOCK_VERIFICATION_CODE) {
       setError("Incorrect email or password.");
       return;
     }
