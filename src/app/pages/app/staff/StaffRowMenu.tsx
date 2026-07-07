@@ -64,6 +64,23 @@ function MenuItems({ staff, isSelf, pos, onClose }: { staff: Staff; isSelf: bool
 
   const itemCls = "w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50";
 
+  if (staff.status === "Invited") {
+    return (
+      <div className="fixed w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1" style={{ top: pos.top, left: pos.left }}>
+        <button className={itemCls} onClick={() => go(`/staff/${staff.id}/overview`)}>View Profile</button>
+        <button className={itemCls} onClick={() => act("Edit details (demo)")}>Edit Details</button>
+        <div className="border-t border-gray-100 my-1" />
+        <button className={itemCls} onClick={() => act(`Invitation resent to ${staff.email}`)}>Resend Invitation</button>
+        <button
+          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+          onClick={() => act(`Invitation revoked — ${staff.name} removed from the whitelist (demo)`)}
+        >
+          Revoke Invitation
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="fixed w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1" style={{ top: pos.top, left: pos.left }}>
       <button className={itemCls} onClick={() => go(`/staff/${staff.id}/overview`)}>View Profile</button>

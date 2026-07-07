@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { Search, Download, Plus, ChevronDown, ChevronRight, ArrowUpDown, LayoutGrid, Table2 } from "lucide-react";
+import { Search, Download, Plus, Upload, ChevronDown, ChevronRight, ArrowUpDown, LayoutGrid, Table2 } from "lucide-react";
 import {
   MOCK_STAFF, ROLE_GROUP_ORDER, ROLE_GROUP_LABEL, Staff, StaffRole,
   rolePillClass, statusPillClass, workloadColor, todayDotClass,
@@ -8,6 +8,7 @@ import {
 import { StaffCardsView } from "./StaffCards";
 import { StaffRowMenu } from "./StaffRowMenu";
 import { AddStaffModal } from "./AddStaffModal";
+import { ImportStaffModal } from "./ImportStaffModal";
 
 type SortKey = "name" | "patients" | "workload" | "lastActive" | "joined";
 type ViewMode = "table" | "cards";
@@ -25,6 +26,7 @@ export function StaffListPage() {
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortAsc, setSortAsc] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
   const [showRoleMenu, setShowRoleMenu] = useState(false);
   const [createdStaff, setCreatedStaff] = useState<Staff[]>([]);
@@ -118,6 +120,12 @@ export function StaffListPage() {
             )}
           </div>
           <button
+            onClick={() => setShowImportModal(true)}
+            className="flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm"
+          >
+            <Upload className="w-4 h-4 mr-2 text-gray-500" /> Import Staff
+          </button>
+          <button
             onClick={() => setShowAddModal(true)}
             className="flex items-center px-4 py-2 bg-slate-600 text-white rounded-lg text-sm font-bold hover:bg-slate-700 transition-colors shadow-sm"
           >
@@ -183,6 +191,7 @@ export function StaffListPage() {
 
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 outline-none focus:border-slate-500 bg-white shadow-sm">
           <option value="All">Status: All</option>
+          <option>Invited</option>
           <option>Active</option>
           <option>On Leave</option>
           <option>Inactive</option>
@@ -275,13 +284,20 @@ export function StaffListPage() {
           onCreated={(s) => { setCreatedStaff((prev) => [...prev, s]); setShowAddModal(false); }}
         />
       )}
+
+      {showImportModal && (
+        <ImportStaffModal
+          onClose={() => setShowImportModal(false)}
+          onImported={(staff) => { setCreatedStaff((prev) => [...prev, ...staff]); setShowImportModal(false); }}
+        />
+      )}
     </div>
   );
 }
 
 function StaffRow({ staff: s, onOpen }: { staff: Staff; onOpen: () => void }) {
   const overCapacity = s.workload !== null && s.workload > 85;
-  const staleLogin = s.lastActiveDays > 7;
+  const staleLogin = s.status !== "Invited" && s.lastActiveDays > 7;
 
   return (
     <tr onClick={onOpen} className="cursor-pointer group relative transition-colors bg-white hover:bg-slate-50">

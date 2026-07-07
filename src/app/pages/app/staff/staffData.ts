@@ -1,7 +1,7 @@
 // Shared types, mock data, and style helpers for the Staff Management module.
 
 export type StaffRole = "Admin" | "Clinician" | "Nurse" | "Receptionist";
-export type StaffStatus = "Active" | "On Leave" | "Inactive";
+export type StaffStatus = "Invited" | "Active" | "On Leave" | "Inactive";
 export type TodayStatus = "On Duty" | "Off" | "On Leave";
 
 export type Staff = {
@@ -45,6 +45,11 @@ export const MOCK_STAFF: Staff[] = [
   // Admins
   { id: "EMP-001", name: "Ayşe Hançer", avatar: "AH", role: "Admin", email: "ayse@phenome.com", phone: "+90 532 555 0101", status: "Active", today: "On Duty", patients: null, workload: null, nextShift: "Today, 8:00", lastActive: "Now", lastActiveDays: 0, joined: "01 Jan 2025" },
   { id: "EMP-002", name: "Can Demir", avatar: "CD", role: "Admin", email: "can@phenome.com", phone: "+90 532 555 0102", status: "Active", today: "On Duty", patients: null, workload: null, nextShift: "Today, 8:00", lastActive: "3h ago", lastActiveDays: 0, joined: "01 Jan 2025" },
+  // Invited — imported via Staff Management's "Import Staff" flow, not yet activated.
+  // (Deliberately distinct emails from the /register whitelist demo data, which
+  // reuses existing active staff like berna@phenome.com for its own scenarios.)
+  { id: "EMP-013", name: "Melis Aydın", avatar: "MA", role: "Nurse", email: "melis@phenome.com", phone: "+90 532 555 0113", status: "Invited", today: "Off", patients: 0, workload: 0, nextShift: "—", lastActive: "Never · Not activated", lastActiveDays: 0, joined: "4 Jul 2026" },
+  { id: "EMP-014", name: "Kerem Uslu", avatar: "KU", role: "Receptionist", email: "kerem@phenome.com", phone: "+90 532 555 0114", status: "Invited", today: "Off", patients: null, workload: null, nextShift: "—", lastActive: "Never · Not activated", lastActiveDays: 0, joined: "4 Jul 2026" },
 ];
 
 export const ROLE_GROUP_ORDER: StaffRole[] = ["Clinician", "Nurse", "Receptionist", "Admin"];
@@ -73,6 +78,7 @@ export function rolePillClass(role: StaffRole): string {
 
 export function statusPillClass(status: StaffStatus): string {
   switch (status) {
+    case "Invited": return "bg-orange-50 text-orange-700 border-orange-200";
     case "Active": return "bg-emerald-50 text-emerald-700 border-emerald-200";
     case "On Leave": return "bg-orange-50 text-orange-700 border-orange-200";
     case "Inactive": return "bg-gray-50 text-gray-500 border-gray-200";
