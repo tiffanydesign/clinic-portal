@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import { useParams } from "react-router";
-import { Settings2 } from "lucide-react";
 import { useAppContext } from "../../../context/AppContext";
 import { KpiBar } from "./KpiBar";
 import { CalendarWidget } from "./CalendarWidget";
@@ -20,7 +19,6 @@ function RolePanels() {
 export function DashboardPage() {
   const { role } = useAppContext();
   const { apptId } = useParams();
-  const [customiseOpen, setCustomiseOpen] = useState(false);
   const appt = getAppt(apptId);
   const isAdmin = role === "Admin";
 
@@ -40,20 +38,12 @@ export function DashboardPage() {
     <div className="h-full flex flex-col bg-gray-50 overflow-hidden">
       {/* Header + KPI Bar (fixed) */}
       <div className="px-6 pt-6 shrink-0">
-        <div className="flex justify-between items-end mb-5">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800">Good morning, {ROLE_GREETING[role]}</h1>
-            <p className="text-sm text-gray-500 mt-1">{TODAY_LABEL} · Istanbul Clinic</p>
-          </div>
-          <button
-            onClick={() => setCustomiseOpen(true)}
-            className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 border border-gray-300 bg-white rounded hover:bg-gray-50 hover:border-slate-400 transition-colors"
-          >
-            <Settings2 className="w-4 h-4" /> Customise KPIs
-          </button>
+        <div className="mb-5">
+          <h1 className="text-2xl font-bold text-gray-800">Good morning, {ROLE_GREETING[role]}</h1>
+          <p className="text-sm text-gray-500 mt-1">{TODAY_LABEL} · Istanbul Clinic</p>
         </div>
         {/* KpiBar keyed by role so the configurable selection resets per role */}
-        <KpiBar key={role} open={customiseOpen} onOpenChange={setCustomiseOpen} />
+        <KpiBar key={role} />
       </div>
 
       {/* Work area (+ Admin activity feed) */}

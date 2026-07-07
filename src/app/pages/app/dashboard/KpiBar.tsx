@@ -1,44 +1,96 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
-import { Lock, X, Check } from "lucide-react";
+import { Lock, X, Check, Settings2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAppContext } from "../../../context/AppContext";
-import { KPI_CONFIG, Kpi } from "./kpiData";
-import { Sparkline, DeltaLine } from "./DashboardShared";
+import { KPI_CONFIG, Kpi, metricKindLabel } from "./kpiData";
+import { Sparkline, DeltaLine, AnimatedNumber, sentimentFor } from "./DashboardShared";
+import { TimeRange, useKpiRange, setKpiRange, RANGE_LABEL, RANGE_PILL } from "./kpiRangeStore";
 
-function Card({ kpi, locked, onOpen }: { kpi: Kpi; locked: boolean; onOpen: (route?: string) => void }) {
+function RangeSwitcher({ range }: { range: TimeRange }) {
+  const options: TimeRange[] = ["today", "7d", "30d"];
+  return (
+    <div className="inline-flex items-center bg-gray-100 border border-gray-200 rounded-lg p-0.5 shrink-0">
+      {options.map((r) => (
+        <button
+          key={r}
+          onClick={() => setKpiRange(r)}
+          className={`px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${
+            range === r ? "bg-slate-800 text-white" : "text-gray-500 hover:text-gray-700"
+          }`}
+        >
+          {RANGE_LABEL[r]}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Card({
+  kpi,
+  locked,
+  range,
+  onOpen,
+}: {
+  kpi: Kpi;
+  locked: boolean;
+  range: TimeRange;
+  onOpen: (route?: string) => void;
+}) {
+  const rv = kpi.byRange[range];
+  const label = rv.label ?? kpi.label;
+  const isLive = kpi.kind === "live";
+  const pillText = isLive ? "LIVE" : RANGE_PILL[range];
+  const inverse = rv.inverse ?? kpi.inverse ?? false;
+  const sparkSentiment = rv.informational ? "neutral" : sentimentFor(rv.trend, inverse);
+
   return (
     <button
       onClick={() => onOpen(kpi.route)}
       className="text-left border border-gray-300 rounded bg-white p-4 flex flex-col justify-between relative hover:border-slate-400 hover:shadow-sm transition-all"
     >
       <div className="flex justify-between items-start mb-2 gap-2">
-        <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider leading-tight">{kpi.label}</span>
-        {locked && (
-          <span className="relative group/lock shrink-0">
-            <Lock className="w-3.5 h-3.5 text-gray-400" />
-            <span className="absolute right-0 top-full mt-1 w-44 bg-gray-800 text-white text-[10px] font-medium normal-case tracking-normal px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover/lock:opacity-100 transition-opacity pointer-events-none z-20">
-              Default metric — set by your clinic
-            </span>
+        <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider leading-tight">{label}</span>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <span
+            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
+              isLive ? "bg-emerald-50 text-emerald-600" : "bg-gray-100 text-gray-600"
+            }`}
+          >
+            {isLive && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
+            {pillText}
           </span>
-        )}
+          {locked && (
+            <span className="relative group/lock">
+              <Lock className="w-3.5 h-3.5 text-gray-400" />
+              <span className="absolute right-0 top-full mt-1 w-44 bg-gray-800 text-white text-[10px] font-medium normal-case tracking-normal px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover/lock:opacity-100 transition-opacity pointer-events-none z-20">
+                Default metric — set by your clinic
+              </span>
+            </span>
+          )}
+        </div>
       </div>
-      <div className="text-3xl font-bold text-gray-800 leading-none mb-3">{kpi.value}</div>
+      <div className="text-3xl font-bold text-gray-800 leading-none mb-3">
+        <AnimatedNumber value={rv.value} />
+      </div>
       <div className="flex items-end justify-between gap-2">
-        {kpi.delta ? <DeltaLine text={kpi.delta.text} trend={kpi.delta.trend} /> : <span />}
-        <Sparkline data={kpi.spark} trend={kpi.delta?.trend ?? "flat"} />
+        <DeltaLine text={rv.deltaText} trend={rv.trend} inverse={inverse} informational={rv.informational} />
+        <Sparkline data={rv.spark} trend={rv.trend} inverse={inverse} sentiment={rv.informational ? "neutral" : undefined} />
       </div>
     </button>
   );
 }
 
-// The KPI Bar keeps which 2 configurable cards are shown in local state.
-// The "Customise" modal is toggled by the page header via the `open` prop.
-export function KpiBar({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+// The KPI Bar owns the global time-range selection (shared store) and the
+// "Customise" modal's open state, so it is a fully self-contained region of
+// the dashboard — the rest of the page never needs to know about either.
+export function KpiBar() {
   const { role } = useAppContext();
   const navigate = useNavigate();
+  const range = useKpiRange();
   const config = KPI_CONFIG[role];
   const [selected, setSelected] = useState<string[]>(config.defaultSelected);
+  const [customiseOpen, setCustomiseOpen] = useState(false);
 
   const configurableCards = selected
     .map((id) => config.pool.find((k) => k.id === id))
@@ -51,24 +103,35 @@ export function KpiBar({ open, onOpenChange }: { open: boolean; onOpenChange: (v
 
   return (
     <>
+      <div className="flex justify-end items-center gap-3 mb-3">
+        <RangeSwitcher range={range} />
+        <button
+          onClick={() => setCustomiseOpen(true)}
+          className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 border border-gray-300 bg-white rounded hover:bg-gray-50 hover:border-slate-400 transition-colors"
+        >
+          <Settings2 className="w-4 h-4" /> Customise KPIs
+        </button>
+      </div>
+
       <div className="grid grid-cols-4 gap-4">
         {config.locked.map((kpi) => (
-          <Card key={kpi.id} kpi={kpi} locked onOpen={openRoute} />
+          <Card key={kpi.id} kpi={kpi} locked range={range} onOpen={openRoute} />
         ))}
         {configurableCards.map((kpi) => (
-          <Card key={kpi.id} kpi={kpi} locked={false} onOpen={openRoute} />
+          <Card key={kpi.id} kpi={kpi} locked={false} range={range} onOpen={openRoute} />
         ))}
       </div>
 
-      {open && (
+      {customiseOpen && (
         <CustomiseModal
           locked={config.locked}
           pool={config.pool}
           selected={selected}
-          onClose={() => onOpenChange(false)}
+          range={range}
+          onClose={() => setCustomiseOpen(false)}
           onSave={(next) => {
             setSelected(next);
-            onOpenChange(false);
+            setCustomiseOpen(false);
             toast.success("KPI cards updated.");
           }}
         />
@@ -81,12 +144,14 @@ function CustomiseModal({
   locked,
   pool,
   selected,
+  range,
   onClose,
   onSave,
 }: {
   locked: Kpi[];
   pool: Kpi[];
   selected: string[];
+  range: TimeRange;
   onClose: () => void;
   onSave: (next: string[]) => void;
 }) {
@@ -119,7 +184,13 @@ function CustomiseModal({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="px-6 pt-4 shrink-0">
+          <div className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded px-3 py-2">
+            Live metrics always show current values regardless of the selected time range.
+          </div>
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-6 pt-4">
           {/* Locked preview */}
           <div className="mb-6">
             <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Default metrics (locked)</div>
@@ -127,8 +198,13 @@ function CustomiseModal({
               {locked.map((kpi) => (
                 <div key={kpi.id} className="border border-gray-200 rounded bg-gray-50 p-3 flex items-center justify-between opacity-80">
                   <div>
-                    <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">{kpi.label}</div>
-                    <div className="text-xl font-bold text-gray-700 mt-1">{kpi.value}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">{kpi.label}</span>
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-gray-200 text-gray-600">
+                        {metricKindLabel(kpi.kind)}
+                      </span>
+                    </div>
+                    <div className="text-xl font-bold text-gray-700 mt-1">{kpi.byRange[range].value}</div>
                   </div>
                   <Lock className="w-4 h-4 text-gray-400" />
                 </div>
@@ -154,7 +230,12 @@ function CustomiseModal({
                     ${isSelected ? "border-slate-500 bg-slate-50 ring-1 ring-slate-200" : isDisabled ? "border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed" : "border-gray-300 bg-white hover:border-slate-400"}`}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <div className="text-sm font-bold text-gray-800">{kpi.label}</div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <div className="text-sm font-bold text-gray-800">{kpi.label}</div>
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-gray-100 text-gray-500">
+                        {metricKindLabel(kpi.kind)}
+                      </span>
+                    </div>
                     <span
                       className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 mt-0.5 ${isSelected ? "bg-slate-600 border-slate-600" : "border-gray-300 bg-white"}`}
                     >
