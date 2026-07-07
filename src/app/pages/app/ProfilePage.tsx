@@ -258,11 +258,19 @@ function Button({ children, variant = "primary", onClick, className = "" }: any)
         <SectionHeader title="Security" />
         
         {/* 2FA */}
-        <div className="mb-8">
-          <h3 className="text-sm font-bold text-gray-700">Two-Factor Authentication</h3>
-          <p className="text-xs text-gray-500 mt-1">Required for all staff accounts</p>
-          <p className="text-xs text-gray-500 mt-1">Verification codes are sent to your registered email</p>
-          <div className="text-sm font-medium text-gray-800 mt-3 cursor-default">a****z@example.com</div>
+        <div className="mb-8 flex items-start justify-between gap-4">
+          <div>
+            <h3 className="text-sm font-bold text-gray-700">Two-Factor Authentication</h3>
+            <p className="text-xs text-gray-500 mt-1">Required for all staff accounts</p>
+            <p className="text-xs text-gray-500 mt-1">Verification codes are sent to your registered email</p>
+            <div className="text-sm font-medium text-gray-800 mt-3 cursor-default">a****z@example.com</div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0 mt-0.5" title="Two-factor authentication is required and cannot be disabled">
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Enabled</span>
+            <button type="button" disabled className="w-9 h-5 rounded-full relative shrink-0 bg-slate-600 opacity-50 cursor-not-allowed">
+              <span className="w-3.5 h-3.5 bg-white rounded-full absolute top-[3px] left-[19px]" />
+            </button>
+          </div>
         </div>
 
         <hr className="border-gray-200 my-6" />

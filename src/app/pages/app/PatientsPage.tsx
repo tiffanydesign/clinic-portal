@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { Search, ChevronDown, Download, Plus, MoreHorizontal, FileText, Phone, Mail, UserPlus, X, Filter } from "lucide-react";
+import { Search, ChevronDown, Download, Plus, MoreHorizontal, FileText, Phone, Mail, UserPlus, X, Filter, Check, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { useAppContext, Role } from "../../context/AppContext";
 
@@ -618,8 +618,8 @@ export function PatientsPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Sex <span className="text-red-500">*</span></label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-slate-500 bg-white">
-                    <option value="" disabled selected>Select sex...</option>
+                  <select defaultValue="" className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-slate-500 bg-white">
+                    <option value="" disabled>Select sex...</option>
                     <option>Male</option><option>Female</option><option>Other</option>
                   </select>
                 </div>

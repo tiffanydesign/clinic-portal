@@ -65,7 +65,7 @@ export function AdminPanels() {
                 <span className="text-xs text-gray-400 truncate block">{r.test} · {r.doctor.replace("Dr. ", "")}</span>
               </span>
               {r.days > 3 ? (
-                <span className="text-[10px] font-bold text-red-600 flex items-center gap-1 shrink-0"><AlertTriangle className="w-3 h-3" /> SLA · {r.days}d</span>
+                <span className="text-[10px] font-bold text-red-600 flex items-center gap-1 shrink-0"><AlertTriangle className="w-3 h-3" /> {r.days}d overdue</span>
               ) : (
                 <span className="text-xs text-gray-400 shrink-0">{r.days}d</span>
               )}
@@ -305,7 +305,7 @@ export function ClinicianPanels() {
                 <div className="text-sm font-medium text-gray-800 truncate">{r.patient}</div>
                 <div className="text-xs text-gray-400 flex items-center gap-1.5">
                   {r.test} · {r.submitted}
-                  {r.sla && <span className="text-[10px] font-bold text-red-600 flex items-center gap-0.5"><AlertTriangle className="w-3 h-3" /> SLA</span>}
+                  {r.sla && <span className="text-[10px] font-bold text-red-600 flex items-center gap-0.5"><AlertTriangle className="w-3 h-3" /> Overdue</span>}
                 </div>
               </div>
               <button onClick={() => nav("/patients/P-001/results")} className="px-3 py-1.5 text-[11px] font-bold text-slate-700 border border-slate-300 bg-slate-50 rounded hover:bg-slate-100 shrink-0">Review</button>

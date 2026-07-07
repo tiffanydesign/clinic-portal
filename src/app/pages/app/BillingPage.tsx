@@ -434,16 +434,22 @@ export function BillingPage() {
               </div>
               
               <div className="grid grid-cols-2 gap-2">
-                {isAdmin && (
-                  <>
-                    <button onClick={() => handleAction('Issue Refund')} className="py-2.5 border border-purple-200 bg-purple-50 text-purple-700 text-xs font-bold rounded-lg hover:bg-purple-100 transition-colors shadow-sm">
-                      Issue Refund
-                    </button>
-                    <button onClick={() => handleAction('Generate Invoice')} className="py-2.5 border border-gray-300 bg-white text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-50 transition-colors shadow-sm">
-                      Generate Invoice
-                    </button>
-                  </>
+                {isAdmin ? (
+                  <button onClick={() => handleAction('Issue Refund')} className="py-2.5 border border-purple-200 bg-purple-50 text-purple-700 text-xs font-bold rounded-lg hover:bg-purple-100 transition-colors shadow-sm">
+                    Issue Refund
+                  </button>
+                ) : (
+                  <button
+                    disabled
+                    title="Only Admin can issue refunds"
+                    className="py-2.5 border border-gray-200 bg-gray-50 text-gray-400 text-xs font-bold rounded-lg cursor-not-allowed"
+                  >
+                    Issue Refund
+                  </button>
                 )}
+                <button onClick={() => handleAction('Generate Invoice')} className="py-2.5 border border-gray-300 bg-white text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-50 transition-colors shadow-sm">
+                  Generate Invoice
+                </button>
               </div>
             </div>
           </div>
