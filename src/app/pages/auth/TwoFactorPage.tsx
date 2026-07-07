@@ -1,14 +1,14 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router";
 import { AuthLayout, LogoMark } from "../../layouts/AuthLayout";
 import { useAppContext } from "../../context/AppContext";
 import { ArrowLeft } from "lucide-react";
+import { CodeInputBoxes } from "./CodeInputBoxes";
 
 export function TwoFactorPage() {
   const [code, setCode] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [countdown, setCountdown] = useState(30);
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const navigate = useNavigate();
   const { pendingAuth, login } = useAppContext();
 
@@ -19,40 +19,6 @@ export function TwoFactorPage() {
     }
   }, [countdown]);
 
-  const handleChange = (index: number, value: string) => {
-    if (!/^\d*$/.test(value)) return;
-
-    const newCode = [...code];
-    newCode[index] = value;
-    setCode(newCode);
-    setError("");
-
-    // Move to next input
-    if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handleKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Backspace" && !code[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handlePaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const pastedData = e.clipboardData.getData("text").slice(0, 6).replace(/\D/g, "");
-    if (pastedData) {
-      const newCode = [...code];
-      for (let i = 0; i < pastedData.length; i++) {
-        newCode[i] = pastedData[i];
-      }
-      setCode(newCode);
-      const nextFocus = Math.min(pastedData.length, 5);
-      inputRefs.current[nextFocus]?.focus();
-    }
-  };
-
   const handleVerify = (e: React.FormEvent) => {
     e.preventDefault();
     const fullCode = code.join("");
@@ -62,7 +28,7 @@ export function TwoFactorPage() {
       return;
     }
 
-    if (fullCode === "000000") {
+    if (fullCode !== "123456") {
       setError("Invalid code. Please try again.");
       return;
     }
@@ -107,20 +73,7 @@ export function TwoFactorPage() {
             </div>
           )}
 
-          <div className="flex justify-between gap-2" onPaste={handlePaste}>
-            {code.map((digit, index) => (
-              <input
-                key={index}
-                ref={(el) => (inputRefs.current[index] = el)}
-                type="text"
-                maxLength={1}
-                value={digit}
-                onChange={(e) => handleChange(index, e.target.value)}
-                onKeyDown={(e) => handleKeyDown(index, e)}
-                className="w-12 h-14 text-center text-2xl font-bold rounded-xl border border-slate-200 bg-white text-[#0B1528] focus:outline-none focus:ring-2 focus:ring-[#00B4D8]/50 focus:border-[#00B4D8] transition-all shadow-sm"
-              />
-            ))}
-          </div>
+          <CodeInputBoxes code={code} onChange={(next) => { setCode(next); setError(""); }} />
 
           <div className="pt-4">
             <button
@@ -146,7 +99,7 @@ export function TwoFactorPage() {
         </div>
         
         <div className="mt-8 pt-4 border-t border-slate-100 text-center text-xs text-slate-400">
-          Demo Note: Enter any code except '000000' to succeed.
+          Demo Note: the mock code is 123456 — anything else shows the error state.
         </div>
       </div>
     </AuthLayout>

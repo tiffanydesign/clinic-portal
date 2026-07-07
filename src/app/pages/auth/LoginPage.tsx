@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { AuthLayout, LogoMark } from "../../layouts/AuthLayout";
 import { useAppContext, Role } from "../../context/AppContext";
+import { ALLOWED_DOMAIN } from "./registrationData";
 
 export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -24,7 +25,7 @@ export function LoginPage() {
       return;
     }
 
-    if (email === "wrong@clinic.com" || password === "wrong") {
+    if (!email.trim().toLowerCase().endsWith(ALLOWED_DOMAIN) || password === "wrong") {
       setError("Incorrect email or password.");
       return;
     }
@@ -98,6 +99,12 @@ export function LoginPage() {
             </button>
           </div>
         </form>
+
+        <div className="mt-6 text-center">
+          <Link to="/register" className="text-sm font-semibold text-[#0077B6] hover:text-[#0B1528] transition-colors">
+            Activate your account
+          </Link>
+        </div>
 
         <div className="mt-8 text-center px-4">
           <p className="text-xs text-slate-400 leading-relaxed">

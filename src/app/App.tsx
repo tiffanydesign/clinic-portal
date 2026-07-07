@@ -8,6 +8,10 @@ import { LoginPage } from "./pages/auth/LoginPage";
 import { TwoFactorPage } from "./pages/auth/TwoFactorPage";
 import { EnrollmentPage } from "./pages/auth/EnrollmentPage";
 import { ForgotPasswordPage } from "./pages/auth/ForgotPasswordPage";
+import { RegisterEmailPage } from "./pages/auth/RegisterEmailPage";
+import { RegisterVerifyPage } from "./pages/auth/RegisterVerifyPage";
+import { RegisterSetPasswordPage } from "./pages/auth/RegisterSetPasswordPage";
+import { RegisterDonePage } from "./pages/auth/RegisterDonePage";
 
 // App components
 import { AppShell } from "./components/AppShell";
@@ -90,6 +94,10 @@ export default function App() {
           <Route path="/forgot-password/verify" element={<ForgotPasswordPage />} />
           <Route path="/reset-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password/done" element={<ForgotPasswordPage />} />
+          <Route path="/register" element={<RegisterEmailPage />} />
+          <Route path="/register/verify" element={<RegisterVerifyPage />} />
+          <Route path="/register/set-password" element={<RegisterSetPasswordPage />} />
+          <Route path="/register/done" element={<RegisterDonePage />} />
           <Route path="/site-map" element={<AppShellLayout><SiteMap /></AppShellLayout>} />
           <Route path="/dashboard" element={<AppShellLayout><Dashboard /></AppShellLayout>} />
           <Route path="/dashboard/appointment/:apptId" element={<AppShellLayout><Dashboard /></AppShellLayout>} />
