@@ -117,11 +117,7 @@ export function AddStaffModal({ onClose, onCreated }: { onClose: () => void; onC
                 onChange={(e) => { setPhone(sanitizePhone(e.target.value)); setErrors((prev) => ({ ...prev, phone: undefined })); }}
                 className={errors.phone ? errorInputCls : inputCls}
               />
-              {errors.phone ? (
-                <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.phone}</p>
-              ) : (
-                <p className="text-[10px] text-gray-400 mt-1">10 digits after the country code.</p>
-              )}
+              {errors.phone && <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.phone}</p>}
             </div>
             <div>
               <label className={labelCls}>Role <span className="text-red-500">*</span></label>
@@ -131,7 +127,6 @@ export function AddStaffModal({ onClose, onCreated }: { onClose: () => void; onC
                 <option>Nurse</option>
                 <option>Receptionist</option>
               </select>
-              <p className="text-[10px] text-gray-400 mt-1">Admin accounts cannot be created here — the clinic has exactly one.</p>
             </div>
           </div>
         </div>

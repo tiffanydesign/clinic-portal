@@ -29,6 +29,49 @@ function classify(email: string, seen: Set<string>, existingEmails: Set<string>)
   return "valid";
 }
 
+// Shown only when some rows will be silently dropped (duplicates/errors),
+// so the admin knows exactly how many invitations are actually about to
+// go out before committing.
+function ImportConfirmModal({
+  validCount,
+  skippedCount,
+  errorCount,
+  onCancel,
+  onConfirm,
+}: {
+  validCount: number;
+  skippedCount: number;
+  errorCount: number;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const excludedParts: string[] = [];
+  if (skippedCount > 0) excludedParts.push(`${skippedCount} already existing`);
+  if (errorCount > 0) excludedParts.push(`${errorCount} with errors`);
+  const excludedText = excludedParts.join(" and ");
+
+  return (
+    <div className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-6" onClick={onCancel}>
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
+        <div className="p-6">
+          <h2 className="text-base font-bold text-gray-800 mb-1.5">Import {validCount} staff member{validCount === 1 ? "" : "s"}?</h2>
+          <p className="text-sm text-gray-500 leading-relaxed">
+            Only the {validCount} valid row{validCount === 1 ? "" : "s"} will be imported and sent invitations. The {excludedText} will be skipped.
+          </p>
+        </div>
+        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
+          <button onClick={onCancel} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100">
+            Cancel
+          </button>
+          <button onClick={onConfirm} className="px-5 py-2 rounded text-sm font-bold text-white bg-slate-600 hover:bg-slate-700 transition-colors">
+            Import &amp; Send Invitations
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function downloadTemplate() {
   const csv = "first_name,last_name,email,phone,role\nJane,Doe,name@phenome.com,+90 532 555 0199,Nurse\n";
   const blob = new Blob([csv], { type: "text/csv" });
@@ -58,6 +101,7 @@ export function ImportStaffModal({ onClose, onImported }: { onClose: () => void;
   const [dragOver, setDragOver] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [fileName, setFileName] = useState("");
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const existingEmails = new Set(MOCK_STAFF.map((s) => s.email.toLowerCase()));
 
@@ -125,6 +169,13 @@ export function ImportStaffModal({ onClose, onImported }: { onClose: () => void;
     });
     onImported(created);
     toast.success(`Invitations sent to ${created.length} staff member${created.length === 1 ? "" : "s"}`);
+  };
+
+  // Only interrupt with a confirmation when some rows would be silently
+  // dropped (duplicates/errors) — a fully clean batch imports immediately.
+  const handleImportClick = () => {
+    if (skippedCount > 0 || errorCount > 0) setConfirmOpen(true);
+    else handleImport();
   };
 
   return (
@@ -213,7 +264,7 @@ export function ImportStaffModal({ onClose, onImported }: { onClose: () => void;
               Cancel
             </button>
             <button
-              onClick={handleImport}
+              onClick={handleImportClick}
               disabled={validEntries.length === 0}
               className={`px-6 py-2 rounded text-sm font-bold text-white transition-colors ${validEntries.length > 0 ? "bg-slate-600 hover:bg-slate-700" : "bg-gray-300 cursor-not-allowed"}`}
             >
@@ -222,6 +273,16 @@ export function ImportStaffModal({ onClose, onImported }: { onClose: () => void;
           </div>
         </div>
       </div>
+
+      {confirmOpen && (
+        <ImportConfirmModal
+          validCount={validEntries.length}
+          skippedCount={skippedCount}
+          errorCount={errorCount}
+          onCancel={() => setConfirmOpen(false)}
+          onConfirm={() => { setConfirmOpen(false); handleImport(); }}
+        />
+      )}
     </div>
   );
 }
