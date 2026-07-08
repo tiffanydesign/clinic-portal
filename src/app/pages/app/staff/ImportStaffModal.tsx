@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { X, UploadCloud, Download, Trash2, Info } from "lucide-react";
+import { X, UploadCloud, Download, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Staff, StaffRole, MOCK_STAFF } from "./staffData";
 
@@ -11,6 +11,7 @@ type ParsedEntry = {
   role: StaffRole | "";
   firstName?: string;
   lastName?: string;
+  phone?: string;
   status: EntryStatus;
 };
 
@@ -25,48 +26,34 @@ function matchRole(token: string | undefined): StaffRole | "" {
   return ROLE_OPTIONS.find((r) => r.toLowerCase() === norm) ?? "";
 }
 
-function classify(email: string, role: StaffRole | "", seen: Set<string>, existingEmails: Set<string>): EntryStatus {
+function classify(email: string, seen: Set<string>, existingEmails: Set<string>): EntryStatus {
   if (!EMAIL_RE.test(email)) return "invalid";
   const key = email.toLowerCase();
   if (existingEmails.has(key) || seen.has(key)) return "duplicate";
   return "valid";
 }
 
-// Splits on newlines/commas into flat tokens, then pairs each email-looking
-// token with an optional trailing role hint (e.g. "berna@phenome.com, Nurse").
-// A bare, unattached non-email token is kept as its own invalid row rather
-// than silently dropped, so malformed input is visible in the preview.
-function parseBulkText(text: string): { email: string; roleHint: StaffRole | ""; raw: string }[] {
-  const tokens = text.split(/[\n,]+/).map((t) => t.trim()).filter(Boolean);
-  const results: { email: string; roleHint: StaffRole | ""; raw: string }[] = [];
-  for (let i = 0; i < tokens.length; i++) {
-    const tok = tokens[i];
-    if (EMAIL_RE.test(tok)) {
-      const next = tokens[i + 1];
-      const roleHint = matchRole(next);
-      if (roleHint) i++;
-      results.push({ email: tok, roleHint, raw: tok });
-    } else {
-      results.push({ email: tok, roleHint: "", raw: tok });
-    }
-  }
-  return results;
-}
-
-function parseCsv(text: string): { email: string; roleHint: StaffRole | ""; firstName?: string; lastName?: string; raw: string }[] {
+// Columns: first_name, last_name, email, phone, role.
+function parseCsv(text: string): { email: string; roleHint: StaffRole | ""; firstName?: string; lastName?: string; phone?: string; raw: string }[] {
   const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   if (lines.length === 0) return [];
   const header = lines[0].toLowerCase();
   const dataLines = header.includes("email") ? lines.slice(1) : lines;
   return dataLines.map((line) => {
     const cols = line.split(",").map((c) => c.trim());
-    const email = cols[0] ?? "";
-    return { email, roleHint: matchRole(cols[1]), firstName: cols[2] || undefined, lastName: cols[3] || undefined, raw: line };
+    return {
+      firstName: cols[0] || undefined,
+      lastName: cols[1] || undefined,
+      email: cols[2] ?? "",
+      phone: cols[3] || undefined,
+      roleHint: matchRole(cols[4]),
+      raw: line,
+    };
   });
 }
 
 function downloadTemplate() {
-  const csv = "email,role,first_name,last_name\nname@phenome.com,Nurse,Jane,Doe\n";
+  const csv = "first_name,last_name,email,phone,role\nJane,Doe,name@phenome.com,+90 532 555 0199,Nurse\n";
   const blob = new Blob([csv], { type: "text/csv" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -77,8 +64,6 @@ function downloadTemplate() {
 }
 
 export function ImportStaffModal({ onClose, onImported }: { onClose: () => void; onImported: (staff: Staff[]) => void }) {
-  const [tab, setTab] = useState<"bulk" | "csv">("bulk");
-  const [bulkText, setBulkText] = useState("");
   const [entries, setEntries] = useState<ParsedEntry[]>([]);
   const [dragOver, setDragOver] = useState(false);
   const [fileName, setFileName] = useState("");
@@ -86,22 +71,29 @@ export function ImportStaffModal({ onClose, onImported }: { onClose: () => void;
 
   const existingEmails = new Set(MOCK_STAFF.map((s) => s.email.toLowerCase()));
 
-  const buildEntries = (raw: { email: string; roleHint: StaffRole | ""; firstName?: string; lastName?: string; raw: string }[]) => {
+  const buildEntries = (raw: ReturnType<typeof parseCsv>) => {
     const seen = new Set<string>();
     const next: ParsedEntry[] = raw.map((r, i) => {
-      const status = classify(r.email, r.roleHint, seen, existingEmails);
+      const status = classify(r.email, seen, existingEmails);
       if (status !== "invalid") seen.add(r.email.toLowerCase());
-      return { key: `${r.raw}-${i}`, email: r.email, role: r.roleHint || "Nurse", firstName: r.firstName, lastName: r.lastName, status };
+      return { key: `${r.raw}-${i}`, email: r.email, role: r.roleHint || "Nurse", firstName: r.firstName, lastName: r.lastName, phone: r.phone, status };
     });
     setEntries(next);
+    return next;
   };
-
-  const handleParseBulk = () => buildEntries(parseBulkText(bulkText));
 
   const handleFile = (file: File) => {
     setFileName(file.name);
     const reader = new FileReader();
-    reader.onload = () => buildEntries(parseCsv(String(reader.result ?? "")));
+    reader.onload = () => {
+      const parsed = parseCsv(String(reader.result ?? ""));
+      const next = buildEntries(parsed);
+      if (next.length === 0) {
+        toast.error(`No rows found in ${file.name}.`);
+      } else {
+        toast.success(`${file.name} uploaded — ${next.length} ${next.length === 1 ? "entry" : "entries"} found.`);
+      }
+    };
     reader.readAsText(file);
   };
 
@@ -129,7 +121,7 @@ export function ImportStaffModal({ onClose, onImported }: { onClose: () => void;
         avatar,
         role: (e.role || "Nurse") as StaffRole,
         email: e.email,
-        phone: "",
+        phone: e.phone || "",
         status: "Inactive",
         today: "Off",
         patients: e.role === "Clinician" || e.role === "Nurse" ? 0 : null,
@@ -144,9 +136,6 @@ export function ImportStaffModal({ onClose, onImported }: { onClose: () => void;
     toast.success(`Invitations sent to ${created.length} staff member${created.length === 1 ? "" : "s"}`);
   };
 
-  const tabCls = (active: boolean) =>
-    `py-3 px-1 text-sm font-medium border-b-2 transition-colors ${active ? "border-slate-600 text-slate-800 font-bold" : "border-transparent text-gray-500 hover:text-gray-700"}`;
-
   return (
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-6">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
@@ -157,63 +146,35 @@ export function ImportStaffModal({ onClose, onImported }: { onClose: () => void;
           </button>
         </div>
 
-        <div className="px-6 pt-4 flex gap-6 border-b border-gray-200 shrink-0">
-          <button className={tabCls(tab === "bulk")} onClick={() => setTab("bulk")}>Bulk Email Entry</button>
-          <button className={tabCls(tab === "csv")} onClick={() => setTab("csv")}>CSV Upload</button>
-        </div>
-
         <div className="p-6 space-y-4 overflow-y-auto flex-1">
-          {tab === "bulk" ? (
-            <div className="space-y-3">
-              <textarea
-                value={bulkText}
-                onChange={(e) => setBulkText(e.target.value)}
-                rows={5}
-                placeholder="Paste or type email addresses, one per line or comma-separated"
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-slate-500 resize-none font-mono"
+          <div className="space-y-3">
+            <div
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOver(false);
+                const file = e.dataTransfer.files[0];
+                if (file) handleFile(file);
+              }}
+              onClick={() => fileInputRef.current?.click()}
+              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${dragOver ? "border-slate-500 bg-slate-50" : "border-gray-300 hover:border-slate-400"}`}
+            >
+              <UploadCloud className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+              <p className="text-sm font-bold text-gray-700">Upload a CSV file</p>
+              <p className="text-xs text-gray-400 mt-1">{fileName || "Drag and drop, or click to browse"}</p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
               />
-              <p className="text-[11px] text-gray-400">
-                Add a role after each email, e.g. <span className="font-mono">berna@phenome.com, Nurse</span>. Roles can also be set individually below.
-              </p>
-              <button
-                onClick={handleParseBulk}
-                disabled={!bulkText.trim()}
-                className="px-4 py-2 bg-slate-600 hover:bg-slate-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white rounded text-sm font-bold transition-colors"
-              >
-                Parse Emails
-              </button>
             </div>
-          ) : (
-            <div className="space-y-3">
-              <div
-                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-                onDragLeave={() => setDragOver(false)}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  setDragOver(false);
-                  const file = e.dataTransfer.files[0];
-                  if (file) handleFile(file);
-                }}
-                onClick={() => fileInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${dragOver ? "border-slate-500 bg-slate-50" : "border-gray-300 hover:border-slate-400"}`}
-              >
-                <UploadCloud className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm font-bold text-gray-700">Upload a CSV file</p>
-                <p className="text-xs text-gray-400 mt-1">{fileName || "Drag and drop, or click to browse"}</p>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".csv,text/csv"
-                  className="hidden"
-                  onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
-                />
-              </div>
-              <button onClick={downloadTemplate} className="flex items-center gap-1.5 text-sm font-semibold text-[#0077B6] hover:text-slate-800 transition-colors">
-                <Download className="w-3.5 h-3.5" /> Download CSV template
-              </button>
-              <p className="text-[11px] text-gray-400">Columns: email, role, first_name, last_name</p>
-            </div>
-          )}
+            <button onClick={downloadTemplate} className="flex items-center gap-1.5 text-sm font-semibold text-[#0077B6] hover:text-slate-800 transition-colors">
+              <Download className="w-3.5 h-3.5" /> Download CSV template
+            </button>
+          </div>
 
           {entries.length > 0 && (
             <div className="pt-2">
@@ -248,13 +209,6 @@ export function ImportStaffModal({ onClose, onImported }: { onClose: () => void;
                   </div>
                 ))}
               </div>
-            </div>
-          )}
-
-          {entries.length === 0 && (
-            <div className="flex items-start gap-2.5 bg-blue-50 border border-blue-200 rounded-lg p-3 text-xs text-blue-800">
-              <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-              Parse or upload a batch to preview it before sending invitations. Nothing is imported until you confirm below.
             </div>
           )}
         </div>
