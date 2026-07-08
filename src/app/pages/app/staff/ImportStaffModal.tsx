@@ -1,5 +1,5 @@
-import React, { useRef, useState } from "react";
-import { X, UploadCloud, Download, Trash2 } from "lucide-react";
+import React, { useState } from "react";
+import { X, UploadCloud, Download, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Staff, StaffRole, MOCK_STAFF } from "./staffData";
 
@@ -15,41 +15,18 @@ type ParsedEntry = {
   status: EntryStatus;
 };
 
+type RawRow = { email: string; roleHint: StaffRole | ""; firstName?: string; lastName?: string; phone?: string; raw: string };
+
 // Admin is intentionally excluded — the clinic has exactly one Admin account,
 // already provisioned; bulk import can never create another one.
 const ROLE_OPTIONS: StaffRole[] = ["Clinician", "Nurse", "Receptionist"];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function matchRole(token: string | undefined): StaffRole | "" {
-  if (!token) return "";
-  const norm = token.trim().toLowerCase();
-  return ROLE_OPTIONS.find((r) => r.toLowerCase() === norm) ?? "";
-}
 
 function classify(email: string, seen: Set<string>, existingEmails: Set<string>): EntryStatus {
   if (!EMAIL_RE.test(email)) return "invalid";
   const key = email.toLowerCase();
   if (existingEmails.has(key) || seen.has(key)) return "duplicate";
   return "valid";
-}
-
-// Columns: first_name, last_name, email, phone, role.
-function parseCsv(text: string): { email: string; roleHint: StaffRole | ""; firstName?: string; lastName?: string; phone?: string; raw: string }[] {
-  const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
-  if (lines.length === 0) return [];
-  const header = lines[0].toLowerCase();
-  const dataLines = header.includes("email") ? lines.slice(1) : lines;
-  return dataLines.map((line) => {
-    const cols = line.split(",").map((c) => c.trim());
-    return {
-      firstName: cols[0] || undefined,
-      lastName: cols[1] || undefined,
-      email: cols[2] ?? "",
-      phone: cols[3] || undefined,
-      roleHint: matchRole(cols[4]),
-      raw: line,
-    };
-  });
 }
 
 function downloadTemplate() {
@@ -63,15 +40,28 @@ function downloadTemplate() {
   URL.revokeObjectURL(url);
 }
 
+// No backend to actually parse a CSV against, so "uploading" always resolves
+// to this fixed sample batch — deliberately mixed (three new hires, one
+// email that collides with an existing staff member, one malformed row) so
+// the preview's valid/duplicate/invalid states are all exercised at once.
+const MOCK_FILE_NAME = "staff-import-demo.csv";
+const MOCK_ROWS: RawRow[] = [
+  { firstName: "Zeynep", lastName: "Aydemir", email: "zeynep.aydemir@phenome.com", phone: "+90 532 000 4444", roleHint: "Nurse", raw: "Zeynep,Aydemir,zeynep.aydemir@phenome.com,+90 532 000 4444,Nurse" },
+  { firstName: "Mert", lastName: "Yalçın", email: "mert.yalcin@phenome.com", phone: "+90 532 000 5555", roleHint: "Receptionist", raw: "Mert,Yalçın,mert.yalcin@phenome.com,+90 532 000 5555,Receptionist" },
+  { firstName: "Deniz", lastName: "Aksoy", email: "deniz.aksoy@phenome.com", phone: "+90 532 000 6666", roleHint: "Clinician", raw: "Deniz,Aksoy,deniz.aksoy@phenome.com,+90 532 000 6666,Clinician" },
+  { firstName: "Berna", lastName: "Koç", email: "berna@phenome.com", phone: "+90 532 555 0107", roleHint: "Nurse", raw: "Berna,Koç,berna@phenome.com,+90 532 555 0107,Nurse" },
+  { firstName: "Onur", lastName: "Şahin", email: "onur.sahin(at)phenome.com", phone: "", roleHint: "", raw: "Onur,Şahin,onur.sahin(at)phenome.com,," },
+];
+
 export function ImportStaffModal({ onClose, onImported }: { onClose: () => void; onImported: (staff: Staff[]) => void }) {
   const [entries, setEntries] = useState<ParsedEntry[]>([]);
   const [dragOver, setDragOver] = useState(false);
+  const [processing, setProcessing] = useState(false);
   const [fileName, setFileName] = useState("");
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const existingEmails = new Set(MOCK_STAFF.map((s) => s.email.toLowerCase()));
 
-  const buildEntries = (raw: ReturnType<typeof parseCsv>) => {
+  const buildEntries = (raw: RawRow[]) => {
     const seen = new Set<string>();
     const next: ParsedEntry[] = raw.map((r, i) => {
       const status = classify(r.email, seen, existingEmails);
@@ -82,19 +72,20 @@ export function ImportStaffModal({ onClose, onImported }: { onClose: () => void;
     return next;
   };
 
-  const handleFile = (file: File) => {
-    setFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = () => {
-      const parsed = parseCsv(String(reader.result ?? ""));
-      const next = buildEntries(parsed);
-      if (next.length === 0) {
-        toast.error(`No rows found in ${file.name}.`);
-      } else {
-        toast.success(`${file.name} uploaded — ${next.length} ${next.length === 1 ? "entry" : "entries"} found.`);
-      }
-    };
-    reader.readAsText(file);
+  // Simulates a real upload's round trip (brief "processing" delay, then a
+  // populated preview + toast) without needing an actual file — there's no
+  // backend to send one to in this demo.
+  const simulateUpload = () => {
+    if (processing) return;
+    setDragOver(false);
+    setProcessing(true);
+    setFileName(MOCK_FILE_NAME);
+    setEntries([]);
+    setTimeout(() => {
+      const next = buildEntries(MOCK_ROWS);
+      setProcessing(false);
+      toast.success(`${MOCK_FILE_NAME} uploaded — ${next.length} ${next.length === 1 ? "entry" : "entries"} found.`);
+    }, 700);
   };
 
   const updateRole = (key: string, role: StaffRole) => {
@@ -149,27 +140,25 @@ export function ImportStaffModal({ onClose, onImported }: { onClose: () => void;
         <div className="p-6 space-y-4 overflow-y-auto flex-1">
           <div className="space-y-3">
             <div
-              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragOver={(e) => { e.preventDefault(); if (!processing) setDragOver(true); }}
               onDragLeave={() => setDragOver(false)}
-              onDrop={(e) => {
-                e.preventDefault();
-                setDragOver(false);
-                const file = e.dataTransfer.files[0];
-                if (file) handleFile(file);
-              }}
-              onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${dragOver ? "border-slate-500 bg-slate-50" : "border-gray-300 hover:border-slate-400"}`}
+              onDrop={(e) => { e.preventDefault(); simulateUpload(); }}
+              onClick={simulateUpload}
+              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${processing ? "border-gray-200 cursor-wait" : dragOver ? "border-slate-500 bg-slate-50 cursor-pointer" : "border-gray-300 hover:border-slate-400 cursor-pointer"}`}
             >
-              <UploadCloud className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm font-bold text-gray-700">Upload a CSV file</p>
-              <p className="text-xs text-gray-400 mt-1">{fileName || "Drag and drop, or click to browse"}</p>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".csv,text/csv"
-                className="hidden"
-                onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
-              />
+              {processing ? (
+                <>
+                  <Loader2 className="w-8 h-8 text-slate-400 mx-auto mb-2 animate-spin" />
+                  <p className="text-sm font-bold text-gray-700">Processing {MOCK_FILE_NAME}...</p>
+                  <p className="text-xs text-gray-400 mt-1">Reading rows and checking for existing staff</p>
+                </>
+              ) : (
+                <>
+                  <UploadCloud className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm font-bold text-gray-700">Upload a CSV file</p>
+                  <p className="text-xs text-gray-400 mt-1">{fileName || "Drag and drop, or click to browse"}</p>
+                </>
+              )}
             </div>
             <button onClick={downloadTemplate} className="flex items-center gap-1.5 text-sm font-semibold text-[#0077B6] hover:text-slate-800 transition-colors">
               <Download className="w-3.5 h-3.5" /> Download CSV template
@@ -188,7 +177,9 @@ export function ImportStaffModal({ onClose, onImported }: { onClose: () => void;
                 {entries.map((e) => (
                   <div key={e.key} className="flex items-center gap-3 px-3 py-2.5">
                     <div className="flex-1 min-w-0">
-                      <div className={`text-sm font-medium truncate ${e.status === "invalid" ? "text-red-600" : "text-gray-800"}`}>{e.email}</div>
+                      <div className={`text-sm font-medium truncate ${e.status === "invalid" ? "text-red-600" : "text-gray-800"}`}>
+                        {e.firstName && e.lastName ? `${e.firstName} ${e.lastName} · ` : ""}{e.email}
+                      </div>
                       {e.status === "duplicate" && <div className="text-[11px] text-orange-600 font-semibold mt-0.5">Already exists</div>}
                       {e.status === "invalid" && <div className="text-[11px] text-red-500 font-semibold mt-0.5">Invalid email format</div>}
                     </div>
