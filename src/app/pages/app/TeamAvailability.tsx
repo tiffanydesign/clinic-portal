@@ -673,11 +673,6 @@ export function TeamAvailability() {
                     {b.type}: {b.start} – {b.end}
                   </div>
                 ))}
-                {popover.day.override && (
-                  <div className="text-xs font-bold text-blue-700 mt-2 flex items-center">
-                    ◆ Date override — modified from regular hours
-                  </div>
-                )}
               </div>
             </div>
 

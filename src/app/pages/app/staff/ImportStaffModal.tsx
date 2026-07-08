@@ -130,7 +130,7 @@ export function ImportStaffModal({ onClose, onImported }: { onClose: () => void;
         role: (e.role || "Nurse") as StaffRole,
         email: e.email,
         phone: "",
-        status: "Invited",
+        status: "Inactive",
         today: "Off",
         patients: e.role === "Clinician" || e.role === "Nurse" ? 0 : null,
         workload: e.role === "Clinician" || e.role === "Nurse" ? 0 : null,

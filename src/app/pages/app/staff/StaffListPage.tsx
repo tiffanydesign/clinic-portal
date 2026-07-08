@@ -197,7 +197,6 @@ export function StaffListPage() {
 
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 outline-none focus:border-slate-500 bg-white shadow-sm">
           <option value="All">Status: All</option>
-          <option>Invited</option>
           <option>Active</option>
           <option>On Leave</option>
           <option>Inactive</option>
@@ -303,7 +302,7 @@ export function StaffListPage() {
 
 function StaffRow({ staff: s, onOpen }: { staff: Staff; onOpen: () => void }) {
   const overCapacity = s.workload !== null && s.workload > 85;
-  const staleLogin = s.status !== "Invited" && s.lastActiveDays > 7;
+  const staleLogin = s.lastActiveDays > 7;
 
   return (
     <tr onClick={onOpen} className="cursor-pointer group relative transition-colors bg-white hover:bg-slate-50">
