@@ -4,26 +4,57 @@ import { toast } from "sonner";
 import { Staff, StaffRole, MOCK_STAFF } from "./staffData";
 
 const inputCls = "w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-slate-500";
+const errorInputCls = "w-full px-3 py-2 border border-red-400 rounded text-sm outline-none focus:border-red-500";
 const labelCls = "block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2";
+
+const PHONE_PREFIX = "+90 ";
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Keeps the "+90 " country-code prefix fixed, strips anything that isn't a
+// digit or space from the rest, and caps the number itself at 10 digits
+// (Turkish mobile numbers: 3-3-4 grouping).
+function sanitizePhone(raw: string): string {
+  if (!raw.startsWith("+90")) return PHONE_PREFIX;
+  const rest = raw.slice(3).replace(/[^\d\s]/g, "");
+  let digitCount = 0;
+  let capped = "";
+  for (const ch of rest) {
+    if (/\d/.test(ch)) {
+      if (digitCount === 10) continue;
+      digitCount++;
+    }
+    capped += ch;
+  }
+  return `+90${capped}`;
+}
 
 // Single-step "Add Staff Member" dialog: personal & account info only.
 export function AddStaffModal({ onClose, onCreated }: { onClose: () => void; onCreated: (s: Staff) => void }) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("+90 ");
+  const [phone, setPhone] = useState(PHONE_PREFIX);
   const [role, setRole] = useState<StaffRole | "">("");
-  const [employeeId, setEmployeeId] = useState(`EMP-${String(MOCK_STAFF.length + 1).padStart(3, "0")}`);
+  const [errors, setErrors] = useState<{ email?: string; phone?: string }>({});
 
   const handleCreate = () => {
-    if (!firstName.trim() || !lastName.trim() || !email.trim() || phone.trim().length < 7 || !role) {
-      toast.error("Please fill in all required fields.");
+    const emailValid = EMAIL_RE.test(email.trim());
+    const phoneDigits = phone.replace(/\D/g, "").length; // "90" + 10-digit number = 12
+    const phoneValid = phoneDigits === 12;
+
+    const nextErrors: { email?: string; phone?: string } = {};
+    if (!emailValid) nextErrors.email = "Enter a valid email address.";
+    if (!phoneValid) nextErrors.phone = "Enter a valid 10-digit phone number.";
+    setErrors(nextErrors);
+
+    if (!firstName.trim() || !lastName.trim() || !role || Object.keys(nextErrors).length > 0) {
+      toast.error(Object.keys(nextErrors).length > 0 ? "Please fix the highlighted fields." : "Please fill in all required fields.");
       return;
     }
 
     const name = role === "Clinician" ? `Dr. ${firstName} ${lastName}` : `${firstName} ${lastName}`;
     onCreated({
-      id: employeeId,
+      id: `EMP-${String(MOCK_STAFF.length + 1).padStart(3, "0")}`,
       name,
       avatar: (firstName[0] + lastName[0]).toUpperCase(),
       role: role as StaffRole,
@@ -64,13 +95,33 @@ export function AddStaffModal({ onClose, onCreated }: { onClose: () => void; onC
           </div>
           <div>
             <label className={labelCls}>Email <span className="text-red-500">*</span></label>
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputCls} placeholder="name@phenome.com" />
-            <p className="text-[10px] text-gray-400 mt-1">Used as the system account and 2FA email.</p>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => { setEmail(e.target.value); setErrors((prev) => ({ ...prev, email: undefined })); }}
+              className={errors.email ? errorInputCls : inputCls}
+              placeholder="name@phenome.com"
+            />
+            {errors.email ? (
+              <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.email}</p>
+            ) : (
+              <p className="text-[10px] text-gray-400 mt-1">Used as the system account and 2FA email.</p>
+            )}
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className={labelCls}>Phone <span className="text-red-500">*</span></label>
-              <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputCls} />
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => { setPhone(sanitizePhone(e.target.value)); setErrors((prev) => ({ ...prev, phone: undefined })); }}
+                className={errors.phone ? errorInputCls : inputCls}
+              />
+              {errors.phone ? (
+                <p className="text-[10px] text-red-500 font-semibold mt-1">{errors.phone}</p>
+              ) : (
+                <p className="text-[10px] text-gray-400 mt-1">10 digits after the country code.</p>
+              )}
             </div>
             <div>
               <label className={labelCls}>Role <span className="text-red-500">*</span></label>
@@ -82,11 +133,6 @@ export function AddStaffModal({ onClose, onCreated }: { onClose: () => void; onC
               </select>
               <p className="text-[10px] text-gray-400 mt-1">Admin accounts cannot be created here — the clinic has exactly one.</p>
             </div>
-          </div>
-          <div>
-            <label className={labelCls}>Employee ID</label>
-            <input type="text" value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className={inputCls} />
-            <p className="text-[10px] text-gray-400 mt-1">Auto-generated — you can override it manually.</p>
           </div>
         </div>
 
