@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Pencil, History, X, AlertTriangle, RotateCcw } from "lucide-react";
+import { Link } from "react-router";
+import { Pencil, History, X, AlertTriangle, RotateCcw, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import {
   CONSENT_FORM_VERSIONS,
@@ -213,6 +214,11 @@ export function ConsentFormPage() {
     <div className="flex flex-col h-full overflow-hidden bg-white">
       <div className="px-8 py-6 border-b border-gray-200 shrink-0 flex justify-between items-start bg-white">
         <div>
+          <div className="flex items-center gap-1.5 text-xs font-medium text-gray-400 mb-2">
+            <Link to="/clinic-settings" className="hover:text-slate-600 hover:underline">Clinic Settings</Link>
+            <ChevronRight className="w-3 h-3" />
+            <span className="text-gray-600 font-bold">Consent Form Template</span>
+          </div>
           <h1 className="text-2xl font-bold text-gray-800">Consent Form Template</h1>
           <p className="text-sm text-gray-500 mt-1">The consent form patients sign at reception before their visit</p>
         </div>

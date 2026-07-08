@@ -21,7 +21,7 @@ import {
   PatientOverviewTab, PatientResultsTab, PatientJourneysTab, PatientJourneyDetailPage,
   PatientSignedFormsTab, PatientClinicianNotesTab, PatientAppointmentsTab,
   StaffListPage, StaffDetailLayout, StaffOverviewTab, StaffAvailabilityTab, StaffPermissionsTab, StaffWorkloadTab,
-  ConsentFormPage, BillingPage, FeedbackAdminPage,
+  ConsentFormPage, ClinicSettingsHubPage, BillingPage, FeedbackAdminPage,
   NotificationsSkeleton, ApprovalRouter, ApprovalDetailSkeleton, ProfilePage, SiteMap,
   NewPatientSkeleton, CalendarLayout, CalendarScheduleSkeleton, AvailabilityList, AvailabilityEdit, TeamAvailability,
   TimesheetPage, SchedulePage
@@ -126,7 +126,8 @@ export default function App() {
           <Route path="/staff/:staffId/availability" element={<AppShellLayout><StaffDetailLayout><StaffAvailabilityTab /></StaffDetailLayout></AppShellLayout>} />
           <Route path="/staff/:staffId/permissions" element={<AppShellLayout><StaffDetailLayout><StaffPermissionsTab /></StaffDetailLayout></AppShellLayout>} />
           <Route path="/staff/:staffId/workload" element={<AppShellLayout><StaffDetailLayout><StaffWorkloadTab /></StaffDetailLayout></AppShellLayout>} />
-          <Route path="/clinic-settings" element={<AppShellLayout><ConsentFormPage /></AppShellLayout>} />
+          <Route path="/clinic-settings" element={<AppShellLayout><ClinicSettingsHubPage /></AppShellLayout>} />
+          <Route path="/clinic-settings/consent-form" element={<AppShellLayout><ConsentFormPage /></AppShellLayout>} />
           <Route path="/billing" element={<AppShellLayout><BillingPage /></AppShellLayout>} />
           <Route path="/feedback" element={<AppShellLayout><FeedbackAdminPage /></AppShellLayout>} />
           <Route path="/feedback/:feedbackId" element={<AppShellLayout><FeedbackAdminPage /></AppShellLayout>} />

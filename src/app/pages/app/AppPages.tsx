@@ -78,6 +78,7 @@ export { StaffPermissionsTab } from "./staff/StaffPermissionsTab";
 export { StaffWorkloadTab } from "./staff/StaffWorkloadTab";
 
 export { ConsentFormPage } from "./clinic-settings/ConsentFormPage";
+export { ClinicSettingsHubPage } from "./clinic-settings/ClinicSettingsHubPage";
 
 // Expose the Profile Page instead of the skeleton
 export { ProfilePage } from "./ProfilePage";
@@ -134,7 +135,8 @@ export function SiteMap() {
     { section: "Admin & Clinician Only", links: [
       { path: "/staff", label: "Staff List" },
       { path: "/staff/EMP-003", label: "Staff Detail -> Redirects to Overview" },
-      { path: "/clinic-settings", label: "Clinic Settings (Consent Form Template)" },
+      { path: "/clinic-settings", label: "Clinic Settings (Hub)" },
+      { path: "/clinic-settings/consent-form", label: "Clinic Settings -> Consent Form Template" },
       { path: "/feedback", label: "Feedback" },
       { path: "/timesheet", label: "Timesheet" },
       { path: "/approval", label: "Approvals" },
