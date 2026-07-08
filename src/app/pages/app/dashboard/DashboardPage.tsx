@@ -5,20 +5,26 @@ import { KpiBar } from "./KpiBar";
 import { CalendarWidget } from "./CalendarWidget";
 import { AppointmentDrawer } from "./AppointmentDrawer";
 import { ActivityFeed } from "./ActivityFeed";
-import { AdminPanels, ReceptionPanels, NursePanels, ClinicianPanels } from "./RolePanels";
+import { AdminPanels, ReceptionPanels, ClinicianPanels } from "./RolePanels";
+import { NurseDashboardPage } from "./NurseDashboardPage";
 import { getAppt, TODAY_LABEL, ROLE_GREETING } from "./dashboardData";
 
 function RolePanels() {
   const { role } = useAppContext();
   if (role === "Admin") return <AdminPanels />;
   if (role === "Reception") return <ReceptionPanels />;
-  if (role === "Nurse") return <NursePanels />;
   return <ClinicianPanels />;
 }
 
 export function DashboardPage() {
   const { role } = useAppContext();
   const { apptId } = useParams();
+
+  // The Nurse dashboard is a fully separate single-focus layout (current
+  // patient + action, not KPIs/multi-patient panels) — bypass the shared
+  // KPI bar / calendar / role-panels layout entirely for this role.
+  if (role === "Nurse") return <NurseDashboardPage />;
+
   const appt = getAppt(apptId);
   const isAdmin = role === "Admin";
 

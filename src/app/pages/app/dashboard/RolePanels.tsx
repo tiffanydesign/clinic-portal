@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router";
 import {
-  AlertTriangle, Flag, Video, MapPin, Droplet, Check, ArrowRight,
+  AlertTriangle, Flag, Video, MapPin, ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Section, StatusPill, LiveDot } from "./DashboardShared";
@@ -9,7 +9,6 @@ import {
   APPTS, Appt, NOW_MINUTES, statusPillType,
 } from "./dashboardData";
 
-const NURSE_NAME = "Berna Koç";
 const CLINICIAN_ID = "EMP-003";
 
 function openDrawer(nav: ReturnType<typeof useNavigate>, id: string) {
@@ -174,85 +173,8 @@ export function ReceptionPanels() {
   );
 }
 
-// ============================ NURSE ============================
-
-const JOURNEY_5 = ["Consent", "Changing", "Scan", "Sample", "Out"];
-
-export function NursePanels() {
-  const nav = useNavigate();
-  const myPatients = APPTS.filter((a) => a.nurse === NURSE_NAME).slice(0, 4);
-
-  const journeyQueue = [
-    { patient: "Mackenzie Messineo", step: "Scan", wait: 12, awaitingYou: true },
-    { patient: "Dylan Daniel", step: "Blood Collection", wait: 6, awaitingYou: true },
-    { patient: "Gustavo Propolis", step: "Consultation", wait: 3, awaitingYou: false },
-  ];
-
-  const samples = [
-    { patient: "Mackenzie Messineo", type: "Blood", room: "Lab 1" },
-    { patient: "Dylan Daniel", type: "Blood", room: "Lab 2" },
-    { patient: "Penny Pelargonium", type: "Saliva", room: "Room 1" },
-  ];
-
-  return (
-    <div className="flex flex-col gap-4 h-full min-h-0">
-      <Section title="My Patients" className="flex-1 min-h-0">
-        <div className="p-3 space-y-2">
-          {myPatients.map((a) => (
-            <button key={a.id} onClick={() => nav("/patients/P-001/journeys")} className="w-full border border-gray-200 rounded p-3 hover:border-slate-400 transition-colors text-left">
-              <div className="flex items-center justify-between mb-2.5">
-                <span className="text-sm font-bold text-gray-800 truncate">{a.patient.name}</span>
-                <span className="text-xs text-gray-400 shrink-0">{a.timeLabel.slice(0, 5)} · {a.doctor.replace("Dr. ", "Dr. ")}</span>
-              </div>
-              <div className="relative">
-                <div className="absolute top-1.5 left-1.5 right-1.5 h-0.5 bg-gray-200" />
-                <div className="relative flex justify-between">
-                  {JOURNEY_5.map((s, i) => (
-                    <span key={s} className={`w-3 h-3 rounded-full border-2 ${i < a.currentStep ? "bg-slate-500 border-slate-500" : i === a.currentStep ? "bg-white border-slate-600 ring-2 ring-slate-100" : "bg-white border-gray-300"}`} />
-                  ))}
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
-      </Section>
-
-      <Section title="Journey Queue" className="flex-1 min-h-0">
-        <div className="divide-y divide-gray-100">
-          {journeyQueue.map((q) => (
-            <button key={q.patient} onClick={() => nav("/patients/P-001/journeys")} className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 text-left gap-2">
-              <div className="min-w-0">
-                <div className="text-sm font-medium text-gray-800 truncate">{q.patient}</div>
-                <div className="text-xs text-gray-400">Step: {q.step}</div>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                {q.awaitingYou && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-orange-50 text-orange-700 border border-orange-200">Awaiting you</span>}
-                <span className="text-sm font-bold text-gray-700">{q.wait}m</span>
-              </div>
-            </button>
-          ))}
-        </div>
-      </Section>
-
-      <Section title="Samples To Collect" className="flex-1 min-h-0">
-        <div className="divide-y divide-gray-100">
-          {samples.map((s) => (
-            <div key={s.patient} className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 gap-2">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <Droplet className={`w-4 h-4 shrink-0 ${s.type === "Blood" ? "text-red-500" : "text-amber-500"}`} />
-                <div className="min-w-0">
-                  <div className="text-sm font-medium text-gray-800 truncate">{s.patient}</div>
-                  <div className="text-xs text-gray-400">{s.type} · {s.room}</div>
-                </div>
-              </div>
-              <button onClick={() => toast.success(`${s.type} sample marked collected.`)} className="px-2.5 py-1 text-[10px] font-bold text-slate-700 border border-slate-300 bg-slate-50 rounded hover:bg-slate-100 shrink-0">Mark Collected</button>
-            </div>
-          ))}
-        </div>
-      </Section>
-    </div>
-  );
-}
+// Nurse now has its own dedicated single-focus dashboard — see
+// NurseDashboardPage.tsx — rather than a panel in this shared layout.
 
 // ============================ CLINICIAN ============================
 
