@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import {
   AlertTriangle, Flag, Video, MapPin, ArrowRight,
@@ -8,6 +8,7 @@ import { Section, StatusPill, LiveDot } from "./DashboardShared";
 import {
   APPTS, Appt, NOW_MINUTES, statusPillType,
 } from "./dashboardData";
+import { StartTransactionModal } from "../../../components/StartTransactionModal";
 
 const CLINICIAN_ID = "EMP-003";
 
@@ -97,6 +98,7 @@ export function ReceptionPanels() {
   const arrivals = [...APPTS].sort((a, b) => a.startMin - b.startMin).slice(0, 6);
   const queue = APPTS.filter((a) => a.status === "Arrived");
   const payments = APPTS.filter((a) => a.balance !== "₺0");
+  const [transactionAppt, setTransactionAppt] = useState<Appt | null>(null);
 
   const consentOk = (a: Appt) => a.forms.every((f) => f.status === "Signed");
   const arrivalPill = (a: Appt) =>
@@ -161,7 +163,7 @@ export function ReceptionPanels() {
               <div className="flex items-center justify-between">
                 <span className="text-xs text-gray-400">{a.type.replace(" (in-person)", "").replace(" (video)", "")} · {a.payment}</span>
                 <div className="flex gap-1.5">
-                  <button onClick={() => toast("Transaction started on Terminal #1")} className="px-2.5 py-1 text-[10px] font-bold text-slate-700 border border-slate-300 bg-slate-50 rounded hover:bg-slate-100">Start Transaction</button>
+                  <button onClick={() => setTransactionAppt(a)} className="px-2.5 py-1 text-[10px] font-bold text-slate-700 border border-slate-300 bg-slate-50 rounded hover:bg-slate-100">Start Transaction</button>
                   <button onClick={() => toast("Payment link sent")} className="px-2.5 py-1 text-[10px] font-bold text-gray-700 border border-gray-300 bg-white rounded hover:bg-gray-50">Send Link</button>
                 </div>
               </div>
@@ -169,6 +171,16 @@ export function ReceptionPanels() {
           ))}
         </div>
       </Section>
+
+      {transactionAppt && (
+        <StartTransactionModal
+          patient={transactionAppt.patient.name}
+          service={transactionAppt.type.replace(" (in-person)", "").replace(" (video)", "")}
+          amountDue={transactionAppt.balance}
+          onClose={() => setTransactionAppt(null)}
+          onComplete={() => { setTransactionAppt(null); toast.success(`Payment collected for ${transactionAppt.patient.name}.`); }}
+        />
+      )}
     </div>
   );
 }

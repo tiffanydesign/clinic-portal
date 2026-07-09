@@ -33,6 +33,17 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
     ],
   },
   {
+    name: "Payments",
+    modules: [
+      {
+        name: "Payment Terminals",
+        description: "Manage Stripe card readers used for in-person payments",
+        enabled: true,
+        route: "/clinic-settings/payment-terminals",
+      },
+    ],
+  },
+  {
     name: "Compliance & Data",
     modules: [
       { name: "Data Retention Policy", description: "Configure how long patient records are stored", enabled: false, badge: "Coming soon" },

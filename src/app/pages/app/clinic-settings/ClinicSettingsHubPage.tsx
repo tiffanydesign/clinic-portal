@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router";
-import { ShieldCheck, Clock, Mail, Palette, LucideIcon } from "lucide-react";
+import { ShieldCheck, Clock, Mail, Palette, CreditCard, LucideIcon } from "lucide-react";
 import { SETTINGS_CATEGORIES, SettingsModule } from "./clinicSettingsHubData";
 
 // One icon per module name — deliberately keyed by name rather than a data
@@ -8,6 +8,7 @@ import { SETTINGS_CATEGORIES, SettingsModule } from "./clinicSettingsHubData";
 // this keeps clinicSettingsHubData.ts a plain data file.
 const MODULE_ICON: Record<string, LucideIcon> = {
   "Consent Form Template": ShieldCheck,
+  "Payment Terminals": CreditCard,
   "Data Retention Policy": Clock,
   "Notification Templates": Mail,
   "Clinic Branding": Palette,
