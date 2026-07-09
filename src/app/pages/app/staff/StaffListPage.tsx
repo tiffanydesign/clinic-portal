@@ -1,17 +1,15 @@
 import React, { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { Search, Download, Plus, Upload, ChevronDown, ChevronRight, ArrowUpDown, LayoutGrid, Table2 } from "lucide-react";
+import { Search, Download, Plus, Upload, ChevronDown, ChevronRight, ArrowUpDown } from "lucide-react";
 import {
   MOCK_STAFF, ROLE_GROUP_ORDER, ROLE_GROUP_LABEL, Staff, StaffRole,
   rolePillClass, statusPillClass, workloadColor, todayDotClass,
 } from "./staffData";
-import { StaffCardsView } from "./StaffCards";
 import { StaffRowMenu } from "./StaffRowMenu";
 import { AddStaffModal } from "./AddStaffModal";
 import { ImportStaffModal } from "./ImportStaffModal";
 
 type SortKey = "name" | "patients" | "workload" | "lastActive" | "joined";
-type ViewMode = "table" | "cards";
 
 const ROLE_OPTIONS: StaffRole[] = ["Admin", "Clinician", "Nurse", "Receptionist"];
 
@@ -21,7 +19,6 @@ export function StaffListPage() {
   const [roleFilter, setRoleFilter] = useState<Set<StaffRole>>(new Set());
   const [statusFilter, setStatusFilter] = useState("All");
   const [todayFilter, setTodayFilter] = useState("All");
-  const [view, setView] = useState<ViewMode>("table");
   const [collapsed, setCollapsed] = useState<Set<StaffRole>>(new Set());
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [sortAsc, setSortAsc] = useState(true);
@@ -210,30 +207,11 @@ export function StaffListPage() {
         </select>
 
         <div className="flex-1" />
-
-        {/* View toggle */}
-        <div className="flex bg-gray-100 p-1 rounded-lg">
-          <button
-            onClick={() => setView("table")}
-            className={`flex items-center px-4 py-1 text-sm rounded transition-colors ${view === "table" ? "font-bold bg-white text-gray-800 shadow-sm" : "font-medium text-gray-500 hover:text-gray-700"}`}
-          >
-            <Table2 className="w-3.5 h-3.5 mr-1.5" /> Table
-          </button>
-          <button
-            onClick={() => setView("cards")}
-            className={`flex items-center px-4 py-1 text-sm rounded transition-colors ${view === "cards" ? "font-bold bg-white text-gray-800 shadow-sm" : "font-medium text-gray-500 hover:text-gray-700"}`}
-          >
-            <LayoutGrid className="w-3.5 h-3.5 mr-1.5" /> Cards
-          </button>
-        </div>
       </div>
 
       {/* Body */}
       <div className="flex-1 overflow-hidden px-8 py-5 pb-8 flex flex-col min-h-0">
-        {view === "cards" ? (
-          <StaffCardsView groups={groups} collapsed={collapsed} />
-        ) : (
-          <div className="flex-1 bg-white border border-gray-300 rounded-xl overflow-hidden flex flex-col shadow-sm">
+        <div className="flex-1 bg-white border border-gray-300 rounded-xl overflow-hidden flex flex-col shadow-sm">
             <div className="flex-1 overflow-auto relative">
               <table className="w-full text-left border-collapse text-sm whitespace-nowrap">
                 <thead className="bg-gray-50 sticky top-0 z-30 shadow-[0_1px_0_#e5e7eb]">
@@ -279,8 +257,7 @@ export function StaffListPage() {
             <div className="h-12 border-t border-gray-200 bg-white flex items-center justify-between px-6 shrink-0">
               <div className="text-xs text-gray-500 font-medium">Showing {filtered.length} of {allStaff.length} staff</div>
             </div>
-          </div>
-        )}
+        </div>
       </div>
 
       {showAddModal && (
