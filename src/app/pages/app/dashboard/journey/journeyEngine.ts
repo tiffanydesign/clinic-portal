@@ -29,7 +29,7 @@ export const JOURNEY_STEPS: JourneyStepConfig[] = [
   { id: "sample1", name: "Sample Collection 1", kind: "station", room: "Draw 1", est: 8 },
   { id: "sample2", name: "Sample Collection 2", kind: "station", room: "Draw 2", est: 6 },
   { id: "consult", name: "Results Consultation", kind: "station", room: "Consult 2", est: 20 },
-  { id: "checkout", name: "Check Out", kind: "milestone", owner: "Receptionist" },
+  { id: "checkout", name: "Check Out", kind: "milestone", owner: null },
 ];
 
 export const SKIP_REASONS = ["Patient declined", "Not applicable for this package", "Clinician's decision", "Rescheduled", "Other"] as const;
