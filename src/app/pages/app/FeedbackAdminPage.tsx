@@ -133,7 +133,7 @@ function FeedbackDrawer({ item, onClose, newNote, setNewNote, onAddNote, onUpdat
   const isGoogle = item.source === "Google Review";
 
   return (
-    <div className="absolute top-0 right-0 h-full w-[420px] bg-white border-l border-gray-300 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200 z-10">
+    <div className="fixed inset-y-0 right-0 w-[420px] bg-white border-l border-gray-300 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200 z-50">
       <div className="px-5 py-4 border-b border-gray-200 flex items-start justify-between shrink-0 bg-gray-50">
         <div className="flex flex-wrap items-center gap-2 min-w-0">
           <span className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">

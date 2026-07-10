@@ -26,7 +26,7 @@ export type NewFeedbackInput = {
   type: FeedbackType;
   subject: string;
   description: string;
-  urgency: Urgency;
+  urgency?: Urgency;
   isAnonymous: boolean;
   authorName: string;
   authorRole: string;

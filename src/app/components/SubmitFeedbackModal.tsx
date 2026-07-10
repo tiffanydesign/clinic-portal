@@ -4,14 +4,13 @@ import { toast } from "sonner";
 import { useAppContext } from "../context/AppContext";
 import { ROLE_DATA } from "../pages/app/ProfilePage";
 import { addFeedback } from "../pages/app/feedbackStore";
-import { FeedbackType, Source, Urgency } from "../pages/app/feedbackData";
+import { FeedbackType, Source } from "../pages/app/feedbackData";
 
 export function SubmitFeedbackModal() {
   const { role, setFeedbackModalOpen } = useAppContext();
   const [type, setType] = useState<FeedbackType>("Suggestion");
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
-  const [urgency, setUrgency] = useState<Urgency>("Low");
   const [isAnonymous, setIsAnonymous] = useState(false);
 
   const profile = ROLE_DATA[role];
@@ -32,7 +31,6 @@ export function SubmitFeedbackModal() {
       type,
       subject: subject.trim(),
       description: description.trim(),
-      urgency,
       isAnonymous,
       authorName,
       authorRole: profile.roleLabel,
@@ -87,24 +85,6 @@ export function SubmitFeedbackModal() {
               rows={4}
               className="w-full px-3 py-2 border border-gray-300 rounded text-sm text-gray-800 outline-none focus:border-slate-500 bg-white resize-none"
             />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Urgency</label>
-            <div className="flex space-x-6 mt-1">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input type="radio" name="urgency" value="Low" checked={urgency === "Low"} onChange={e => setUrgency(e.target.value as Urgency)} className="text-slate-600 focus:ring-slate-500" />
-                <span className="text-sm text-gray-700">Low</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input type="radio" name="urgency" value="Medium" checked={urgency === "Medium"} onChange={e => setUrgency(e.target.value as Urgency)} className="text-slate-600 focus:ring-slate-500" />
-                <span className="text-sm text-gray-700">Medium</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input type="radio" name="urgency" value="High" checked={urgency === "High"} onChange={e => setUrgency(e.target.value as Urgency)} className="text-slate-600 focus:ring-slate-500" />
-                <span className="text-sm text-gray-700">High</span>
-              </label>
-            </div>
           </div>
 
           <div className="pt-1 border-t border-gray-100">

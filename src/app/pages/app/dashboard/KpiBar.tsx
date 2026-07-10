@@ -43,11 +43,14 @@ function Card({
   const pillText = isLive ? "LIVE" : RANGE_PILL[range];
   const inverse = rv.inverse ?? kpi.inverse ?? false;
   const sparkSentiment = rv.informational ? "neutral" : sentimentFor(rv.trend, inverse);
+  // Today's cards are a live glance at right-now counts, not a drill-down
+  // entry point — only 7d/30d have a real filtered list behind them.
+  const clickable = range !== "today";
 
   return (
     <button
-      onClick={() => onOpen(kpi.route)}
-      className="text-left border border-gray-300 rounded bg-white p-4 flex flex-col justify-between relative hover:border-slate-400 hover:shadow-sm transition-all"
+      onClick={clickable ? () => onOpen(kpi.route) : undefined}
+      className={`text-left border border-gray-300 rounded bg-white p-4 flex flex-col justify-between relative transition-all ${clickable ? "hover:border-slate-400 hover:shadow-sm cursor-pointer" : "cursor-default"}`}
     >
       <div className="flex justify-between items-start mb-2 gap-2">
         <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider leading-tight">{label}</span>

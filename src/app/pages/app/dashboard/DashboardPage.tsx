@@ -52,10 +52,14 @@ export function DashboardPage() {
         <KpiBar key={role} />
       </div>
 
-      {/* Work area (+ Admin activity feed) */}
+      {/* Work area (+ Admin activity feed). Today's Schedule and the
+          Results Queue / Waiting Room panels are Admin's real working set —
+          sized to show as many rows as possible without internal scrolling.
+          Recent Activity is secondary and deliberately sits below the fold;
+          reaching it costs a scroll, which is the right trade for this role. */}
       {isAdmin ? (
         <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 space-y-4">
-          <div className="h-[540px]">{workArea}</div>
+          <div className="h-[760px]">{workArea}</div>
           <ActivityFeed />
         </div>
       ) : (

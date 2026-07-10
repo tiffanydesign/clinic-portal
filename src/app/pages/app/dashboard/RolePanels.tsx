@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import {
-  AlertTriangle, Flag, Video, MapPin, ArrowRight,
+  AlertTriangle, Flag, Video, MapPin,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Section, StatusPill, LiveDot } from "./DashboardShared";
 import {
-  APPTS, Appt, NOW_MINUTES, statusPillType,
+  APPTS, Appt, NOW_MINUTES,
 } from "./dashboardData";
 import { StartTransactionModal } from "../../../components/StartTransactionModal";
 
@@ -20,43 +20,34 @@ function openDrawer(nav: ReturnType<typeof useNavigate>, id: string) {
 
 export function AdminPanels() {
   const nav = useNavigate();
-  const timeline = [...APPTS].sort((a, b) => a.startMin - b.startMin);
 
+  // Sorted most-overdue-first — Admin scanning this section only cares
+  // which one has been sitting the longest, not the ones still on track.
   const results = [
     { patient: "Oliver Folate", test: "Comprehensive Blood", days: 2, doctor: "Dr. Claudia Reis" },
     { patient: "Arysse Arcerola", test: "Genetic Panel", days: 5, doctor: "Dr. Felix Andersen" },
     { patient: "Gustavo Propolis", test: "Hormone Screen", days: 1, doctor: "Dr. Chad Okonkwo" },
     { patient: "Cynthia Riboflavin", test: "Lipid Panel", days: 3, doctor: "Dr. Claudia Reis" },
     { patient: "Dylan Daniel", test: "Metabolic Panel", days: 2, doctor: "Dr. Felix Andersen" },
-  ];
+  ].sort((a, b) => b.days - a.days);
 
+  // Wait reasons reflect the nurse's own patient-journey stations (mirrors
+  // the Nurse Dashboard's station vocabulary) rather than Reception-gate
+  // concerns like payment/consent, since this tracks in-clinic nurse wait
+  // time, not the check-in gate. Sorted longest-wait-first so Admin can spot
+  // "is anything backed up" without reading every row.
   const waiting = [
-    { patient: "Penny Pelargonium", checkIn: "08:55", wait: 19, step: "Awaiting payment", nurse: "Berna Koç" },
-    { patient: "Riley Guarana", checkIn: "08:58", wait: 16, step: "Awaiting consent", nurse: "Aylin Demir" },
-    { patient: "Oliver Folate", checkIn: "09:05", wait: 9, step: "Ready for room", nurse: "Aylin Demir" },
-    { patient: "Bob Bromelain", checkIn: "09:12", wait: 2, step: "Changing", nurse: "Aylin Demir" },
-  ];
+    { patient: "Penny Pelargonium", checkIn: "08:40", wait: 34, step: "Waiting for Body Scan", nurse: "Berna Koç" },
+    { patient: "Riley Guarana", checkIn: "08:52", wait: 22, step: "Waiting for Machine 1", nurse: "Aylin Demir" },
+    { patient: "Oliver Folate", checkIn: "08:56", wait: 18, step: "Waiting for Sample Collection", nurse: "Aylin Demir" },
+    { patient: "Bob Bromelain", checkIn: "09:08", wait: 6, step: "Waiting for Consultation", nurse: "Aylin Demir" },
+  ].sort((a, b) => b.wait - a.wait);
 
   const waitColor = (m: number) => (m > 30 ? "text-red-600" : m > 15 ? "text-orange-600" : "text-gray-800");
 
   return (
     <div className="flex flex-col gap-4 h-full min-h-0">
-      <Section title="Today's Clinic" className="flex-1 min-h-0" action={<button onClick={() => nav("/calendar/schedule")} className="text-xs font-bold text-slate-600 hover:underline flex items-center gap-1">View all 14 <ArrowRight className="w-3 h-3" /></button>}>
-        <div className="divide-y divide-gray-100">
-          {timeline.slice(0, 6).map((a) => (
-            <button key={a.id} onClick={() => openDrawer(nav, a.id)} className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 text-left">
-              <span className="text-xs font-bold text-gray-500 w-11 shrink-0">{a.timeLabel.slice(0, 5)}</span>
-              <span className="flex-1 min-w-0">
-                <span className="text-sm font-medium text-gray-800 truncate block">{a.patient.name}</span>
-                <span className="text-xs text-gray-400 truncate block">{a.type.replace(" (in-person)", "").replace(" (video)", "")} · {a.doctor.replace("Dr. ", "Dr. ")}</span>
-              </span>
-              <StatusPill status={a.status} type={statusPillType(a.status)} />
-            </button>
-          ))}
-        </div>
-      </Section>
-
-      <Section title="Results Queue" className="flex-1 min-h-0" action={<button onClick={() => nav("/patients")} className="text-xs font-bold text-slate-600 hover:underline">View all →</button>}>
+      <Section title="Results Queue" className="flex-1 min-h-0" action={<button onClick={() => nav("/patients")} className="text-xs font-bold text-slate-600 hover:underline">View all patients →</button>}>
         <div className="divide-y divide-gray-100">
           {results.map((r) => (
             <button key={r.patient} onClick={() => nav("/patients/P-001/results")} className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 text-left gap-2">

@@ -80,6 +80,20 @@ export function CalendarWidget({ role }: { role: Role }) {
   const gridHeight = (DAY_END_HOUR - DAY_START_HOUR) * HOUR_PX;
   const nowTop = ((NOW_MINUTES - DAY_START_HOUR * 60) / 60) * HOUR_PX;
 
+  // Glanceable progress line: so Admin/Reception don't have to count blocks
+  // one by one to know how today's clinic is moving. "In progress" folds
+  // together every stage between arrival and completion (Arrived/Checked
+  // In/In Clinic) since those sub-states are already distinguishable by
+  // color on the blocks themselves below.
+  const scoped = columns.flatMap((c) => c.appts);
+  const summary = {
+    total: scoped.length,
+    completed: scoped.filter((a) => a.status === "Completed").length,
+    inProgress: scoped.filter((a) => a.status === "Arrived" || a.status === "Checked In" || a.status === "In Clinic").length,
+    upcoming: scoped.filter((a) => a.status === "Booked").length,
+    noShow: scoped.filter((a) => a.status === "No Show").length,
+  };
+
   return (
     <div className="border border-gray-200 rounded-xl shadow-sm bg-white flex flex-col h-full min-h-0">
       {/* Header */}
@@ -94,6 +108,23 @@ export function CalendarWidget({ role }: { role: Role }) {
           Open Calendar <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
+
+      {/* Progress summary */}
+      <div className="px-4 py-2 bg-white flex items-center gap-2 text-xs shrink-0 overflow-x-auto">
+        <span className="font-bold text-gray-700 whitespace-nowrap">{summary.total} appointments</span>
+        <span className="text-gray-300">·</span>
+        <span className="font-semibold text-gray-500 whitespace-nowrap">{summary.completed} completed</span>
+        <span className="text-gray-300">·</span>
+        <span className="font-semibold text-amber-600 whitespace-nowrap">{summary.inProgress} in progress</span>
+        <span className="text-gray-300">·</span>
+        <span className="font-semibold text-blue-600 whitespace-nowrap">{summary.upcoming} upcoming</span>
+        <span className="text-gray-300">·</span>
+        <span className="font-semibold text-red-600 whitespace-nowrap">{summary.noShow} no-show</span>
+      </div>
+      {/* A soft tint of each status color, in the same left-to-right order as
+          the counts above, replaces a plain gray rule — ties the divider
+          back to what it's separating without shouting. */}
+      <div className="h-[3px] shrink-0 bg-gradient-to-r from-gray-200 via-amber-200 via-30% via-blue-200 via-70% to-red-200" />
 
       {/* Column headers (multi-doctor for Admin/Reception) */}
       {columns.length > 1 && (
