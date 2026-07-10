@@ -173,7 +173,7 @@ export function SchedulePage() {
         onBlock={() => setModal({ kind: "block" })}
       />
 
-      <div className="flex-1 min-h-0 p-4">
+      <div className="flex-1 min-h-0 p-4 bg-gray-50/80">
         {isList ? (
           <ListView appts={scoped} onRowClick={openAppt} />
         ) : effView === "week" ? (

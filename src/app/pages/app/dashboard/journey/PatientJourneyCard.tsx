@@ -1,0 +1,222 @@
+import React from "react";
+import { Link } from "react-router";
+import { ArrowRight, Check, Flag, PauseCircle, PlayCircle, SkipForward, StickyNote, Undo2, UserRound } from "lucide-react";
+import type { StepRenderState, StepRow } from "./journeyEngine";
+import type { JourneyEngine } from "./useJourneyEngine";
+import { ExitConfirmPopover, GoBackDialog, NotePopover, SkipDialog } from "./JourneyDialogs";
+
+const SEGMENT_CLASS: Record<StepRenderState, string> = {
+  done: "bg-emerald-500",
+  prog: "bg-blue-500 motion-safe:animate-pulse",
+  wait: "bg-amber-400",
+  up: "bg-gray-200",
+  skip: "bg-[repeating-linear-gradient(45deg,#d1d5db,#d1d5db_3px,#e5e7eb_3px,#e5e7eb_6px)]",
+};
+
+function ProgressBar({ segments }: { segments: StepRenderState[] }) {
+  return (
+    <div className="flex gap-1">
+      {segments.map((s, i) => <div key={i} className={`flex-1 h-2 rounded-full ${SEGMENT_CLASS[s]}`} />)}
+    </div>
+  );
+}
+
+function StepNode({ state }: { state: StepRenderState }) {
+  if (state === "done") return <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0"><Check className="w-4 h-4" strokeWidth={3} /></div>;
+  if (state === "skip") return <div className="w-8 h-8 rounded-lg bg-gray-100 border border-gray-300 text-gray-400 flex items-center justify-center shrink-0"><SkipForward className="w-4 h-4" /></div>;
+  if (state === "prog") {
+    return (
+      <div className="relative w-8 h-8 shrink-0 flex items-center justify-center">
+        <div className="absolute inset-0 rounded-full bg-blue-400/40 motion-safe:animate-ping" />
+        <div className="relative w-8 h-8 rounded-full bg-white border-[3px] border-blue-500 flex items-center justify-center">
+          <div className="w-2 h-2 rounded-full bg-blue-500" />
+        </div>
+      </div>
+    );
+  }
+  return <div className="w-6 h-6 m-1 rounded-full border-2 border-gray-300 bg-white shrink-0" />;
+}
+
+function StepBody({ row }: { row: StepRow }) {
+  const nameCls =
+    row.state === "done" ? "text-gray-400 font-semibold" :
+    row.state === "prog" ? "text-navy font-extrabold text-slate-800" :
+    row.state === "skip" ? "text-gray-400 line-through decoration-gray-300 font-semibold" :
+    "text-gray-400 font-semibold";
+  return (
+    <div className={`flex-1 min-w-0 ${row.notLast ? "pb-5" : "pb-1"}`}>
+      {row.showWaited && (
+        <div className="inline-block text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md mb-1.5">
+          Waited {row.waited} min
+        </div>
+      )}
+      <div className="flex items-baseline gap-2">
+        <span className={`min-w-0 truncate text-[17px] ${nameCls}`}>{row.name}</span>
+        {row.showOwner && <span className="shrink-0 text-[11px] font-extrabold uppercase tracking-wide text-gray-400 bg-gray-100 px-2 py-0.5 rounded-md">{row.owner}</span>}
+        {row.showWaitLive && <span className="shrink-0 inline-flex items-center gap-1.5 text-xs font-bold text-amber-800 bg-amber-50 px-2.5 py-0.5 rounded-full">◷ Waiting · {row.waitLive} min</span>}
+        <span className="ml-auto shrink-0 text-sm font-bold text-gray-500 tabular-nums">
+          {row.showTime && row.timeTxt}
+          {row.showDur && row.durTxt}
+        </span>
+      </div>
+      {row.showProg && <div className="text-sm font-extrabold text-blue-600 tabular-nums mt-1">{row.progTxt}</div>}
+      {row.showInfo && <div className="mt-2 inline-block text-sm font-semibold text-blue-900 bg-blue-50 border border-blue-100 rounded-lg px-3.5 py-2.5">{row.infoTxt}</div>}
+      {row.showSkip && <div className="text-sm text-gray-400 font-semibold mt-1">{row.skipCap}</div>}
+      {row.note && (
+        <div className="mt-2 flex items-start gap-1.5 text-sm text-gray-600 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+          <StickyNote className="w-3.5 h-3.5 mt-0.5 text-gray-400 shrink-0" />
+          <span>{row.note}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EmptyJourney({ hasQueue, onStartNext }: { hasQueue: boolean; onStartNext: () => void }) {
+  return (
+    <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
+      <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+        <UserRound className="w-8 h-8 text-gray-400" />
+      </div>
+      <h2 className="text-xl font-bold text-gray-800 mb-1">No patient in progress</h2>
+      <p className="text-sm text-gray-500 mb-6 max-w-xs">Start the next patient from your queue to begin their journey.</p>
+      <button
+        onClick={onStartNext}
+        disabled={!hasQueue}
+        className={`px-8 py-3.5 rounded-xl text-base font-bold transition-colors ${hasQueue ? "bg-slate-700 text-white hover:bg-slate-800 shadow-md" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}
+      >
+        {hasQueue ? "Start Next Patient" : "No patients waiting"}
+      </button>
+    </div>
+  );
+}
+
+export function PatientJourneyCard({
+  engine, patientName, patientTag, patientMeta, patientRoute, hasQueue, onStartNext,
+}: {
+  engine: JourneyEngine;
+  patientName: string;
+  patientTag: string;
+  patientMeta: string;
+  patientRoute: string;
+  hasQueue: boolean;
+  onStartNext: () => void;
+}) {
+  const { journey, cur } = engine;
+  const isDoneAll = cur.mode === "done";
+  const initials = patientName.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
+
+  let primaryLabel = "";
+  if (cur.step) {
+    if (cur.mode === "enter") primaryLabel = `Start — ${cur.step.name}`;
+    else if (cur.mode === "exit") primaryLabel = `Complete — ${cur.step.name}`;
+    else if (cur.mode === "milestone") primaryLabel = `Confirm — ${cur.step.name}`;
+  } else if (isDoneAll) primaryLabel = "Awaiting Check Out · Receptionist";
+  if (engine.paused) primaryLabel = "Resume Journey";
+
+  const primaryBtnClass = engine.paused
+    ? "bg-emerald-600 hover:bg-emerald-700"
+    : isDoneAll
+    ? "bg-gray-100 text-gray-400 cursor-default"
+    : "bg-slate-700 hover:bg-slate-800";
+
+  return (
+    <div className="h-full bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col overflow-hidden">
+      {/* Identity bar */}
+      <div className="p-6 border-b border-gray-200 flex items-start justify-between gap-4 shrink-0">
+        <div className="flex items-center gap-4 min-w-0">
+          <div className="w-14 h-14 rounded-full bg-slate-700 text-white flex items-center justify-center text-lg font-bold shrink-0">{initials}</div>
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-2.5 flex-wrap">
+              <h2 className="text-xl font-extrabold text-slate-800 truncate tracking-tight">{patientName}</h2>
+              <span className="text-sm font-semibold text-gray-400 shrink-0">{patientTag}</span>
+              {engine.flagged && <span className="text-xs font-extrabold text-white bg-red-500 rounded-full px-2.5 py-0.5 shrink-0">⚑ Flagged</span>}
+            </div>
+            <div className="text-sm text-gray-500 font-medium mt-0.5 truncate">{patientMeta}</div>
+          </div>
+        </div>
+        <Link to={patientRoute} className="flex items-center gap-1.5 text-sm font-bold text-slate-700 hover:underline shrink-0">
+          Open Patient Record <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+
+      {/* Panel head: progress bar + chips */}
+      <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between gap-6 shrink-0">
+        <div>
+          <div className="text-lg font-extrabold text-slate-800 tracking-tight">Patient Journey</div>
+          <div className="text-xs font-semibold text-gray-500 mt-1">{journey.doneN} of {journey.totalStations} stations complete · {journey.progressPct}%</div>
+        </div>
+        <div className="flex flex-col gap-2.5 flex-1 max-w-[400px]">
+          <ProgressBar segments={journey.segments} />
+          <div className="flex gap-2 justify-end">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-gray-600 bg-gray-100 rounded-full px-2.5 py-1"><span className="w-2 h-2 rounded-full bg-emerald-500" />{journey.doneN} done</span>
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-gray-600 bg-gray-100 rounded-full px-2.5 py-1"><span className="w-2 h-2 rounded-full bg-blue-500" />{journey.progN} active</span>
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-gray-600 bg-gray-100 rounded-full px-2.5 py-1"><span className="w-2 h-2 rounded-full bg-amber-500" />{journey.remainN} to go</span>
+          </div>
+        </div>
+      </div>
+
+      {isDoneAll ? (
+        <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
+          <div className="w-14 h-14 rounded-full bg-emerald-500 text-white flex items-center justify-center mb-3"><Check className="w-7 h-7" strokeWidth={3} /></div>
+          <h2 className="text-lg font-extrabold text-slate-800">Nurse journey complete</h2>
+          <p className="text-sm text-gray-500 mt-1">Awaiting Check Out · Receptionist</p>
+        </div>
+      ) : !cur.step && !journey.rows.length ? (
+        <EmptyJourney hasQueue={hasQueue} onStartNext={onStartNext} />
+      ) : (
+        <>
+          <div className="flex-1 overflow-y-auto px-6 py-5 min-h-0">
+            {journey.rows.map((row) => (
+              <div key={row.id} className="flex gap-4">
+                <div className="flex flex-col items-center shrink-0">
+                  <StepNode state={row.state} />
+                  {row.notLast && <div className={`w-0.5 flex-1 min-h-[26px] my-0.5 ${row.state === "done" ? "bg-emerald-300" : "bg-gray-200"}`} />}
+                </div>
+                <StepBody row={row} />
+              </div>
+            ))}
+          </div>
+
+          {/* Action bar */}
+          <div className="relative px-6 pt-4 pb-5 border-t border-gray-200 bg-gray-50/70 shrink-0">
+            {engine.exitPopover && cur.step && <ExitConfirmPopover engine={engine} step={cur.step} />}
+            {engine.notePopover && <NotePopover engine={engine} />}
+
+            {cur.mode === "exit" && (
+              <div className="text-center text-sm font-extrabold text-blue-600 tabular-nums mb-2">
+                {Math.max(0, engine.clock - (engine.entries[cur.step!.id]?.enter ?? engine.clock))} min elapsed
+              </div>
+            )}
+            {engine.paused && <div className="text-center text-sm font-extrabold text-amber-600 mb-2">Journey paused — timers stopped</div>}
+
+            <button onClick={engine.primaryTap} disabled={isDoneAll && !engine.paused} className={`w-full h-14 rounded-xl text-white text-base font-extrabold tracking-tight transition-colors ${primaryBtnClass}`}>
+              {primaryLabel}
+            </button>
+
+            {cur.mode === "enter" && (
+              <div className="flex items-center gap-1 mt-3">
+                <button onClick={engine.openSkip} className="flex items-center gap-1.5 h-11 px-4 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-100"><SkipForward className="w-4 h-4" /> Skip this station</button>
+                <button onClick={engine.openNote} className="flex items-center gap-1.5 h-11 px-4 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-100"><StickyNote className="w-4 h-4" /> Add Note</button>
+              </div>
+            )}
+            {cur.mode === "exit" && (
+              <div className="flex items-center gap-1 mt-3">
+                <button onClick={engine.openNote} className="flex items-center gap-1.5 h-11 px-4 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-100"><StickyNote className="w-4 h-4" /> Add Note</button>
+                <button onClick={engine.toggleFlag} className={`flex items-center gap-1.5 h-11 px-4 rounded-lg text-sm font-bold hover:bg-gray-100 ${engine.flagged ? "text-red-600" : "text-gray-600"}`}><Flag className="w-4 h-4" /> {engine.flagged ? "Unflag" : "Flag Issue"}</button>
+                <button onClick={engine.togglePause} className="flex items-center gap-1.5 h-11 px-4 rounded-lg text-sm font-bold text-gray-600 hover:bg-gray-100">{engine.paused ? <PlayCircle className="w-4 h-4" /> : <PauseCircle className="w-4 h-4" />} {engine.paused ? "Resume" : "Pause Journey"}</button>
+                <div className="w-px h-6 bg-gray-200 mx-1 ml-auto" />
+                {engine.prevStation && (
+                  <button onClick={engine.openGoBack} className="flex items-center gap-1.5 h-11 px-4 rounded-lg text-xs font-bold text-gray-400 hover:bg-gray-100"><Undo2 className="w-3.5 h-3.5" /> Go Back</button>
+                )}
+              </div>
+            )}
+          </div>
+        </>
+      )}
+
+      {engine.dialog?.kind === "skip" && cur.step && <SkipDialog engine={engine} stepName={cur.step.name} />}
+      {engine.dialog?.kind === "goback" && cur.step && <GoBackDialog engine={engine} prevName={engine.prevStation?.name ?? "the previous station"} curName={cur.step.name} />}
+    </div>
+  );
+}

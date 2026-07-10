@@ -55,11 +55,11 @@ export function AvailabilityList() {
       <div className="max-w-md">
         <div
           onClick={() => navigate("/calendar/my-availability/clinic")}
-          className="bg-white border border-gray-300 rounded-lg p-6 cursor-pointer hover:border-slate-500 transition-colors shadow-sm group"
+          className="bg-white border border-gray-200 rounded-xl p-6 cursor-pointer hover:border-slate-400 hover:shadow-md transition-all shadow-sm group"
         >
           <div className="flex justify-between items-start mb-4">
             <h3 className="text-lg font-bold text-gray-800 group-hover:text-slate-700">Clinic Availability</h3>
-            <span className="px-2 py-1 bg-green-100 text-green-700 text-[10px] font-bold uppercase tracking-wider rounded">Default</span>
+            <span className="px-2 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold uppercase tracking-wider rounded-full">Default</span>
           </div>
           <div className="space-y-2">
             <p className="text-sm text-gray-700 font-medium">Mon – Fri, 9:00 AM – 5:00 PM</p>

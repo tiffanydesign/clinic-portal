@@ -2,22 +2,18 @@
 // Unlike the shared multi-role dashboard (KPI bar + calendar + queue panels),
 // this page has its own dedicated model built around one question: what does
 // this nurse do right now, and who's next — not a KPI/metrics summary.
+// The Patient Journey card's own step/state-machine model lives in
+// ./journey/journeyEngine.ts; this file only carries patient identity plus
+// the rail cards (schedule, queue, completed).
 
-export type JourneyStep = {
-  label: string;
-  completedTime?: string; // set once the step is done
-  status?: string; // shown only while this step is current, e.g. "In progress · 12 min"
-  detail?: string; // action-oriented guidance, shown only while this step is current
-  action?: string; // primary button label while this step is current
-};
+import { NOW_MINUTES } from "./dashboardData";
+import type { JourneyEntries } from "./journey/journeyEngine";
 
-export type CurrentPatient = {
+export type PatientIdentity = {
   name: string;
-  age: string; // "34 · F"
-  appointment: string; // "Body Scan · 08:00 · Dr. Claudia Reis · Room 3"
-  patientRoute: string;
-  currentStepIndex: number;
-  steps: JourneyStep[];
+  tag: string; // "34 · F"
+  meta: string; // "Body Scan · 08:00 · Dr. Claudia Reis · Room 3"
+  route: string;
 };
 
 export type ScheduleStatus = "in-progress" | "upcoming" | "cancelled";
@@ -44,20 +40,24 @@ export type CompletedItem = {
   time: string;
 };
 
-export const INITIAL_CURRENT_PATIENT: CurrentPatient = {
+export const INITIAL_PATIENT: PatientIdentity = {
   name: "Mackenzie Messineo",
-  age: "34 · F",
-  appointment: "Body Scan · 08:00 · Dr. Claudia Reis · Room 3",
-  patientRoute: "/patients/P-001",
-  currentStepIndex: 2,
-  steps: [
-    { label: "Pickup", completedTime: "07:45" },
-    { label: "Changing Room", completedTime: "07:52" },
-    { label: "Scan", status: "In progress · 12 min", detail: "Body scan underway · Room 3 · est. 15 min remaining", action: "Mark Scan Complete" },
-    { label: "Sample Collection", status: "Next up", detail: "Collect blood sample now · Lab 1 · 2 tubes required", action: "Mark Sample Collected" },
-    { label: "Consultation", status: "Next up", detail: "Review results with Dr. Claudia Reis · Room 3", action: "Mark Consultation Complete" },
-    { label: "Check Out", status: "Final step", detail: "Discharge patient and close out the journey", action: "Mark Check-Out Complete" },
-  ],
+  tag: "34 · F",
+  meta: "Body Scan · 08:00 · Dr. Claudia Reis · Room 3",
+  route: "/patients/P-001",
+};
+
+// Clock is in minutes-from-midnight, sharing NOW_MINUTES with the rest of
+// the dashboard so the journey's "now" agrees with the schedule rail below
+// it. The entries below tell a mid-flow story ending in machine1: signed,
+// picked up, two scans done, and 16 of 27 min into the third station.
+export const INITIAL_CLOCK = NOW_MINUTES;
+export const INITIAL_ENTRIES: JourneyEntries = {
+  signed: { at: 480 },
+  pickup: { at: 495 },
+  scan1: { enter: 500, exit: 515 },
+  scan2: { enter: 521, exit: 533 },
+  machine1: { enter: 538 },
 };
 
 export const INITIAL_SCHEDULE: ScheduleItem[] = [
@@ -85,23 +85,12 @@ export const INITIAL_COMPLETED_TODAY: CompletedItem[] = [
   { name: "Elena Popescu", type: "Check-in", time: "08:10" },
 ];
 
-// Every visit follows the same six-stage journey in this demo, regardless of
-// appointment type — matching the simplification the rest of the dashboard
-// mock data already makes (one shared JOURNEY_STEPS_RECEPTION template).
-export function buildPatientFromQueueItem(item: QueueItem): CurrentPatient {
+// Starting the next patient from the queue: signed and picked up are already
+// settled by the time the nurse takes over, so the journey engine's
+// currentStep() lands directly on the first station in "enter" mode.
+export function buildPatientFromQueueItem(item: QueueItem, clock: number): { identity: PatientIdentity; entries: JourneyEntries } {
   return {
-    name: item.name,
-    age: "—",
-    appointment: `${item.type} · ${item.time}`,
-    patientRoute: "/patients/P-001",
-    currentStepIndex: 0,
-    steps: [
-      { label: "Pickup", status: "In progress · just started", detail: `Bring ${item.name} in from the waiting area`, action: "Mark Pickup Complete" },
-      { label: "Changing Room", detail: "Confirm patient is changed and ready", action: "Mark Changing Room Complete" },
-      { label: "Scan", detail: "Begin body scan", action: "Mark Scan Complete" },
-      { label: "Sample Collection", detail: "Collect required sample", action: "Mark Sample Collected" },
-      { label: "Consultation", detail: "Hand off to clinician for consultation", action: "Mark Consultation Complete" },
-      { label: "Check Out", detail: "Discharge patient and close out the journey", action: "Mark Check-Out Complete" },
-    ],
+    identity: { name: item.name, tag: "—", meta: `${item.type} · ${item.time}`, route: "/patients/P-001" },
+    entries: { signed: { at: clock }, pickup: { at: clock } },
   };
 }

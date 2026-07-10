@@ -268,14 +268,14 @@ export function TeamAvailability() {
       <div className="h-16 px-6 border-b border-gray-200 flex items-center justify-between shrink-0 bg-white">
         
         {/* Left: Navigator */}
-        <div className="flex items-center space-x-4">
-          <div className="flex items-center bg-gray-50 border border-gray-300 rounded text-gray-500 relative">
-            <button className="px-2 py-1.5 hover:bg-gray-200 border-r border-gray-300 rounded-l"><ChevronLeft className="w-4 h-4" /></button>
-            <span className="px-4 text-sm font-bold text-gray-700 whitespace-nowrap">{weekLabel}</span>
-            <button className="px-2 py-1.5 hover:bg-gray-200 border-l border-gray-300"><ChevronRight className="w-4 h-4" /></button>
-            <button 
+        <div className="flex items-center space-x-2">
+          <div className="flex items-center bg-white border border-gray-300 rounded-lg shadow-sm text-gray-500 relative">
+            <button className="px-2 py-1.5 hover:bg-gray-100 border-r border-gray-200 rounded-l-lg"><ChevronLeft className="w-4 h-4" /></button>
+            <span className="px-4 text-sm font-bold text-gray-700 whitespace-nowrap tabular-nums">{weekLabel}</span>
+            <button className="px-2 py-1.5 hover:bg-gray-100 border-l border-gray-200"><ChevronRight className="w-4 h-4" /></button>
+            <button
               onClick={() => setCalendarOpen(!calendarOpen)}
-              className="px-2 py-1.5 hover:bg-gray-200 border-l border-gray-300 rounded-r flex items-center justify-center"
+              className="px-2 py-1.5 hover:bg-gray-100 border-l border-gray-200 rounded-r-lg flex items-center justify-center"
             >
               <Calendar className="w-4 h-4 text-gray-500" />
             </button>
@@ -323,16 +323,16 @@ export function TeamAvailability() {
               </div>
             )}
           </div>
-          <button onClick={() => setWeekLabel("30 Jun – 6 Jul 2026")} className="px-3 py-1.5 text-sm font-bold text-gray-600 border border-gray-300 bg-white rounded hover:bg-gray-50">
+          <button onClick={() => setWeekLabel("30 Jun – 6 Jul 2026")} className="px-3 py-1.5 text-sm font-bold text-gray-600 border border-gray-300 bg-white rounded-lg shadow-sm hover:bg-gray-50">
             Today
           </button>
         </div>
 
         {/* Center: Staff Picker */}
         <div className="relative" ref={pickerRef}>
-          <div 
+          <div
             onClick={() => setPickerOpen(true)}
-            className="w-[500px] min-h-[38px] border border-slate-300 bg-white rounded shadow-sm flex items-center px-2 cursor-text transition-colors hover:border-slate-400 relative"
+            className="w-[500px] min-h-[38px] border border-slate-300 bg-white rounded-lg shadow-sm flex items-center px-2 cursor-text transition-colors hover:border-slate-400 relative"
           >
             {selectedStaff.length === 0 ? (
               <span className="text-sm text-gray-400 pl-2">Add staff to compare...</span>
@@ -505,9 +505,8 @@ export function TeamAvailability() {
                 return (
                   <div key={staff.id} className={`flex w-full group ${rowBorderClass} last:border-b-0 ${rowHeightClass}`}>
                     {/* Left Info Col */}
-                    <div className="w-[200px] shrink-0 border-r border-gray-200 flex items-center px-4 relative">
-                      <div className={`absolute left-0 top-0 bottom-0 w-1 ${staff.role === 'Clinician' ? 'bg-blue-500' : 'bg-emerald-500'}`} />
-                      <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-white shrink-0 mr-3">
+                    <div className="w-[200px] shrink-0 border-r border-gray-200 flex items-center px-4 relative bg-white">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 mr-3 ring-2 ring-offset-1 ${staff.role === 'Clinician' ? 'bg-blue-500 ring-blue-200' : 'bg-emerald-500 ring-emerald-200'}`}>
                         {staff.avatar}
                       </div>
                       <div className="min-w-0 flex-1 flex flex-col justify-center">
@@ -539,8 +538,10 @@ export function TeamAvailability() {
                           <div className="flex flex-col h-full w-full relative">
                             {/* Dummy spacer for summary bar height to keep blocks aligned */}
                             <div className="h-[4px] w-full mb-[6px] mt-0.5"></div>
-                            <div className={`w-full ${blockHeightClass} rounded-[6px] border-l-[3px] px-2 flex ${isCompact ? 'flex-row items-center space-x-1.5' : 'flex-col justify-center'} bg-red-50 border-red-500 text-red-700 shrink-0`}>
-                              <div className="text-[9px] font-bold uppercase tracking-wider opacity-80 leading-none">ON LEAVE</div>
+                            <div className={`w-full ${blockHeightClass} rounded-lg border border-red-200 px-2 flex ${isCompact ? 'flex-row items-center space-x-1.5' : 'flex-col justify-center'} bg-red-50 text-red-700 shrink-0`}>
+                              <div className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider opacity-80 leading-none">
+                                <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" /> ON LEAVE
+                              </div>
                               {!isCompact && <div className="h-1" />}
                               <div className={`font-medium leading-none ${isCompact ? 'text-[11px]' : 'text-xs'}`}>All Day</div>
                             </div>
@@ -601,18 +602,21 @@ export function TeamAvailability() {
                                   let bg = '';
                                   let border = '';
                                   let text = '';
+                                  let dot = '';
                                   let labelText = block.type.toUpperCase();
 
-                                  if (isBlue) { bg = 'bg-[#DBEAFE]'; border = 'border-[#3B82F6]'; text = 'text-blue-800'; }
-                                  if (isPurple) { bg = 'bg-[#EDE9FE]'; border = 'border-[#7C3AED]'; text = 'text-purple-800'; }
-                                  if (isGreen) { bg = 'bg-[#D1FAE5]'; border = 'border-[#10B981]'; text = 'text-emerald-800'; }
+                                  if (isBlue) { bg = 'bg-blue-50'; border = 'border-blue-200'; text = 'text-blue-800'; dot = 'bg-blue-500'; }
+                                  if (isPurple) { bg = 'bg-purple-50'; border = 'border-purple-200'; text = 'text-purple-800'; dot = 'bg-purple-500'; }
+                                  if (isGreen) { bg = 'bg-emerald-50'; border = 'border-emerald-200'; text = 'text-emerald-800'; dot = 'bg-emerald-500'; }
 
                                   return (
-                                    <div 
+                                    <div
                                       key={bIdx}
-                                      className={`w-full ${blockHeightClass} rounded-[6px] border-l-[3px] px-2 flex ${isCompact ? 'flex-row items-center space-x-1.5' : 'flex-col justify-center'} ${bg} ${border} ${text} shrink-0`}
+                                      className={`w-full ${blockHeightClass} rounded-lg border px-2 flex ${isCompact ? 'flex-row items-center space-x-1.5' : 'flex-col justify-center'} ${bg} ${border} ${text} shrink-0`}
                                     >
-                                      <div className="text-[9px] font-bold uppercase tracking-wider opacity-80 leading-none">{labelText}</div>
+                                      <div className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider opacity-80 leading-none">
+                                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dot}`} /> {labelText}
+                                      </div>
                                       {!isCompact && <div className="h-1" />}
                                       <div className={`font-medium leading-none ${isCompact ? 'text-[11px]' : 'text-xs'}`}>{block.start} – {block.end}</div>
                                     </div>

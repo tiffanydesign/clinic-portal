@@ -4,7 +4,7 @@ import { Video, ArrowRight } from "lucide-react";
 import type { Role } from "../../../context/AppContext";
 import {
   APPTS, Appt, DOCTOR_COLUMNS, DAY_START_HOUR, DAY_END_HOUR, HOUR_PX,
-  NOW_MINUTES, TODAY_SHORT, apptBlockClass,
+  NOW_MINUTES, TODAY_SHORT, apptBlockClass, apptStatusDotClass, blockHeightPx, gapToNext, minToClock,
 } from "./dashboardData";
 
 const NURSE_NAME = "Berna Koç";
@@ -46,10 +46,10 @@ function packLanes(appts: Appt[]): { appt: Appt; lane: number; lanes: number }[]
   return placed.map((p) => ({ ...p, lanes }));
 }
 
-function ApptBlock({ appt, lane, lanes }: { appt: Appt; lane: number; lanes: number }) {
+function ApptBlock({ appt, lane, lanes, gapMin }: { appt: Appt; lane: number; lanes: number; gapMin?: number }) {
   const navigate = useNavigate();
   const top = ((appt.startMin - DAY_START_HOUR * 60) / 60) * HOUR_PX;
-  const height = Math.max(22, (appt.durationMin / 60) * HOUR_PX - 2);
+  const height = blockHeightPx(appt.durationMin, gapMin);
   const widthPct = 100 / lanes;
   const showDetail = height >= 38;
 
@@ -57,14 +57,15 @@ function ApptBlock({ appt, lane, lanes }: { appt: Appt; lane: number; lanes: num
     <button
       onClick={() => navigate(`/dashboard/appointment/${appt.id}`)}
       style={{ top, height, left: `${lane * widthPct}%`, width: `calc(${widthPct}% - 3px)` }}
-      className={`absolute rounded px-2 py-1 text-left overflow-hidden hover:shadow-md hover:z-10 transition-shadow ${apptBlockClass(appt.status)}`}
+      className={`absolute px-2 py-1 text-left overflow-hidden hover:shadow-md hover:z-10 transition-shadow ${apptBlockClass(appt.status)}`}
     >
-      <div className="flex items-center gap-1 min-w-0">
+      <div className="flex items-center gap-1.5 min-w-0">
+        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${apptStatusDotClass(appt.status)}`} />
         {appt.isVideo && <Video className="w-3 h-3 text-slate-500 shrink-0" />}
         <span className="text-[11px] font-bold text-gray-800 truncate">{appt.patient.name}</span>
       </div>
       {showDetail && (
-        <div className="text-[10px] text-gray-500 truncate mt-0.5">
+        <div className="text-[10px] text-gray-500 truncate mt-0.5 pl-3">
           {appt.type.replace(" (in-person)", "").replace(" (video)", "")} · {appt.durationMin}m
         </div>
       )}
@@ -80,15 +81,15 @@ export function CalendarWidget({ role }: { role: Role }) {
   const nowTop = ((NOW_MINUTES - DAY_START_HOUR * 60) / 60) * HOUR_PX;
 
   return (
-    <div className="border border-gray-300 rounded bg-white flex flex-col h-full min-h-0">
+    <div className="border border-gray-200 rounded-xl shadow-sm bg-white flex flex-col h-full min-h-0">
       {/* Header */}
-      <div className="h-12 border-b border-gray-200 px-4 flex items-center justify-between shrink-0">
+      <div className="h-12 border-b border-gray-200 bg-gray-50/70 px-4 flex items-center justify-between shrink-0">
         <h3 className="font-bold text-gray-800 text-sm">
           Today's Schedule <span className="text-gray-400 font-medium ml-1">{TODAY_SHORT}</span>
         </h3>
         <button
           onClick={() => navigate("/calendar/schedule")}
-          className="text-xs font-bold text-slate-600 hover:text-slate-800 flex items-center gap-1"
+          className="text-xs font-bold text-slate-600 hover:text-slate-800 flex items-center gap-1 transition-colors"
         >
           Open Calendar <ArrowRight className="w-3.5 h-3.5" />
         </button>
@@ -96,7 +97,7 @@ export function CalendarWidget({ role }: { role: Role }) {
 
       {/* Column headers (multi-doctor for Admin/Reception) */}
       {columns.length > 1 && (
-        <div className="flex border-b border-gray-200 shrink-0 pl-14">
+        <div className="flex border-b border-gray-200 bg-gray-50/40 shrink-0 pl-14">
           {columns.map((c) => (
             <div key={c.key} className="flex-1 px-2 py-2 text-center text-xs font-bold text-gray-600 border-l border-gray-100 truncate">
               {c.label}
@@ -109,12 +110,15 @@ export function CalendarWidget({ role }: { role: Role }) {
       <div className="flex-1 overflow-y-auto">
         <div className="flex" style={{ height: gridHeight }}>
           {/* Hour gutter */}
-          <div className="w-14 shrink-0 relative border-r border-gray-200">
+          <div className="w-14 shrink-0 relative border-r border-gray-200 bg-gray-50/30">
             {hours.map((h, i) => (
-              <div key={h} className="absolute left-0 right-0 text-[10px] text-gray-400 text-right pr-2" style={{ top: i * HOUR_PX - 6 }}>
+              <div key={h} className="absolute left-0 right-0 text-[10px] font-medium text-gray-400 text-right pr-2 tabular-nums" style={{ top: i * HOUR_PX - 6 }}>
                 {i === 0 ? "" : `${String(h).padStart(2, "0")}:00`}
               </div>
             ))}
+            <span className="absolute right-1.5 z-20 text-[9px] font-bold text-white bg-red-500 rounded px-1 py-[1px] shadow-sm tabular-nums" style={{ top: nowTop - 7 }}>
+              {minToClock(NOW_MINUTES)}
+            </span>
           </div>
 
           {/* Columns */}
@@ -126,9 +130,8 @@ export function CalendarWidget({ role }: { role: Role }) {
 
             {/* Now line */}
             <div className="absolute left-0 right-0 z-20 pointer-events-none" style={{ top: nowTop }}>
-              <div className="relative border-t border-red-500">
-                <span className="absolute -left-[3px] -top-[4px] w-2 h-2 rounded-full bg-red-500" />
-                <span className="absolute right-1 -top-[8px] text-[9px] font-bold text-red-500 bg-white px-1">09:14</span>
+              <div className="relative border-t-2 border-red-500 shadow-[0_0_6px_rgba(239,68,68,0.35)]">
+                <span className="absolute -left-[4px] -top-[5px] w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white" />
               </div>
             </div>
 
@@ -138,9 +141,10 @@ export function CalendarWidget({ role }: { role: Role }) {
                 const packed = packLanes(c.appts);
                 return (
                   <div key={c.key} className="flex-1 relative border-l border-gray-100">
-                    {packed.map(({ appt, lane, lanes }) => (
-                      <ApptBlock key={appt.id} appt={appt} lane={lane} lanes={lanes} />
-                    ))}
+                    {packed.map(({ appt, lane, lanes }) => {
+                      const laneMates = packed.filter((p) => p.lane === lane).map((p) => p.appt);
+                      return <ApptBlock key={appt.id} appt={appt} lane={lane} lanes={lanes} gapMin={gapToNext(laneMates, appt.startMin)} />;
+                    })}
                   </div>
                 );
               })}

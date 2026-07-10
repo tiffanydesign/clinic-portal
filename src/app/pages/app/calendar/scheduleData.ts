@@ -5,10 +5,13 @@
 
 import {
   APPTS, Appt, ApptType, DAY_START_HOUR, DAY_END_HOUR, HOUR_PX, NOW_MINUTES,
-  apptBlockClass, statusPillType,
+  apptBlockClass, apptStatusDotClass, apptTextClass, blockHeightPx, gapToNext, statusPillType,
 } from "../dashboard/dashboardData";
 
-export { APPTS, DAY_START_HOUR, DAY_END_HOUR, HOUR_PX, NOW_MINUTES, apptBlockClass, statusPillType };
+export {
+  APPTS, DAY_START_HOUR, DAY_END_HOUR, HOUR_PX, NOW_MINUTES,
+  apptBlockClass, apptStatusDotClass, apptTextClass, blockHeightPx, gapToNext, statusPillType,
+};
 export type { Appt, ApptType };
 
 export const CLINICIAN_SELF_ID = "EMP-003"; // signed-in clinician (Dr. Claudia Reis)
