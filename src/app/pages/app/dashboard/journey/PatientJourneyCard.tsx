@@ -1,6 +1,6 @@
 import React from "react";
-import { Link } from "react-router";
-import { ArrowRight, Check, Flag, PauseCircle, PlayCircle, SkipForward, StickyNote, Undo2, UserRound } from "lucide-react";
+import { Link, useNavigate } from "react-router";
+import { ArrowRight, Check, Clock, Flag, PauseCircle, PlayCircle, SkipForward, StickyNote, Undo2, UserRound } from "lucide-react";
 import type { StepRenderState, StepRow } from "./journeyEngine";
 import type { JourneyEngine } from "./useJourneyEngine";
 import { ExitConfirmPopover, GoBackDialog, NotePopover, SkipDialog } from "./JourneyDialogs";
@@ -72,35 +72,79 @@ function StepBody({ row }: { row: StepRow }) {
   );
 }
 
-function EmptyJourney({ hasQueue, onStartNext }: { hasQueue: boolean; onStartNext: () => void }) {
+export type NextAppointment = { name: string; time: string };
+
+// The dashboard's three "no active patient" moments. Branch A (a queue is
+// waiting) is the original behavior; B and C read the shift's shape from
+// completedCount to tell "hasn't started yet" apart from "already wrapped
+// up" — two very different moments that a single generic empty state would
+// blur together.
+export function EmptyJourney({
+  hasQueue, completedCount, nextAppt, onStartNext,
+}: {
+  hasQueue: boolean;
+  completedCount: number;
+  nextAppt: NextAppointment | null;
+  onStartNext: () => void;
+}) {
+  const navigate = useNavigate();
+
+  if (hasQueue) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
+        <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+          <UserRound className="w-8 h-8 text-gray-400" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-800 mb-1">No patient in progress</h2>
+        <p className="text-sm text-gray-500 mb-6 max-w-xs">Start the next patient from your queue to begin their journey.</p>
+        <button
+          onClick={onStartNext}
+          className="px-8 py-3.5 rounded-xl text-base font-bold transition-colors bg-slate-700 text-white hover:bg-slate-800 shadow-md"
+        >
+          Start Next Patient
+        </button>
+      </div>
+    );
+  }
+
+  if (completedCount === 0) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
+        <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+          <Clock className="w-8 h-8 text-gray-400" />
+        </div>
+        <h2 className="text-xl font-bold text-gray-800 mb-1">Awaiting First Patient</h2>
+        <p className="text-sm text-gray-500 max-w-xs">
+          {nextAppt
+            ? <>The queue is currently empty. Next upcoming appointment is <span className="font-semibold text-gray-700">{nextAppt.name}</span> at <span className="font-semibold text-gray-700">{nextAppt.time}</span>.</>
+            : "The queue is currently empty. No further appointments are scheduled today."}
+        </p>
+        <button onClick={() => navigate("/calendar/schedule")} className="mt-5 text-sm font-bold text-slate-600 hover:text-slate-800 hover:underline">
+          View today's schedule ↓
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
-      <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-        <UserRound className="w-8 h-8 text-gray-400" />
+      <div className="w-14 h-14 rounded-full bg-emerald-500 text-white flex items-center justify-center mb-3">
+        <Check className="w-7 h-7" strokeWidth={3} />
       </div>
-      <h2 className="text-xl font-bold text-gray-800 mb-1">No patient in progress</h2>
-      <p className="text-sm text-gray-500 mb-6 max-w-xs">Start the next patient from your queue to begin their journey.</p>
-      <button
-        onClick={onStartNext}
-        disabled={!hasQueue}
-        className={`px-8 py-3.5 rounded-xl text-base font-bold transition-colors ${hasQueue ? "bg-slate-700 text-white hover:bg-slate-800 shadow-md" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}
-      >
-        {hasQueue ? "Start Next Patient" : "No patients waiting"}
-      </button>
+      <h2 className="text-lg font-extrabold text-slate-800">All Patients Completed</h2>
+      <p className="text-sm text-gray-500 mt-1 max-w-xs">You have successfully processed all {completedCount} assigned patients for today.</p>
     </div>
   );
 }
 
 export function PatientJourneyCard({
-  engine, patientName, patientTag, patientMeta, patientRoute, hasQueue, onStartNext,
+  engine, patientName, patientTag, patientMeta, patientRoute,
 }: {
   engine: JourneyEngine;
   patientName: string;
   patientTag: string;
   patientMeta: string;
   patientRoute: string;
-  hasQueue: boolean;
-  onStartNext: () => void;
 }) {
   const { journey, cur } = engine;
   const isDoneAll = cur.mode === "done";
@@ -111,14 +155,10 @@ export function PatientJourneyCard({
     if (cur.mode === "enter") primaryLabel = `Start — ${cur.step.name}`;
     else if (cur.mode === "exit") primaryLabel = `Complete — ${cur.step.name}`;
     else if (cur.mode === "milestone") primaryLabel = `Confirm — ${cur.step.name}`;
-  } else if (isDoneAll) primaryLabel = "Awaiting Check Out · Receptionist";
+  }
   if (engine.paused) primaryLabel = "Resume Journey";
 
-  const primaryBtnClass = engine.paused
-    ? "bg-emerald-600 hover:bg-emerald-700"
-    : isDoneAll
-    ? "bg-gray-100 text-gray-400 cursor-default"
-    : "bg-slate-700 hover:bg-slate-800";
+  const primaryBtnClass = engine.paused ? "bg-emerald-600 hover:bg-emerald-700" : "bg-slate-700 hover:bg-slate-800";
 
   return (
     <div className="h-full bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col overflow-hidden">
@@ -159,11 +199,9 @@ export function PatientJourneyCard({
       {isDoneAll ? (
         <div className="flex-1 flex flex-col items-center justify-center text-center p-10">
           <div className="w-14 h-14 rounded-full bg-emerald-500 text-white flex items-center justify-center mb-3"><Check className="w-7 h-7" strokeWidth={3} /></div>
-          <h2 className="text-lg font-extrabold text-slate-800">Nurse journey complete</h2>
-          <p className="text-sm text-gray-500 mt-1">Awaiting Check Out · Receptionist</p>
+          <h2 className="text-lg font-extrabold text-slate-800">Patient Checked Out</h2>
+          <p className="text-sm text-gray-500 mt-1">{patientName}'s visit is complete.</p>
         </div>
-      ) : !cur.step && !journey.rows.length ? (
-        <EmptyJourney hasQueue={hasQueue} onStartNext={onStartNext} />
       ) : (
         <>
           <div className="flex-1 overflow-y-auto px-6 py-5 min-h-0">
@@ -185,12 +223,12 @@ export function PatientJourneyCard({
 
             {cur.mode === "exit" && (
               <div className="text-center text-sm font-extrabold text-blue-600 tabular-nums mb-2">
-                {Math.max(0, engine.clock - (engine.entries[cur.step!.id]?.enter ?? engine.clock))} min elapsed
+                {Math.max(0, engine.clock - (engine.entries[cur.step!.id]?.enter ?? engine.clock))} min
               </div>
             )}
             {engine.paused && <div className="text-center text-sm font-extrabold text-amber-600 mb-2">Journey paused — timers stopped</div>}
 
-            <button onClick={engine.primaryTap} disabled={isDoneAll && !engine.paused} className={`w-full h-14 rounded-xl text-white text-base font-extrabold tracking-tight transition-colors ${primaryBtnClass}`}>
+            <button onClick={engine.primaryTap} className={`w-full h-14 rounded-xl text-white text-base font-extrabold tracking-tight transition-colors ${primaryBtnClass}`}>
               {primaryLabel}
             </button>
 

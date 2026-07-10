@@ -85,12 +85,96 @@ export const INITIAL_COMPLETED_TODAY: CompletedItem[] = [
   { name: "Elena Popescu", type: "Check-in", time: "08:10" },
 ];
 
-// Starting the next patient from the queue: signed and picked up are already
-// settled by the time the nurse takes over, so the journey engine's
-// currentStep() lands directly on the first station in "enter" mode.
+// Starting the next patient from the queue: consent & payment are already
+// settled by the time the nurse takes over, but pickup is left unconfirmed —
+// the nurse's journey always starts with her manually confirming "Picked up
+// from waiting area" before the journey engine will advance to Scan 1.
 export function buildPatientFromQueueItem(item: QueueItem, clock: number): { identity: PatientIdentity; entries: JourneyEntries } {
   return {
     identity: { name: item.name, tag: "—", meta: `${item.type} · ${item.time}`, route: "/patients/P-001" },
-    entries: { signed: { at: clock }, pickup: { at: clock } },
+    entries: { signed: { at: clock } },
   };
 }
+
+function timeToMin(t: string): number {
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + m;
+}
+
+// The earliest non-cancelled appointment on the schedule — used by the
+// "Awaiting First Patient" empty state to name what's coming up next.
+export function nextUpcomingAppointment(schedule: ScheduleItem[]): { name: string; time: string } | null {
+  const sorted = schedule.filter((s) => s.status !== "cancelled").slice().sort((a, b) => timeToMin(a.time) - timeToMin(b.time));
+  const first = sorted[0];
+  return first ? { name: first.name, time: first.time } : null;
+}
+
+// --- Demo Moment scenarios (QA/demo aid only) ---
+// Lets the Nurse dashboard preview all three "no active patient" states —
+// the shared dashboardData.ts NOW_MINUTES stays untouched (other roles'
+// pages read it too); only this page's own `clock` shifts per scenario.
+
+export type DemoMoment = "day-start" | "mid-shift" | "day-wrap";
+
+export type NurseDemoScenario = {
+  label: string;
+  patient: PatientIdentity | null;
+  entries: JourneyEntries;
+  clock: number;
+  schedule: ScheduleItem[];
+  upNext: QueueItem[];
+  completedToday: CompletedItem[];
+};
+
+// Before the first patient has checked in: no one's arrived yet, so the
+// queue is empty and every appointment is still just "upcoming".
+const DAY_START_SCHEDULE: ScheduleItem[] = [
+  { time: "08:00", name: "Mackenzie Messineo", type: "Body Scan", doctor: "Dr. Claudia Reis", room: "Room 3", duration: "45 min", status: "upcoming" },
+  { time: "08:30", name: "Gustavo Propolis", type: "Consultation", doctor: "Dr. Chad Okonkwo", room: "Room 1", duration: "20 min", status: "upcoming" },
+  { time: "09:15", name: "Cynthia Riboflavin", type: "Check-in", doctor: "Dr. Chad Okonkwo", room: "Room 2", duration: "10 min", status: "upcoming" },
+  { time: "10:00", name: "Dylan Daniel", type: "Vitals", doctor: "Dr. Claudia Reis", room: "Room 1", duration: "15 min", status: "upcoming" },
+  { time: "10:30", name: "Amara Chen", type: "Body Scan", doctor: "Dr. Claudia Reis", room: "Room 3", duration: "45 min", status: "upcoming" },
+];
+
+// End of shift: everyone assigned today has been checked out, so no
+// schedule row should still read "in progress".
+const DAY_WRAP_SCHEDULE: ScheduleItem[] = INITIAL_SCHEDULE.map((item) =>
+  item.status === "in-progress" ? { ...item, status: "upcoming" as ScheduleStatus } : item
+);
+const DAY_WRAP_COMPLETED: CompletedItem[] = [
+  { name: "Sophia Lindqvist", type: "Consultation", time: "07:40" },
+  { name: "Marco Duarte", type: "Body Scan", time: "07:55" },
+  { name: "Elena Popescu", type: "Check-in", time: "08:10" },
+  { name: "Mackenzie Messineo", type: "Body Scan", time: "09:20" },
+  { name: "Gustavo Propolis", type: "Consultation", time: "10:05" },
+];
+
+export const NURSE_DEMO_SCENARIOS: Record<DemoMoment, NurseDemoScenario> = {
+  "day-start": {
+    label: "Day Start",
+    patient: null,
+    entries: {},
+    clock: 7 * 60 + 30, // 07:30, before the 08:00 opening appointment
+    schedule: DAY_START_SCHEDULE,
+    upNext: [],
+    completedToday: [],
+  },
+  "mid-shift": {
+    label: "Mid-Shift",
+    patient: INITIAL_PATIENT,
+    entries: INITIAL_ENTRIES,
+    clock: INITIAL_CLOCK,
+    schedule: INITIAL_SCHEDULE,
+    upNext: INITIAL_UP_NEXT,
+    completedToday: INITIAL_COMPLETED_TODAY,
+  },
+  "day-wrap": {
+    label: "Day Wrap",
+    patient: null,
+    entries: {},
+    clock: 17 * 60, // 17:00, after the last 14:00 appointment
+    schedule: DAY_WRAP_SCHEDULE,
+    upNext: [],
+    completedToday: DAY_WRAP_COMPLETED,
+  },
+};

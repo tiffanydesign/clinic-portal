@@ -2,44 +2,6 @@ import React from "react";
 import { SKIP_REASONS, JourneyStepConfig, fmtClock } from "./journeyEngine";
 import type { JourneyEngine } from "./useJourneyEngine";
 
-// Completion-confirm popover — anchored above the action bar, matching the
-// L1 "tap to confirm" tier (§11.4): logging a completion time is reversible
-// via Go Back, so it doesn't need a full L2 scrim dialog.
-export function ExitConfirmPopover({ engine, step }: { engine: JourneyEngine; step: JourneyStepConfig }) {
-  const enter = engine.entries[step.id]?.enter ?? engine.clock;
-  return (
-    <div className="absolute bottom-full left-0 mb-3 w-[300px] bg-white border border-gray-200 rounded-xl shadow-xl p-4 animate-in fade-in zoom-in-95 duration-100">
-      <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Confirm completion — will be logged</div>
-      <div className="text-lg font-bold text-gray-800 tabular-nums">{fmtClock(enter)} → {fmtClock(engine.clock)} · {engine.clock - enter} min</div>
-      <div className="flex gap-2.5 mt-4">
-        <button onClick={engine.closeExitPopover} className="flex-1 h-11 border border-gray-300 rounded-lg text-sm font-bold text-gray-600 bg-white hover:bg-gray-50">Cancel</button>
-        <button onClick={engine.confirmExit} className="flex-[1.3] h-11 rounded-lg text-sm font-bold text-white bg-slate-700 hover:bg-slate-800">Confirm Completion</button>
-      </div>
-      <div className="absolute -bottom-[9px] left-8 w-[18px] h-[18px] bg-white border-r border-b border-gray-200 rotate-45" />
-    </div>
-  );
-}
-
-export function NotePopover({ engine }: { engine: JourneyEngine }) {
-  return (
-    <div className="absolute bottom-full left-0 mb-3 w-[330px] bg-white border border-gray-200 rounded-xl shadow-xl p-4 animate-in fade-in zoom-in-95 duration-100">
-      <div className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Add note</div>
-      <textarea
-        autoFocus
-        value={engine.noteDraft}
-        onChange={(e) => engine.setNoteDraft(e.target.value)}
-        placeholder="Type a note for this patient…"
-        className="w-full min-h-[80px] border border-gray-300 rounded-lg p-3 text-sm text-gray-800 outline-none focus:border-slate-500 resize-none"
-      />
-      <div className="flex gap-2.5 mt-3">
-        <button onClick={engine.closeNote} className="flex-1 h-11 border border-gray-300 rounded-lg text-sm font-bold text-gray-600 bg-white hover:bg-gray-50">Cancel</button>
-        <button onClick={engine.saveNote} className="flex-[1.3] h-11 rounded-lg text-sm font-bold text-white bg-slate-700 hover:bg-slate-800">Save note</button>
-      </div>
-      <div className="absolute -bottom-[9px] left-8 w-[18px] h-[18px] bg-white border-r border-b border-gray-200 rotate-45" />
-    </div>
-  );
-}
-
 function ScrimDialog({ children, width = "max-w-md" }: { children: React.ReactNode; width?: string }) {
   return (
     <div className="fixed inset-0 bg-slate-900/34 backdrop-blur-sm flex items-center justify-center z-50 p-6">
@@ -47,6 +9,45 @@ function ScrimDialog({ children, width = "max-w-md" }: { children: React.ReactNo
         {children}
       </div>
     </div>
+  );
+}
+
+// L2 standard confirmation (§11.4): completing a station affects the
+// patient's logged timeline, so it gets a centered scrim dialog rather than
+// an anchored popover — consistent with Skip/Go Back below.
+export function ExitConfirmPopover({ engine, step }: { engine: JourneyEngine; step: JourneyStepConfig }) {
+  const enter = engine.entries[step.id]?.enter ?? engine.clock;
+  return (
+    <ScrimDialog width="max-w-sm">
+      <h2 className="text-xl font-bold text-gray-800">Confirm completion?</h2>
+      <p className="text-sm text-gray-500 mt-2 leading-relaxed">This will be logged in the patient journey.</p>
+      <div className="text-lg font-bold text-gray-800 tabular-nums mt-4 bg-gray-50 border border-gray-200 rounded-lg px-4 py-3">
+        {fmtClock(enter)} → {fmtClock(engine.clock)} · {engine.clock - enter} min
+      </div>
+      <div className="flex gap-3 mt-6">
+        <button onClick={engine.closeExitPopover} className="flex-1 h-12 border border-gray-300 rounded-xl text-sm font-bold text-gray-600 bg-white hover:bg-gray-50">Cancel</button>
+        <button onClick={engine.confirmExit} className="flex-[1.3] h-12 rounded-xl text-sm font-bold text-white bg-slate-700 hover:bg-slate-800">Confirm Completion</button>
+      </div>
+    </ScrimDialog>
+  );
+}
+
+export function NotePopover({ engine }: { engine: JourneyEngine }) {
+  return (
+    <ScrimDialog>
+      <h2 className="text-xl font-bold text-gray-800">Add note</h2>
+      <textarea
+        autoFocus
+        value={engine.noteDraft}
+        onChange={(e) => engine.setNoteDraft(e.target.value)}
+        placeholder="Type a note for this patient…"
+        className="w-full min-h-[110px] mt-4 border border-gray-300 rounded-lg p-3 text-sm text-gray-800 outline-none focus:border-slate-500 resize-none"
+      />
+      <div className="flex gap-3 mt-5">
+        <button onClick={engine.closeNote} className="flex-1 h-12 border border-gray-300 rounded-xl text-sm font-bold text-gray-600 bg-white hover:bg-gray-50">Cancel</button>
+        <button onClick={engine.saveNote} className="flex-[1.3] h-12 rounded-xl text-sm font-bold text-white bg-slate-700 hover:bg-slate-800">Save note</button>
+      </div>
+    </ScrimDialog>
   );
 }
 

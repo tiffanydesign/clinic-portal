@@ -2,28 +2,50 @@ import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { TODAY_LABEL, ROLE_GREETING } from "./dashboardData";
 import {
-  PatientIdentity, ScheduleItem, QueueItem, CompletedItem,
-  INITIAL_PATIENT, INITIAL_ENTRIES, INITIAL_CLOCK, INITIAL_SCHEDULE, INITIAL_UP_NEXT, INITIAL_COMPLETED_TODAY,
-  buildPatientFromQueueItem,
+  PatientIdentity, ScheduleItem, QueueItem, CompletedItem, DemoMoment,
+  NURSE_DEMO_SCENARIOS, nextUpcomingAppointment, buildPatientFromQueueItem,
 } from "./nurseDashboardData";
 import type { JourneyEntries } from "./journey/journeyEngine";
 import { useJourneyEngine } from "./journey/useJourneyEngine";
-import { PatientJourneyCard } from "./journey/PatientJourneyCard";
+import { PatientJourneyCard, EmptyJourney } from "./journey/PatientJourneyCard";
 import { TodaysSchedulePanel } from "./TodaysSchedulePanel";
 import { UpNextPanel } from "./UpNextPanel";
 import { MyPatientsTodayCard } from "./MyPatientsTodayCard";
+
+const DEMO_MOMENTS: DemoMoment[] = ["day-start", "mid-shift", "day-wrap"];
+
+// QA/demo-only toggle: swaps which mock scenario the page initializes from,
+// so all three "no active patient" states are reachable without editing
+// code. Visually minor by design — matches the topbar's Demo Role select's
+// scale, just rendered as a segmented control per the three named moments.
+function DemoMomentSwitcher({ value, onChange }: { value: DemoMoment; onChange: (m: DemoMoment) => void }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Demo Moment:</span>
+      <div className="inline-flex bg-gray-100 rounded-lg p-0.5 border border-gray-200">
+        {DEMO_MOMENTS.map((m) => (
+          <button
+            key={m}
+            onClick={() => onChange(m)}
+            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${value === m ? "bg-white text-slate-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+          >
+            {NURSE_DEMO_SCENARIOS[m].label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 // Owns the journey engine for one patient. Remounted (via `key` in the
 // parent) whenever a new patient starts, so each patient gets a fresh
 // entries/clock state rather than one hook instance threading through many.
 function PatientJourneySection({
-  identity, initialEntries, initialClock, hasQueue, onStartNext, onComplete,
+  identity, initialEntries, initialClock, onComplete,
 }: {
   identity: PatientIdentity;
   initialEntries: JourneyEntries;
   initialClock: number;
-  hasQueue: boolean;
-  onStartNext: () => void;
   onComplete: (identity: PatientIdentity) => void;
 }) {
   const engine = useJourneyEngine(initialEntries, initialClock);
@@ -41,23 +63,40 @@ function PatientJourneySection({
       patientTag={identity.tag}
       patientMeta={identity.meta}
       patientRoute={identity.route}
-      hasQueue={hasQueue}
-      onStartNext={onStartNext}
     />
   );
 }
 
 export function NurseDashboardPage() {
+  const [demoMoment, setDemoMoment] = useState<DemoMoment>("mid-shift");
+  const initialScenario = NURSE_DEMO_SCENARIOS[demoMoment];
+
   const [patientKey, setPatientKey] = useState(0);
-  const [identity, setIdentity] = useState<PatientIdentity | null>(INITIAL_PATIENT);
-  const [entries, setEntries] = useState<JourneyEntries>(INITIAL_ENTRIES);
-  const [clock] = useState(INITIAL_CLOCK); // each patient's journey engine owns its own ticking clock from here
-  const [locked, setLocked] = useState(true); // Up Next stays locked while a patient's journey is active
+  const [identity, setIdentity] = useState<PatientIdentity | null>(initialScenario.patient);
+  const [entries, setEntries] = useState<JourneyEntries>(initialScenario.entries);
+  const [clock, setClock] = useState(initialScenario.clock);
+  const [locked, setLocked] = useState(!!initialScenario.patient); // Up Next stays locked while a patient's journey is active
 
-  const [schedule, setSchedule] = useState<ScheduleItem[]>(INITIAL_SCHEDULE);
-  const [upNext, setUpNext] = useState<QueueItem[]>(INITIAL_UP_NEXT);
-  const [completedToday, setCompletedToday] = useState<CompletedItem[]>(INITIAL_COMPLETED_TODAY);
+  const [schedule, setSchedule] = useState<ScheduleItem[]>(initialScenario.schedule);
+  const [upNext, setUpNext] = useState<QueueItem[]>(initialScenario.upNext);
+  const [completedToday, setCompletedToday] = useState<CompletedItem[]>(initialScenario.completedToday);
 
+  const handleDemoMomentChange = (moment: DemoMoment) => {
+    const scenario = NURSE_DEMO_SCENARIOS[moment];
+    setDemoMoment(moment);
+    setIdentity(scenario.patient);
+    setEntries(scenario.entries);
+    setClock(scenario.clock);
+    setLocked(!!scenario.patient);
+    setSchedule(scenario.schedule);
+    setUpNext(scenario.upNext);
+    setCompletedToday(scenario.completedToday);
+    setPatientKey((k) => k + 1);
+  };
+
+  // Checkout confirmed: unlock Up Next and log completion, but leave
+  // `identity` in place — the Patient Journey card shows its own "Patient
+  // Checked Out" screen until the nurse taps Start on the next patient.
   const handleComplete = (finished: PatientIdentity) => {
     setLocked(false);
     setCompletedToday((prev) => [{ name: finished.name, type: finished.meta.split(" · ")[0], time: "Just now" }, ...prev]);
@@ -83,9 +122,12 @@ export function NurseDashboardPage() {
 
   return (
     <div className="h-full flex flex-col bg-gray-50 overflow-hidden">
-      <div className="px-6 pt-6 pb-4 shrink-0">
-        <h1 className="text-2xl font-bold text-gray-800">Good morning, {ROLE_GREETING.Nurse}</h1>
-        <p className="text-sm text-gray-500 mt-1">{TODAY_LABEL} · Istanbul Clinic</p>
+      <div className="px-6 pt-6 pb-4 shrink-0 flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">Good morning, {ROLE_GREETING.Nurse}</h1>
+          <p className="text-sm text-gray-500 mt-1">{TODAY_LABEL} · Istanbul Clinic</p>
+        </div>
+        <DemoMomentSwitcher value={demoMoment} onChange={handleDemoMomentChange} />
       </div>
 
       <div className="flex-1 min-h-0 flex gap-6 px-6 pb-6">
@@ -96,31 +138,24 @@ export function NurseDashboardPage() {
               identity={identity}
               initialEntries={entries}
               initialClock={clock}
-              hasQueue={upNext.length > 0}
-              onStartNext={handleStartNext}
               onComplete={handleComplete}
             />
           ) : (
-            <div className="h-full bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col items-center justify-center text-center p-10">
-              <h2 className="text-xl font-bold text-gray-800 mb-1">No patient in progress</h2>
-              <p className="text-sm text-gray-500 mb-6 max-w-xs">Start the next patient from your queue to begin their journey.</p>
-              <button
-                onClick={handleStartNext}
-                disabled={upNext.length === 0}
-                className={`px-8 py-3.5 rounded-xl text-base font-bold transition-colors ${upNext.length > 0 ? "bg-slate-700 text-white hover:bg-slate-800 shadow-md" : "bg-gray-100 text-gray-400 cursor-not-allowed"}`}
-              >
-                {upNext.length > 0 ? "Start Next Patient" : "No patients waiting"}
-              </button>
+            <div className="h-full bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col overflow-hidden">
+              <EmptyJourney
+                hasQueue={upNext.length > 0}
+                completedCount={completedToday.length}
+                nextAppt={nextUpcomingAppointment(schedule)}
+                onStartNext={handleStartNext}
+              />
             </div>
           )}
         </div>
 
         <div className="w-[396px] shrink-0 flex flex-col gap-5 min-h-0 overflow-y-auto">
           <MyPatientsTodayCard scheduled={upNext.length} inProgress={identity ? 1 : 0} done={completedToday.length} />
-          <TodaysSchedulePanel items={schedule} />
-          <div className="flex-1 min-h-[220px]">
-            <UpNextPanel queue={upNext} completed={completedToday} locked={locked} onStart={handleStartNext} />
-          </div>
+          <TodaysSchedulePanel items={schedule} now={clock} />
+          <UpNextPanel queue={upNext} completed={completedToday} locked={locked} onStart={handleStartNext} />
         </div>
       </div>
     </div>

@@ -24,7 +24,7 @@ function QueueRow({ item, locked, onStart }: { item: QueueItem; locked: boolean;
 }
 
 function CompletedSection({ items }: { items: CompletedItem[] }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   return (
     <div className="border-t border-gray-100 shrink-0">
       <button onClick={() => setOpen((o) => !o)} className="w-full flex items-center justify-between px-4 py-3 text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors">
@@ -32,7 +32,7 @@ function CompletedSection({ items }: { items: CompletedItem[] }) {
         <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
-        <div className="px-4 pb-3 space-y-2">
+        <div className="max-h-[220px] overflow-y-auto px-4 pb-3 space-y-2.5">
           {items.map((it, i) => (
             <div key={i} className="flex items-center gap-2 text-xs text-gray-500">
               <Check className="w-3 h-3 text-emerald-500 shrink-0" strokeWidth={3} />
@@ -59,17 +59,16 @@ export function UpNextPanel({
 }) {
   const next = queue[0];
   return (
-    <div className="h-full bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col overflow-hidden">
-      <div className="px-5 pt-5 pb-1 flex items-baseline justify-between shrink-0">
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col overflow-hidden">
+      <div className="px-5 pt-5 pb-1 shrink-0">
         <h3 className="text-base font-extrabold text-slate-800">Up Next</h3>
-        <span className="text-xs font-semibold text-gray-400">{queue.length} waiting</span>
       </div>
 
       <div className="px-5 pb-3 shrink-0">
         {next ? (
           <QueueRow item={next} locked={locked} onStart={onStart} />
         ) : (
-          <div className="text-sm text-gray-400 text-center py-6">No patients waiting</div>
+          <div className="text-sm text-gray-400 text-center py-6">Nothing checked in yet</div>
         )}
       </div>
 
@@ -77,7 +76,6 @@ export function UpNextPanel({
         <div className="px-5 pb-4 -mt-1 text-xs font-medium text-gray-400 shrink-0">Unlocks once the current patient's journey is complete</div>
       )}
 
-      <div className="flex-1" />
       <CompletedSection items={completed} />
     </div>
   );

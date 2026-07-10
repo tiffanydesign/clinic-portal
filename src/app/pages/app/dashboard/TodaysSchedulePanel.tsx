@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { ArrowRight } from "lucide-react";
 import type { ScheduleItem } from "./nurseDashboardData";
-import { NOW_MINUTES, TODAY_SHORT, minToClock } from "./dashboardData";
+import { NOW_MINUTES, minToClock } from "./dashboardData";
 
 // A quiet rail-card list, not a full calendar grid — this is the nurse's
 // secondary glance at the shape of her day, so it stays out of the way of
@@ -46,12 +46,12 @@ function ScheduleRow({ item, open, onToggle }: { item: ScheduleItem; open: boole
   );
 }
 
-export function TodaysSchedulePanel({ items }: { items: ScheduleItem[] }) {
+export function TodaysSchedulePanel({ items, now = NOW_MINUTES }: { items: ScheduleItem[]; now?: number }) {
   const navigate = useNavigate();
   const [openKey, setOpenKey] = useState<string | null>(null);
   const sorted = [...items].sort((a, b) => parseTime(a.time) - parseTime(b.time));
-  const before = sorted.filter((i) => parseTime(i.time) <= NOW_MINUTES);
-  const after = sorted.filter((i) => parseTime(i.time) > NOW_MINUTES);
+  const before = sorted.filter((i) => parseTime(i.time) <= now);
+  const after = sorted.filter((i) => parseTime(i.time) > now);
   const toggle = (key: string) => setOpenKey((k) => (k === key ? null : key));
 
   return (
@@ -68,7 +68,7 @@ export function TodaysSchedulePanel({ items }: { items: ScheduleItem[] }) {
           return <ScheduleRow key={key} item={item} open={openKey === key} onToggle={() => toggle(key)} />;
         })}
         <div className="grid grid-cols-[44px_1fr] gap-2.5 items-center py-0.5">
-          <span className="text-[10px] font-extrabold text-red-500 text-right tabular-nums">{minToClock(NOW_MINUTES)}</span>
+          <span className="text-[10px] font-extrabold text-red-500 text-right tabular-nums">{minToClock(now)}</span>
           <div className="h-0.5 bg-red-500 rounded-full relative">
             <span className="absolute -left-[3px] -top-[3px] w-2 h-2 rounded-full bg-red-500" />
           </div>

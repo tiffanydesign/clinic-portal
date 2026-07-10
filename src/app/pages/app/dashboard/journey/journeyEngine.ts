@@ -15,12 +15,12 @@ export type JourneyStepConfig = {
   owner?: string | null; // shown as a tag on milestones the nurse doesn't own
 };
 
-// Signed/Checkout bookend the journey but aren't nurse actions (payment is
-// already confirmed by the time the nurse sees the patient; checkout is the
-// receptionist's job) — `currentStep` below skips them when picking the
-// nurse's next actionable step.
+// Consent & Payment is settled before the nurse's involvement, so
+// `currentStep` never returns it as actionable. Every other milestone —
+// Pickup and the final Check Out handoff — is something the nurse confirms
+// herself with an explicit tap.
 export const JOURNEY_STEPS: JourneyStepConfig[] = [
-  { id: "signed", name: "Signed & Paid", kind: "milestone", owner: "Read-only" },
+  { id: "signed", name: "Consent & Payment Complete", kind: "milestone", owner: null },
   { id: "pickup", name: "Picked up from waiting area", kind: "milestone", owner: null },
   { id: "scan1", name: "Scan 1", kind: "station", room: "Room 3", est: 15 },
   { id: "scan2", name: "Scan 2", kind: "station", room: "Room 4", est: 12 },
@@ -28,7 +28,7 @@ export const JOURNEY_STEPS: JourneyStepConfig[] = [
   { id: "machine2", name: "Machine 2", kind: "station", room: "Room 4", est: 18 },
   { id: "sample1", name: "Sample Collection 1", kind: "station", room: "Draw 1", est: 8 },
   { id: "sample2", name: "Sample Collection 2", kind: "station", room: "Draw 2", est: 6 },
-  { id: "consult", name: "Results Consultation & explanation of next steps", kind: "station", room: "Consult 2", est: 20 },
+  { id: "consult", name: "Results Consultation", kind: "station", room: "Consult 2", est: 20 },
   { id: "checkout", name: "Check Out", kind: "milestone", owner: "Receptionist" },
 ];
 
@@ -52,11 +52,12 @@ export function fmtDuration(min: number): string {
 
 export type CurrentInfo = { step: JourneyStepConfig | null; mode: "enter" | "exit" | "milestone" | "done" };
 
-// The next thing the nurse needs to act on. Milestones the nurse doesn't own
-// (signed, checkout) are always treated as already settled from her view.
+// The next thing the nurse needs to act on. Consent & Payment is always
+// treated as already settled from her view; every later milestone
+// (including Check Out) is hers to confirm.
 export function currentStep(entries: JourneyEntries): CurrentInfo {
   for (const s of JOURNEY_STEPS) {
-    if (s.id === "signed" || s.id === "checkout") continue;
+    if (s.id === "signed") continue;
     const r = entries[s.id] || {};
     if (r.skipped) continue;
     if (s.kind === "milestone") {
