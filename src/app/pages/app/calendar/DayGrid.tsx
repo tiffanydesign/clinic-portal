@@ -111,11 +111,11 @@ export function DayGrid({
   };
 
   return (
-    <div className="border border-gray-200 rounded-xl shadow-sm bg-white flex flex-col h-full min-h-0 overflow-hidden">
+    <div className="border border-gray-200 rounded-xl shadow-md bg-white flex flex-col h-full min-h-0 overflow-hidden">
       {/* column headers */}
-      <div className="flex border-b border-gray-200 bg-gray-50/70 shrink-0 pl-14">
+      <div className="flex border-b border-gray-200 bg-gradient-to-b from-gray-50 to-gray-50/50 shrink-0 pl-14 relative z-10 shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
         {columns.map((c) => (
-          <div key={c.key} className={`flex-1 px-2 py-2.5 text-center border-l border-gray-100 min-w-0 ${c.muted ? "opacity-50" : ""}`}>
+          <div key={c.key} className={`flex-1 px-2 py-2.5 text-center border-l border-gray-200 min-w-0 ${c.muted ? "opacity-50" : ""}`}>
             <div className="flex items-center justify-center gap-1.5">
               {c.avatar && <span className="w-6 h-6 rounded-full bg-white ring-1 ring-slate-200 text-slate-700 text-[10px] font-bold flex items-center justify-center shrink-0 shadow-sm">{c.avatar}</span>}
               <span className="text-xs font-bold text-gray-700 truncate">{c.title}</span>
@@ -135,8 +135,13 @@ export function DayGrid({
         <div className="flex" style={{ height: gridHeight }}>
           {/* hour gutter */}
           <div className="w-14 shrink-0 relative border-r border-gray-200 bg-gray-50/40">
+            {/* alternating hour bands — a light rhythm that helps the eye
+                track a row across the full grid width without adding noise */}
+            {hours.map((h, i) => i % 2 === 1 && (
+              <div key={`band-${h}`} className="absolute left-0 right-0 bg-gray-100/50" style={{ top: (i - 1) * HOUR_PX, height: HOUR_PX }} />
+            ))}
             {hours.map((h, i) => (
-              <div key={h} className="absolute right-2 text-[10px] font-medium text-gray-400 tabular-nums" style={{ top: i * HOUR_PX - 6 }}>{i === 0 ? "" : `${String(h).padStart(2, "0")}:00`}</div>
+              <div key={h} className="absolute right-2 text-[10px] font-semibold text-gray-500 tabular-nums" style={{ top: i * HOUR_PX - 6 }}>{i === 0 ? "" : `${String(h).padStart(2, "0")}:00`}</div>
             ))}
             {showNow && (
               <span className="absolute right-1.5 z-20 text-[9px] font-bold text-white bg-red-500 rounded px-1 py-[1px] shadow-sm tabular-nums" style={{ top: nowTop - 7 }}>
@@ -147,9 +152,13 @@ export function DayGrid({
 
           {/* columns area */}
           <div ref={contentRef} className="flex-1 relative">
+            {/* alternating hour bands, matching the gutter's rhythm */}
+            {hours.map((h, i) => i % 2 === 1 && (
+              <div key={`band-${h}`} className="absolute left-0 right-0 bg-gray-50/60 pointer-events-none" style={{ top: (i - 1) * HOUR_PX, height: HOUR_PX }} />
+            ))}
             {/* half-hour gridlines */}
             {Array.from({ length: halfRows + 1 }).map((_, i) => (
-              <div key={i} className={`absolute left-0 right-0 ${i % 2 === 0 ? "border-t border-gray-100" : "border-t border-dashed border-gray-50"}`} style={{ top: (i * HOUR_PX) / 2 }} />
+              <div key={i} className={`absolute left-0 right-0 ${i % 2 === 0 ? "border-t border-gray-200" : "border-t border-dashed border-gray-100"}`} style={{ top: (i * HOUR_PX) / 2 }} />
             ))}
             {/* now line */}
             {showNow && (
@@ -164,7 +173,7 @@ export function DayGrid({
               {columns.map((col) => {
                 const colItems = placed.filter((p) => p.colKey === col.key);
                 return (
-                <div key={col.key} className="flex-1 relative border-l border-gray-100" onClick={(e) => colBackgroundClick(e, col.key)}>
+                <div key={col.key} className="flex-1 relative border-l border-gray-200" onClick={(e) => colBackgroundClick(e, col.key)}>
                   {/* blocked time */}
                   {blocks.filter((b) => b.colKey === col.key).map(({ block }) => {
                     const top = ((block.startMin - MIN_MIN) / 60) * HOUR_PX;

@@ -15,6 +15,7 @@ import { OverrideModal } from "./OverrideModal";
 import { LeaveRequestModal } from "./LeaveRequestModal";
 import { ConflictModal } from "./ConflictModal";
 import { WithdrawModal } from "./WithdrawModal";
+import { FilterSelect } from "../../../components/FilterSelect";
 
 const TIME_OPTIONS = ["6:00am", "6:30am", "7:00am", "7:30am", "8:00am", "8:30am", "9:00am", "9:30am", "10:00am", "10:30am", "11:00am", "11:30am", "12:00pm", "12:30pm", "1:00pm", "1:30pm", "2:00pm", "2:30pm", "3:00pm", "3:30pm", "4:00pm", "4:30pm", "5:00pm", "5:30pm", "6:00pm", "6:30pm", "7:00pm", "7:30pm", "8:00pm", "8:30pm", "9:00pm"];
 
@@ -320,13 +321,21 @@ export function AvailabilityEditorPage() {
                       config.slots.map((slot, idx) => (
                         <div key={idx} className="flex items-center group">
                           <div className="flex items-center space-x-2">
-                            <select value={slot.start} disabled={locked} onChange={(e) => updateSlotTime(day, idx, "start", e.target.value)} className={`w-28 text-center px-2 py-2 border border-gray-300 rounded text-sm text-gray-700 bg-white outline-none focus:border-slate-500 ${locked ? "cursor-not-allowed bg-gray-50" : ""}`}>
-                              {TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
-                            </select>
+                            <FilterSelect
+                              value={slot.start}
+                              onChange={(v) => updateSlotTime(day, idx, "start", v)}
+                              disabled={locked}
+                              options={TIME_OPTIONS}
+                              className="w-28 justify-center"
+                            />
                             <span className="text-gray-400">-</span>
-                            <select value={slot.end} disabled={locked} onChange={(e) => updateSlotTime(day, idx, "end", e.target.value)} className={`w-28 text-center px-2 py-2 border border-gray-300 rounded text-sm text-gray-700 bg-white outline-none focus:border-slate-500 ${locked ? "cursor-not-allowed bg-gray-50" : ""}`}>
-                              {TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
-                            </select>
+                            <FilterSelect
+                              value={slot.end}
+                              onChange={(v) => updateSlotTime(day, idx, "end", v)}
+                              disabled={locked}
+                              options={TIME_OPTIONS}
+                              className="w-28 justify-center"
+                            />
                           </div>
 
                           {!locked && (

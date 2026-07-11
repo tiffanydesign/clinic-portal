@@ -26,10 +26,13 @@ export function DashboardPage() {
   if (role === "Nurse") return <NurseDashboardPage />;
 
   const appt = getAppt(apptId);
-  const isAdmin = role === "Admin";
+  // Reception's calendar is the same room-first view as Admin's (see
+  // CalendarWidget), so it gets the identical full-width-calendar-then-panels
+  // layout rather than the narrower 58/42 split used by Clinician.
+  const useRoomLayout = role === "Admin" || role === "Reception";
 
   const workArea = (
-    <div className="flex gap-4 h-full min-h-0">
+    <div className="flex gap-4 h-[700px]">
       <div className="w-[58%] min-w-0">
         <CalendarWidget role={role} />
       </div>
@@ -41,9 +44,11 @@ export function DashboardPage() {
   );
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 overflow-hidden">
-      {/* Header + KPI Bar (fixed) */}
-      <div className="px-6 pt-6 shrink-0">
+    <div className="bg-gray-50">
+      {/* Header + KPI Bar — part of the normal page flow, so the whole page
+          (including this) scrolls together rather than pinning under a
+          fixed header. */}
+      <div className="px-6 pt-6">
         <div className="mb-5">
           <h1 className="text-2xl font-bold text-gray-800">Good morning, {ROLE_GREETING[role]}</h1>
           <p className="text-sm text-gray-500 mt-1">{TODAY_LABEL} · Istanbul Clinic</p>
@@ -52,18 +57,20 @@ export function DashboardPage() {
         <KpiBar key={role} />
       </div>
 
-      {/* Work area (+ Admin activity feed). Today's Schedule and the
-          Results Queue / Waiting Room panels are Admin's real working set —
-          sized to show as many rows as possible without internal scrolling.
-          Recent Activity is secondary and deliberately sits below the fold;
-          reaching it costs a scroll, which is the right trade for this role. */}
-      {isAdmin ? (
-        <div className="flex-1 min-h-0 overflow-y-auto px-6 py-4 space-y-4">
-          <div className="h-[760px]">{workArea}</div>
+      {/* Work area (+ activity feed). The room-based calendar (7 columns)
+          gets the full row width instead of sharing it with the side
+          panels — the role panels move to their own row underneath, side
+          by side, so nothing needs a horizontal scrollbar and both still
+          show as many rows as possible. Recent Activity is secondary and
+          deliberately sits below the fold. */}
+      {useRoomLayout ? (
+        <div className="px-6 py-4 space-y-4">
+          <div className="h-[440px]"><CalendarWidget role={role} /></div>
+          <div className="h-[340px]"><RolePanels key={role} /></div>
           <ActivityFeed />
         </div>
       ) : (
-        <div className="flex-1 min-h-0 px-6 py-4">{workArea}</div>
+        <div className="px-6 py-4">{workArea}</div>
       )}
 
       {/* Deep-linked appointment drawer */}

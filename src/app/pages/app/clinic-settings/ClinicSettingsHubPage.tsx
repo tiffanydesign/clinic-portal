@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router";
-import { ShieldCheck, Clock, Mail, Palette, CreditCard, LucideIcon } from "lucide-react";
+import { ShieldCheck, CreditCard, LucideIcon } from "lucide-react";
 import { SETTINGS_CATEGORIES, SettingsModule } from "./clinicSettingsHubData";
 
 // One icon per module name — deliberately keyed by name rather than a data
@@ -9,9 +9,6 @@ import { SETTINGS_CATEGORIES, SettingsModule } from "./clinicSettingsHubData";
 const MODULE_ICON: Record<string, LucideIcon> = {
   "Consent Form Template": ShieldCheck,
   "Payment Terminals": CreditCard,
-  "Data Retention Policy": Clock,
-  "Notification Templates": Mail,
-  "Clinic Branding": Palette,
 };
 
 function ModuleCard({ module }: { module: SettingsModule }) {
@@ -60,7 +57,7 @@ export function ClinicSettingsHubPage() {
     <div className="h-full overflow-y-auto bg-gray-50">
       <div className="px-8 py-6 border-b border-gray-200 bg-white">
         <h1 className="text-2xl font-bold text-gray-800">Clinic Settings</h1>
-        <p className="text-sm text-gray-500 mt-1">Configure templates, compliance settings, and clinic-wide preferences</p>
+        <p className="text-sm text-gray-500 mt-1">Configure templates and clinic-wide preferences</p>
       </div>
 
       <div className="p-8 space-y-8 max-w-5xl">

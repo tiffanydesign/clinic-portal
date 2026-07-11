@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Search, ChevronUp, ChevronDown, Video } from "lucide-react";
 import { Appt, APPT_TYPES, CLINICIANS } from "./scheduleData";
+import { FilterSelect } from "../../../components/FilterSelect";
 import { StatusPill } from "../dashboard/DashboardShared";
 import { statusPillType } from "../dashboard/dashboardData";
 
@@ -50,9 +51,24 @@ export function ListView({ appts, onRowClick }: { appts: Appt[]; onRowClick: (ap
           <input value={q} onChange={(e) => { setQ(e.target.value); setPage(0); }} placeholder="Search patient or appointment…" className={`${sel} w-full pl-8 bg-white`} />
         </div>
         <input value="3 Jul 2026" readOnly className={`${sel} bg-gray-100 w-28 tabular-nums`} />
-        <select value={status} onChange={(e) => { setStatus(e.target.value); setPage(0); }} className={`${sel} bg-white`}><option value="">All status</option>{STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}</select>
-        <select value={type} onChange={(e) => { setType(e.target.value); setPage(0); }} className={`${sel} bg-white`}><option value="">All types</option>{APPT_TYPES.map((t) => <option key={t} value={t}>{t.replace(" (in-person)", "").replace(" (video)", "")}</option>)}</select>
-        <select value={doctor} onChange={(e) => { setDoctor(e.target.value); setPage(0); }} className={`${sel} bg-white`}><option value="">All clinicians</option>{CLINICIANS.map((c) => <option key={c.id} value={c.id}>{c.short}</option>)}</select>
+        <FilterSelect
+          value={status}
+          onChange={(v) => { setStatus(v); setPage(0); }}
+          options={[{ value: "", label: "All status" }, ...STATUSES.map((s) => ({ value: s, label: s }))]}
+        />
+        <FilterSelect
+          value={type}
+          onChange={(v) => { setType(v); setPage(0); }}
+          options={[
+            { value: "", label: "All types" },
+            ...APPT_TYPES.map((t) => ({ value: t, label: t.replace(" (in-person)", "").replace(" (video)", "") })),
+          ]}
+        />
+        <FilterSelect
+          value={doctor}
+          onChange={(v) => { setDoctor(v); setPage(0); }}
+          options={[{ value: "", label: "All clinicians" }, ...CLINICIANS.map((c) => ({ value: c.id, label: c.short }))]}
+        />
       </div>
 
       {/* table */}

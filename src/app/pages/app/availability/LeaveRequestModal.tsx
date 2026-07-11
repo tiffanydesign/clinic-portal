@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { X } from "lucide-react";
 import { toast } from "sonner";
 import { LeaveDuration, LeaveReason, LEAVE_REASONS } from "./availabilityData";
+import { FilterSelect } from "../../../components/FilterSelect";
 
 const DATE_OPTIONS = Array.from({ length: 31 }, (_, i) => `${i + 1} Jul 2026`);
 const DURATIONS: LeaveDuration[] = ["Full Day", "Morning", "Afternoon"];
@@ -52,15 +53,16 @@ export function LeaveRequestModal({ onClose, onSubmit, initialDate }: {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">From</label>
-              <select value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); if (DATE_OPTIONS.indexOf(e.target.value) > toIdx) setDateTo(e.target.value); }} className="w-full px-3 py-2 border border-gray-300 rounded text-sm text-gray-700 bg-white outline-none focus:border-slate-500">
-                {DATE_OPTIONS.map((d) => <option key={d} value={d}>{d}</option>)}
-              </select>
+              <FilterSelect
+                value={dateFrom}
+                onChange={(v) => { setDateFrom(v); if (DATE_OPTIONS.indexOf(v) > toIdx) setDateTo(v); }}
+                options={DATE_OPTIONS}
+                className="w-full"
+              />
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">To</label>
-              <select value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded text-sm text-gray-700 bg-white outline-none focus:border-slate-500">
-                {DATE_OPTIONS.map((d) => <option key={d} value={d}>{d}</option>)}
-              </select>
+              <FilterSelect value={dateTo} onChange={setDateTo} options={DATE_OPTIONS} className="w-full" />
             </div>
           </div>
 

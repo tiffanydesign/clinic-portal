@@ -11,6 +11,7 @@ import {
   submitterDisplayName, matchesTab, isOverdue, CURRENT_ADMIN_NAME,
 } from "./feedbackData";
 import { useFeedbackList, changeStatus, toggleFlag, addInternalNote } from "./feedbackStore";
+import { FilterSelect } from "../../components/FilterSelect";
 
 const SOURCE_OPTIONS = ["All Sources", "Patient", "Clinician", "Nurse", "Receptionist", "Google Review"];
 const TYPE_OPTIONS = ["All Types", "Visit Feedback", "Complaint", "Suggestion", "System Issue", "Incident Report", "Compliment", "Other"];
@@ -477,15 +478,9 @@ export function FeedbackAdminPage() {
 
         {/* Secondary filters */}
         <div className="px-8 py-3 flex items-center space-x-4 bg-gray-50/50">
-          <select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value)} className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 outline-none focus:border-slate-500 bg-white shadow-sm min-w-[140px]">
-            {SOURCE_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
-          </select>
-          <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 outline-none focus:border-slate-500 bg-white shadow-sm min-w-[140px]">
-            {TYPE_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
-          </select>
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 outline-none focus:border-slate-500 bg-white shadow-sm min-w-[120px]">
-            {STATUS_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
-          </select>
+          <FilterSelect value={sourceFilter} onChange={setSourceFilter} options={SOURCE_OPTIONS} className="min-w-[140px]" />
+          <FilterSelect value={typeFilter} onChange={setTypeFilter} options={TYPE_OPTIONS} className="min-w-[140px]" />
+          <FilterSelect value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} className="min-w-[120px]" />
           <div className="px-3 py-1.5 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white shadow-sm cursor-pointer hover:border-gray-400">
             This Month
           </div>

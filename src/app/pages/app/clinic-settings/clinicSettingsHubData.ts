@@ -43,22 +43,4 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
       },
     ],
   },
-  {
-    name: "Compliance & Data",
-    modules: [
-      { name: "Data Retention Policy", description: "Configure how long patient records are stored", enabled: false, badge: "Coming soon" },
-    ],
-  },
-  {
-    name: "Notifications",
-    modules: [
-      { name: "Notification Templates", description: "Email and SMS templates sent to patients", enabled: false, badge: "Coming soon" },
-    ],
-  },
-  {
-    name: "Branding",
-    modules: [
-      { name: "Clinic Branding", description: "Logo, colors, and patient portal appearance", enabled: false, badge: "Coming soon" },
-    ],
-  },
 ];

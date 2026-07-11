@@ -46,8 +46,8 @@ export function AdminPanels() {
   const waitColor = (m: number) => (m > 30 ? "text-red-600" : m > 15 ? "text-orange-600" : "text-gray-800");
 
   return (
-    <div className="flex flex-col gap-4 h-full min-h-0">
-      <Section title="Results Queue" className="flex-1 min-h-0" action={<button onClick={() => nav("/patients")} className="text-xs font-bold text-slate-600 hover:underline">View all patients →</button>}>
+    <div className="flex gap-4 h-full min-h-0">
+      <Section title="Results Queue" className="flex-1 min-w-0 h-full" action={<button onClick={() => nav("/patients")} className="text-xs font-bold text-slate-600 hover:underline">View all patients →</button>}>
         <div className="divide-y divide-gray-100">
           {results.map((r) => (
             <button key={r.patient} onClick={() => nav("/patients/P-001/results")} className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 text-left gap-2">
@@ -65,7 +65,7 @@ export function AdminPanels() {
         </div>
       </Section>
 
-      <Section title={<>Waiting Room <LiveDot /></>} className="flex-1 min-h-0">
+      <Section title={<>Waiting Room <LiveDot /></>} className="flex-1 min-w-0 h-full">
         <div className="divide-y divide-gray-100">
           {waiting.map((w) => (
             <div key={w.patient} className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50">
@@ -98,8 +98,8 @@ export function ReceptionPanels() {
     <StatusPill status="Booked" />;
 
   return (
-    <div className="flex flex-col gap-4 h-full min-h-0">
-      <Section title="Arrivals" className="flex-1 min-h-0">
+    <div className="flex gap-4 h-full min-h-0">
+      <Section title="Arrivals" className="flex-1 min-w-0 h-full">
         <div className="divide-y divide-gray-100">
           {arrivals.map((a) => (
             <button key={a.id} onClick={() => openDrawer(nav, a.id)} className="w-full px-4 py-2.5 hover:bg-gray-50 text-left">
@@ -116,7 +116,7 @@ export function ReceptionPanels() {
         </div>
       </Section>
 
-      <Section title="Check-in Queue" className="flex-1 min-h-0">
+      <Section title="Check-in Queue" className="flex-1 min-w-0 h-full">
         <div className="divide-y divide-gray-100">
           {queue.map((a) => {
             const ready = consentOk(a) && a.payment === "Paid";
@@ -143,7 +143,7 @@ export function ReceptionPanels() {
         </div>
       </Section>
 
-      <Section title="Outstanding Payments" className="flex-1 min-h-0">
+      <Section title="Outstanding Payments" className="flex-1 min-w-0 h-full">
         <div className="divide-y divide-gray-100">
           {payments.map((a) => (
             <div key={a.id} className="px-4 py-2.5 hover:bg-gray-50">

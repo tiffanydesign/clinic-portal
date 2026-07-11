@@ -8,6 +8,7 @@ import {
 import { StaffRowMenu } from "./StaffRowMenu";
 import { AddStaffModal } from "./AddStaffModal";
 import { ImportStaffModal } from "./ImportStaffModal";
+import { FilterSelect } from "../../../components/FilterSelect";
 
 type SortKey = "name" | "patients" | "workload" | "lastActive" | "joined";
 
@@ -192,19 +193,27 @@ export function StaffListPage() {
           )}
         </div>
 
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 outline-none focus:border-slate-500 bg-white shadow-sm">
-          <option value="All">Status: All</option>
-          <option>Active</option>
-          <option>On Leave</option>
-          <option>Inactive</option>
-        </select>
+        <FilterSelect
+          value={statusFilter}
+          onChange={setStatusFilter}
+          options={[
+            { value: "All", label: "Status: All" },
+            { value: "Active", label: "Active" },
+            { value: "On Leave", label: "On Leave" },
+            { value: "Inactive", label: "Inactive" },
+          ]}
+        />
 
-        <select value={todayFilter} onChange={(e) => setTodayFilter(e.target.value)} className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 outline-none focus:border-slate-500 bg-white shadow-sm">
-          <option value="All">Availability Today: All</option>
-          <option>On Duty</option>
-          <option>Off Today</option>
-          <option>On Leave</option>
-        </select>
+        <FilterSelect
+          value={todayFilter}
+          onChange={setTodayFilter}
+          options={[
+            { value: "All", label: "Availability Today: All" },
+            { value: "On Duty", label: "On Duty" },
+            { value: "Off Today", label: "Off Today" },
+            { value: "On Leave", label: "On Leave" },
+          ]}
+        />
 
         <div className="flex-1" />
       </div>

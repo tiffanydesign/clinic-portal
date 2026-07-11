@@ -1,11 +1,14 @@
 import React, { useMemo, useState } from "react";
+import { addDays, format } from "date-fns";
 import { X, AlertTriangle, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import { FilterSelect } from "../../../components/FilterSelect";
+import { ClinicianAvailabilitySelect } from "./ClinicianAvailabilitySelect";
 import {
   APPTS, Appt, CLINICIANS, NURSES, ROOMS, NEW_APPT_TYPES, DURATION_DEFAULTS,
-  DURATION_OPTIONS, TimeBlock, clockToMin, fmtRange, minToClock,
-  hasClinicianConflict, hasRoomConflict, DAY_START_HOUR, DAY_END_HOUR,
+  TimeBlock, clockToMin, fmtRange, minToClock,
+  hasClinicianConflict, hasRoomConflict, hasNurseConflict, DAY_START_HOUR, DAY_END_HOUR,
 } from "./scheduleData";
 
 // Shared modal chrome (matches the portal's existing dialog language).
@@ -50,6 +53,25 @@ const TIME_OPTIONS: string[] = (() => {
 // unique patients from the mock set for the search picker
 const PATIENTS = Array.from(new Map(APPTS.map((a) => [a.patient.name, a.patient])).values());
 
+// The room a slot needs, driven entirely by appointment type — video visits
+// need no physical room at all. Feeds both the auto-assignment and the
+// available-time-slot filter below.
+function roomKindForType(type: string): string | null {
+  if (type === "Consultation (video)") return null;
+  if (type === "Body Scan" || type === "7-Omics Package") return "Scan Room";
+  if (type === "Sample Collection") return "Sample Room";
+  return "Consult Room"; // Consultation (in-person), Follow-up
+}
+
+// Today plus the next 13 days — only "today" carries real conflict data in
+// this prototype (APPTS models a single day), so every other date shows every
+// slot as open.
+const TODAY_DATE = new Date(2026, 6, 3);
+const DATE_OPTIONS = Array.from({ length: 14 }, (_, i) => {
+  const d = addDays(TODAY_DATE, i);
+  return { value: format(d, "d MMM yyyy"), label: i === 0 ? `Today · ${format(d, "EEE d MMM")}` : format(d, "EEE, d MMM") };
+});
+
 export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults }: {
   onClose: () => void;
   onCreate: (a: Appt) => void;
@@ -59,29 +81,64 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
   const navigate = useNavigate();
   const [patientName, setPatientName] = useState("");
   const [type, setType] = useState(NEW_APPT_TYPES[0]);
-  const [time, setTime] = useState(minToClock(defaults?.startMin ?? 9 * 60));
-  const [duration, setDuration] = useState(DURATION_DEFAULTS[NEW_APPT_TYPES[0]] ?? 30);
-  const [doctorId, setDoctorId] = useState(defaults?.doctorId ?? CLINICIANS[0].id);
-  const [nurse, setNurse] = useState("");
-  const [room, setRoom] = useState(defaults?.room ?? "");
+  const [manualDate, setManualDate] = useState(DATE_OPTIONS[0].value);
+  const [manualTime, setManualTime] = useState<string | null>(defaults?.startMin != null ? minToClock(defaults.startMin) : null);
+  const [manualDoctorId, setManualDoctorId] = useState<string | null>(defaults?.doctorId ?? null);
   const [notes, setNotes] = useState("");
 
-  const startMin = clockToMin(time);
-  const doctor = CLINICIANS.find((c) => c.id === doctorId)!;
-  const clinicianConflict = useMemo(() => hasClinicianConflict(currentAppts, doctorId, startMin, duration), [currentAppts, doctorId, startMin, duration]);
-  const roomConflict = useMemo(() => (room ? hasRoomConflict(currentAppts, room, startMin, duration) : null), [currentAppts, room, startMin, duration]);
-
-  const onTypeChange = (t: string) => {
-    setType(t);
-    if (DURATION_DEFAULTS[t]) setDuration(DURATION_DEFAULTS[t]);
-  };
-
   const patient = PATIENTS.find((p) => p.name === patientName);
-  const canCreate = Boolean(patient) && !clinicianConflict;
+  const duration = DURATION_DEFAULTS[type] ?? 30;
+  const roomKind = roomKindForType(type);
+  const dateIsToday = manualDate === DATE_OPTIONS[0].value;
+  // Every conflict check below is skipped for any date other than today,
+  // since this prototype only models appointments for the single mocked day
+  // — every other date is genuinely wide open.
+  const conflicts = dateIsToday ? currentAppts : [];
+
+  // Only a slot where at least one clinician, one correctly-typed room (if
+  // the visit needs one), and one nurse are all free gets offered — auto-
+  // assignment below is guaranteed to succeed for anything the Time select
+  // shows, which is what lets the old per-field conflict banners go away.
+  const availableTimeOptions = useMemo(() => {
+    return TIME_OPTIONS.filter((t) => {
+      const startMin = clockToMin(t);
+      if (startMin + duration > DAY_END_HOUR * 60) return false;
+      const clinicianOk = CLINICIANS.some((c) => !c.onLeave && !hasClinicianConflict(conflicts, c.id, startMin, duration));
+      const roomOk = roomKind === null || ROOMS.some((r) => r.kind === roomKind && !hasRoomConflict(conflicts, r.id, startMin, duration));
+      const nurseOk = NURSES.some((n) => !hasNurseConflict(conflicts, n, startMin, duration));
+      return clinicianOk && roomOk && nurseOk;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type, duration, roomKind, dateIsToday]);
+
+  const time = manualTime && availableTimeOptions.includes(manualTime) ? manualTime : (availableTimeOptions[0] ?? TIME_OPTIONS[0]);
+  const startMin = clockToMin(time);
+
+  const clinicianOptions = useMemo(
+    () => CLINICIANS.map((c) => ({ ...c, available: !c.onLeave && !hasClinicianConflict(conflicts, c.id, startMin, duration) })),
+    [conflicts, startMin, duration]
+  );
+  const availableClinicianIds = clinicianOptions.filter((c) => c.available).map((c) => c.id);
+  const doctorId = manualDoctorId && availableClinicianIds.includes(manualDoctorId) ? manualDoctorId : (availableClinicianIds[0] ?? CLINICIANS[0].id);
+  const doctor = CLINICIANS.find((c) => c.id === doctorId)!;
+
+  const availableRooms = useMemo(
+    () => (roomKind === null ? [] : ROOMS.filter((r) => r.kind === roomKind && !hasRoomConflict(conflicts, r.id, startMin, duration))),
+    [conflicts, roomKind, startMin, duration]
+  );
+  const room = roomKind === null ? "Video" : (availableRooms[0]?.id ?? "");
+
+  const availableNurses = useMemo(
+    () => NURSES.filter((n) => !hasNurseConflict(conflicts, n, startMin, duration)),
+    [conflicts, startMin, duration]
+  );
+  const nurse = availableNurses[0] ?? "";
+
+  const canCreate = Boolean(patient) && availableTimeOptions.length > 0;
 
   const create = () => {
     if (!patient) { toast.error("Select a patient."); return; }
-    if (clinicianConflict) { toast.error("Resolve the scheduling conflict first."); return; }
+    if (availableTimeOptions.length === 0) { toast.error("No available time slot for this date."); return; }
     const isVideo = type === "Consultation (video)";
     const newAppt: Appt = {
       id: `NEW-${startMin}-${doctorId}`,
@@ -94,7 +151,7 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
       doctorId,
       doctor: doctor.name,
       nurse: nurse || undefined,
-      room: isVideo ? "Video" : room || "Room 1",
+      room,
       status: "Booked",
       consent: "Not Sent",
       payment: "Unpaid",
@@ -129,55 +186,61 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
         </Field>
 
         <Field label="Appointment Type" required>
-          <select value={type} onChange={(e) => onTypeChange(e.target.value)} className={inputCls}>
-            {NEW_APPT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
-          </select>
-        </Field>
-
-        <div className="grid grid-cols-3 gap-3">
-          <Field label="Date"><input value="3 Jul 2026" readOnly className={`${inputCls} bg-gray-50`} /></Field>
-          <Field label="Time"><select value={time} onChange={(e) => setTime(e.target.value)} className={inputCls}>{TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}</select></Field>
-          <Field label="Duration"><select value={duration} onChange={(e) => setDuration(Number(e.target.value))} className={inputCls}>{DURATION_OPTIONS.map((d) => <option key={d} value={d}>{d} min</option>)}</select></Field>
-        </div>
-
-        <Field label="Assign Clinician" required>
-          <select value={doctorId} onChange={(e) => setDoctorId(e.target.value)} className={inputCls}>
-            {CLINICIANS.map((c) => <option key={c.id} value={c.id}>{c.name}{c.onLeave ? " (on leave)" : ""}</option>)}
-          </select>
+          <FilterSelect value={type} onChange={setType} options={NEW_APPT_TYPES} className="w-full" />
         </Field>
 
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Assign Nurse">
-            <select value={nurse} onChange={(e) => setNurse(e.target.value)} className={inputCls}>
-              <option value="">— None —</option>
-              {NURSES.map((n) => <option key={n} value={n}>{n}</option>)}
-            </select>
+          <Field label="Date" required>
+            <FilterSelect value={manualDate} onChange={setManualDate} options={DATE_OPTIONS} className="w-full" />
+          </Field>
+          <Field label="Time" required>
+            <FilterSelect
+              value={time}
+              onChange={setManualTime}
+              disabled={availableTimeOptions.length === 0}
+              className="w-full"
+              options={
+                availableTimeOptions.length === 0
+                  ? [{ value: time, label: "No slots available" }]
+                  : availableTimeOptions.map((t) => ({ value: t, label: fmtRange(clockToMin(t), duration) }))
+              }
+            />
+          </Field>
+        </div>
+
+        <Field label="Assign Clinician">
+          <ClinicianAvailabilitySelect
+            value={doctorId}
+            onChange={setManualDoctorId}
+            options={clinicianOptions.map((c) => ({
+              id: c.id,
+              name: c.name,
+              available: c.available,
+              reason: c.onLeave ? "On leave" : "Already booked at this time",
+            }))}
+          />
+        </Field>
+
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Nurse">
+            <div className={`${inputCls} bg-gray-50 text-gray-700 flex items-center justify-between`}>
+              <span>{nurse || "—"}</span>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider shrink-0 ml-2">Auto</span>
+            </div>
           </Field>
           <Field label="Room">
-            <select value={room} onChange={(e) => setRoom(e.target.value)} disabled={type === "Consultation (video)"} className={`${inputCls} ${type === "Consultation (video)" ? "bg-gray-50 text-gray-400" : ""}`}>
-              <option value="">{type === "Consultation (video)" ? "Video (no room)" : "— None —"}</option>
-              {ROOMS.map((r) => {
-                const busy = hasRoomConflict(currentAppts, r.id, startMin, duration);
-                return <option key={r.id} value={r.id} disabled={Boolean(busy)}>{r.label} · {r.kind}{busy ? " (busy)" : ""}</option>;
-              })}
-            </select>
+            <div className={`${inputCls} bg-gray-50 text-gray-700 flex items-center justify-between`}>
+              <span>{roomKind === null ? "Video call" : (ROOMS.find((r) => r.id === room)?.label ?? "—")}</span>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider shrink-0 ml-2">Auto</span>
+            </div>
           </Field>
         </div>
 
         <Field label="Notes"><textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className={inputCls} placeholder="Optional…" /></Field>
 
-        {(clinicianConflict || roomConflict) && (
-          <div className="space-y-1.5">
-            {clinicianConflict && (
-              <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 text-xs font-medium rounded px-3 py-2">
-                <AlertTriangle className="w-4 h-4 shrink-0" /> {doctor.name} has a conflicting appointment at this time ({clinicianConflict.timeLabel}).
-              </div>
-            )}
-            {roomConflict && (
-              <div className="flex items-center gap-2 bg-orange-50 border border-orange-200 text-orange-700 text-xs font-medium rounded px-3 py-2">
-                <AlertTriangle className="w-4 h-4 shrink-0" /> {room} is occupied at this time — choose another room.
-              </div>
-            )}
+        {availableTimeOptions.length === 0 && (
+          <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium rounded px-3 py-2">
+            <AlertTriangle className="w-4 h-4 shrink-0" /> No available time slots on this date for this appointment type — try another date.
           </div>
         )}
       </div>
@@ -219,10 +282,10 @@ export function BlockTimeModal({ onClose, onCreate, doctorId }: { onClose: () =>
       <div className="space-y-4">
         <Field label="Date"><input value="3 Jul 2026" readOnly className={`${inputCls} bg-gray-50`} /></Field>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Start Time"><select value={start} onChange={(e) => setStart(e.target.value)} className={inputCls}>{TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}</select></Field>
-          <Field label="End Time"><select value={end} onChange={(e) => setEnd(e.target.value)} className={inputCls}>{TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}</select></Field>
+          <Field label="Start Time"><FilterSelect value={start} onChange={setStart} options={TIME_OPTIONS} className="w-full" /></Field>
+          <Field label="End Time"><FilterSelect value={end} onChange={setEnd} options={TIME_OPTIONS} className="w-full" /></Field>
         </div>
-        <Field label="Reason"><select value={reason} onChange={(e) => setReason(e.target.value)} className={inputCls}>{BLOCK_REASONS.map((r) => <option key={r} value={r}>{r}</option>)}</select></Field>
+        <Field label="Reason"><FilterSelect value={reason} onChange={setReason} options={BLOCK_REASONS} className="w-full" /></Field>
         <Field label="Note"><textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className={inputCls} placeholder="Optional…" /></Field>
         {!valid && <p className="text-xs text-red-600 font-medium">End time must be after start time.</p>}
       </div>

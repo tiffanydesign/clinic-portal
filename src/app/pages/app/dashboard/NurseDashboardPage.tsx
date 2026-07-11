@@ -121,8 +121,12 @@ export function NurseDashboardPage() {
   };
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 overflow-hidden">
-      <div className="px-6 pt-6 pb-4 shrink-0 flex items-start justify-between gap-4 flex-wrap">
+    // No forced page height / overflow-hidden here — the whole page scrolls
+    // as a unit (same pattern as the shared DashboardPage) so a shorter
+    // viewport never clips content with no way to reach it; only the
+    // internal panel math below relies on a concrete height.
+    <div className="bg-gray-50">
+      <div className="px-6 pt-6 pb-4 flex items-start justify-between gap-4 flex-wrap">
         <div>
           <h1 className="text-2xl font-bold text-gray-800">Good morning, {ROLE_GREETING.Nurse}</h1>
           <p className="text-sm text-gray-500 mt-1">{TODAY_LABEL} · Istanbul Clinic</p>
@@ -130,7 +134,7 @@ export function NurseDashboardPage() {
         <DemoMomentSwitcher value={demoMoment} onChange={handleDemoMomentChange} />
       </div>
 
-      <div className="flex-1 min-h-0 flex gap-6 px-6 pb-6">
+      <div className="flex gap-6 px-6 pb-6 h-[760px]">
         <div className="flex-1 min-w-0">
           {identity ? (
             <PatientJourneySection

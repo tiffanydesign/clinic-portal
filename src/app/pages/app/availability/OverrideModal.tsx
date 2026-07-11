@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { ChevronLeft, ChevronRight, Trash2, Plus, X, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { Slot, OverrideItem } from "./availabilityData";
+import { FilterSelect } from "../../../components/FilterSelect";
 
 const TIME_OPTIONS = ["8:00am", "9:00am", "10:00am", "11:00am", "12:00pm", "1:00pm", "2:00pm", "3:00pm", "4:00pm", "5:00pm", "6:00pm"];
 
@@ -103,13 +104,9 @@ export function OverrideModal({ onClose, onApply, onRequestLeaveInstead, existin
                 ) : (
                   slots.map((slot, i) => (
                     <div key={i} className="flex items-center space-x-3">
-                      <select value={slot.start} onChange={(e) => updateSlot(i, "start", e.target.value)} className="flex-1 text-center px-3 py-2 border border-gray-300 rounded text-sm text-gray-700 bg-white shadow-sm outline-none focus:border-slate-500">
-                        {TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
-                      </select>
+                      <FilterSelect value={slot.start} onChange={(v) => updateSlot(i, "start", v)} options={TIME_OPTIONS} className="flex-1 justify-center" />
                       <span className="text-gray-400 font-medium">-</span>
-                      <select value={slot.end} onChange={(e) => updateSlot(i, "end", e.target.value)} className="flex-1 text-center px-3 py-2 border border-gray-300 rounded text-sm text-gray-700 bg-white shadow-sm outline-none focus:border-slate-500">
-                        {TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}
-                      </select>
+                      <FilterSelect value={slot.end} onChange={(v) => updateSlot(i, "end", v)} options={TIME_OPTIONS} className="flex-1 justify-center" />
                       <button onClick={() => removeSlot(i)} className="p-2 text-gray-400 hover:text-red-600 rounded hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4" /></button>
                     </div>
                   ))

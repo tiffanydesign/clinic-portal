@@ -110,13 +110,6 @@ function P(
   return { name, route: "/patients/P-001", avatar, dob, age, sex, phone, email };
 }
 
-// Doctors with appointments today (Dr. Adobe Martinez is on leave 1–5 Jul).
-export const DOCTOR_COLUMNS = [
-  { id: "EMP-003", name: "Dr. Claudia Reis" },
-  { id: "EMP-004", name: "Dr. Chad Okonkwo" },
-  { id: "EMP-005", name: "Dr. Felix Andersen" },
-];
-
 const NO_FORMS_ISSUE = [
   { name: "Clinic Consent", status: "Signed" as FormStatus },
   { name: "Data Privacy Notice", status: "Signed" as FormStatus },
@@ -185,10 +178,10 @@ export const APPTS: Appt[] = [
   {
     id: "A-07",
     patient: P("Sophia Ascorbic", "SA", "30 Mar 1990", 35, "Female", "+90 532 111 2207", "sophia@example.com"),
-    type: "Consultation (video)", isVideo: true, startMin: 565, durationMin: 30, timeLabel: "09:25 – 09:55",
+    type: "Consultation (video)", isVideo: true, startMin: 630, durationMin: 30, timeLabel: "10:30 – 11:00",
     doctorId: "EMP-003", doctor: "Dr. Claudia Reis", room: "Video",
     status: "Checked In", consent: "Signed", payment: "Paid", amount: "₺2,000", balance: "₺0",
-    checkInTime: "09:10", currentStep: 0, forms: NO_FORMS_ISSUE,
+    checkInTime: "10:15", currentStep: 0, forms: NO_FORMS_ISSUE,
     prep: { sample: "Collected", scan: "Completed" }, previousVisit: "15 Apr 2026",
   },
   {
@@ -300,7 +293,10 @@ const STATUS_STYLE: Record<ApptStatus, StatusStyle> = {
 };
 
 export function apptBlockClass(status: ApptStatus): string {
-  return `${STATUS_STYLE[status].card} rounded-lg`;
+  // A resting shadow (not just on hover) is what makes a block read as an
+  // object sitting on the grid rather than a flat tinted rectangle — this is
+  // the single biggest lever for the calendar's perceived depth.
+  return `${STATUS_STYLE[status].card} rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.06)]`;
 }
 
 // The small leading dot every calendar/timeline block renders before the

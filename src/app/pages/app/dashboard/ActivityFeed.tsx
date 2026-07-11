@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Calendar, User, CreditCard, Settings } from "lucide-react";
 import { Section } from "./DashboardShared";
+import { FilterSelect } from "../../../components/FilterSelect";
 
 type EventKind = "Appointments" | "Patients" | "Payments" | "System";
 
@@ -41,15 +42,12 @@ export function ActivityFeed() {
       title="Recent Activity"
       className="h-64"
       action={
-        <select
+        <FilterSelect
           value={filter}
-          onChange={(e) => setFilter(e.target.value as "All Events" | EventKind)}
-          className="text-xs font-medium text-gray-600 border border-gray-300 rounded px-2 py-1 bg-white outline-none focus:border-slate-500"
-        >
-          {FILTERS.map((f) => (
-            <option key={f} value={f}>{f}</option>
-          ))}
-        </select>
+          onChange={(v) => setFilter(v as "All Events" | EventKind)}
+          options={FILTERS}
+          className="text-xs px-2 py-1"
+        />
       }
     >
       <div className="divide-y divide-gray-100">

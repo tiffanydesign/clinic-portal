@@ -111,6 +111,12 @@ export function hasRoomConflict(list: Appt[], room: string, startMin: number, du
     list.find((a) => a.id !== ignoreId && a.room === room && room !== "Video" && startMin < a.startMin + a.durationMin && a.startMin < end) ?? null
   );
 }
+export function hasNurseConflict(list: Appt[], nurseName: string, startMin: number, durationMin: number, ignoreId?: string): Appt | null {
+  const end = startMin + durationMin;
+  return (
+    list.find((a) => a.id !== ignoreId && a.nurse === nurseName && startMin < a.startMin + a.durationMin && a.startMin < end) ?? null
+  );
+}
 
 // --- week distribution (Mon–Sun of the current week; today = Fri 3 Jul 2026) ---
 export const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];

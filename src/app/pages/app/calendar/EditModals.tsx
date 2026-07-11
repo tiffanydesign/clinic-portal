@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { ModalShell, Field } from "./CreateModals";
+import { FilterSelect } from "../../../components/FilterSelect";
 import {
   Appt, ApptOverride, CLINICIANS, NURSES, ROOMS, APPT_TYPES, DURATION_OPTIONS,
   clockToMin, minToClock, fmtRange,
@@ -33,10 +34,26 @@ export function EditAppointmentModal({ appt, onClose, onApply }: { appt: Appt; o
       </>
     }>
       <div className="space-y-4">
-        <Field label="Appointment Type"><select value={type} onChange={(e) => setType(e.target.value as Appt["type"])} className={inputCls}>{APPT_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}</select></Field>
+        <Field label="Appointment Type">
+          <FilterSelect value={type} onChange={(v) => setType(v as Appt["type"])} options={APPT_TYPES} className="w-full" />
+        </Field>
         <div className="grid grid-cols-2 gap-3">
-          <Field label="Time"><select value={time} onChange={(e) => setTime(e.target.value)} className={inputCls}>{TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}</select></Field>
-          <Field label="Duration"><select value={duration} onChange={(e) => setDuration(Number(e.target.value))} className={inputCls}>{DURATION_OPTIONS.map((d) => <option key={d} value={d}>{d} min</option>)}</select></Field>
+          <Field label="Time">
+            <FilterSelect
+              value={time}
+              onChange={setTime}
+              className="w-full"
+              options={TIME_OPTIONS.map((t) => ({ value: t, label: fmtRange(clockToMin(t), duration) }))}
+            />
+          </Field>
+          <Field label="Duration">
+            <FilterSelect
+              value={String(duration)}
+              onChange={(v) => setDuration(Number(v))}
+              className="w-full"
+              options={DURATION_OPTIONS.map((d) => ({ value: String(d), label: `${d} min` }))}
+            />
+          </Field>
         </div>
         <Field label="Notes"><textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className={inputCls} placeholder="Optional…" /></Field>
       </div>
@@ -87,7 +104,14 @@ export function RescheduleModal({ appt, onClose, onApply }: { appt: Appt; onClos
     }>
       <div className="space-y-4">
         <Field label="Date"><input value="3 Jul 2026" readOnly className={`${inputCls} bg-gray-50`} /></Field>
-        <Field label="New Time"><select value={time} onChange={(e) => setTime(e.target.value)} className={inputCls}>{TIME_OPTIONS.map((t) => <option key={t} value={t}>{t}</option>)}</select></Field>
+        <Field label="New Time">
+          <FilterSelect
+            value={time}
+            onChange={setTime}
+            className="w-full"
+            options={TIME_OPTIONS.map((t) => ({ value: t, label: fmtRange(clockToMin(t), appt.durationMin) }))}
+          />
+        </Field>
       </div>
     </ModalShell>
   );

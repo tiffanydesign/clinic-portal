@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router";
 import { Search, ChevronDown, Download, Plus, MoreHorizontal, FileText, Phone, Mail, UserPlus, X, Filter, Check, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { useAppContext, Role } from "../../context/AppContext";
+import { FilterSelect } from "../../components/FilterSelect";
 
 // --- Types ---
 type PatientStatus = 'Active' | 'Inactive' | 'New' | 'Pending Onboarding';
@@ -56,6 +57,15 @@ export function PatientsPage() {
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showNewPatientModal, setShowNewPatientModal] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("Status: All");
+  const [clinicianFilter, setClinicianFilter] = useState("Assigned Clinician: All");
+  const [groupFilter, setGroupFilter] = useState("Group: All");
+  const [consentFilter, setConsentFilter] = useState("Consent: All");
+  const [paymentFilter, setPaymentFilter] = useState("Payment: All");
+  const [reviewFilter, setReviewFilter] = useState("Review Status: All");
+  const [flagFilter, setFlagFilter] = useState("Flag: All");
+  const [nextApptFilter, setNextApptFilter] = useState("Next Appt: All");
+  const [journeyFilter, setJourneyFilter] = useState("Journey Status: All");
 
   // Filters based on Role
   let patients = MOCK_PATIENTS;
@@ -120,15 +130,9 @@ export function PatientsPage() {
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, ID, email..." className="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded text-sm outline-none focus:border-slate-500 bg-white shadow-sm" />
         </div>
-        <select className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 outline-none focus:border-slate-500 bg-white shadow-sm">
-          <option>Status: All</option><option>Active</option><option>Inactive</option><option>New</option><option>Pending Onboarding</option>
-        </select>
-        <select className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 outline-none focus:border-slate-500 bg-white shadow-sm">
-          <option>Assigned Clinician: All</option><option>Dr. Claudia Reis</option><option>Dr. Chad Okonkwo</option>
-        </select>
-        <select className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 outline-none focus:border-slate-500 bg-white shadow-sm">
-          <option>Group: All</option><option>VIP</option><option>Corporate</option><option>Insurance</option><option>Walk-in</option>
-        </select>
+        <FilterSelect value={statusFilter} onChange={setStatusFilter} options={["Status: All", "Active", "Inactive", "New", "Pending Onboarding"]} />
+        <FilterSelect value={clinicianFilter} onChange={setClinicianFilter} options={["Assigned Clinician: All", "Dr. Claudia Reis", "Dr. Chad Okonkwo"]} />
+        <FilterSelect value={groupFilter} onChange={setGroupFilter} options={["Group: All", "VIP", "Corporate", "Insurance", "Walk-in"]} />
       </div>
     );
 
@@ -143,12 +147,8 @@ export function PatientsPage() {
           <button className="px-4 py-1 text-sm font-bold rounded bg-white text-gray-800 shadow-sm">Today's Appointments</button>
           <button className="px-4 py-1 text-sm font-medium rounded text-gray-500 hover:text-gray-700">Awaiting Check-in</button>
         </div>
-        <select className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 outline-none focus:border-slate-500 bg-white shadow-sm">
-          <option>Consent: All</option><option>Signed</option><option>Pending</option>
-        </select>
-        <select className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 outline-none focus:border-slate-500 bg-white shadow-sm">
-          <option>Payment: All</option><option>Paid</option><option>Unpaid</option>
-        </select>
+        <FilterSelect value={consentFilter} onChange={setConsentFilter} options={["Consent: All", "Signed", "Pending"]} />
+        <FilterSelect value={paymentFilter} onChange={setPaymentFilter} options={["Payment: All", "Paid", "Unpaid"]} />
       </div>
     );
 
@@ -158,15 +158,9 @@ export function PatientsPage() {
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search my patients..." className="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded text-sm outline-none focus:border-slate-500 bg-white shadow-sm" />
         </div>
-        <select className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 outline-none focus:border-slate-500 bg-white shadow-sm">
-          <option>Review Status: All</option><option>Results Pending Review</option><option>Awaiting Sign-off</option>
-        </select>
-        <select className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 outline-none focus:border-slate-500 bg-white shadow-sm">
-          <option>Flag: All</option><option>Urgent</option><option>Follow-up</option>
-        </select>
-        <select className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 outline-none focus:border-slate-500 bg-white shadow-sm">
-          <option>Next Appt: All</option><option>This Week</option><option>This Month</option>
-        </select>
+        <FilterSelect value={reviewFilter} onChange={setReviewFilter} options={["Review Status: All", "Results Pending Review", "Awaiting Sign-off"]} />
+        <FilterSelect value={flagFilter} onChange={setFlagFilter} options={["Flag: All", "Urgent", "Follow-up"]} />
+        <FilterSelect value={nextApptFilter} onChange={setNextApptFilter} options={["Next Appt: All", "This Week", "This Month"]} />
       </div>
     );
 
@@ -180,9 +174,7 @@ export function PatientsPage() {
           <button className="px-4 py-1 text-sm font-bold rounded bg-white text-gray-800 shadow-sm">Today's Patients</button>
           <button className="px-4 py-1 text-sm font-medium rounded text-gray-500 hover:text-gray-700">All Assigned</button>
         </div>
-        <select className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 outline-none focus:border-slate-500 bg-white shadow-sm">
-          <option>Journey Status: All</option><option>In Progress</option><option>Awaiting Start</option>
-        </select>
+        <FilterSelect value={journeyFilter} onChange={setJourneyFilter} options={["Journey Status: All", "In Progress", "Awaiting Start"]} />
       </div>
     );
     return null;

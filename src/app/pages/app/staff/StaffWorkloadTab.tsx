@@ -10,6 +10,7 @@ import {
   getStaff, workloadColor, ASSIGNED_PATIENTS, AssignedPatient,
   APPOINTMENT_DISTRIBUTION, WEEKLY_TREND, CAPACITY_THRESHOLD, OTHER_CLINICIANS,
 } from "./staffData";
+import { FilterSelect } from "../../../components/FilterSelect";
 
 const nearCapacity = WEEKLY_TREND.some((w) => w.appointments >= CAPACITY_THRESHOLD - 1);
 
@@ -33,12 +34,7 @@ export function StaffWorkloadTab() {
           <h2 className="text-xl font-bold text-gray-800">Workload — {staff.name}</h2>
           <p className="text-sm text-gray-500 mt-1">Patient load, appointment volume, and capacity analysis</p>
         </div>
-        <select value={range} onChange={(e) => setRange(e.target.value)} className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 outline-none focus:border-slate-500 bg-white shadow-sm">
-          <option>This Month</option>
-          <option>Last Month</option>
-          <option>Last 3 Months</option>
-          <option>This Year</option>
-        </select>
+        <FilterSelect value={range} onChange={setRange} options={["This Month", "Last Month", "Last 3 Months", "This Year"]} />
       </div>
 
       {/* Stat cards */}

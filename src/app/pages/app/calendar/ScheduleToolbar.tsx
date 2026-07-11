@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { ChevronLeft, ChevronRight, CalendarDays, Plus, Check, Info, SlidersHorizontal } from "lucide-react";
 import type { Role } from "../../../context/AppContext";
 import { CLINICIANS, ROOMS, APPT_TYPES } from "./scheduleData";
+import { FilterSelect } from "../../../components/FilterSelect";
 
 export type View = "day" | "week";
 export type Mode = "calendar" | "list";
@@ -64,7 +65,9 @@ function ClinicianMultiSelect({ selected, onToggle }: { selected: Set<string>; o
   const label = selected.size === 0 || selected.size === CLINICIANS.length ? "All clinicians" : `${selected.size} clinician${selected.size === 1 ? "" : "s"}`;
   return (
     <div className="relative">
-      <button onClick={() => setOpen((o) => !o)} className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 flex items-center gap-1 rounded-l-lg">{label} <span className="text-gray-400">▾</span></button>
+      <button onClick={() => setOpen((o) => !o)} className="inline-flex items-center justify-between gap-2 px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-medium text-gray-700 bg-white shadow-sm outline-none transition-colors hover:border-gray-400">
+        {label} <span className="text-gray-400 text-[10px]">▾</span>
+      </button>
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
@@ -107,7 +110,7 @@ export function ScheduleToolbar({
   const filtersActive = clinicianFilter.size > 0 || room !== "" || type !== "";
 
   return (
-    <div className="shrink-0 border-b border-gray-200 bg-white/95 backdrop-blur-sm shadow-[0_1px_0_rgba(0,0,0,0.04)]">
+    <div className="relative z-30 shrink-0 border-b border-gray-200 bg-white/95 backdrop-blur-sm shadow-[0_1px_0_rgba(0,0,0,0.04)]">
       {/* row 1 */}
       <div className="px-6 py-3.5 flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2">
@@ -155,16 +158,23 @@ export function ScheduleToolbar({
             <SlidersHorizontal className="w-3 h-3" /> Filters
             {filtersActive && <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />}
           </span>
-          <div className="flex items-stretch bg-white border border-gray-300 rounded-lg shadow-sm divide-x divide-gray-200">
+          <div className="flex items-center gap-2">
             <ClinicianMultiSelect selected={clinicianFilter} onToggle={toggleClinician} />
-            <select value={room} onChange={(e) => setRoom(e.target.value)} className="px-3 py-1.5 text-xs text-gray-700 bg-white outline-none">
-              <option value="">All rooms</option>
-              {ROOMS.map((r) => <option key={r.id} value={r.id}>{r.label}</option>)}
-            </select>
-            <select value={type} onChange={(e) => setType(e.target.value)} className="px-3 py-1.5 text-xs text-gray-700 bg-white outline-none rounded-r-lg">
-              <option value="">All types</option>
-              {APPT_TYPES.map((t) => <option key={t} value={t}>{t.replace(" (in-person)", "").replace(" (video)", "")}</option>)}
-            </select>
+            <FilterSelect
+              value={room}
+              onChange={setRoom}
+              className="text-xs py-1.5"
+              options={[{ value: "", label: "All rooms" }, ...ROOMS.map((r) => ({ value: r.id, label: r.label }))]}
+            />
+            <FilterSelect
+              value={type}
+              onChange={setType}
+              className="text-xs py-1.5"
+              options={[
+                { value: "", label: "All types" },
+                ...APPT_TYPES.map((t) => ({ value: t, label: t.replace(" (in-person)", "").replace(" (video)", "") })),
+              ]}
+            />
           </div>
         </div>
       )}

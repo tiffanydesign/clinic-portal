@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { Search, ChevronDown, Download, MoreHorizontal, FileText, ArrowRight, CreditCard, Ticket, RefreshCcw, Calendar as CalendarIcon, CheckCircle2, AlertCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAppContext } from "../../context/AppContext";
+import { FilterSelect } from "../../components/FilterSelect";
 
 // --- Types ---
 type PaymentStatus = 'Unpaid' | 'Paid' | 'Refunded';
@@ -50,6 +51,8 @@ export function BillingPage() {
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
   const [showDailySummary, setShowDailySummary] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState("Status: All");
+  const [methodFilter, setMethodFilter] = useState("Method: All");
   
   const exportRef = useRef<HTMLDivElement>(null);
 
@@ -118,17 +121,18 @@ export function BillingPage() {
         </div>
         
         <div className="flex items-center space-x-3 flex-1">
-          <select className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 outline-none focus:border-slate-500 bg-white shadow-sm min-w-[140px]">
-            <option>Status: All</option>
-            <option>Unpaid</option>
-            <option>Paid</option>
-            <option>Refunded</option>
-          </select>
-          <select className="px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 outline-none focus:border-slate-500 bg-white shadow-sm min-w-[140px]">
-            <option>Method: All</option>
-            <option>Card</option>
-            <option>Voucher</option>
-          </select>
+          <FilterSelect
+            value={statusFilter}
+            onChange={setStatusFilter}
+            className="min-w-[140px]"
+            options={["Status: All", "Unpaid", "Paid", "Refunded"]}
+          />
+          <FilterSelect
+            value={methodFilter}
+            onChange={setMethodFilter}
+            className="min-w-[140px]"
+            options={["Method: All", "Card", "Voucher"]}
+          />
           
           <div className="flex items-center px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 bg-white shadow-sm cursor-pointer hover:border-gray-400">
             <CalendarIcon className="w-4 h-4 text-gray-400 mr-2" />

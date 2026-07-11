@@ -2,15 +2,16 @@ import React from "react";
 import { useNavigate } from "react-router";
 import { Video, ArrowRight } from "lucide-react";
 import type { Role } from "../../../context/AppContext";
+import { ROOMS } from "../calendar/scheduleData";
 import {
-  APPTS, Appt, DOCTOR_COLUMNS, DAY_START_HOUR, DAY_END_HOUR, HOUR_PX,
+  APPTS, Appt, DAY_START_HOUR, DAY_END_HOUR, HOUR_PX,
   NOW_MINUTES, TODAY_SHORT, apptBlockClass, apptStatusDotClass, blockHeightPx, gapToNext, minToClock,
 } from "./dashboardData";
 
 const NURSE_NAME = "Berna Koç";
 const CLINICIAN_ID = "EMP-003"; // Dr. Claudia Reis (signed-in clinician)
 
-type Column = { key: string; label: string; appts: Appt[] };
+type Column = { key: string; label: string; sub?: string; appts: Appt[] };
 
 function buildColumns(role: Role): Column[] {
   if (role === "Nurse") {
@@ -19,45 +20,29 @@ function buildColumns(role: Role): Column[] {
   if (role === "Clinician") {
     return [{ key: "me", label: "My Schedule", appts: APPTS.filter((a) => a.doctorId === CLINICIAN_ID) }];
   }
-  // Admin & Reception: one column per active doctor
-  return DOCTOR_COLUMNS.map((d) => ({
-    key: d.id,
-    label: d.name,
-    appts: APPTS.filter((a) => a.doctorId === d.id),
-  }));
+  // Admin and Reception share the same room-first glance — a room is only
+  // ever booked by one patient at a time (~2h turnover), so this maps
+  // directly onto the clinic's physical layout instead of who happens to
+  // be running behind. Video consultations occupy no physical room and
+  // simply don't appear here.
+  return ROOMS.map((r) => ({ key: r.id, label: r.label, sub: r.kind, appts: APPTS.filter((a) => a.room === r.id) }));
 }
 
-// Simple lane-packing so overlapping appointments sit side by side.
-function packLanes(appts: Appt[]): { appt: Appt; lane: number; lanes: number }[] {
-  const sorted = [...appts].sort((a, b) => a.startMin - b.startMin);
-  const laneEnds: number[] = [];
-  const placed = sorted.map((appt) => {
-    const end = appt.startMin + appt.durationMin;
-    let lane = laneEnds.findIndex((e) => e <= appt.startMin);
-    if (lane === -1) {
-      lane = laneEnds.length;
-      laneEnds.push(end);
-    } else {
-      laneEnds[lane] = end;
-    }
-    return { appt, lane };
-  });
-  const lanes = Math.max(1, laneEnds.length);
-  return placed.map((p) => ({ ...p, lanes }));
-}
-
-function ApptBlock({ appt, lane, lanes, gapMin }: { appt: Appt; lane: number; lanes: number; gapMin?: number }) {
+// Every column here (room or clinician) only ever holds one patient at a
+// time, so blocks render at full column width — no lane-splitting needed.
+// `gapMin` still caps a block's height against whatever comes right after it
+// in the same column, so a short visit never visually bleeds into the next.
+function ApptBlock({ appt, gapMin }: { appt: Appt; gapMin?: number }) {
   const navigate = useNavigate();
   const top = ((appt.startMin - DAY_START_HOUR * 60) / 60) * HOUR_PX;
   const height = blockHeightPx(appt.durationMin, gapMin);
-  const widthPct = 100 / lanes;
   const showDetail = height >= 38;
 
   return (
     <button
       onClick={() => navigate(`/dashboard/appointment/${appt.id}`)}
-      style={{ top, height, left: `${lane * widthPct}%`, width: `calc(${widthPct}% - 3px)` }}
-      className={`absolute px-2 py-1 text-left overflow-hidden hover:shadow-md hover:z-10 transition-shadow ${apptBlockClass(appt.status)}`}
+      style={{ top, height }}
+      className={`absolute left-0.5 right-0.5 px-2 py-1 text-left overflow-hidden hover:shadow-md hover:z-10 transition-shadow ${apptBlockClass(appt.status)}`}
     >
       <div className="flex items-center gap-1.5 min-w-0">
         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${apptStatusDotClass(appt.status)}`} />
@@ -95,7 +80,7 @@ export function CalendarWidget({ role }: { role: Role }) {
   };
 
   return (
-    <div className="border border-gray-200 rounded-xl shadow-sm bg-white flex flex-col h-full min-h-0">
+    <div className="border border-gray-200 rounded-xl shadow-md bg-white flex flex-col h-full min-h-0">
       {/* Header */}
       <div className="h-12 border-b border-gray-200 bg-gray-50/70 px-4 flex items-center justify-between shrink-0">
         <h3 className="font-bold text-gray-800 text-sm">
@@ -126,12 +111,16 @@ export function CalendarWidget({ role }: { role: Role }) {
           back to what it's separating without shouting. */}
       <div className="h-[3px] shrink-0 bg-gradient-to-r from-gray-200 via-amber-200 via-30% via-blue-200 via-70% to-red-200" />
 
-      {/* Column headers (multi-doctor for Admin/Reception) */}
+      {/* Column headers (room-based for Admin, doctor-based for Reception) */}
       {columns.length > 1 && (
-        <div className="flex border-b border-gray-200 bg-gray-50/40 shrink-0 pl-14">
+        <div className="flex border-b border-gray-200 bg-gradient-to-b from-gray-50 to-gray-50/50 shrink-0 pl-14">
           {columns.map((c) => (
-            <div key={c.key} className="flex-1 px-2 py-2 text-center text-xs font-bold text-gray-600 border-l border-gray-100 truncate">
-              {c.label}
+            <div key={c.key} className="flex-1 px-1.5 py-2 text-center border-l border-gray-200 min-w-0">
+              <div className="text-xs font-bold text-gray-700 truncate">{c.label}</div>
+              {c.sub && <div className="text-[9px] text-gray-400 truncate mt-0.5">{c.sub}</div>}
+              <span className="inline-block mt-1 px-1.5 py-0.5 rounded-full bg-gray-100 text-[9px] font-bold text-gray-500 tabular-nums">
+                {c.appts.length}
+              </span>
             </div>
           ))}
         </div>
@@ -142,8 +131,11 @@ export function CalendarWidget({ role }: { role: Role }) {
         <div className="flex" style={{ height: gridHeight }}>
           {/* Hour gutter */}
           <div className="w-14 shrink-0 relative border-r border-gray-200 bg-gray-50/30">
+            {hours.map((h, i) => i % 2 === 1 && (
+              <div key={`band-${h}`} className="absolute left-0 right-0 bg-gray-100/50" style={{ top: (i - 1) * HOUR_PX, height: HOUR_PX }} />
+            ))}
             {hours.map((h, i) => (
-              <div key={h} className="absolute left-0 right-0 text-[10px] font-medium text-gray-400 text-right pr-2 tabular-nums" style={{ top: i * HOUR_PX - 6 }}>
+              <div key={h} className="absolute left-0 right-0 text-[10px] font-semibold text-gray-500 text-right pr-2 tabular-nums" style={{ top: i * HOUR_PX - 6 }}>
                 {i === 0 ? "" : `${String(h).padStart(2, "0")}:00`}
               </div>
             ))}
@@ -154,9 +146,13 @@ export function CalendarWidget({ role }: { role: Role }) {
 
           {/* Columns */}
           <div className="flex-1 relative">
+            {/* alternating hour bands */}
+            {hours.map((h, i) => i % 2 === 1 && (
+              <div key={`band-${h}`} className="absolute left-0 right-0 bg-gray-50/60 pointer-events-none" style={{ top: (i - 1) * HOUR_PX, height: HOUR_PX }} />
+            ))}
             {/* Hour gridlines */}
             {hours.map((h, i) => (
-              <div key={h} className="absolute left-0 right-0 border-t border-gray-100" style={{ top: i * HOUR_PX }} />
+              <div key={h} className="absolute left-0 right-0 border-t border-gray-200" style={{ top: i * HOUR_PX }} />
             ))}
 
             {/* Now line */}
@@ -169,13 +165,12 @@ export function CalendarWidget({ role }: { role: Role }) {
             {/* Appointment columns */}
             <div className="flex h-full">
               {columns.map((c) => {
-                const packed = packLanes(c.appts);
+                const sorted = [...c.appts].sort((a, b) => a.startMin - b.startMin);
                 return (
-                  <div key={c.key} className="flex-1 relative border-l border-gray-100">
-                    {packed.map(({ appt, lane, lanes }) => {
-                      const laneMates = packed.filter((p) => p.lane === lane).map((p) => p.appt);
-                      return <ApptBlock key={appt.id} appt={appt} lane={lane} lanes={lanes} gapMin={gapToNext(laneMates, appt.startMin)} />;
-                    })}
+                  <div key={c.key} className="flex-1 relative border-l border-gray-200">
+                    {sorted.map((appt) => (
+                      <ApptBlock key={appt.id} appt={appt} gapMin={gapToNext(sorted, appt.startMin)} />
+                    ))}
                   </div>
                 );
               })}
