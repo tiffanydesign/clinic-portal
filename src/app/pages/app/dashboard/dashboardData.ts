@@ -90,6 +90,9 @@ export type Appt = {
   forms: { name: string; status: FormStatus }[];
   prep: { sample: "Collected" | "Pending"; scan: "Completed" | "Scheduled" };
   previousVisit?: string;
+  // Booked same-day, walk-in-style, rather than pre-scheduled — drives the
+  // Reception dashboard's optional "Walk-ins" KPI card only.
+  isWalkIn?: boolean;
 };
 
 export const JOURNEY_STEPS_ADMIN = ["Consent", "Changing", "Scan", "Sample", "Check Out"];
@@ -180,7 +183,7 @@ export const APPTS: Appt[] = [
     doctorId: "EMP-005", doctor: "Dr. Felix Andersen", nurse: "Aylin Demir", room: "Room 3",
     status: "Arrived", consent: "Signed", payment: "Paid", amount: "₺1,500", balance: "₺0",
     arrivedTime: "09:05", waitMinutes: 9, currentStep: 1, forms: NO_FORMS_ISSUE,
-    prep: { sample: "Collected", scan: "Completed" }, previousVisit: "30 Jun 2026",
+    prep: { sample: "Collected", scan: "Completed" }, previousVisit: "30 Jun 2026", isWalkIn: true,
   },
   {
     id: "A-07",
@@ -247,7 +250,7 @@ export const APPTS: Appt[] = [
       { name: "Clinic Consent", status: "Not Sent" },
       { name: "Scan Safety Checklist", status: "Not Sent" },
     ],
-    prep: { sample: "Pending", scan: "Scheduled" }, previousVisit: "—",
+    prep: { sample: "Pending", scan: "Scheduled" }, previousVisit: "—", isWalkIn: true,
   },
   {
     id: "A-13",
@@ -268,6 +271,39 @@ export const APPTS: Appt[] = [
     status: "Booked", consent: "Signed", payment: "Unpaid", amount: "₺2,400", balance: "₺1,200",
     currentStep: 0, forms: NO_FORMS_ISSUE,
     prep: { sample: "Pending", scan: "Completed" }, previousVisit: "20 Apr 2026",
+  },
+  {
+    id: "A-15",
+    patient: P("Zara Quill", "ZQ", "19 Sep 1986", 39, "Female", "+90 532 111 2215", "zara@example.com"),
+    type: "Consultation (in-person)", isVideo: false, startMin: 900, durationMin: 45, timeLabel: "15:00 – 15:45",
+    doctorId: "EMP-003", doctor: "Dr. Claudia Reis", nurse: "Aylin Demir", room: "Room 2",
+    // Neither gate cleared yet — exercises the Front Desk Queue's
+    // both-red state, with Take Payment as her next step (payment-first).
+    status: "Arrived", consent: "Pending", payment: "Unpaid", amount: "₺3,200", balance: "₺3,200",
+    arrivedTime: "09:00", waitMinutes: 14, currentStep: 0,
+    forms: [
+      { name: "Clinic Consent", status: "Pending" },
+      { name: "Data Privacy Notice", status: "Signed" },
+    ],
+    prep: { sample: "Pending", scan: "Scheduled" }, previousVisit: "—",
+  },
+  {
+    id: "A-16",
+    patient: P("Mateo Vitalis", "MV", "02 Jan 1974", 52, "Male", "+90 532 111 2216", "mateo@example.com"),
+    type: "Body Scan", isVideo: false, startMin: 930, durationMin: 60, timeLabel: "15:30 – 16:30",
+    doctorId: "EMP-005", doctor: "Dr. Felix Andersen", nurse: "Aylin Demir", room: "Scan B",
+    status: "Arrived", consent: "Signed", payment: "Paid", amount: "₺4,800", balance: "₺0",
+    arrivedTime: "09:10", waitMinutes: 4, currentStep: 0, forms: NO_FORMS_ISSUE,
+    prep: { sample: "Pending", scan: "Scheduled" }, previousVisit: "05 May 2026",
+  },
+  {
+    id: "A-17",
+    patient: P("Priya Chalcone", "PC", "11 Nov 1993", 32, "Female", "+90 532 111 2217", "priya@example.com"),
+    type: "Consultation (in-person)", isVideo: false, startMin: 780, durationMin: 60, timeLabel: "13:00 – 14:00",
+    doctorId: "EMP-004", doctor: "Dr. Chad Okonkwo", nurse: "Berna Koç", room: "Room 1",
+    status: "Booked", consent: "Signed", payment: "Paid", amount: "₺2,400", balance: "₺0",
+    currentStep: 0, forms: NO_FORMS_ISSUE,
+    prep: { sample: "Pending", scan: "Completed" }, previousVisit: "22 Mar 2026",
   },
 ];
 

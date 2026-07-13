@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { Copy, Trash2, Plus, Edit2, ChevronLeft, AlertTriangle } from "lucide-react";
+import { Copy, Trash2, Plus, Edit2, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import {
   DAYS, WeekSchedule, Slot, OverrideItem, LeaveDuration, LeaveReason,
@@ -19,12 +19,11 @@ import { FilterSelect } from "../../../components/FilterSelect";
 
 const TIME_OPTIONS = ["6:00am", "6:30am", "7:00am", "7:30am", "8:00am", "8:30am", "9:00am", "9:30am", "10:00am", "10:30am", "11:00am", "11:30am", "12:00pm", "12:30pm", "1:00pm", "1:30pm", "2:00pm", "2:30pm", "3:00pm", "3:30pm", "4:00pm", "4:30pm", "5:00pm", "5:30pm", "6:00pm", "6:30pm", "7:00pm", "7:30pm", "8:00pm", "8:30pm", "9:00pm"];
 
-function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange: () => void; disabled?: boolean }) {
+function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void }) {
   return (
     <button
       onClick={onChange}
-      disabled={disabled}
-      className={`w-10 h-5 rounded-full relative transition-colors shrink-0 ${checked ? "bg-slate-600" : "bg-gray-300"} ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+      className={`w-10 h-5 rounded-full relative transition-colors shrink-0 ${checked ? "bg-slate-600" : "bg-gray-300"}`}
     >
       <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-[3px] transition-all ${checked ? "left-[22px]" : "left-[3px]"}`} />
     </button>
@@ -38,9 +37,7 @@ type ConflictContext =
   | { kind: "override-delete"; conflicts: BookedAppt[]; id: string }
   | { kind: "leave"; conflicts: BookedAppt[]; dateFrom: string; dateTo: string; duration: LeaveDuration; reason: LeaveReason; reasonOther?: string };
 
-type WithdrawContext = { kind: "schedule" } | { kind: "override"; id: string } | { kind: "leave"; id: string };
-
-const LOCK_TITLE = "Locked while a request is pending approval.";
+type WithdrawContext = { kind: "leave"; id: string };
 
 export function AvailabilityEditorPage() {
   const navigate = useNavigate();
@@ -49,21 +46,17 @@ export function AvailabilityEditorPage() {
   const [title, setTitle] = useState("Clinic Availability");
   const [isEditingTitle, setIsEditingTitle] = useState(false);
 
-  // The draft is local until Save/Submit commits it to the store.
+  // The draft is local until Save commits it to the store — Weekly Hours
+  // changes never sit behind a pending request anymore, they apply the
+  // moment any conflicts are resolved (see ConflictModal below).
   const [localSchedule, setLocalSchedule] = useState<WeekSchedule>(() => cloneSchedule(store.savedSchedule));
   const [localTimezone, setLocalTimezone] = useState(store.savedTimezone);
-
-  const locked = store.scheduleRequest !== null;
-  // While locked, show exactly what's under review — not the (irrelevant) local draft.
-  const schedule = locked ? store.scheduleRequest!.draftSchedule : localSchedule;
-  const timezone = locked ? store.scheduleRequest!.draftTimezone : localTimezone;
 
   // --- debounced (500ms) direction/conflict evaluation driving the Save button ---
   const [evalResult, setEvalResult] = useState<{ isDirty: boolean; direction: ChangeDirection; conflicts: BookedAppt[] }>({ isDirty: false, direction: "Same", conflicts: [] });
   const debounceRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
-    if (locked) return;
     const evaluate = () => {
       const schedChanged = !scheduleEquals(store.savedSchedule, localSchedule);
       const tzChanged = localTimezone !== store.savedTimezone;
@@ -76,10 +69,9 @@ export function AvailabilityEditorPage() {
     debounceRef.current = window.setTimeout(evaluate, 500);
     return () => window.clearTimeout(debounceRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [localSchedule, localTimezone, locked]);
+  }, [localSchedule, localTimezone]);
 
-  const needsApproval = evalResult.isDirty && evalResult.direction === "Reducing" && evalResult.conflicts.length > 0;
-  const canSaveDirect = evalResult.isDirty && !needsApproval;
+  const hasBlockingConflicts = evalResult.isDirty && evalResult.direction === "Reducing" && evalResult.conflicts.length > 0;
 
   const [conflictModal, setConflictModal] = useState<ConflictContext | null>(null);
   const [withdrawModal, setWithdrawModal] = useState<WithdrawContext | null>(null);
@@ -88,15 +80,12 @@ export function AvailabilityEditorPage() {
 
   // --- weekly editor handlers ---
   const toggleDay = (day: string) => {
-    if (locked) return;
     setLocalSchedule((prev) => ({ ...prev, [day]: { ...prev[day], active: !prev[day].active } }));
   };
   const addSlot = (day: string) => {
-    if (locked) return;
     setLocalSchedule((prev) => ({ ...prev, [day]: { ...prev[day], slots: [...prev[day].slots, { start: "9:00am", end: "5:00pm" }] } }));
   };
   const removeSlot = (day: string, idx: number) => {
-    if (locked) return;
     setLocalSchedule((prev) => {
       const slots = prev[day].slots.filter((_, i) => i !== idx);
       if (slots.length === 0) return { ...prev, [day]: { active: false, slots: [{ start: "9:00am", end: "5:00pm" }] } };
@@ -104,7 +93,6 @@ export function AvailabilityEditorPage() {
     });
   };
   const updateSlotTime = (day: string, idx: number, field: "start" | "end", value: string) => {
-    if (locked) return;
     setLocalSchedule((prev) => ({ ...prev, [day]: { ...prev[day], slots: prev[day].slots.map((s, i) => (i === idx ? { ...s, [field]: value } : s)) } }));
   };
 
@@ -114,25 +102,34 @@ export function AvailabilityEditorPage() {
   };
 
   const handleBack = () => {
-    if (evalResult.isDirty && !locked) {
+    if (evalResult.isDirty) {
       if (window.confirm("You have unsaved changes. Are you sure you want to leave without saving?")) navigate("/calendar/my-availability");
     } else {
       navigate("/calendar/my-availability");
     }
   };
 
-  // --- Save / Submit ---
+  // --- Save ---
+  // Weekly Hours never needs Admin approval: an Expanding change (or a
+  // Reducing one with no conflicts) saves immediately; a Reducing change
+  // with conflicts opens the blocking ConflictModal, which itself commits
+  // the save once every conflict is resolved.
   const handleSaveClick = () => {
-    if (locked || !evalResult.isDirty) return;
-    if (needsApproval) {
+    if (!evalResult.isDirty) return;
+    if (hasBlockingConflicts) {
       setConflictModal({ kind: "schedule", conflicts: evalResult.conflicts });
     } else {
       availabilityActions.directSaveSchedule(localSchedule, localTimezone);
+      // The debounced effect above only re-evaluates when localSchedule /
+      // localTimezone change, not when store.savedSchedule does — without
+      // this, "Unsaved changes" and an enabled Save button would linger
+      // after a save that just succeeded.
+      setEvalResult({ isDirty: false, direction: "Same", conflicts: [] });
       toast.success("Availability updated.");
     }
   };
 
-  // --- Override create/edit ---
+  // --- Override create/edit — same instant-apply rule as Weekly Hours ---
   const handleOverrideApply = (date: string, slots: Slot[]) => {
     const editing = overrideModalState?.editing;
     if (editing) {
@@ -184,6 +181,8 @@ export function AvailabilityEditorPage() {
     }
     // Leave always ends up Pending regardless of conflicts; when conflicts
     // exist we still surface them for awareness before committing, per spec.
+    // Leave is the one request kind that still genuinely requires Admin's
+    // judgment call, so conflicts here are informational, not blocking.
     const conflicts = checkLeaveConflicts(dateFrom, dateTo, duration);
     if (conflicts.length > 0) {
       setConflictModal({ kind: "leave", conflicts, dateFrom, dateTo, duration, reason, reasonOther });
@@ -199,22 +198,23 @@ export function AvailabilityEditorPage() {
     if (!conflictModal) return;
     switch (conflictModal.kind) {
       case "schedule":
-        availabilityActions.submitScheduleChange(localSchedule, localTimezone, conflictModal.conflicts);
-        toast.success("Availability change submitted for approval.");
+        availabilityActions.directSaveSchedule(localSchedule, localTimezone);
+        setEvalResult({ isDirty: false, direction: "Same", conflicts: [] });
+        toast.success("Availability updated.");
         break;
       case "override-create": {
         const res = availabilityActions.submitOverride(conflictModal.date, conflictModal.slots);
-        if (res.ok) { toast.success("Override submitted for approval."); setOverrideModalState(null); }
+        if (res.ok) { toast.success("Availability updated."); setOverrideModalState(null); }
         break;
       }
       case "override-edit": {
         const res = availabilityActions.submitOverrideEdit(conflictModal.id, conflictModal.slots);
-        if (res.ok) { toast.success("Override change submitted for approval."); setOverrideModalState(null); }
+        if (res.ok) { toast.success("Availability updated."); setOverrideModalState(null); }
         break;
       }
       case "override-delete":
         availabilityActions.deleteOverride(conflictModal.id);
-        toast.success("Override removal submitted for approval.");
+        toast.success("Override removed.");
         break;
       case "leave": {
         const res = availabilityActions.submitLeave(conflictModal.dateFrom, conflictModal.dateTo, conflictModal.duration, conflictModal.reason, conflictModal.reasonOther);
@@ -228,9 +228,8 @@ export function AvailabilityEditorPage() {
 
   const confirmWithdraw = () => {
     if (!withdrawModal) return;
-    if (withdrawModal.kind === "schedule") { availabilityActions.withdrawScheduleChange(); toast.success("Request withdrawn."); }
-    if (withdrawModal.kind === "override") { availabilityActions.withdrawOverride(withdrawModal.id); toast.success("Request withdrawn."); }
-    if (withdrawModal.kind === "leave") { availabilityActions.withdrawLeave(withdrawModal.id); toast.success("Request withdrawn."); }
+    availabilityActions.withdrawLeave(withdrawModal.id);
+    toast.success("Request withdrawn.");
     setWithdrawModal(null);
   };
 
@@ -252,11 +251,12 @@ export function AvailabilityEditorPage() {
               ) : (
                 <>
                   <h1 className="text-xl font-bold text-gray-800 mr-2">{title}</h1>
+                  <span className="px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[9px] font-bold uppercase tracking-wider rounded-full mr-2">Applies instantly</span>
                   <Edit2 className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </>
               )}
             </div>
-            <p className="text-sm text-gray-500 mt-1">Mon – Fri, 9:00am – 5:00pm</p>
+            <p className="text-sm text-gray-500 mt-1">Only leave requires Admin approval. Everything else applies instantly.</p>
           </div>
         </div>
 
@@ -264,55 +264,37 @@ export function AvailabilityEditorPage() {
           <div title="Default schedules cannot be deleted" className="cursor-not-allowed">
             <button disabled className="p-2 text-gray-300 border border-transparent rounded"><Trash2 className="w-5 h-5" /></button>
           </div>
-          <div title={locked ? "Withdraw your pending request before saving new changes." : needsApproval ? "This change conflicts with existing bookings and requires admin approval" : undefined}>
-            <button
-              onClick={handleSaveClick}
-              disabled={locked || !evalResult.isDirty}
-              className={`px-6 py-2 font-bold text-sm rounded transition-colors flex items-center gap-1.5 ${
-                locked || !evalResult.isDirty ? "bg-gray-200 text-gray-400 cursor-not-allowed" :
-                needsApproval ? "bg-amber-500 text-white hover:bg-amber-600" :
-                "bg-slate-600 text-white hover:bg-slate-700"
-              }`}
-            >
-              {needsApproval && !locked && evalResult.isDirty && <AlertTriangle className="w-4 h-4" />}
-              {needsApproval ? "Submit for Approval" : "Save"}
-            </button>
-          </div>
+          <button
+            onClick={handleSaveClick}
+            disabled={!evalResult.isDirty}
+            className={`px-6 py-2 font-bold text-sm rounded transition-colors ${
+              !evalResult.isDirty ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-slate-600 text-white hover:bg-slate-700"
+            }`}
+          >
+            Save
+          </button>
         </div>
       </div>
 
       {/* Unsaved changes banner */}
-      {!locked && evalResult.isDirty && (
+      {evalResult.isDirty && (
         <div className="bg-amber-50 border-b border-amber-200 px-6 py-2 flex items-center gap-3 shrink-0">
           <p className="text-xs text-amber-800 font-medium">Unsaved changes</p>
           <button onClick={handleDiscard} className="text-xs font-bold text-amber-800 hover:underline">Discard</button>
         </div>
       )}
 
-      {/* Locked banner */}
-      {locked && (
-        <div className="bg-amber-50 border-b border-amber-200 px-6 py-3 flex items-center justify-between shrink-0">
-          <div className="flex items-center gap-2.5">
-            <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
-            <p className="text-sm text-amber-800 font-medium">Your schedule change is pending approval.</p>
-          </div>
-          <button onClick={() => setWithdrawModal({ kind: "schedule" })} className="px-4 py-1.5 bg-white border border-amber-300 text-amber-800 text-sm font-bold rounded hover:bg-amber-100 transition-colors shrink-0">
-            Withdraw Request
-          </button>
-        </div>
-      )}
-
       {/* Content Area */}
       <div className="flex-1 overflow-hidden flex">
         {/* Left Side (65%) — weekly editor */}
-        <div title={locked ? LOCK_TITLE : undefined} className={`w-[65%] h-full overflow-y-auto p-8 border-r border-gray-300 bg-white ${locked ? "opacity-70" : ""}`}>
+        <div className="w-[65%] h-full overflow-y-auto p-8 border-r border-gray-300 bg-white">
           <div className="max-w-2xl mx-auto space-y-6">
             {DAYS.map((day) => {
-              const config = schedule[day];
+              const config = localSchedule[day];
               return (
                 <div key={day} className="flex items-start py-4 border-b border-gray-100 last:border-0">
                   <div className="w-40 flex items-center shrink-0 pt-2">
-                    <Toggle checked={config.active} onChange={() => toggleDay(day)} disabled={locked} />
+                    <Toggle checked={config.active} onChange={() => toggleDay(day)} />
                     <span className={`ml-3 text-sm font-bold whitespace-nowrap ${config.active ? "text-gray-800" : "text-gray-400"}`}>{day}</span>
                   </div>
 
@@ -324,7 +306,6 @@ export function AvailabilityEditorPage() {
                             <FilterSelect
                               value={slot.start}
                               onChange={(v) => updateSlotTime(day, idx, "start", v)}
-                              disabled={locked}
                               options={TIME_OPTIONS}
                               className="w-28 justify-center"
                             />
@@ -332,19 +313,16 @@ export function AvailabilityEditorPage() {
                             <FilterSelect
                               value={slot.end}
                               onChange={(v) => updateSlotTime(day, idx, "end", v)}
-                              disabled={locked}
                               options={TIME_OPTIONS}
                               className="w-28 justify-center"
                             />
                           </div>
 
-                          {!locked && (
-                            <div className="flex items-center ml-4 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              {idx === 0 && <button onClick={() => addSlot(day)} className="p-1.5 text-gray-400 hover:text-slate-600 rounded hover:bg-gray-100"><Plus className="w-4 h-4" /></button>}
-                              {config.slots.length > 1 && <button onClick={() => removeSlot(day, idx)} className="p-1.5 text-gray-400 hover:text-red-600 rounded hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>}
-                              {idx === 0 && <button title="Copy to all" className="p-1.5 text-gray-400 hover:text-slate-600 rounded hover:bg-gray-100 ml-2"><Copy className="w-4 h-4" /></button>}
-                            </div>
-                          )}
+                          <div className="flex items-center ml-4 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {idx === 0 && <button onClick={() => addSlot(day)} className="p-1.5 text-gray-400 hover:text-slate-600 rounded hover:bg-gray-100"><Plus className="w-4 h-4" /></button>}
+                            {config.slots.length > 1 && <button onClick={() => removeSlot(day, idx)} className="p-1.5 text-gray-400 hover:text-red-600 rounded hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>}
+                            {idx === 0 && <button title="Copy to all" className="p-1.5 text-gray-400 hover:text-slate-600 rounded hover:bg-gray-100 ml-2"><Copy className="w-4 h-4" /></button>}
+                          </div>
                         </div>
                       ))
                     ) : (
@@ -362,11 +340,9 @@ export function AvailabilityEditorPage() {
           <div>
             <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Timezone</label>
             <select
-              value={timezone}
+              value={localTimezone}
               onChange={(e) => setLocalTimezone(e.target.value)}
-              disabled={locked}
-              title={locked ? LOCK_TITLE : undefined}
-              className={`w-full px-4 py-2.5 border border-gray-300 rounded text-sm text-gray-800 outline-none focus:border-slate-500 ${locked ? "bg-gray-100 cursor-not-allowed" : "bg-white"}`}
+              className="w-full px-4 py-2.5 border border-gray-300 rounded text-sm text-gray-800 outline-none focus:border-slate-500 bg-white"
             >
               <option value="Europe/Istanbul">Europe/Istanbul</option>
               <option value="Europe/London">Europe/London</option>
@@ -377,11 +353,7 @@ export function AvailabilityEditorPage() {
           <PendingRequestsSection
             pending={pending}
             decisions={store.decisions}
-            onWithdraw={(req) => {
-              if (req.kind === "Schedule Change") setWithdrawModal({ kind: "schedule" });
-              else if (req.kind === "Date Override") setWithdrawModal({ kind: "override", id: req.relatedId! });
-              else setWithdrawModal({ kind: "leave", id: req.relatedId! });
-            }}
+            onWithdraw={(req) => setWithdrawModal({ kind: "leave", id: req.relatedId! })}
           />
 
           <DateOverridesSection
@@ -412,9 +384,9 @@ export function AvailabilityEditorPage() {
       {conflictModal && (
         <ConflictModal
           bookings={conflictModal.conflicts}
-          context={conflictModal.kind === "leave" ? "leave" : "schedule"}
+          context={conflictModal.kind === "leave" ? "leave" : conflictModal.kind === "schedule" ? "schedule" : "override"}
           onCancel={() => setConflictModal(null)}
-          onSubmit={confirmConflict}
+          onConfirm={confirmConflict}
         />
       )}
 

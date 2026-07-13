@@ -343,11 +343,11 @@ export function AppointmentDrawer({ appt, role, basePath = "/dashboard", readOnl
     const checkedIn = appt.status === "Checked In" || appt.status === "In Clinic";
     const enabled = canCheckIn(appt);
     const blockReason = checkInBlockReason(appt);
-    const footer = checkedIn ? (
-      <button onClick={() => { toast.success(`${appt.patient.name} checked out.`); onClose(); }} className="w-full py-3 bg-blue-600 text-white font-bold rounded hover:bg-blue-700 transition-colors">
-        Check Out
-      </button>
-    ) : (
+    // Once checked in, there's nothing left for Reception to trigger here —
+    // Check Out is the nurse's own action at the end of the patient's
+    // journey (see journeyEngine.ts's final "checkout" milestone), never a
+    // Reception button.
+    const footer = checkedIn ? undefined : (
       <>
         <button
           disabled={!enabled}

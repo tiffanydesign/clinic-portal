@@ -4,43 +4,7 @@ import { Search, ChevronDown, Download, MoreHorizontal, FileText, ArrowRight, Cr
 import { toast } from "sonner";
 import { useAppContext } from "../../context/AppContext";
 import { FilterSelect } from "../../components/FilterSelect";
-
-// --- Types ---
-type PaymentStatus = 'Unpaid' | 'Paid' | 'Refunded';
-type PaymentMethod = 'Card' | 'Voucher' | '—';
-type TransactionStatus = 'Pending' | 'Processing' | 'Completed' | 'Failed' | 'Refund Pending' | 'Refund Completed' | '—';
-type InvoiceStatus = 'Issued' | 'Pending' | 'Not required';
-
-type BillingRecord = {
-  id: string;
-  patientName: string;
-  avatar: string;
-  apptType: string;
-  apptDate: string; // "3 Jul"
-  fullDate: string; // "3 Jul 2026"
-  clinician: string;
-  totalAmount: number;
-  paidAmount: number;
-  balance: number;
-  voucher?: string;
-  status: PaymentStatus;
-  method: PaymentMethod;
-  transactionStatus: TransactionStatus;
-  invoiceStatus: InvoiceStatus;
-  isToday?: boolean;
-};
-
-// --- Mock Data ---
-const MOCK_DATA: BillingRecord[] = [
-  { id: "1", patientName: "Mackenzie Messineo", avatar: "MM", apptType: "Body Scan", apptDate: "3 Jul", fullDate: "3 Jul 2026", clinician: "Dr. Claudia", totalAmount: 18000, paidAmount: 18000, balance: 0, status: 'Paid', method: 'Card', transactionStatus: 'Completed', invoiceStatus: 'Issued', isToday: true },
-  { id: "2", patientName: "Penny Pelargonium", avatar: "PP", apptType: "Consultation", apptDate: "3 Jul", fullDate: "3 Jul 2026", clinician: "Dr. Higgs", totalAmount: 4800, paidAmount: 0, balance: 4800, status: 'Unpaid', method: '—', transactionStatus: 'Pending', invoiceStatus: 'Pending', isToday: true },
-  { id: "3", patientName: "Arysse Arcerola", avatar: "AA", apptType: "7-Omics Package", apptDate: "2 Jul", fullDate: "2 Jul 2026", clinician: "Dr. Chad", totalAmount: 24000, paidAmount: 24000, balance: 0, status: 'Paid', method: 'Card', transactionStatus: 'Completed', invoiceStatus: 'Issued' },
-  { id: "4", patientName: "Gustavo Propolis", avatar: "GP", apptType: "Consultation", apptDate: "2 Jul", fullDate: "2 Jul 2026", clinician: "Dr. Felix", totalAmount: 4800, paidAmount: 4800, balance: 0, status: 'Paid', method: 'Voucher', transactionStatus: 'Completed', invoiceStatus: 'Issued' },
-  { id: "5", patientName: "Dylan Daniel", avatar: "DD", apptType: "Sample Collection", apptDate: "1 Jul", fullDate: "1 Jul 2026", clinician: "Dr. Adobe", totalAmount: 3600, paidAmount: 3600, balance: 0, status: 'Paid', method: 'Card', transactionStatus: 'Completed', invoiceStatus: 'Issued' },
-  { id: "6", patientName: "Sophia Ascorbic", avatar: "SA", apptType: "Consultation", apptDate: "30 Jun", fullDate: "30 Jun 2026", clinician: "Dr. Chad", totalAmount: 4800, paidAmount: 4800, balance: 0, status: 'Refunded', method: 'Card', transactionStatus: 'Refund Completed', invoiceStatus: 'Issued' },
-  { id: "7", patientName: "Oliver Folate", avatar: "OF", apptType: "Body Scan", apptDate: "30 Jun", fullDate: "30 Jun 2026", clinician: "Dr. Felix", totalAmount: 18000, paidAmount: 18000, balance: 0, voucher: "V-2026-041", status: 'Paid', method: 'Voucher', transactionStatus: 'Completed', invoiceStatus: 'Issued' },
-  { id: "8", patientName: "Cynthia Cromium", avatar: "CC", apptType: "Consultation", apptDate: "28 Jun", fullDate: "28 Jun 2026", clinician: "Dr. Adobe", totalAmount: 4800, paidAmount: 0, balance: 4800, status: 'Unpaid', method: '—', transactionStatus: '—', invoiceStatus: 'Not required' },
-];
+import { MOCK_BILLING_DATA as MOCK_DATA } from "./billingData";
 
 const formatCurrency = (amount: number) => `₺${amount.toLocaleString()}`;
 
@@ -403,6 +367,21 @@ export function BillingPage() {
                     <div className="flex items-start relative z-10">
                       <div className="w-5 h-5 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center shrink-0 mt-0.5 mr-3"></div>
                       <div className="text-sm text-gray-500 italic mt-0.5">No payments recorded yet.</div>
+                    </div>
+                  )}
+
+                  {selectedRecord.transactionStatus === 'Refund Pending' && (
+                    <div className="flex items-start relative z-10">
+                      <div className="w-5 h-5 rounded-full bg-purple-100 border-2 border-white flex items-center justify-center shrink-0 mt-0.5 mr-3">
+                        <RefreshCcw className="w-3 h-3 text-purple-600" />
+                      </div>
+                      <div className="flex-1 bg-white border border-gray-200 rounded p-3 shadow-sm">
+                        <div className="flex justify-between items-start mb-1">
+                          <span className="font-bold text-gray-800 text-sm">Refund requested: {formatCurrency(selectedRecord.totalAmount)}</span>
+                          <span className="text-[10px] text-gray-400 font-medium">{selectedRecord.refundRequestedAt}</span>
+                        </div>
+                        <div className="text-xs text-purple-600 font-medium">Awaiting Admin decision</div>
+                      </div>
                     </div>
                   )}
 

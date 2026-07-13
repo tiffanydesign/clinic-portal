@@ -1,13 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { Video, ArrowRight } from "lucide-react";
-import { ROOMS } from "../calendar/scheduleData";
+import { ROOMS, CLINICIANS } from "../calendar/scheduleData";
 import {
   APPTS, Appt, DAY_START_HOUR, DAY_END_HOUR, HOUR_PX,
   NOW_MINUTES, TODAY_SHORT, apptBlockClass, apptStatusDotClass, blockHeightPx, gapToNext, minToClock,
 } from "./dashboardData";
 
 type Column = { key: string; label: string; sub?: string; appts: Appt[] };
+type ViewMode = "room" | "clinician";
 
 // "Dr. Claudia Reis" → "Dr. Reis" — enough to tell three clinicians apart in
 // a compact block without repeating the full name every room shows her in.
@@ -16,21 +17,32 @@ function doctorShort(doctor: string): string {
   return `Dr. ${parts[parts.length - 1]}`;
 }
 
-// Admin and Reception share the same room-first glance — a room is only
-// ever booked by one patient at a time (~2h turnover), so this maps directly
-// onto the clinic's physical layout instead of who happens to be running
-// behind. Video consultations occupy no physical room and simply don't
-// appear here. (Nurse and Clinician each have their own dedicated dashboard
-// layout and never render this widget.)
-function buildColumns(): Column[] {
+// Room view: a room is only ever booked by one patient at a time (~2h
+// turnover), so this maps directly onto the clinic's physical layout.
+// Video consultations occupy no physical room and simply don't appear here.
+function buildRoomColumns(): Column[] {
   return ROOMS.map((r) => ({ key: r.id, label: r.label, sub: r.kind, appts: APPTS.filter((a) => a.room === r.id) }));
+}
+
+// Clinician view: one column per doctor, every appointment they're running
+// today regardless of room — including video, since those are still theirs.
+// The mock data was hand-verified this session to never double-book a
+// clinician, so (like room view) each column only ever holds one patient at
+// a time and blocks never need lane-splitting.
+function buildClinicianColumns(): Column[] {
+  return CLINICIANS.filter((c) => !c.onLeave).map((c) => ({
+    key: c.id, label: c.short, appts: APPTS.filter((a) => a.doctorId === c.id),
+  }));
 }
 
 // Every column here (room or clinician) only ever holds one patient at a
 // time, so blocks render at full column width — no lane-splitting needed.
 // `gapMin` still caps a block's height against whatever comes right after it
 // in the same column, so a short visit never visually bleeds into the next.
-function ApptBlock({ appt, gapMin }: { appt: Appt; gapMin?: number }) {
+// `secondary` is the block's second detail line — whichever fact isn't
+// already implied by the column itself (the doctor's name in room view, the
+// room/format in clinician view).
+function ApptBlock({ appt, gapMin, secondary }: { appt: Appt; gapMin?: number; secondary: string }) {
   const navigate = useNavigate();
   const top = ((appt.startMin - DAY_START_HOUR * 60) / 60) * HOUR_PX;
   const height = blockHeightPx(appt.durationMin, gapMin);
@@ -49,16 +61,33 @@ function ApptBlock({ appt, gapMin }: { appt: Appt; gapMin?: number }) {
       </div>
       {showDetail && (
         <div className="text-[10px] text-gray-500 truncate mt-0.5 pl-3">
-          {appt.type.replace(" (in-person)", "").replace(" (video)", "")} · {doctorShort(appt.doctor)}
+          {appt.type.replace(" (in-person)", "").replace(" (video)", "")} · {secondary}
         </div>
       )}
     </button>
   );
 }
 
+function ViewModeToggle({ mode, onChange }: { mode: ViewMode; onChange: (m: ViewMode) => void }) {
+  return (
+    <div className="inline-flex bg-gray-100 p-0.5 rounded-lg border border-gray-200 shrink-0">
+      {(["room", "clinician"] as const).map((m) => (
+        <button
+          key={m}
+          onClick={() => onChange(m)}
+          className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all ${mode === m ? "bg-white text-slate-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+        >
+          {m === "room" ? "By Room" : "By Clinician"}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function CalendarWidget() {
   const navigate = useNavigate();
-  const columns = buildColumns();
+  const [mode, setMode] = useState<ViewMode>("room");
+  const columns = mode === "room" ? buildRoomColumns() : buildClinicianColumns();
   const hours = Array.from({ length: DAY_END_HOUR - DAY_START_HOUR + 1 }, (_, i) => DAY_START_HOUR + i);
   const gridHeight = (DAY_END_HOUR - DAY_START_HOUR) * HOUR_PX;
   const nowTop = ((NOW_MINUTES - DAY_START_HOUR * 60) / 60) * HOUR_PX;
@@ -80,16 +109,19 @@ export function CalendarWidget() {
   return (
     <div className="border border-gray-200 rounded-xl shadow-md bg-white flex flex-col h-full min-h-0">
       {/* Header */}
-      <div className="h-12 border-b border-gray-200 bg-gray-50/70 px-4 flex items-center justify-between shrink-0">
-        <h3 className="font-bold text-gray-800 text-sm">
+      <div className="h-12 border-b border-gray-200 bg-gray-50/70 px-4 flex items-center justify-between shrink-0 gap-3">
+        <h3 className="font-bold text-gray-800 text-sm shrink-0">
           Today's Schedule <span className="text-gray-400 font-medium ml-1">{TODAY_SHORT}</span>
         </h3>
-        <button
-          onClick={() => navigate("/calendar/schedule")}
-          className="text-xs font-bold text-slate-600 hover:text-slate-800 flex items-center gap-1 transition-colors"
-        >
-          Open Calendar <ArrowRight className="w-3.5 h-3.5" />
-        </button>
+        <div className="flex items-center gap-3">
+          <ViewModeToggle mode={mode} onChange={setMode} />
+          <button
+            onClick={() => navigate("/calendar/schedule")}
+            className="text-xs font-bold text-slate-600 hover:text-slate-800 flex items-center gap-1 transition-colors shrink-0"
+          >
+            Open Calendar <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
       {/* Progress summary */}
@@ -109,7 +141,7 @@ export function CalendarWidget() {
           back to what it's separating without shouting. */}
       <div className="h-[3px] shrink-0 bg-gradient-to-r from-gray-200 via-amber-200 via-30% via-blue-200 via-70% to-red-200" />
 
-      {/* Column headers (room-based for Admin, doctor-based for Reception) */}
+      {/* Column headers — room or clinician, per the toggle above */}
       {columns.length > 1 && (
         <div className="flex border-b border-gray-200 bg-gradient-to-b from-gray-50 to-gray-50/50 shrink-0 pl-14">
           {columns.map((c) => (
@@ -167,7 +199,12 @@ export function CalendarWidget() {
                 return (
                   <div key={c.key} className="flex-1 relative border-l border-gray-200">
                     {sorted.map((appt) => (
-                      <ApptBlock key={appt.id} appt={appt} gapMin={gapToNext(sorted, appt.startMin)} />
+                      <ApptBlock
+                        key={appt.id}
+                        appt={appt}
+                        gapMin={gapToNext(sorted, appt.startMin)}
+                        secondary={mode === "room" ? doctorShort(appt.doctor) : (appt.isVideo ? "Video" : appt.room)}
+                      />
                     ))}
                   </div>
                 );

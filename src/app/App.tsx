@@ -12,6 +12,7 @@ import { RegisterEmailPage } from "./pages/auth/RegisterEmailPage";
 import { RegisterVerifyPage } from "./pages/auth/RegisterVerifyPage";
 import { RegisterSetPasswordPage } from "./pages/auth/RegisterSetPasswordPage";
 import { RegisterDonePage } from "./pages/auth/RegisterDonePage";
+import { ConsentSignPage } from "./pages/app/consent-sign/ConsentSignPage";
 
 // App components
 import { AppShell } from "./components/AppShell";
@@ -98,6 +99,9 @@ export default function App() {
           <Route path="/register/verify" element={<RegisterVerifyPage />} />
           <Route path="/register/set-password" element={<RegisterSetPasswordPage />} />
           <Route path="/register/done" element={<RegisterDonePage />} />
+          {/* Patient-facing kiosk flow — deliberately outside AppShellLayout:
+              no sidebar, no topbar, no role switcher, no RoleGuard. */}
+          <Route path="/consent-sign/:apptId" element={<ConsentSignPage />} />
           <Route path="/site-map" element={<AppShellLayout><SiteMap /></AppShellLayout>} />
           <Route path="/dashboard" element={<AppShellLayout><Dashboard /></AppShellLayout>} />
           <Route path="/dashboard/appointment/:apptId" element={<AppShellLayout><Dashboard /></AppShellLayout>} />

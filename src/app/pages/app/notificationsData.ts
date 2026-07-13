@@ -10,6 +10,7 @@
 
 import type { Role } from "../../context/AppContext";
 import { PendingRequest, Decision } from "./availability/availabilityData";
+import type { ScheduleChangeLogItem } from "./availability/availabilityStore";
 
 export type NotificationKind = "appointment" | "result" | "approval" | "payment" | "system";
 
@@ -71,5 +72,20 @@ export function decisionNotifications(decisions: Decision[]): NotificationItem[]
     time: d.at,
     roles: ["Clinician"],
     actionRoute: "/approval",
+  }));
+}
+
+// Admin: read-only trail of Weekly Hours changes that already took effect
+// (no approval involved — see availabilityStore's directSaveSchedule).
+// Deliberately kind "system", not "approval": there is nothing to decide,
+// only to be aware of. Never appears in the Needs Your Action card.
+export function scheduleChangeNotifications(log: ScheduleChangeLogItem[]): NotificationItem[] {
+  return log.map((entry) => ({
+    id: `avail-schedule-${entry.id}`,
+    kind: "system",
+    text: `Dr. Claudia Reis updated their weekly hours: ${entry.summary}`,
+    time: entry.at,
+    roles: ["Admin"],
+    actionRoute: "/calendar/team-availability",
   }));
 }

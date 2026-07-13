@@ -11,6 +11,7 @@ import { PatientJourneyCard, EmptyJourney } from "./journey/PatientJourneyCard";
 import { TodaysSchedulePanel } from "./TodaysSchedulePanel";
 import { UpNextPanel } from "./UpNextPanel";
 import { MyPatientsTodayCard } from "./MyPatientsTodayCard";
+import { nurseCheckOutByName } from "./appointmentsStore";
 
 const DEMO_MOMENTS: DemoMoment[] = ["day-start", "mid-shift", "day-wrap"];
 
@@ -97,10 +98,17 @@ export function NurseDashboardPage() {
   // Checkout confirmed: unlock Up Next and log completion, but leave
   // `identity` in place — the Patient Journey card shows its own "Patient
   // Checked Out" screen until the nurse taps Start on the next patient.
+  // Also flips the matching appointment in the shared store to Completed —
+  // this page's own patient/schedule model is name-only (see
+  // nurseDashboardData.ts) and isn't otherwise wired to Appt ids, so this
+  // is a minimal, name-matched join purely so Reception's "In Clinic" count
+  // and queue actually reflect a nurse-side checkout, with no redesign of
+  // this page's own UI or data model.
   const handleComplete = (finished: PatientIdentity) => {
     setLocked(false);
     setCompletedToday((prev) => [{ name: finished.name, type: finished.meta.split(" · ")[0], time: "Just now" }, ...prev]);
     setSchedule((prev) => prev.map((item) => (item.name === finished.name && item.status === "in-progress" ? { ...item, status: "upcoming" } : item)));
+    nurseCheckOutByName(finished.name);
   };
 
   const handleStartNext = () => {

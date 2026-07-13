@@ -33,7 +33,7 @@ const KIND_ICON: Record<EventKind, React.ReactNode> = {
 
 const FILTERS: ("All Events" | EventKind)[] = ["All Events", "Appointments", "Patients", "Payments", "System"];
 
-export function ActivityFeed({ defaultCollapsed = false }: { defaultCollapsed?: boolean }) {
+export function ActivityFeed({ defaultCollapsed = false, className }: { defaultCollapsed?: boolean; className?: string }) {
   const [filter, setFilter] = useState<"All Events" | EventKind>("All Events");
   const [collapsed, setCollapsed] = useState(defaultCollapsed);
   const items = filter === "All Events" ? FEED : FEED.filter((f) => f.kind === filter);
@@ -42,7 +42,7 @@ export function ActivityFeed({ defaultCollapsed = false }: { defaultCollapsed?: 
   return (
     <Section
       title="Recent Activity"
-      className={defaultCollapsed ? undefined : "h-64"}
+      className={className ?? (defaultCollapsed ? undefined : "h-64")}
       action={
         <FilterSelect
           value={filter}

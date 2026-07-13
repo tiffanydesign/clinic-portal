@@ -5,7 +5,7 @@ import { useAppContext } from "../../context/AppContext";
 import { FilterSelect } from "../../components/FilterSelect";
 import {
   NotificationItem, NotificationKind, KIND_LABEL,
-  staticNotificationsForRole, pendingRequestNotifications, decisionNotifications,
+  staticNotificationsForRole, pendingRequestNotifications, decisionNotifications, scheduleChangeNotifications,
 } from "./notificationsData";
 import { useAvailabilityStore, getPendingRequests } from "./availability/availabilityStore";
 import { useReadIds, markRead, markAllRead } from "./notificationsStore";
@@ -62,7 +62,7 @@ export function NotificationsPage() {
   // duplicated as static mock, so this can't drift from My Availability /
   // Approval.
   const liveItems = useMemo(() => {
-    if (role === "Admin") return pendingRequestNotifications(getPendingRequests(store));
+    if (role === "Admin") return [...pendingRequestNotifications(getPendingRequests(store)), ...scheduleChangeNotifications(store.scheduleChangeLog)];
     if (role === "Clinician") return decisionNotifications(store.decisions);
     return [];
   }, [role, store]);

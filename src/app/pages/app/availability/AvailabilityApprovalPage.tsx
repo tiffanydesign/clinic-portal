@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import { AlertTriangle, ArrowRight } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import {
-  describeScheduleLines, fmtSlots, bookingLabel, leaveDateLabel, kindBadgeClass,
-  BookedAppt, OverrideItem, LeaveItem,
+  bookingLabel, leaveDateLabel, kindBadgeClass,
+  BookedAppt, LeaveItem,
 } from "./availabilityData";
 import { useAvailabilityStore, availabilityActions } from "./availabilityStore";
 import { RejectReasonModal } from "./RejectReasonModal";
 
-// This prototype tracks a single mock staff member's availability (the same
-// store the Clinician/Nurse "My Availability" page reads and writes), so the
-// employee shown here is fixed rather than looked up per-request.
+// Weekly Hours and Date Override both apply instantly now (see
+// availabilityStore.ts) — Leave is the only request kind that still needs a
+// real Admin decision, so this queue only ever shows Leave.
 const EMPLOYEE_NAME = "Dr. Claudia Reis";
 
 function ConflictList({ conflicts, onResolve }: { conflicts: BookedAppt[]; onResolve: (index: number) => void }) {
@@ -33,8 +33,7 @@ function ConflictList({ conflicts, onResolve }: { conflicts: BookedAppt[]; onRes
   );
 }
 
-function CardShell({ kind, submittedAt, conflicts, onResolve, onApprove, onReject, children }: {
-  kind: "Schedule Change" | "Date Override" | "Leave";
+function CardShell({ submittedAt, conflicts, onResolve, onApprove, onReject, children }: {
   submittedAt: string;
   conflicts: BookedAppt[];
   onResolve: (index: number) => void;
@@ -49,7 +48,7 @@ function CardShell({ kind, submittedAt, conflicts, onResolve, onApprove, onRejec
     <div className="border border-gray-300 rounded-lg bg-white p-5">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border ${kindBadgeClass(kind)}`}>{kind}</span>
+          <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border ${kindBadgeClass("Leave")}`}>Leave</span>
           <span className="text-sm font-bold text-gray-800">{EMPLOYEE_NAME}</span>
         </div>
         <span className="text-xs text-gray-400">{submittedAt}</span>
@@ -82,32 +81,15 @@ function CardShell({ kind, submittedAt, conflicts, onResolve, onApprove, onRejec
   );
 }
 
-function BeforeAfter({ before, after }: { before: React.ReactNode; after: React.ReactNode }) {
-  return (
-    <div className="grid grid-cols-2 gap-3">
-      <div className="bg-gray-50 border border-gray-200 rounded p-3">
-        <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Before</div>
-        {before}
-      </div>
-      <div className="bg-blue-50 border border-blue-200 rounded p-3">
-        <div className="text-[10px] font-bold text-blue-500 uppercase tracking-wider mb-1.5">After</div>
-        {after}
-      </div>
-    </div>
-  );
-}
-
 export function AvailabilityApprovalPage() {
   const store = useAvailabilityStore();
-  const [rejectTarget, setRejectTarget] = useState<{ kind: "schedule" | "override" | "leave"; id?: string } | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<{ id: string } | null>(null);
 
-  const hasAny = store.scheduleRequest !== null || store.overrides.some((o) => o.status === "Pending") || store.leaves.some((l) => l.status === "Pending");
+  const pendingLeaves = store.leaves.filter((l): l is LeaveItem & { status: "Pending" } => l.status === "Pending");
 
   const confirmReject = (reason: string) => {
     if (!rejectTarget) return;
-    if (rejectTarget.kind === "schedule") availabilityActions.decideScheduleChange("Rejected", reason);
-    if (rejectTarget.kind === "override") availabilityActions.decideOverride(rejectTarget.id!, "Rejected", reason);
-    if (rejectTarget.kind === "leave") availabilityActions.decideLeave(rejectTarget.id!, "Rejected", reason);
+    availabilityActions.decideLeave(rejectTarget.id, "Rejected", reason);
     toast.error("Request rejected. Employee notified (demo).");
     setRejectTarget(null);
   };
@@ -116,62 +98,21 @@ export function AvailabilityApprovalPage() {
     <div className="p-8 max-w-4xl mx-auto h-full overflow-y-auto">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-800">Approvals</h1>
-        <p className="text-sm text-gray-500 mt-1">Availability change requests awaiting your decision.</p>
+        <p className="text-sm text-gray-500 mt-1">Leave requests awaiting your decision. Weekly hours and date overrides apply instantly and never need approval.</p>
       </div>
 
-      {!hasAny ? (
+      {pendingLeaves.length === 0 ? (
         <div className="border border-gray-300 rounded-lg bg-white p-10 text-center text-gray-400 italic">No pending requests.</div>
       ) : (
         <div className="space-y-5">
-          {store.scheduleRequest && (
-            <CardShell
-              kind="Schedule Change"
-              submittedAt={store.scheduleRequest.submittedAt}
-              conflicts={store.scheduleRequest.conflicts}
-              onResolve={(i) => availabilityActions.resolveConflict("schedule", store.scheduleRequest!.id, i)}
-              onApprove={() => { availabilityActions.decideScheduleChange("Approved"); toast.success("Request approved. Employee notified (demo)."); }}
-              onReject={() => setRejectTarget({ kind: "schedule" })}
-            >
-              <BeforeAfter
-                before={<div className="space-y-0.5">{describeScheduleLines(store.savedSchedule).map((l) => <div key={l.day} className="text-xs text-gray-600"><span className="font-bold text-gray-700">{l.day}</span> {l.text}</div>)}</div>}
-                after={<div className="space-y-0.5">{describeScheduleLines(store.scheduleRequest.draftSchedule).map((l) => <div key={l.day} className="text-xs text-gray-700"><span className="font-bold text-blue-700">{l.day}</span> {l.text}</div>)}</div>}
-              />
-              {store.scheduleRequest.draftTimezone !== store.savedTimezone && (
-                <p className="text-xs text-gray-500 mt-2">Timezone: {store.savedTimezone} <ArrowRight className="w-3 h-3 inline mx-1" /> {store.scheduleRequest.draftTimezone}</p>
-              )}
-            </CardShell>
-          )}
-
-          {store.overrides.filter((o): o is OverrideItem & { status: "Pending" } => o.status === "Pending").map((o) => {
-            const template = store.savedSchedule[o.dayOfWeek];
-            return (
-              <CardShell
-                key={o.id}
-                kind="Date Override"
-                submittedAt={o.submittedAt ?? "Just now"}
-                conflicts={o.conflicts ?? []}
-                onResolve={(i) => availabilityActions.resolveConflict("override", o.id, i)}
-                onApprove={() => { availabilityActions.decideOverride(o.id, "Approved"); toast.success("Request approved. Employee notified (demo)."); }}
-                onReject={() => setRejectTarget({ kind: "override", id: o.id })}
-              >
-                <p className="text-sm font-bold text-gray-800 mb-2">{o.date} <span className="text-gray-400 font-normal">({o.dayOfWeek})</span></p>
-                <BeforeAfter
-                  before={<div className="text-xs text-gray-600">{template.active ? fmtSlots(template.slots) : "Unavailable"}</div>}
-                  after={<div className="text-xs text-gray-700">{o.pendingAction === "delete" ? "Remove override (revert to template)" : fmtSlots(o.slots)}</div>}
-                />
-              </CardShell>
-            );
-          })}
-
-          {store.leaves.filter((l): l is LeaveItem & { status: "Pending" } => l.status === "Pending").map((l) => (
+          {pendingLeaves.map((l) => (
             <CardShell
               key={l.id}
-              kind="Leave"
               submittedAt={l.submittedAt}
               conflicts={l.conflicts}
-              onResolve={(i) => availabilityActions.resolveConflict("leave", l.id, i)}
+              onResolve={(i) => availabilityActions.resolveConflict(l.id, i)}
               onApprove={() => { availabilityActions.decideLeave(l.id, "Approved"); toast.success("Request approved. Employee notified (demo)."); }}
-              onReject={() => setRejectTarget({ kind: "leave", id: l.id })}
+              onReject={() => setRejectTarget({ id: l.id })}
             >
               <div className="grid grid-cols-3 gap-3 text-sm">
                 <div><div className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Dates</div><div className="text-gray-800 font-medium">{leaveDateLabel(l)}</div></div>

@@ -5,13 +5,15 @@ import { useAvailabilityStore, availabilityActions, getPendingRequests } from ".
 import { PendingRequestsSection } from "./PendingRequestsSection";
 import { WithdrawModal } from "./WithdrawModal";
 
-type WithdrawTarget = { kind: "schedule" } | { kind: "override"; id: string } | { kind: "leave"; id: string };
+type WithdrawTarget = { id: string };
 
 // A Clinician doesn't approve anything themselves (Admin does) — what they
 // need at /approval is visibility into their own submitted requests: what's
 // still pending, and what's already been decided and why. Reuses the exact
 // same store and section component the My Availability page's Request
 // Centre uses, so this can never show a different answer than that page.
+// Weekly Hours and Date Override apply instantly now, so the only thing
+// that can ever be pending here is Leave.
 export function ClinicianRequestsPage() {
   const navigate = useNavigate();
   const store = useAvailabilityStore();
@@ -21,9 +23,7 @@ export function ClinicianRequestsPage() {
 
   const confirmWithdraw = () => {
     if (!withdrawTarget) return;
-    if (withdrawTarget.kind === "schedule") availabilityActions.withdrawScheduleChange();
-    if (withdrawTarget.kind === "override") availabilityActions.withdrawOverride(withdrawTarget.id);
-    if (withdrawTarget.kind === "leave") availabilityActions.withdrawLeave(withdrawTarget.id);
+    availabilityActions.withdrawLeave(withdrawTarget.id);
     setWithdrawTarget(null);
   };
 
@@ -46,11 +46,7 @@ export function ClinicianRequestsPage() {
         <PendingRequestsSection
           pending={pending}
           decisions={store.decisions}
-          onWithdraw={(req) => {
-            if (req.kind === "Schedule Change") setWithdrawTarget({ kind: "schedule" });
-            else if (req.kind === "Date Override") setWithdrawTarget({ kind: "override", id: req.relatedId! });
-            else setWithdrawTarget({ kind: "leave", id: req.relatedId! });
-          }}
+          onWithdraw={(req) => setWithdrawTarget({ id: req.relatedId! })}
         />
       </div>
 

@@ -8,9 +8,8 @@
 
 import { useSyncExternalStore } from "react";
 import {
-  DAYS, WeekSchedule, Slot, BookedAppt, BOOKED_APPOINTMENTS,
-  buildDefaultSchedule, cloneSchedule, classifyWeekChange, classifyDateChange,
-  checkLeaveConflicts, OverrideItem, LeaveItem, LeaveDuration, LeaveReason,
+  DAYS, WeekSchedule, Slot, BookedAppt,
+  buildDefaultSchedule, checkLeaveConflicts, OverrideItem, LeaveItem, LeaveDuration, LeaveReason,
   PendingRequest, Decision, fmtSlots,
 } from "./availabilityData";
 
@@ -23,18 +22,15 @@ export function dayOfWeekForDate(dateStr: string): string {
 
 export const ADMIN_NAME = "Ayşe Hançer";
 
-type ScheduleRequest = {
-  id: string;
-  draftSchedule: WeekSchedule;
-  draftTimezone: string;
-  submittedAt: string;
-  conflicts: BookedAppt[];
-};
+// A read-only trail of Weekly Hours changes that have already taken effect
+// (no approval workflow — see directSaveSchedule). Admin sees these as
+// system notifications only, never as something to approve.
+export type ScheduleChangeLogItem = { id: string; summary: string; at: string };
 
 type State = {
   savedSchedule: WeekSchedule;
   savedTimezone: string;
-  scheduleRequest: ScheduleRequest | null;
+  scheduleChangeLog: ScheduleChangeLogItem[];
   overrides: OverrideItem[];
   leaves: LeaveItem[];
   decisions: Decision[];
@@ -45,22 +41,16 @@ function initialState(): State {
   return {
     savedSchedule,
     savedTimezone: "Europe/Istanbul",
-    scheduleRequest: {
-      id: "REQ-SCH-1",
-      draftSchedule: (() => {
-        const d = cloneSchedule(savedSchedule);
-        d.Wednesday = { active: false, slots: [{ start: "9:00am", end: "5:00pm" }] };
-        return d;
-      })(),
-      draftTimezone: "Europe/Istanbul",
-      submittedAt: "2h ago",
-      conflicts: BOOKED_APPOINTMENTS.filter((b) => b.dayOfWeek === "Wednesday"),
-    },
+    scheduleChangeLog: [
+      { id: "SCL-1", summary: "Wednesday: Unavailable", at: "2h ago" },
+    ],
     overrides: [
       { id: "OV-1", date: "15 Jul 2026", dayOfWeek: "Wednesday", slots: [{ start: "10:00am", end: "2:00pm" }], status: "Approved" },
     ],
     leaves: [
       { id: "LV-1", dateFrom: "22 Jul 2026", dateTo: "24 Jul 2026", duration: "Full Day", reason: "Annual Leave", status: "Pending", conflicts: [], submittedAt: "1d ago" },
+      { id: "LV-2", dateFrom: "2 Aug 2026", dateTo: "2 Aug 2026", duration: "Full Day", reason: "Sick Leave", status: "Pending", conflicts: [], submittedAt: "5h ago" },
+      { id: "LV-3", dateFrom: "10 Aug 2026", dateTo: "12 Aug 2026", duration: "Full Day", reason: "Conference / Training", status: "Pending", conflicts: [], submittedAt: "3d ago" },
     ],
     decisions: [
       { id: "DEC-1", kind: "Date Override", summary: "8 Jul: 9:00am–1:00pm", result: "Approved", by: ADMIN_NAME, at: "3 Jul" },
@@ -81,26 +71,17 @@ let counter = 100;
 const nextId = (prefix: string) => `${prefix}-${counter++}`;
 
 // --- schedule change ---
-// Expanding changes (and Reducing changes with zero conflicts) apply
-// immediately, no approval workflow involved.
+// Weekly Hours changes never require Admin approval, regardless of
+// direction or conflicts — the editor UI forces every conflicting booking
+// to be individually resolved (Reschedule/Cancel) before Save is callable
+// at all (see AvailabilityEditorPage's ConflictModal flow). Once resolved,
+// this applies immediately and just leaves a read-only trail for Admin.
 function directSaveSchedule(schedule: WeekSchedule, timezone: string) {
-  set({ savedSchedule: schedule, savedTimezone: timezone });
-}
-function submitScheduleChange(draftSchedule: WeekSchedule, draftTimezone: string, conflicts: BookedAppt[]) {
-  set({ scheduleRequest: { id: nextId("REQ-SCH"), draftSchedule, draftTimezone, submittedAt: "Just now", conflicts } });
-}
-function withdrawScheduleChange() {
-  set({ scheduleRequest: null });
-}
-function decideScheduleChange(result: "Approved" | "Rejected", rejectionReason?: string) {
-  const req = state.scheduleRequest;
-  if (!req) return;
-  const summary = summarizeSchedule(state.savedSchedule, req.draftSchedule, state.savedTimezone, req.draftTimezone);
+  const summary = summarizeSchedule(state.savedSchedule, schedule, state.savedTimezone, timezone);
   set((s) => ({
-    scheduleRequest: null,
-    savedSchedule: result === "Approved" ? req.draftSchedule : s.savedSchedule,
-    savedTimezone: result === "Approved" ? req.draftTimezone : s.savedTimezone,
-    decisions: [{ id: nextId("DEC"), kind: "Schedule Change", summary, result, by: ADMIN_NAME, at: "Just now", rejectionReason }, ...s.decisions],
+    savedSchedule: schedule,
+    savedTimezone: timezone,
+    scheduleChangeLog: summary === "No changes" ? s.scheduleChangeLog : [{ id: nextId("SCL"), summary, at: "Just now" }, ...s.scheduleChangeLog],
   }));
 }
 
@@ -116,78 +97,27 @@ export function summarizeSchedule(saved: WeekSchedule, draft: WeekSchedule, save
 }
 
 // --- overrides ---
-function templateDayFor(date: string): { active: boolean; slots: Slot[] } {
-  const day = dayOfWeekForDate(date);
-  return state.savedSchedule[day];
-}
-
+// Date overrides, like Weekly Hours, never require Admin approval — the
+// editor forces conflict resolution (ConflictModal) before calling these,
+// so by the time they're called the change is safe to apply directly.
 function submitOverride(date: string, slots: Slot[]): { ok: true } | { ok: false; error: string } {
   const existing = state.overrides.find((o) => o.date === date && o.status !== "Rejected");
   if (existing) return { ok: false, error: "This date already has an override." };
 
-  const template = templateDayFor(date);
-  const { direction, conflicts } = classifyDateChange(template.slots, template.active, slots, true, date);
   const dayOfWeek = dayOfWeekForDate(date);
-
-  if (direction !== "Reducing" || conflicts.length === 0) {
-    set((s) => ({ overrides: [...s.overrides, { id: nextId("OV"), date, dayOfWeek, slots, status: "Approved" }] }));
-  } else {
-    set((s) => ({
-      overrides: [...s.overrides, { id: nextId("OV"), date, dayOfWeek, slots, status: "Pending", pendingAction: "create", conflicts, submittedAt: "Just now" }],
-    }));
-  }
+  set((s) => ({ overrides: [...s.overrides, { id: nextId("OV"), date, dayOfWeek, slots, status: "Approved" }] }));
   return { ok: true };
 }
 
 function submitOverrideEdit(id: string, slots: Slot[]): { ok: true } | { ok: false; error: string } {
   const existing = state.overrides.find((o) => o.id === id);
   if (!existing) return { ok: false, error: "Override not found." };
-  const { direction, conflicts } = classifyDateChange(existing.slots, true, slots, true, existing.date);
-
-  if (direction !== "Reducing" || conflicts.length === 0) {
-    set((s) => ({ overrides: s.overrides.map((o) => (o.id === id ? { ...o, slots, status: "Approved", pendingAction: undefined, conflicts: undefined } : o)) }));
-  } else {
-    set((s) => ({ overrides: s.overrides.map((o) => (o.id === id ? { ...o, slots, status: "Pending", pendingAction: "edit", conflicts, submittedAt: "Just now" } : o)) }));
-  }
+  set((s) => ({ overrides: s.overrides.map((o) => (o.id === id ? { ...o, slots, status: "Approved", pendingAction: undefined, conflicts: undefined } : o)) }));
   return { ok: true };
 }
 
 function deleteOverride(id: string) {
-  const existing = state.overrides.find((o) => o.id === id);
-  if (!existing) return;
-  const template = templateDayFor(existing.date);
-  const { direction, conflicts } = classifyDateChange(existing.slots, true, template.slots, template.active, existing.date);
-
-  if (direction !== "Reducing" || conflicts.length === 0) {
-    set((s) => ({ overrides: s.overrides.filter((o) => o.id !== id) }));
-  } else {
-    set((s) => ({ overrides: s.overrides.map((o) => (o.id === id ? { ...o, status: "Pending", pendingAction: "delete", conflicts, submittedAt: "Just now" } : o)) }));
-  }
-}
-
-function withdrawOverride(id: string) {
-  set((s) => ({
-    overrides: s.overrides
-      .map((o) => {
-        if (o.id !== id) return o;
-        if (o.pendingAction === "create") return null; // never existed before
-        if (o.pendingAction === "delete") return { ...o, status: "Approved" as const, pendingAction: undefined, conflicts: undefined };
-        return { ...o, status: "Approved" as const, pendingAction: undefined, conflicts: undefined }; // edit: revert status flag (slots already show the attempted edit in this simplified demo)
-      })
-      .filter((o): o is OverrideItem => o !== null),
-  }));
-}
-
-function decideOverride(id: string, result: "Approved" | "Rejected", rejectionReason?: string) {
-  const item = state.overrides.find((o) => o.id === id);
-  if (!item) return;
-  const summary = `${item.date}: ${item.pendingAction === "delete" ? "Remove override" : fmtSlots(item.slots)}`;
-  set((s) => ({
-    overrides: result === "Approved"
-      ? (item.pendingAction === "delete" ? s.overrides.filter((o) => o.id !== id) : s.overrides.map((o) => (o.id === id ? { ...o, status: "Approved", pendingAction: undefined, conflicts: undefined } : o)))
-      : s.overrides.map((o) => (o.id === id ? { ...o, status: "Rejected", pendingAction: undefined, rejectionReason } : o)),
-    decisions: [{ id: nextId("DEC"), kind: "Date Override", summary, result, by: ADMIN_NAME, at: "Just now", rejectionReason }, ...s.decisions],
-  }));
+  set((s) => ({ overrides: s.overrides.filter((o) => o.id !== id) }));
 }
 
 // --- leave ---
@@ -221,42 +151,22 @@ function decideLeave(id: string, result: "Approved" | "Rejected", rejectionReaso
   }));
 }
 
-// resolve/unresolve an individual conflicting booking on a pending request (Admin-side "Reschedule"/"Cancel" shortcut)
-function resolveConflict(kind: "schedule" | "override" | "leave", id: string, bookingIndex: number) {
-  set((s) => {
-    if (kind === "schedule" && s.scheduleRequest) {
-      const conflicts = s.scheduleRequest.conflicts.map((c, i) => (i === bookingIndex ? { ...c, resolved: true } : c));
-      return { scheduleRequest: { ...s.scheduleRequest, conflicts } };
-    }
-    if (kind === "override") {
-      return { overrides: s.overrides.map((o) => (o.id === id && o.conflicts ? { ...o, conflicts: o.conflicts.map((c, i) => (i === bookingIndex ? { ...c, resolved: true } : c)) } : o)) };
-    }
-    return { leaves: s.leaves.map((l) => (l.id === id ? { ...l, conflicts: l.conflicts.map((c, i) => (i === bookingIndex ? { ...c, resolved: true } : c)) } : l)) };
-  });
+// resolve/unresolve an individual conflicting booking on a pending Leave
+// request (Admin-side "Reschedule"/"Cancel" shortcut in Approval Center).
+// Weekly Hours and Date Override conflicts are resolved locally in the
+// editor's ConflictModal before they ever reach the store — see
+// directSaveSchedule / submitOverride*.
+function resolveConflict(id: string, bookingIndex: number) {
+  set((s) => ({
+    leaves: s.leaves.map((l) => (l.id === id ? { ...l, conflicts: l.conflicts.map((c, i) => (i === bookingIndex ? { ...c, resolved: true } : c)) } : l)),
+  }));
 }
 
 // --- derived: aggregated pending list for the staff-facing section ---
+// Leave is the only kind that can ever be Pending here — Weekly Hours and
+// Date Override both apply instantly (see directSaveSchedule / submitOverride*).
 export function getPendingRequests(s: State): PendingRequest[] {
   const out: PendingRequest[] = [];
-  if (s.scheduleRequest) {
-    out.push({
-      id: s.scheduleRequest.id,
-      kind: "Schedule Change",
-      summary: summarizeSchedule(s.savedSchedule, s.scheduleRequest.draftSchedule, s.savedTimezone, s.scheduleRequest.draftTimezone),
-      submittedAt: s.scheduleRequest.submittedAt,
-      conflicts: s.scheduleRequest.conflicts,
-    });
-  }
-  s.overrides.filter((o) => o.status === "Pending").forEach((o) => {
-    out.push({
-      id: `pending-${o.id}`,
-      kind: "Date Override",
-      summary: `${o.date}: ${o.pendingAction === "delete" ? "Remove override" : fmtSlots(o.slots)}`,
-      submittedAt: o.submittedAt ?? "Just now",
-      conflicts: o.conflicts ?? [],
-      relatedId: o.id,
-    });
-  });
   s.leaves.filter((l) => l.status === "Pending").forEach((l) => {
     out.push({
       id: `pending-${l.id}`,
@@ -271,8 +181,8 @@ export function getPendingRequests(s: State): PendingRequest[] {
 }
 
 export const availabilityActions = {
-  directSaveSchedule, submitScheduleChange, withdrawScheduleChange, decideScheduleChange,
-  submitOverride, submitOverrideEdit, deleteOverride, withdrawOverride, decideOverride,
+  directSaveSchedule,
+  submitOverride, submitOverrideEdit, deleteOverride,
   hasLeaveOverlap, submitLeave, withdrawLeave, decideLeave,
   resolveConflict,
 };
