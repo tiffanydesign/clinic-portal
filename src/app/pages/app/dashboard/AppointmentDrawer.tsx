@@ -74,7 +74,7 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
-function JourneyDots({ steps, current }: { steps: string[]; current: number }) {
+export function JourneyDots({ steps, current }: { steps: string[]; current: number }) {
   return (
     <div className="relative pt-1">
       <div className="absolute top-3 left-2 right-2 h-0.5 bg-gray-200" />

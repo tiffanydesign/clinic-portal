@@ -52,7 +52,7 @@ const NAV_ITEMS = {
     ]},
     { label: "Patients", path: "/patients" },
     { label: "Notifications", path: "/notifications" },
-    { label: "Approval", path: "/approval" },
+    { label: "My Requests", path: "/approval" },
     { label: "Profile", path: "/profile" }
   ]
 };

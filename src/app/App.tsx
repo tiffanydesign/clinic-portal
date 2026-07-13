@@ -22,7 +22,7 @@ import {
   PatientSignedFormsTab, PatientClinicianNotesTab, PatientAppointmentsTab,
   StaffListPage, StaffDetailLayout, StaffOverviewTab, StaffAvailabilityTab, StaffPermissionsTab, StaffWorkloadTab,
   ConsentFormPage, ClinicSettingsHubPage, PaymentTerminalsPage, BillingPage, FeedbackAdminPage,
-  NotificationsSkeleton, ApprovalRouter, ApprovalDetailSkeleton, ProfilePage, SiteMap,
+  NotificationsPage, ApprovalRouter, ApprovalDetailSkeleton, ProfilePage, SiteMap,
   NewPatientSkeleton, CalendarLayout, CalendarScheduleSkeleton, AvailabilityList, AvailabilityEdit, TeamAvailability,
   TimesheetPage, SchedulePage
 } from "./pages/app/AppPages";
@@ -133,7 +133,7 @@ export default function App() {
           <Route path="/feedback" element={<AppShellLayout><FeedbackAdminPage /></AppShellLayout>} />
           <Route path="/feedback/:feedbackId" element={<AppShellLayout><FeedbackAdminPage /></AppShellLayout>} />
           <Route path="/timesheet" element={<AppShellLayout><TimesheetPage /></AppShellLayout>} />
-          <Route path="/notifications" element={<AppShellLayout><NotificationsSkeleton /></AppShellLayout>} />
+          <Route path="/notifications" element={<AppShellLayout><NotificationsPage /></AppShellLayout>} />
           <Route path="/approval" element={<AppShellLayout><ApprovalRouter /></AppShellLayout>} />
           <Route path="/approval/REQ-1" element={<AppShellLayout><ApprovalDetailSkeleton /></AppShellLayout>} />
           <Route path="/profile" element={<AppShellLayout><ProfilePage /></AppShellLayout>} />

@@ -47,7 +47,7 @@ export type ApptType =
   | "Sample Collection";
 
 export type FormStatus = "Signed" | "Pending" | "Not Sent";
-export type PaymentStatus = "Paid" | "Partial" | "Unpaid";
+export type PaymentStatus = "Paid" | "Unpaid";
 export type ConsentStatus = "Signed" | "Pending" | "Not Sent";
 
 export type Patient = {
@@ -59,6 +59,10 @@ export type Patient = {
   sex: "Female" | "Male";
   phone: string;
   email: string;
+  // A clinically material safety flag (allergy, contraindication, ...) —
+  // undefined for the overwhelming majority of patients; surfaced only when
+  // present, never a placeholder like "None".
+  alert?: string;
 };
 
 export type Appt = {
@@ -105,9 +109,10 @@ function P(
   age: number,
   sex: "Female" | "Male",
   phone: string,
-  email: string
+  email: string,
+  alert?: string
 ): Patient {
-  return { name, route: "/patients/P-001", avatar, dob, age, sex, phone, email };
+  return { name, route: "/patients/P-001", avatar, dob, age, sex, phone, email, alert };
 }
 
 const NO_FORMS_ISSUE = [
@@ -118,8 +123,8 @@ const NO_FORMS_ISSUE = [
 export const APPTS: Appt[] = [
   {
     id: "A-01",
-    patient: P("Mackenzie Messineo", "MM", "12 Feb 1988", 38, "Female", "+90 532 111 2201", "mackenzie@example.com"),
-    type: "Body Scan", isVideo: false, startMin: 480, durationMin: 45, timeLabel: "08:00 – 08:45",
+    patient: P("Mackenzie Messineo", "MM", "12 Feb 1988", 38, "Female", "+90 532 111 2201", "mackenzie@example.com", "Penicillin allergy"),
+    type: "Body Scan", isVideo: false, startMin: 480, durationMin: 90, timeLabel: "08:00 – 09:30",
     doctorId: "EMP-003", doctor: "Dr. Claudia Reis", nurse: "Berna Koç", room: "Scan A",
     status: "In Clinic", consent: "Signed", payment: "Paid", amount: "₺4,800", balance: "₺0",
     checkInTime: "07:52", currentStep: 2, forms: NO_FORMS_ISSUE,
@@ -128,16 +133,18 @@ export const APPTS: Appt[] = [
   {
     id: "A-02",
     patient: P("Arysse Arcerola", "AA", "03 Sep 1979", 46, "Female", "+90 532 111 2202", "arysse@example.com"),
-    type: "Consultation (in-person)", isVideo: false, startMin: 510, durationMin: 30, timeLabel: "08:30 – 09:00",
+    type: "Consultation (in-person)", isVideo: false, startMin: 510, durationMin: 60, timeLabel: "08:30 – 09:30",
     doctorId: "EMP-005", doctor: "Dr. Felix Andersen", nurse: "Aylin Demir", room: "Room 2",
+    // At the final journey step (Test Kit) — her consultation is done and
+    // she's ready for Reception to check her out, demoing that row state.
     status: "In Clinic", consent: "Signed", payment: "Paid", amount: "₺2,400", balance: "₺0",
-    checkInTime: "08:20", currentStep: 4, forms: NO_FORMS_ISSUE,
+    checkInTime: "08:20", currentStep: 5, forms: NO_FORMS_ISSUE,
     prep: { sample: "Collected", scan: "Completed" }, previousVisit: "02 May 2026",
   },
   {
     id: "A-03",
     patient: P("Gustavo Propolis", "GP", "27 Jul 1965", 60, "Male", "+90 532 111 2203", "gustavo@example.com"),
-    type: "Sample Collection", isVideo: false, startMin: 510, durationMin: 20, timeLabel: "08:30 – 08:50",
+    type: "Sample Collection", isVideo: false, startMin: 510, durationMin: 75, timeLabel: "08:30 – 09:45",
     doctorId: "EMP-004", doctor: "Dr. Chad Okonkwo", nurse: "Berna Koç", room: "Lab 1",
     status: "Completed", consent: "Signed", payment: "Paid", amount: "₺900", balance: "₺0",
     checkInTime: "08:10", currentStep: 5, forms: NO_FORMS_ISSUE,
@@ -146,7 +153,7 @@ export const APPTS: Appt[] = [
   {
     id: "A-04",
     patient: P("Riley Guarana", "RG", "15 Nov 1992", 33, "Male", "+90 532 111 2204", "riley@example.com"),
-    type: "Body Scan", isVideo: false, startMin: 540, durationMin: 45, timeLabel: "09:00 – 09:45",
+    type: "Body Scan", isVideo: false, startMin: 570, durationMin: 90, timeLabel: "09:30 – 11:00",
     doctorId: "EMP-003", doctor: "Dr. Claudia Reis", nurse: "Aylin Demir", room: "Scan B",
     status: "Arrived", consent: "Pending", payment: "Paid", amount: "₺4,800", balance: "₺0",
     arrivedTime: "08:58", waitMinutes: 16, currentStep: 0,
@@ -160,7 +167,7 @@ export const APPTS: Appt[] = [
   {
     id: "A-05",
     patient: P("Penny Pelargonium", "PP", "08 Jun 1984", 41, "Female", "+90 532 111 2205", "penny@example.com"),
-    type: "Consultation (in-person)", isVideo: false, startMin: 540, durationMin: 30, timeLabel: "09:00 – 09:30",
+    type: "Consultation (in-person)", isVideo: false, startMin: 585, durationMin: 60, timeLabel: "09:45 – 10:45",
     doctorId: "EMP-004", doctor: "Dr. Chad Okonkwo", nurse: "Berna Koç", room: "Room 1",
     status: "Arrived", consent: "Signed", payment: "Unpaid", amount: "₺2,400", balance: "₺2,400",
     arrivedTime: "08:55", waitMinutes: 19, currentStep: 1, forms: NO_FORMS_ISSUE,
@@ -169,7 +176,7 @@ export const APPTS: Appt[] = [
   {
     id: "A-06",
     patient: P("Oliver Folate", "OF", "21 Jan 1976", 49, "Male", "+90 532 111 2206", "oliver@example.com"),
-    type: "Follow-up", isVideo: false, startMin: 555, durationMin: 20, timeLabel: "09:15 – 09:35",
+    type: "Follow-up", isVideo: false, startMin: 570, durationMin: 60, timeLabel: "09:30 – 10:30",
     doctorId: "EMP-005", doctor: "Dr. Felix Andersen", nurse: "Aylin Demir", room: "Room 3",
     status: "Arrived", consent: "Signed", payment: "Paid", amount: "₺1,500", balance: "₺0",
     arrivedTime: "09:05", waitMinutes: 9, currentStep: 1, forms: NO_FORMS_ISSUE,
@@ -178,16 +185,19 @@ export const APPTS: Appt[] = [
   {
     id: "A-07",
     patient: P("Sophia Ascorbic", "SA", "30 Mar 1990", 35, "Female", "+90 532 111 2207", "sophia@example.com"),
-    type: "Consultation (video)", isVideo: true, startMin: 630, durationMin: 30, timeLabel: "10:30 – 11:00",
+    type: "Consultation (video)", isVideo: true, startMin: 720, durationMin: 30, timeLabel: "12:00 – 12:30",
     doctorId: "EMP-003", doctor: "Dr. Claudia Reis", room: "Video",
-    status: "Checked In", consent: "Signed", payment: "Paid", amount: "₺2,000", balance: "₺0",
-    checkInTime: "10:15", currentStep: 0, forms: NO_FORMS_ISSUE,
+    // Booked, not "Checked In": her slot is hours away from the demo clock
+    // (09:14) — a "Checked In" status here would mean she checked in before
+    // it ever happened.
+    status: "Booked", consent: "Signed", payment: "Paid", amount: "₺2,000", balance: "₺0",
+    currentStep: 0, forms: NO_FORMS_ISSUE,
     prep: { sample: "Collected", scan: "Completed" }, previousVisit: "15 Apr 2026",
   },
   {
     id: "A-08",
     patient: P("Bob Bromelain", "BB", "17 Oct 1970", 55, "Male", "+90 532 111 2208", "bob@example.com"),
-    type: "Body Scan", isVideo: false, startMin: 570, durationMin: 45, timeLabel: "09:30 – 10:15",
+    type: "Body Scan", isVideo: false, startMin: 630, durationMin: 90, timeLabel: "10:30 – 12:00",
     doctorId: "EMP-005", doctor: "Dr. Felix Andersen", nurse: "Aylin Demir", room: "Scan A",
     status: "Checked In", consent: "Signed", payment: "Paid", amount: "₺4,800", balance: "₺0",
     checkInTime: "09:12", currentStep: 1, forms: NO_FORMS_ISSUE,
@@ -196,25 +206,31 @@ export const APPTS: Appt[] = [
   {
     id: "A-09",
     patient: P("Dylan Daniel", "DD", "05 Dec 1995", 30, "Male", "+90 532 111 2209", "dylan@example.com"),
-    type: "Sample Collection", isVideo: false, startMin: 600, durationMin: 20, timeLabel: "10:00 – 10:20",
+    type: "Sample Collection", isVideo: false, startMin: 645, durationMin: 75, timeLabel: "10:45 – 12:00",
     doctorId: "EMP-004", doctor: "Dr. Chad Okonkwo", nurse: "Berna Koç", room: "Lab 2",
     status: "Checked In", consent: "Signed", payment: "Paid", amount: "₺900", balance: "₺0",
-    checkInTime: "09:48", currentStep: 2, forms: NO_FORMS_ISSUE,
+    // Check-in must fall on or before the demo clock (09:14) for "Checked
+    // In" to be a fact that's already happened, regardless of how early
+    // relative to his own slot.
+    checkInTime: "09:00", currentStep: 2, forms: NO_FORMS_ISSUE,
     prep: { sample: "Pending", scan: "Completed" }, previousVisit: "10 Jun 2026",
   },
   {
     id: "A-10",
     patient: P("Cynthia Riboflavin", "CY", "14 Aug 1982", 43, "Female", "+90 532 111 2210", "cynthia@example.com"),
-    type: "Consultation (in-person)", isVideo: false, startMin: 600, durationMin: 30, timeLabel: "10:00 – 10:30",
+    type: "Consultation (in-person)", isVideo: false, startMin: 660, durationMin: 60, timeLabel: "11:00 – 12:00",
     doctorId: "EMP-003", doctor: "Dr. Claudia Reis", nurse: "Berna Koç", room: "Room 2",
-    status: "In Clinic", consent: "Signed", payment: "Paid", amount: "₺2,400", balance: "₺0",
-    checkInTime: "09:40", currentStep: 4, forms: NO_FORMS_ISSUE,
+    // Booked, not "In Clinic": her check-in time (09:40) is still ahead of
+    // the demo clock (09:14) — Dr. Reis can only have one active session at
+    // a time (A-01), and this one hasn't started yet.
+    status: "Booked", consent: "Signed", payment: "Paid", amount: "₺2,400", balance: "₺0",
+    currentStep: 0, forms: NO_FORMS_ISSUE,
     prep: { sample: "Collected", scan: "Completed" }, previousVisit: "01 Apr 2026",
   },
   {
     id: "A-11",
     patient: P("Noah Nac", "NN", "22 Feb 2000", 26, "Male", "+90 532 111 2211", "noah@example.com"),
-    type: "Consultation (video)", isVideo: true, startMin: 630, durationMin: 30, timeLabel: "10:30 – 11:00",
+    type: "Consultation (video)", isVideo: true, startMin: 720, durationMin: 30, timeLabel: "12:00 – 12:30",
     doctorId: "EMP-004", doctor: "Dr. Chad Okonkwo", room: "Video",
     status: "Booked", consent: "Signed", payment: "Paid", amount: "₺2,000", balance: "₺0",
     currentStep: 0, forms: NO_FORMS_ISSUE,
@@ -223,7 +239,7 @@ export const APPTS: Appt[] = [
   {
     id: "A-12",
     patient: P("Benny Selenium", "BS", "09 May 1968", 58, "Male", "+90 532 111 2212", "benny@example.com"),
-    type: "Body Scan", isVideo: false, startMin: 660, durationMin: 45, timeLabel: "11:00 – 11:45",
+    type: "Body Scan", isVideo: false, startMin: 720, durationMin: 90, timeLabel: "12:00 – 13:30",
     doctorId: "EMP-005", doctor: "Dr. Felix Andersen", nurse: "Aylin Demir", room: "Scan B",
     status: "Booked", consent: "Pending", payment: "Unpaid", amount: "₺4,800", balance: "₺4,800",
     currentStep: 0,
@@ -235,8 +251,8 @@ export const APPTS: Appt[] = [
   },
   {
     id: "A-13",
-    patient: P("Mackenzie Messineo", "MM", "12 Feb 1988", 38, "Female", "+90 532 111 2201", "mackenzie@example.com"),
-    type: "Follow-up", isVideo: true, startMin: 690, durationMin: 20, timeLabel: "11:30 – 11:50",
+    patient: P("Mackenzie Messineo", "MM", "12 Feb 1988", 38, "Female", "+90 532 111 2201", "mackenzie@example.com", "Penicillin allergy"),
+    type: "Follow-up", isVideo: true, startMin: 750, durationMin: 20, timeLabel: "12:30 – 12:50",
     doctorId: "EMP-003", doctor: "Dr. Claudia Reis", room: "Video",
     status: "Booked", consent: "Signed", payment: "Paid", amount: "₺1,500", balance: "₺0",
     currentStep: 0, forms: NO_FORMS_ISSUE,
@@ -245,9 +261,11 @@ export const APPTS: Appt[] = [
   {
     id: "A-14",
     patient: P("Gustavo Propolis", "GP", "27 Jul 1965", 60, "Male", "+90 532 111 2213", "gustavo@example.com"),
-    type: "Consultation (in-person)", isVideo: false, startMin: 840, durationMin: 30, timeLabel: "14:00 – 14:30",
+    type: "Consultation (in-person)", isVideo: false, startMin: 840, durationMin: 60, timeLabel: "14:00 – 15:00",
     doctorId: "EMP-005", doctor: "Dr. Felix Andersen", nurse: "Berna Koç", room: "Room 1",
-    status: "Booked", consent: "Signed", payment: "Partial", amount: "₺2,400", balance: "₺1,200",
+    // A partial deposit can still be a real ledger fact even though "Partial"
+    // is no longer its own payment status — any non-zero balance is Unpaid.
+    status: "Booked", consent: "Signed", payment: "Unpaid", amount: "₺2,400", balance: "₺1,200",
     currentStep: 0, forms: NO_FORMS_ISSUE,
     prep: { sample: "Pending", scan: "Completed" }, previousVisit: "20 Apr 2026",
   },

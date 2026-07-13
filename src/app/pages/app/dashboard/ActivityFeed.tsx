@@ -33,14 +33,16 @@ const KIND_ICON: Record<EventKind, React.ReactNode> = {
 
 const FILTERS: ("All Events" | EventKind)[] = ["All Events", "Appointments", "Patients", "Payments", "System"];
 
-export function ActivityFeed() {
+export function ActivityFeed({ defaultCollapsed = false }: { defaultCollapsed?: boolean }) {
   const [filter, setFilter] = useState<"All Events" | EventKind>("All Events");
+  const [collapsed, setCollapsed] = useState(defaultCollapsed);
   const items = filter === "All Events" ? FEED : FEED.filter((f) => f.kind === filter);
+  const visibleItems = collapsed ? items.slice(0, 3) : items;
 
   return (
     <Section
       title="Recent Activity"
-      className="h-64"
+      className={defaultCollapsed ? undefined : "h-64"}
       action={
         <FilterSelect
           value={filter}
@@ -51,7 +53,7 @@ export function ActivityFeed() {
       }
     >
       <div className="divide-y divide-gray-100">
-        {items.map((item, i) => (
+        {visibleItems.map((item, i) => (
           <div key={i} className="flex items-center gap-3 px-5 py-2.5">
             <span className="text-xs font-bold text-gray-400 w-10 shrink-0 tabular-nums">{item.time}</span>
             <span className="shrink-0">{KIND_ICON[item.kind]}</span>
@@ -59,6 +61,11 @@ export function ActivityFeed() {
           </div>
         ))}
       </div>
+      {collapsed && items.length > 3 && (
+        <button onClick={() => setCollapsed(false)} className="w-full text-center py-2 text-xs font-bold text-slate-600 hover:underline border-t border-gray-100">
+          View all
+        </button>
+      )}
     </Section>
   );
 }

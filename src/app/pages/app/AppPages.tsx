@@ -2,6 +2,8 @@ import React from "react";
 import { Link, useNavigate } from "react-router";
 import { useAppContext } from "../../context/AppContext";
 import { AvailabilityApprovalPage } from "./availability/AvailabilityApprovalPage";
+import { ClinicianRequestsPage } from "./availability/ClinicianRequestsPage";
+export { NotificationsPage } from "./NotificationsPage";
 
 export function SkeletonPage({ title, children }: { title: string, children: React.ReactNode }) {
   return (
@@ -89,15 +91,14 @@ export const NewPatientSkeleton = () => <SkeletonPage title="New Patient"><Place
 export { BillingPage } from "./BillingPage";
 export { FeedbackAdminPage } from "./FeedbackAdminPage";
 export { TimesheetPage } from "./Timesheet";
-export const NotificationsSkeleton = () => <SkeletonPage title="Notifications"><PlaceholderBlock label="Unread / All Notifications List" className="h-96" /></SkeletonPage>;
-export const ApprovalSkeleton = () => <SkeletonPage title="Approvals"><PlaceholderBlock label="Pending Clinician Access Requests" className="h-96" /><div className="mt-4"><Link to="/approval/REQ-1" className="text-slate-600 hover:underline">Demo: View Request REQ-1</Link></div></SkeletonPage>;
 export const ApprovalDetailSkeleton = () => <SkeletonPage title="Approval Request"><Link to="/approval" className="mb-4 inline-block text-sm text-slate-500">← Back</Link><PlaceholderBlock label="Request Details & Actions" className="h-96" /></SkeletonPage>;
 
-// Admin sees the real Availability approval queue; other roles with access
-// to /approval (currently Clinician) keep the pre-existing placeholder.
+// Admin approves availability requests (the real queue); a Clinician can't
+// approve anything themselves, so /approval instead shows the status of
+// what *they've* submitted — see ClinicianRequestsPage.
 export function ApprovalRouter() {
   const { role } = useAppContext();
-  return role === "Admin" ? <AvailabilityApprovalPage /> : <ApprovalSkeleton />;
+  return role === "Admin" ? <AvailabilityApprovalPage /> : <ClinicianRequestsPage />;
 }
 export const AvailabilitySkeleton = () => <SkeletonPage title="Availability"><PlaceholderBlock label="Slot Editor" className="h-96" /></SkeletonPage>;
 

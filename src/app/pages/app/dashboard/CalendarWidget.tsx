@@ -1,30 +1,28 @@
 import React from "react";
 import { useNavigate } from "react-router";
 import { Video, ArrowRight } from "lucide-react";
-import type { Role } from "../../../context/AppContext";
 import { ROOMS } from "../calendar/scheduleData";
 import {
   APPTS, Appt, DAY_START_HOUR, DAY_END_HOUR, HOUR_PX,
   NOW_MINUTES, TODAY_SHORT, apptBlockClass, apptStatusDotClass, blockHeightPx, gapToNext, minToClock,
 } from "./dashboardData";
 
-const NURSE_NAME = "Berna Koç";
-const CLINICIAN_ID = "EMP-003"; // Dr. Claudia Reis (signed-in clinician)
-
 type Column = { key: string; label: string; sub?: string; appts: Appt[] };
 
-function buildColumns(role: Role): Column[] {
-  if (role === "Nurse") {
-    return [{ key: "me", label: "My Patients", appts: APPTS.filter((a) => a.nurse === NURSE_NAME) }];
-  }
-  if (role === "Clinician") {
-    return [{ key: "me", label: "My Schedule", appts: APPTS.filter((a) => a.doctorId === CLINICIAN_ID) }];
-  }
-  // Admin and Reception share the same room-first glance — a room is only
-  // ever booked by one patient at a time (~2h turnover), so this maps
-  // directly onto the clinic's physical layout instead of who happens to
-  // be running behind. Video consultations occupy no physical room and
-  // simply don't appear here.
+// "Dr. Claudia Reis" → "Dr. Reis" — enough to tell three clinicians apart in
+// a compact block without repeating the full name every room shows her in.
+function doctorShort(doctor: string): string {
+  const parts = doctor.split(" ");
+  return `Dr. ${parts[parts.length - 1]}`;
+}
+
+// Admin and Reception share the same room-first glance — a room is only
+// ever booked by one patient at a time (~2h turnover), so this maps directly
+// onto the clinic's physical layout instead of who happens to be running
+// behind. Video consultations occupy no physical room and simply don't
+// appear here. (Nurse and Clinician each have their own dedicated dashboard
+// layout and never render this widget.)
+function buildColumns(): Column[] {
   return ROOMS.map((r) => ({ key: r.id, label: r.label, sub: r.kind, appts: APPTS.filter((a) => a.room === r.id) }));
 }
 
@@ -51,16 +49,16 @@ function ApptBlock({ appt, gapMin }: { appt: Appt; gapMin?: number }) {
       </div>
       {showDetail && (
         <div className="text-[10px] text-gray-500 truncate mt-0.5 pl-3">
-          {appt.type.replace(" (in-person)", "").replace(" (video)", "")} · {appt.durationMin}m
+          {appt.type.replace(" (in-person)", "").replace(" (video)", "")} · {doctorShort(appt.doctor)}
         </div>
       )}
     </button>
   );
 }
 
-export function CalendarWidget({ role }: { role: Role }) {
+export function CalendarWidget() {
   const navigate = useNavigate();
-  const columns = buildColumns(role);
+  const columns = buildColumns();
   const hours = Array.from({ length: DAY_END_HOUR - DAY_START_HOUR + 1 }, (_, i) => DAY_START_HOUR + i);
   const gridHeight = (DAY_END_HOUR - DAY_START_HOUR) * HOUR_PX;
   const nowTop = ((NOW_MINUTES - DAY_START_HOUR * 60) / 60) * HOUR_PX;

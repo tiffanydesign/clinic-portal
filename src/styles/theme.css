@@ -119,6 +119,108 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* --------------------------------------------------------------------
+   Phenome Portal — Design Style Guide v2 (Frosted Premium) tokens.
+   Additive only: new variable names, referenced only by opt-in
+   "frosted" components/pages. See DESIGN_STYLE.md for the full spec.
+   -------------------------------------------------------------------- */
+:root {
+  --phenome-blue-900: #0A1E57;
+  --phenome-blue-700: #142B6E;
+  --phenome-blue-500: #203A85;
+  --phenome-blue-400: #435BA1;
+  --phenome-blue-300: #7185BD;
+  --phenome-blue-200: #A9B5D9;
+  --phenome-blue-100: #E6E9F2;
+
+  --gradient-brand: linear-gradient(135deg, #30B0CD 0%, #2394CC 48%, #2E74B2 100%);
+  --gradient-vitality: linear-gradient(135deg, #269381 0%, #1F8697 49%, #085E98 100%);
+
+  --status-success: #34C759;
+  --status-warning: #F5A623;
+  --status-danger: #FF383C;
+  --status-info: #2394CC;
+  --status-special: #CB30E0;
+
+  --ink-900: #10214B;
+  --ink-600: #4A5578;
+  --ink-400: #8B93AD;
+  --surface-page: #F4F6FB;
+  --divider: rgba(32, 58, 133, 0.08);
+
+  --shadow-card: 0 8px 32px rgba(16, 33, 75, 0.08);
+  --shadow-elevated: 0 16px 48px rgba(16, 33, 75, 0.14);
+  --radius-frosted-sm: 10px;
+  --radius-frosted-md: 16px;
+  --radius-frosted-lg: 24px;
+  --ease-frosted-out: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.frosted-ambient {
+  background:
+    radial-gradient(1200px 800px at 85% -10%, rgba(48, 176, 205, 0.10), transparent 60%),
+    radial-gradient(1000px 700px at -10% 90%, rgba(32, 58, 133, 0.07), transparent 55%),
+    var(--surface-page);
+}
+
+.frosted-shell {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(32px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+
+.frosted-card {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: var(--shadow-card);
+}
+
+/* Border-light variant: hierarchy comes from typography/spacing, not a
+   drawn edge — reserve .frosted-card's visible border for surfaces that
+   truly need to be read as a distinct object (modals, the page's one Hero). */
+.frosted-surface {
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12px);
+}
+
+/* The page's single Hero container — the one surface allowed the stronger
+   elevated shadow and a soft brand-gradient wash, so it reads as the page's
+   one visual focal point rather than another card in a stack. */
+.frosted-hero {
+  background:
+    radial-gradient(600px 300px at 15% 0%, rgba(48, 176, 205, 0.08), transparent 70%),
+    rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(24px);
+  box-shadow: var(--shadow-elevated);
+}
+
+.frosted-inset {
+  background: rgba(244, 246, 251, 0.6);
+}
+
+.frosted-gradient-text {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes frosted-stagger-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.frosted-stagger {
+  animation: frosted-stagger-in var(--duration-base, 250ms) var(--ease-frosted-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frosted-stagger {
+    animation: none;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
