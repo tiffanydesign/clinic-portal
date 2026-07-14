@@ -34,8 +34,8 @@ export type BookedAppt = { date: string; dayOfWeek: string; time: string; patien
 // Note: 8 Jul and 15 Jul 2026 both fall on a Wednesday (verified against real
 // calendar math, matching the July date picker grid used in OverrideModal).
 export const BOOKED_APPOINTMENTS: BookedAppt[] = [
-  { date: "8 Jul 2026", dayOfWeek: "Wednesday", time: "10:00am", patient: "Mackenzie Messineo", type: "Body Scan" },
-  { date: "15 Jul 2026", dayOfWeek: "Wednesday", time: "11:00am", patient: "Riley Guarana", type: "Consultation" },
+  { date: "8 Jul 2026", dayOfWeek: "Wednesday", time: "10:00am", patient: "Ece Yıldırım", type: "Body Scan" },
+  { date: "15 Jul 2026", dayOfWeek: "Wednesday", time: "11:00am", patient: "Tarkan Solmaz", type: "Consultation" },
 ];
 
 export function bookingLabel(b: BookedAppt): string {

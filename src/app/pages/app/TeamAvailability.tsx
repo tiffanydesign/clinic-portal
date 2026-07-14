@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
-import { ChevronLeft, ChevronRight, X, ChevronDown, Users, Search, Calendar, Info } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, ChevronDown, Search, Calendar, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useAppContext } from "../../context/AppContext";
+import { getStaff } from "./staff/staffData";
 
 // --- Types ---
 type SlotType = 'Clinic' | 'Video';
@@ -29,52 +30,127 @@ type StaffMember = {
 };
 
 // --- Mock Data Helpers ---
-const regularDay = (blocks: AvailabilityBlock[], totalHours: number): DaySchedule => ({
-  blocks,
-  totalHours,
-  bookedHours: 0,
-  appointments: []
-});
-
 const cl = (start: string, end: string): AvailabilityBlock => ({ start, end, type: 'Clinic' });
 const vi = (start: string, end: string): AvailabilityBlock => ({ start, end, type: 'Video' });
+
+// A day with real bookings — every working day (bar off/leave/override
+// special cases) gets one of these rather than the old zero-booked
+// placeholder, so the week reads as an actually-staffed clinic instead of
+// six mostly-idle people who only happen to have appointments on Thursday.
+function bookedDay(blocks: AvailabilityBlock[], totalHours: number, appointments: Appointment[]): DaySchedule {
+  const bookedHours = Math.round(appointments.reduce((sum, a) => sum + (toMin(a.end) - toMin(a.start)) / 60, 0) * 100) / 100;
+  const remaining = Math.round((totalHours - bookedHours) * 100) / 100;
+  const openSlots = Math.max(0, Math.round(remaining / 1.5));
+  const summary = bookedHours >= totalHours
+    ? `Available: ${totalHours}h · Booked: ${bookedHours}h · Remaining: 0h (fully booked)`
+    : `Available: ${totalHours}h · Booked: ${bookedHours}h · Remaining: ${remaining}h (${openSlots} open slot${openSlots === 1 ? "" : "s"})`;
+  return { blocks, totalHours, bookedHours, appointments, summary };
+}
+
+function toMin(t: string): number {
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + m;
+}
+
+function fmtMin(min: number): string {
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  return `${h}:${String(m).padStart(2, "0")}`;
+}
+
+// The clinic/video distinction was dropped, so a day's blocks now just
+// describe when the person is available — overlapping or touching blocks
+// (e.g. a 9–17 window with a 10–16 window inside it) collapse into a single
+// continuous availability window rather than two coloured bars the reader
+// has to mentally union.
+function availabilityWindows(blocks?: AvailabilityBlock[]): { start: string; end: string }[] {
+  if (!blocks || blocks.length === 0) return [];
+  const ranges = blocks
+    .map((b) => [toMin(b.start), toMin(b.end)] as [number, number])
+    .sort((a, b) => a[0] - b[0]);
+  const merged: [number, number][] = [];
+  for (const [s, e] of ranges) {
+    const last = merged[merged.length - 1];
+    if (last && s <= last[1]) last[1] = Math.max(last[1], e);
+    else merged.push([s, e]);
+  }
+  return merged.map(([s, e]) => ({ start: fmtMin(s), end: fmtMin(e) }));
+}
+
+// Pulls id/name/avatar from the canonical staff registry (staffData.ts) by
+// real EMP-id, so renaming a staff member only ever needs to happen there —
+// only the schedule-specific `role`/`schedules` stay local to this page.
+function staffHeader(empId: string): { id: string; name: string; avatar: string } {
+  const s = getStaff(empId);
+  if (!s) throw new Error(`Unknown staff id in TeamAvailability: ${empId}`);
+  return { id: s.id, name: s.name, avatar: s.avatar };
+}
 
 // --- Detailed Mock Data ---
 const ALL_STAFF: StaffMember[] = [
   {
-    id: "C1", name: "Dr. Claudia Reis", role: "Clinician", avatar: "CR",
+    ...staffHeader("EMP-003"), role: "Clinician",
     schedules: [
-      regularDay([cl("9:00", "17:00"), vi("10:00", "16:00")], 8), // Mon
-      regularDay([cl("9:00", "17:00"), vi("10:00", "16:00")], 8), // Tue
-      regularDay([cl("9:00", "17:00"), vi("10:00", "16:00")], 8), // Wed
+      bookedDay([cl("9:00", "17:00"), vi("10:00", "16:00")], 8, [ // Mon
+        { start: "9:00", end: "10:00", patient: "Ece Yıldırım" },
+        { start: "11:00", end: "12:30", patient: "Tarkan Solmaz" },
+        { start: "13:00", end: "14:00", patient: "Yasemin Kaplan" },
+        { start: "15:00", end: "16:30", patient: "Sena Yavuz" },
+      ]),
+      bookedDay([cl("9:00", "17:00"), vi("10:00", "16:00")], 8, [ // Tue
+        { start: "9:00", end: "10:30", patient: "Ece Yıldırım" },
+        { start: "10:30", end: "12:00", patient: "Tarkan Solmaz" },
+        { start: "13:00", end: "15:00", patient: "Yasemin Kaplan" },
+        { start: "15:00", end: "16:30", patient: "Sena Yavuz" },
+      ]),
+      bookedDay([cl("9:00", "17:00"), vi("10:00", "16:00")], 8, [ // Wed
+        { start: "10:00", end: "11:00", patient: "Tarkan Solmaz" },
+        { start: "14:00", end: "15:00", patient: "Sena Yavuz" },
+      ]),
       { // Thu - Fragmented Mock
         totalHours: 8, bookedHours: 3.5,
         blocks: [cl("9:00", "17:00"), vi("10:00", "16:00")],
         appointments: [
-          { start: "10:00", end: "11:00", patient: "Mackenzie Messineo" },
-          { start: "14:00", end: "15:30", patient: "Penny Pelargonium" },
-          { start: "16:00", end: "17:00", patient: "Riley Guarana" }
+          { start: "10:00", end: "11:00", patient: "Ece Yıldırım" },
+          { start: "14:00", end: "15:30", patient: "Aslı Kutlu" },
+          { start: "16:00", end: "17:00", patient: "Tarkan Solmaz" }
         ],
         summary: "Available: 8h · Booked: 3.5h · Remaining: 4.5h (3 open slots)"
       },
-      regularDay([cl("9:00", "17:00"), vi("10:00", "16:00")], 8), // Fri
+      bookedDay([cl("9:00", "17:00"), vi("10:00", "16:00")], 8, [ // Fri — fully booked
+        { start: "9:00", end: "11:00", patient: "Ece Yıldırım" },
+        { start: "11:00", end: "13:00", patient: "Tarkan Solmaz" },
+        { start: "13:00", end: "15:00", patient: "Yasemin Kaplan" },
+        { start: "15:00", end: "17:00", patient: "Sena Yavuz" },
+      ]),
       { off: true }, // Sat
       { off: true }, // Sun
     ]
   },
   {
-    id: "C2", name: "Dr. Chad Okonkwo", role: "Clinician", avatar: "CO",
+    ...staffHeader("EMP-004"), role: "Clinician",
     schedules: [
-      regularDay([cl("8:00", "16:00")], 8), // Mon
-      regularDay([cl("8:00", "16:00"), vi("9:00", "12:00")], 8), // Tue
-      regularDay([cl("8:00", "16:00")], 8), // Wed
+      bookedDay([cl("8:00", "16:00")], 8, [ // Mon
+        { start: "8:00", end: "9:30", patient: "Gül Korkmaz" },
+        { start: "11:00", end: "12:30", patient: "Hakan Bulut" },
+        { start: "13:00", end: "14:00", patient: "Serkan Çetin" },
+      ]),
+      bookedDay([cl("8:00", "16:00"), vi("9:00", "12:00")], 8, [ // Tue
+        { start: "8:00", end: "9:30", patient: "Gül Korkmaz" },
+        { start: "9:30", end: "11:00", patient: "Hakan Bulut" },
+        { start: "11:00", end: "13:00", patient: "Serkan Çetin" },
+        { start: "13:00", end: "14:00", patient: "Derya Toprak" },
+      ]),
+      bookedDay([cl("8:00", "16:00")], 8, [ // Wed
+        { start: "10:00", end: "11:30", patient: "Derya Toprak" },
+      ]),
       { // Thu
         totalHours: 8, bookedHours: 3,
         blocks: [cl("8:00", "16:00"), vi("9:00", "12:00")],
         appointments: [
-          { start: "8:00", end: "9:30", patient: "Arysse Arcerola" },
-          { start: "11:00", end: "12:00", patient: "Gustavo Propolis" },
-          { start: "13:00", end: "14:00", patient: "Bob Bromelain" }
+          { start: "8:00", end: "9:30", patient: "Gül Korkmaz" },
+          { start: "11:00", end: "12:00", patient: "Hakan Bulut" },
+          { start: "13:00", end: "14:00", patient: "Serkan Çetin" }
         ],
         summary: "Available: 8h · Booked: 3h · Remaining: 5h (3 open slots)"
       },
@@ -84,42 +160,91 @@ const ALL_STAFF: StaffMember[] = [
     ]
   },
   {
-    id: "C3", name: "Dr. Felix Andersen", role: "Clinician", avatar: "FA",
+    ...staffHeader("EMP-005"), role: "Clinician",
     schedules: [
-      regularDay([cl("9:00", "18:00"), vi("14:00", "17:00")], 9), // Mon
-      regularDay([cl("9:00", "18:00"), vi("14:00", "17:00")], 9), // Tue
-      regularDay([cl("9:00", "18:00"), vi("14:00", "17:00")], 9), // Wed
+      bookedDay([cl("9:00", "18:00"), vi("14:00", "17:00")], 9, [ // Mon
+        { start: "9:00", end: "10:30", patient: "Burak Kocaman" },
+        { start: "11:00", end: "13:00", patient: "Cem Polat" },
+        { start: "14:00", end: "15:30", patient: "Umut Erdem" },
+        { start: "16:00", end: "17:00", patient: "Volkan Turan" },
+      ]),
+      bookedDay([cl("9:00", "18:00"), vi("14:00", "17:00")], 9, [ // Tue
+        { start: "9:00", end: "10:30", patient: "Burak Kocaman" },
+        { start: "11:00", end: "13:30", patient: "Cem Polat" },
+        { start: "14:00", end: "16:00", patient: "Umut Erdem" },
+        { start: "16:00", end: "17:00", patient: "Volkan Turan" },
+      ]),
+      bookedDay([cl("9:00", "18:00"), vi("14:00", "17:00")], 9, [ // Wed
+        { start: "11:00", end: "13:00", patient: "Cem Polat" },
+      ]),
       { // Thu (Override)
         override: true, totalHours: 3, bookedHours: 1,
         blocks: [cl("9:00", "12:00")],
         appointments: [
-          { start: "9:00", end: "10:00", patient: "Dylan Daniel" }
+          { start: "9:00", end: "10:00", patient: "Burak Kocaman" }
         ],
         summary: "Available: 3h · Booked: 1h · Remaining: 2h (1 open slot)"
       },
-      regularDay([cl("9:00", "18:00")], 9), // Fri
+      bookedDay([cl("9:00", "18:00")], 9, [ // Fri — fully booked
+        { start: "9:00", end: "11:00", patient: "Burak Kocaman" },
+        { start: "11:00", end: "13:00", patient: "Cem Polat" },
+        { start: "13:00", end: "15:30", patient: "Umut Erdem" },
+        { start: "15:30", end: "18:00", patient: "Volkan Turan" },
+      ]),
       { off: true }, // Sat
       { off: true }, // Sun
     ]
   },
   {
-    id: "C4", name: "Dr. Adobe Martinez", role: "Clinician", avatar: "AM",
+    ...staffHeader("EMP-006"), role: "Clinician",
     schedules: [
-      regularDay([cl("10:00", "18:00")], 8), // Mon
-      regularDay([cl("10:00", "18:00")], 8), // Tue
-      regularDay([cl("10:00", "18:00"), vi("13:00", "17:00")], 8), // Wed
-      regularDay([cl("10:00", "18:00")], 8), // Thu
-      regularDay([cl("10:00", "18:00"), vi("13:00", "17:00")], 8), // Fri
+      bookedDay([cl("10:00", "18:00")], 8, [ // Mon
+        { start: "10:00", end: "11:30", patient: "Barış Güneş" },
+        { start: "12:00", end: "14:00", patient: "Nazlı Çakır" },
+        { start: "15:00", end: "16:30", patient: "Defne Korkut" },
+      ]),
+      bookedDay([cl("10:00", "18:00")], 8, [ // Tue
+        { start: "11:00", end: "13:00", patient: "Ozan Bilgin" },
+      ]),
+      bookedDay([cl("10:00", "18:00"), vi("13:00", "17:00")], 8, [ // Wed
+        { start: "10:00", end: "11:30", patient: "Barış Güneş" },
+        { start: "12:00", end: "14:00", patient: "Nazlı Çakır" },
+        { start: "14:00", end: "16:00", patient: "Defne Korkut" },
+        { start: "16:00", end: "16:30", patient: "Ozan Bilgin" },
+      ]),
+      bookedDay([cl("10:00", "18:00")], 8, [ // Thu
+        { start: "10:00", end: "11:30", patient: "Barış Güneş" },
+        { start: "12:00", end: "14:00", patient: "Nazlı Çakır" },
+        { start: "15:00", end: "15:30", patient: "Defne Korkut" },
+      ]),
+      bookedDay([cl("10:00", "18:00"), vi("13:00", "17:00")], 8, [ // Fri — fully booked
+        { start: "10:00", end: "12:00", patient: "Barış Güneş" },
+        { start: "12:00", end: "14:00", patient: "Nazlı Çakır" },
+        { start: "14:00", end: "16:00", patient: "Defne Korkut" },
+        { start: "16:00", end: "18:00", patient: "Ozan Bilgin" },
+      ]),
       { off: true }, // Sat
       { off: true }, // Sun
     ]
   },
   {
-    id: "N1", name: "Berna Koç", role: "Nurse", avatar: "BK",
+    ...staffHeader("EMP-007"), role: "Nurse",
     schedules: [
-      regularDay([cl("8:30", "17:30")], 9), // Mon
-      regularDay([cl("8:30", "17:30")], 9), // Tue
-      regularDay([cl("8:30", "17:30")], 9), // Wed
+      bookedDay([cl("8:30", "17:30")], 9, [ // Mon
+        { start: "8:30", end: "10:00", patient: "Ceyda Aksu" },
+        { start: "10:30", end: "12:30", patient: "Emir Tekin" },
+        { start: "13:30", end: "15:00", patient: "İpek Sarıkaya" },
+        { start: "15:30", end: "16:30", patient: "Yasemin Kaplan" },
+      ]),
+      bookedDay([cl("8:30", "17:30")], 9, [ // Tue
+        { start: "8:30", end: "10:30", patient: "Ceyda Aksu" },
+        { start: "10:30", end: "12:30", patient: "Emir Tekin" },
+        { start: "13:30", end: "15:30", patient: "İpek Sarıkaya" },
+        { start: "15:30", end: "16:30", patient: "Yasemin Kaplan" },
+      ]),
+      bookedDay([cl("8:30", "17:30")], 9, [ // Wed
+        { start: "13:30", end: "16:00", patient: "İpek Sarıkaya" },
+      ]),
       { // Thu (Override)
         override: true, totalHours: 9, bookedHours: 2.5,
         blocks: [cl("8:30", "10:00"), cl("11:30", "14:00")],
@@ -129,19 +254,39 @@ const ALL_STAFF: StaffMember[] = [
         ],
         summary: "Available: 9h · Booked: 2.5h · Remaining: 6.5h (3 open slots)"
       },
-      regularDay([cl("8:30", "17:30")], 9), // Fri
+      bookedDay([cl("8:30", "17:30")], 9, [ // Fri — fully booked
+        { start: "8:30", end: "11:00", patient: "Ceyda Aksu" },
+        { start: "11:00", end: "13:30", patient: "Emir Tekin" },
+        { start: "13:30", end: "15:30", patient: "İpek Sarıkaya" },
+        { start: "15:30", end: "17:30", patient: "Yasemin Kaplan" },
+      ]),
       { off: true }, // Sat
       { off: true }, // Sun
     ]
   },
   {
-    id: "N2", name: "Aylin Demir", role: "Nurse", avatar: "AD",
+    ...staffHeader("EMP-008"), role: "Nurse",
     schedules: [
-      regularDay([cl("9:00", "17:00")], 8), // Mon
-      regularDay([cl("9:00", "17:00")], 8), // Tue
-      regularDay([cl("9:00", "17:00")], 8), // Wed
+      bookedDay([cl("9:00", "17:00")], 8, [ // Mon
+        { start: "9:00", end: "10:30", patient: "Ece Yıldırım" },
+        { start: "11:00", end: "13:00", patient: "Tarkan Solmaz" },
+        { start: "14:00", end: "15:30", patient: "Hakan Bulut" },
+      ]),
+      bookedDay([cl("9:00", "17:00")], 8, [ // Tue
+        { start: "9:00", end: "11:00", patient: "Ece Yıldırım" },
+        { start: "11:00", end: "13:00", patient: "Tarkan Solmaz" },
+        { start: "14:00", end: "16:00", patient: "Hakan Bulut" },
+      ]),
+      bookedDay([cl("9:00", "17:00")], 8, [ // Wed
+        { start: "14:00", end: "16:00", patient: "Aslı Kutlu" },
+      ]),
       { onLeave: true }, // Thu - On Leave
-      regularDay([cl("9:00", "17:00")], 8), // Fri
+      bookedDay([cl("9:00", "17:00")], 8, [ // Fri — fully booked
+        { start: "9:00", end: "11:00", patient: "Ece Yıldırım" },
+        { start: "11:00", end: "13:00", patient: "Tarkan Solmaz" },
+        { start: "13:00", end: "15:00", patient: "Hakan Bulut" },
+        { start: "15:00", end: "17:00", patient: "Aslı Kutlu" },
+      ]),
       { off: true }, // Sat
       { off: true }, // Sun
     ]
@@ -159,9 +304,134 @@ const WEEK_DAYS = [
 ];
 const TODAY_INDEX = 3; // Thu 3
 
+// Shared with both the per-cell popover and the full-week detail modal below,
+// so "click one day" and "click the whole week" render the exact same
+// availability/appointments/summary layout instead of two drifting copies.
+function DayDetailBody({ staff, day, currentUserRole }: { staff: StaffMember; day: DaySchedule; currentUserRole: string }) {
+  return (
+    <>
+      <div className="p-4 border-b border-gray-100">
+        <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Scheduled Availability</h4>
+        <div className="space-y-2">
+          {availabilityWindows(day.blocks).map((w, idx) => (
+            <div key={idx} className="flex items-center text-sm font-semibold text-gray-800">
+              <div className="w-2 h-2 rounded-full mr-2 bg-emerald-500" />
+              {w.start} – {w.end}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="p-4 border-b border-gray-100 last:border-b-0">
+        <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Booked Appointments</h4>
+        <div className="space-y-2">
+          {(!day.appointments || day.appointments.length === 0) ? (
+            <div className="text-sm text-gray-500 italic">No appointments booked</div>
+          ) : (
+            day.appointments.map((appt, idx) => {
+              // Patient Privacy Masking
+              const isOwnPatient = staff.name.includes("Ebru"); // Mock logic
+              const showNames = currentUserRole === 'Admin' || currentUserRole === 'Reception' || (currentUserRole === 'Clinician' && isOwnPatient);
+              const patientDisplay = showNames ? appt.patient : 'Patient';
+
+              return (
+                <div key={idx} className="flex items-center text-sm text-gray-700">
+                  <div className="w-2 h-2 rounded-full bg-gray-500 mr-2 shrink-0" />
+                  <span className="font-medium mr-2">{appt.start} – {appt.end}</span>
+                  <span className="text-gray-500 truncate">· {patientDisplay}</span>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {day.summary && (
+        <div className="p-4 bg-gray-50 text-xs space-y-1">
+          <div className="font-medium text-gray-700">{day.summary}</div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// Centered modal (not a route, not a side panel — per explicit request) that
+// opens when a staff member's name/avatar is clicked, showing their whole
+// week's availability at a glance instead of one day at a time.
+function StaffDetailModal({ staff, onClose, currentUserRole }: { staff: StaffMember; onClose: () => void; currentUserRole: string }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 backdrop-blur-sm p-6" onClick={onClose}>
+      <div
+        className="bg-white border border-gray-200 rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col animate-in fade-in zoom-in-95 duration-150"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-5 border-b border-gray-200 flex items-center justify-between shrink-0">
+          <div className="flex items-center">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0 mr-3 ring-2 ring-offset-1 ${staff.role === 'Clinician' ? 'bg-blue-500 ring-blue-200' : 'bg-emerald-500 ring-emerald-200'}`}>
+              {staff.avatar}
+            </div>
+            <div>
+              <div className="text-lg font-bold text-gray-800">{staff.name}</div>
+              <span className={`inline-block mt-0.5 px-2 py-0.5 text-[10px] font-bold rounded ${staff.role === 'Clinician' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`}>
+                {staff.role}
+              </span>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
+          {staff.schedules.map((day, i) => (
+            <div key={i} className={`px-5 py-4 ${i === TODAY_INDEX ? 'bg-slate-50/50' : ''}`}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-bold text-gray-800">{WEEK_DAYS[i].full}</span>
+                {i === TODAY_INDEX && (
+                  <span className="px-1.5 py-0.5 bg-slate-700 text-white text-[9px] font-bold uppercase tracking-wider rounded">Today</span>
+                )}
+              </div>
+              {day.off ? (
+                <div className="text-sm font-medium text-gray-400">Day Off</div>
+              ) : day.onLeave ? (
+                <div className="inline-flex items-center gap-1.5 text-sm font-bold text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-400" /> On Leave — All Day
+                </div>
+              ) : (
+                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                  <DayDetailBody staff={staff} day={day} currentUserRole={currentUserRole} />
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// The three "whole-day" cell states — Day Off, On Leave, Fully Booked — each
+// render as one soft-tinted block filling the cell with centred black text,
+// so they read as a clear status at a glance rather than as data to parse.
+function StatusBlock({ tone, label, sub, medium }: { tone: "gray" | "red" | "orange"; label: string; sub?: string; medium?: boolean }) {
+  const bg = tone === "red" ? "bg-red-100" : tone === "orange" ? "bg-orange-100" : "bg-gray-100";
+  return (
+    <div className={`h-full min-h-[80px] rounded-lg ${bg} flex flex-col items-center justify-center text-center px-2`}>
+      <span className={`text-gray-900 text-sm leading-tight ${medium ? "font-medium" : "font-bold"}`}>{label}</span>
+      {sub && <span className="text-gray-900 text-xs font-bold mt-0.5">{sub}</span>}
+    </div>
+  );
+}
+
+// Every staff member fits within the picker's own 6-person compare limit
+// (4 clinicians + 2 nurses), so defaulting to everyone selected shows the
+// full team's availability the moment the page loads — no empty landing
+// state to click through first.
+const ALL_STAFF_IDS = ALL_STAFF.map((s) => s.id);
+
 export function TeamAvailability() {
   const { role: currentUserRole } = useAppContext();
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>(ALL_STAFF_IDS);
   const [pickerOpen, setPickerOpen] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -171,7 +441,11 @@ export function TeamAvailability() {
   const [popover, setPopover] = useState<{
     staff: StaffMember, day: DaySchedule, dateStr: string, x: number, y: number
   } | null>(null);
-  
+
+  // Full-week detail modal — opened from a staff member's name/avatar,
+  // separate from the per-day popover above.
+  const [detailStaff, setDetailStaff] = useState<StaffMember | null>(null);
+
   const pickerRef = useRef<HTMLDivElement>(null);
   const calendarRef = useRef<HTMLDivElement>(null);
 
@@ -240,17 +514,9 @@ export function TeamAvailability() {
     setCalendarOpen(false);
   };
 
-  // Dynamic row sizing
-  let rowHeightClass = 'h-[160px]';
-  let blockHeightClass = 'h-[36px]';
-  let isCompact = false;
-  if (selectedIds.length >= 5) {
-    rowHeightClass = 'h-[90px]';
-    blockHeightClass = 'h-[28px]';
-    isCompact = true;
-  } else if (selectedIds.length >= 3) {
-    rowHeightClass = 'h-[120px]';
-  }
+  // One comfortable row height for every staff row — the main area scrolls,
+  // so there's no need to crush rows to fit more people without scrolling.
+  const rowHeightClass = "min-h-[112px]";
 
   // Generate simple calendar rows for the week picker popover
   const calWeeks = [
@@ -265,19 +531,19 @@ export function TeamAvailability() {
     <div className="flex flex-col h-full bg-white relative">
       
       {/* TOOLBAR */}
-      <div className="h-16 px-6 border-b border-gray-200 flex items-center justify-between shrink-0 bg-white">
+      <div className="px-8 py-3.5 border-b border-gray-200 flex items-center justify-between gap-4 shrink-0 bg-white">
         
         {/* Left: Navigator */}
         <div className="flex items-center space-x-2">
-          <div className="flex items-center bg-white border border-gray-300 rounded-lg shadow-sm text-gray-500 relative">
-            <button className="px-2 py-1.5 hover:bg-gray-100 border-r border-gray-200 rounded-l-lg"><ChevronLeft className="w-4 h-4" /></button>
-            <span className="px-4 text-sm font-bold text-gray-700 whitespace-nowrap tabular-nums">{weekLabel}</span>
-            <button className="px-2 py-1.5 hover:bg-gray-100 border-l border-gray-200"><ChevronRight className="w-4 h-4" /></button>
+          <div className="flex items-center bg-white border border-gray-200 rounded-full shadow-sm relative">
+            <button className="pl-3 pr-2 py-2 hover:bg-gray-50 rounded-l-full text-gray-500 hover:text-gray-700 transition-colors"><ChevronLeft className="w-4 h-4" /></button>
+            <span className="px-3 text-sm font-bold text-gray-800 whitespace-nowrap tabular-nums">{weekLabel}</span>
+            <button className="px-2 py-2 hover:bg-gray-50 text-gray-500 hover:text-gray-700 transition-colors"><ChevronRight className="w-4 h-4" /></button>
             <button
               onClick={() => setCalendarOpen(!calendarOpen)}
-              className="px-2 py-1.5 hover:bg-gray-100 border-l border-gray-200 rounded-r-lg flex items-center justify-center"
+              className="pl-2 pr-3 py-2 hover:bg-gray-50 rounded-r-full border-l border-gray-200 text-gray-500 hover:text-gray-700 transition-colors flex items-center justify-center"
             >
-              <Calendar className="w-4 h-4 text-gray-500" />
+              <Calendar className="w-4 h-4" />
             </button>
             
             {/* Calendar Popover */}
@@ -323,7 +589,7 @@ export function TeamAvailability() {
               </div>
             )}
           </div>
-          <button onClick={() => setWeekLabel("30 Jun – 6 Jul 2026")} className="px-3 py-1.5 text-sm font-bold text-gray-600 border border-gray-300 bg-white rounded-lg shadow-sm hover:bg-gray-50">
+          <button onClick={() => setWeekLabel("30 Jun – 6 Jul 2026")} className="px-4 py-2 text-sm font-bold text-gray-600 border border-gray-200 bg-white rounded-full shadow-sm hover:bg-gray-50 transition-colors">
             Today
           </button>
         </div>
@@ -332,20 +598,19 @@ export function TeamAvailability() {
         <div className="relative" ref={pickerRef}>
           <div
             onClick={() => setPickerOpen(true)}
-            className="w-[500px] min-h-[38px] border border-slate-300 bg-white rounded-lg shadow-sm flex items-center px-2 cursor-text transition-colors hover:border-slate-400 relative"
+            className="w-[460px] min-h-[42px] border border-gray-200 bg-white rounded-xl shadow-sm flex items-center px-2.5 cursor-text transition-colors hover:border-gray-300 relative"
           >
             {selectedStaff.length === 0 ? (
               <span className="text-sm text-gray-400 pl-2">Add staff to compare...</span>
             ) : (
               <div className="flex flex-wrap gap-1.5 py-1.5 w-[420px]">
                 {selectedStaff.map(s => (
-                  <div key={s.id} className={`flex items-center rounded pl-0.5 pr-1.5 py-0.5 border ${s.role === 'Clinician' ? 'bg-blue-50 border-blue-200' : 'bg-emerald-50 border-emerald-200'}`}>
-                    <div className={`w-1 h-4 mr-1.5 rounded-sm ${s.role === 'Clinician' ? 'bg-blue-500' : 'bg-emerald-500'}`} />
-                    <div className="w-4 h-4 rounded-full bg-white flex items-center justify-center text-[8px] font-bold text-gray-600 mr-1.5 shrink-0">
+                  <div key={s.id} className="flex items-center gap-1.5 rounded-full pl-1 pr-1.5 py-1 border border-gray-200 bg-gray-50">
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white shrink-0 ${s.role === 'Clinician' ? 'bg-blue-500' : 'bg-emerald-500'}`}>
                       {s.avatar}
                     </div>
-                    <span className={`text-xs font-medium mr-1.5 ${s.role === 'Clinician' ? 'text-blue-800' : 'text-emerald-800'} truncate max-w-[80px]`}>{s.name.split(' ').pop()}</span>
-                    <button onClick={(e) => { e.stopPropagation(); toggleStaff(s.id); }} className="hover:bg-white/50 rounded-full p-0.5 text-gray-400 hover:text-gray-700">
+                    <span className="text-xs font-bold text-gray-700 truncate max-w-[90px]">{s.name.split(' ').pop()}</span>
+                    <button onClick={(e) => { e.stopPropagation(); toggleStaff(s.id); }} className="hover:bg-gray-200 rounded-full p-0.5 text-gray-400 hover:text-gray-700">
                       <X className="w-3 h-3" />
                     </button>
                   </div>
@@ -400,7 +665,7 @@ export function TeamAvailability() {
                             <span className="text-sm font-medium text-gray-800">{s.name}</span>
                           </div>
                           <div className="flex items-center">
-                            <span className="px-2 py-0.5 bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-bold rounded">Clinician</span>
+                            <span className="px-2 py-0.5 bg-gray-100 border border-gray-200 text-gray-500 text-[10px] font-bold rounded-full">Clinician</span>
                             {isDisabled && <span className="text-[10px] text-gray-400 ml-2">Limit reached</span>}
                           </div>
                         </div>
@@ -432,7 +697,7 @@ export function TeamAvailability() {
                             <span className="text-sm font-medium text-gray-800">{s.name}</span>
                           </div>
                           <div className="flex items-center">
-                            <span className="px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold rounded">Nurse</span>
+                            <span className="px-2 py-0.5 bg-gray-100 border border-gray-200 text-gray-500 text-[10px] font-bold rounded-full">Nurse</span>
                             {isDisabled && <span className="text-[10px] text-gray-400 ml-2">Limit reached</span>}
                           </div>
                         </div>
@@ -450,14 +715,14 @@ export function TeamAvailability() {
 
         {/* Right: Quick Presets */}
         <div className="flex items-center space-x-2">
-          <button onClick={handleAllClinicians} className="px-3 py-1.5 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 transition-colors">
+          <button onClick={handleAllClinicians} className="px-3.5 py-2 text-xs font-bold text-gray-700 bg-gray-100 border border-gray-200 rounded-full hover:bg-gray-200 transition-colors">
             All Clinicians
           </button>
-          <button onClick={handleAllNurses} className="px-3 py-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded hover:bg-emerald-100 transition-colors">
+          <button onClick={handleAllNurses} className="px-3.5 py-2 text-xs font-bold text-gray-700 bg-gray-100 border border-gray-200 rounded-full hover:bg-gray-200 transition-colors">
             All Nurses
           </button>
-          <div className="w-px h-4 bg-gray-300 mx-1"></div>
-          <button onClick={handleClear} className="px-3 py-1.5 text-xs font-bold text-gray-500 hover:text-gray-800 transition-colors">
+          <div className="w-px h-5 bg-gray-200 mx-1"></div>
+          <button onClick={handleClear} className="px-3.5 py-2 text-xs font-bold text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors">
             Clear
           </button>
         </div>
@@ -467,31 +732,24 @@ export function TeamAvailability() {
       <div className="flex-1 flex flex-col min-h-0 bg-white relative">
         
         {selectedIds.length === 0 ? (
-          // Empty State
-          <div className="flex-1 flex flex-col items-center justify-center">
-            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
-              <Users className="w-10 h-10 text-gray-300" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Select staff to view availability</h2>
-            <p className="text-gray-500 mb-8 max-w-md text-center">Add up to 6 team members using the picker above to compare their weekly schedules.</p>
-            <div className="flex space-x-4">
-              <button onClick={handleAllClinicians} className="px-6 py-3 bg-white border border-gray-300 shadow-sm rounded-lg text-sm font-bold text-blue-700 hover:border-blue-300 hover:bg-blue-50 transition-colors">
-                All Clinicians
-              </button>
-              <button onClick={handleAllNurses} className="px-6 py-3 bg-white border border-gray-300 shadow-sm rounded-lg text-sm font-bold text-emerald-700 hover:border-emerald-300 hover:bg-emerald-50 transition-colors">
-                All Nurses
-              </button>
-            </div>
+          // Everyone starts selected on page load (see ALL_STAFF_IDS above),
+          // so this only shows if the team is manually cleared — a plain,
+          // low-key fallback rather than a full landing state to click
+          // through, consistent with other empty lists in this app.
+          <div className="flex-1 flex items-center justify-center">
+            <span className="text-sm text-gray-400">No staff selected. Use the picker above to add team members.</span>
           </div>
         ) : (
           // Grid View
           <div className="flex-1 flex flex-col">
             {/* Header Row */}
-            <div className="flex border-b border-gray-200 bg-white shrink-0">
-              <div className="w-[200px] shrink-0 border-r border-gray-200"></div>
+            <div className="flex border-b border-gray-200 bg-gray-50/60 shrink-0">
+              <div className="w-[220px] shrink-0 border-r border-gray-200 flex items-center px-4">
+                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Staff</span>
+              </div>
               {WEEK_DAYS.map((day, i) => (
-                <div key={day.label} className={`flex-1 py-3 text-center text-xs font-bold text-gray-500 uppercase tracking-wider border-r border-gray-100 last:border-r-0 ${i === TODAY_INDEX ? 'bg-slate-100/50' : ''}`}>
-                  {day.label}
+                <div key={day.label} className={`flex-1 py-3 text-center border-r border-gray-100 last:border-r-0 ${i === TODAY_INDEX ? 'bg-slate-100/70' : ''}`}>
+                  <div className={`text-xs font-extrabold uppercase tracking-wider ${i === TODAY_INDEX ? 'text-slate-800' : 'text-gray-500'}`}>{day.label}</div>
                 </div>
               ))}
             </div>
@@ -504,22 +762,24 @@ export function TeamAvailability() {
 
                 return (
                   <div key={staff.id} className={`flex w-full group ${rowBorderClass} last:border-b-0 ${rowHeightClass}`}>
-                    {/* Left Info Col */}
-                    <div className="w-[200px] shrink-0 border-r border-gray-200 flex items-center px-4 relative bg-white">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 mr-3 ring-2 ring-offset-1 ${staff.role === 'Clinician' ? 'bg-blue-500 ring-blue-200' : 'bg-emerald-500 ring-emerald-200'}`}>
+                    {/* Left Info Col — full name, no truncation. The remove-X is
+                        absolutely positioned so it never steals width from the
+                        name (which would force long names onto a second line). */}
+                    <div className="w-[220px] shrink-0 border-r border-gray-200 flex items-center gap-3 px-4 relative bg-white">
+                      <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 ${staff.role === 'Clinician' ? 'bg-blue-500' : 'bg-emerald-500'}`}>
                         {staff.avatar}
                       </div>
-                      <div className="min-w-0 flex-1 flex flex-col justify-center">
-                        <div className="text-sm font-bold text-gray-800 mb-1 truncate" title={staff.name}>
-                          {staff.name.length > 14 ? staff.name.substring(0, 14) + '...' : staff.name}
-                        </div>
-                        <div className="flex items-center">
-                          <span className={`px-2 py-0.5 text-[10px] font-bold rounded ${staff.role === 'Clinician' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`}>
-                            {staff.role}
-                          </span>
-                        </div>
-                      </div>
-                      <button onClick={() => toggleStaff(staff.id)} className="p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded ml-1 transition-colors opacity-0 group-hover:opacity-100">
+                      <button
+                        onClick={() => setDetailStaff(staff)}
+                        title={`View ${staff.name}'s availability`}
+                        className="min-w-0 flex-1 text-left pr-2 group/name"
+                      >
+                        <div className="text-sm font-bold text-gray-800 leading-tight group-hover/name:underline">{staff.name}</div>
+                        <span className="inline-block mt-1 px-2 py-0.5 text-[10px] font-bold rounded-full bg-gray-100 text-gray-500 border border-gray-200">
+                          {staff.role}
+                        </span>
+                      </button>
+                      <button onClick={() => toggleStaff(staff.id)} className="absolute top-1/2 -translate-y-1/2 right-2 p-1.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors opacity-0 group-hover:opacity-100">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
@@ -527,112 +787,44 @@ export function TeamAvailability() {
                     {/* Day Cells */}
                     {staff.schedules.map((day, i) => {
                       const isToday = i === TODAY_INDEX;
-                      let cellBg = isToday ? 'bg-slate-50/50' : 'bg-white';
-                      let cellContent = null;
+                      const totalHrs = day.totalHours || 8;
+                      const bookedHrs = day.bookedHours || 0;
+                      const freeHrs = Math.round((totalHrs - bookedHrs) * 10) / 10;
+                      const pct = totalHrs > 0 ? bookedHrs / totalHrs : 0;
+                      const isFullyBooked = !!day.blocks && pct >= 1;
 
+                      let cellContent: React.ReactNode = null;
                       if (day.off) {
-                        cellBg = 'bg-[#F3F4F6]';
-                        cellContent = <div className="text-sm font-bold text-gray-400 flex items-center justify-center h-full">Day Off</div>;
+                        cellContent = <StatusBlock tone="gray" label="Day Off" medium />;
                       } else if (day.onLeave) {
-                        cellContent = (
-                          <div className="flex flex-col h-full w-full relative">
-                            {/* Dummy spacer for summary bar height to keep blocks aligned */}
-                            <div className="h-[4px] w-full mb-[6px] mt-0.5"></div>
-                            <div className={`w-full ${blockHeightClass} rounded-lg border border-red-200 px-2 flex ${isCompact ? 'flex-row items-center space-x-1.5' : 'flex-col justify-center'} bg-red-50 text-red-700 shrink-0`}>
-                              <div className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider opacity-80 leading-none">
-                                <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" /> ON LEAVE
-                              </div>
-                              {!isCompact && <div className="h-1" />}
-                              <div className={`font-medium leading-none ${isCompact ? 'text-[11px]' : 'text-xs'}`}>All Day</div>
-                            </div>
-                          </div>
-                        );
+                        cellContent = <StatusBlock tone="red" label="ON LEAVE" sub="All Day" />;
+                      } else if (isFullyBooked) {
+                        cellContent = <StatusBlock tone="orange" label="Fully Booked" />;
                       } else if (day.blocks) {
-                        
-                        const totalHrs = day.totalHours || 8;
-                        const bookedHrs = day.bookedHours || 0;
-                        const freeHrs = totalHrs - bookedHrs;
-                        const pct = totalHrs > 0 ? (bookedHrs / totalHrs) : 0;
-                        const isFullyBooked = pct >= 1;
-
-                        let barColorHex = '#10B981'; // Green < 30%
-                        if (isFullyBooked) {
-                          cellBg = 'bg-orange-50';
-                          barColorHex = '#EF4444'; // Red 100%
-                        } else if (pct > 0.7) {
-                          barColorHex = '#EF4444'; // Red > 70%
-                        } else if (pct >= 0.3) {
-                          barColorHex = '#F59E0B'; // Orange 30-70%
-                        }
-
+                        const freeColor = pct > 0.7 ? "text-red-600" : pct >= 0.3 ? "text-amber-600" : "text-emerald-600";
                         cellContent = (
-                          <div className="flex flex-col h-full w-full relative">
-                            
-                            {/* Override Indicator */}
-                            {day.override && (
-                              <div className="absolute -top-1 -left-2 flex items-center group/tooltip z-10 cursor-help">
-                                <span className="text-[14px] text-[#1E3A8A] leading-none">◆</span>
-                                <div className="absolute left-3 top-0 whitespace-nowrap bg-gray-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover/tooltip:opacity-100 pointer-events-none transition-opacity">
-                                  Date override active
-                                </div>
-                              </div>
-                            )}
-                            
-                            {/* Summary Bar */}
-                            <div className="flex items-center w-full mb-[6px] mt-0.5">
-                              <div className="flex-1 h-[4px] bg-[#E5E7EB] rounded-[2px] overflow-hidden ml-[2px]">
-                                <div className="h-full" style={{ width: `${pct * 100}%`, backgroundColor: barColorHex }} />
-                              </div>
-                              <span className="text-[10px] font-bold ml-1.5 shrink-0" style={{ color: barColorHex }}>{freeHrs}h free</span>
+                          <div className="h-full flex flex-col justify-center gap-2">
+                            <div className="flex items-center justify-between px-0.5">
+                              <span className={`text-[11px] font-bold ${freeColor}`}>{freeHrs}h free</span>
+                              {day.override && (
+                                <span className="text-[9px] font-bold text-slate-500 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5">OVERRIDE</span>
+                              )}
                             </div>
-
-                            {/* Blocks or Fully Booked state */}
-                            {isFullyBooked ? (
-                              <div className="flex-1 flex items-center justify-center text-sm font-bold text-orange-600">
-                                Fully Booked
+                            {availabilityWindows(day.blocks).map((w, wi) => (
+                              <div key={wi} className="rounded-lg bg-slate-50 border border-slate-200 px-2.5 py-2 text-center">
+                                <span className="text-xs font-bold text-slate-700 tabular-nums">{w.start} – {w.end}</span>
                               </div>
-                            ) : (
-                              <div className={`flex-1 flex flex-col overflow-hidden gap-[${isCompact ? '2px' : '4px'}]`}>
-                                {day.blocks.map((block, bIdx) => {
-                                  const isClinic = block.type === 'Clinic';
-                                  const isBlue = staff.role === 'Clinician' && isClinic;
-                                  const isPurple = staff.role === 'Clinician' && !isClinic;
-                                  const isGreen = staff.role === 'Nurse';
-
-                                  let bg = '';
-                                  let border = '';
-                                  let text = '';
-                                  let dot = '';
-                                  let labelText = block.type.toUpperCase();
-
-                                  if (isBlue) { bg = 'bg-blue-50'; border = 'border-blue-200'; text = 'text-blue-800'; dot = 'bg-blue-500'; }
-                                  if (isPurple) { bg = 'bg-purple-50'; border = 'border-purple-200'; text = 'text-purple-800'; dot = 'bg-purple-500'; }
-                                  if (isGreen) { bg = 'bg-emerald-50'; border = 'border-emerald-200'; text = 'text-emerald-800'; dot = 'bg-emerald-500'; }
-
-                                  return (
-                                    <div
-                                      key={bIdx}
-                                      className={`w-full ${blockHeightClass} rounded-lg border px-2 flex ${isCompact ? 'flex-row items-center space-x-1.5' : 'flex-col justify-center'} ${bg} ${border} ${text} shrink-0`}
-                                    >
-                                      <div className="flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider opacity-80 leading-none">
-                                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${dot}`} /> {labelText}
-                                      </div>
-                                      {!isCompact && <div className="h-1" />}
-                                      <div className={`font-medium leading-none ${isCompact ? 'text-[11px]' : 'text-xs'}`}>{block.start} – {block.end}</div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            )}
+                            ))}
                           </div>
                         );
                       }
 
+                      const interactive = !day.off && !day.onLeave;
                       return (
-                        <div 
-                          key={i} 
+                        <div
+                          key={i}
                           onClick={(e) => handleCellClick(e, staff, day, WEEK_DAYS[i].full)}
-                          className={`flex-1 border-r border-gray-100 last:border-r-0 ${cellBg} ${!day.off && !day.onLeave ? 'cursor-pointer hover:bg-slate-100/50 transition-colors' : ''} p-2 relative`}
+                          className={`flex-1 border-r border-gray-100 last:border-r-0 p-2 ${isToday ? "bg-slate-50/40" : ""} ${interactive ? "cursor-pointer hover:bg-slate-100/40 transition-colors" : ""}`}
                         >
                           {cellContent}
                         </div>
@@ -658,7 +850,7 @@ export function TeamAvailability() {
           }}
           onClick={e => e.stopPropagation()}
         >
-          {/* Layer 1: Header & Staff info */}
+          {/* Header & Staff info */}
           <div className="p-4 border-b border-gray-100 bg-gray-50 rounded-t-lg">
             <div className="font-bold text-sm text-gray-800 mb-1">{popover.staff.name} · {popover.dateStr}</div>
             <span className={`px-2 py-0.5 text-[10px] font-bold rounded ${popover.staff.role === 'Clinician' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`}>
@@ -666,53 +858,14 @@ export function TeamAvailability() {
             </span>
           </div>
 
-          <div className="max-h-80 overflow-y-auto">
-            {/* Scheduled Availability Layer */}
-            <div className="p-4 border-b border-gray-100">
-              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Scheduled Availability</h4>
-              <div className="space-y-2">
-                {popover.day.blocks?.map((b, idx) => (
-                  <div key={idx} className="flex items-center text-sm font-medium text-gray-700">
-                    <div className={`w-2 h-2 rounded-full mr-2 ${b.type === 'Video' ? 'bg-purple-500' : 'bg-blue-500'}`} />
-                    {b.type}: {b.start} – {b.end}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Booked Appointments Layer */}
-            <div className="p-4 border-b border-gray-100">
-              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Booked Appointments</h4>
-              <div className="space-y-2">
-                {(!popover.day.appointments || popover.day.appointments.length === 0) ? (
-                  <div className="text-sm text-gray-500 italic">No appointments booked</div>
-                ) : (
-                  popover.day.appointments.map((appt, idx) => {
-                    // Patient Privacy Masking
-                    const isOwnPatient = popover.staff.name.includes("Claudia"); // Mock logic
-                    const showNames = currentUserRole === 'Admin' || currentUserRole === 'Reception' || (currentUserRole === 'Clinician' && isOwnPatient);
-                    const patientDisplay = showNames ? appt.patient : 'Patient';
-
-                    return (
-                      <div key={idx} className="flex items-center text-sm text-gray-700">
-                        <div className="w-2 h-2 rounded-full bg-gray-500 mr-2 shrink-0" />
-                        <span className="font-medium mr-2">{appt.start} – {appt.end}</span>
-                        <span className="text-gray-500 truncate">· {patientDisplay}</span>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
+          <div className="max-h-80 overflow-y-auto rounded-b-lg">
+            <DayDetailBody staff={popover.staff} day={popover.day} currentUserRole={currentUserRole} />
           </div>
-
-          {/* Block 3: Summary */}
-          {popover.day.summary && (
-            <div className="p-4 bg-gray-50 rounded-b-lg text-xs space-y-1">
-              <div className="font-medium text-gray-700">{popover.day.summary}</div>
-            </div>
-          )}
         </div>
+      )}
+
+      {detailStaff && (
+        <StaffDetailModal staff={detailStaff} onClose={() => setDetailStaff(null)} currentUserRole={currentUserRole} />
       )}
 
     </div>

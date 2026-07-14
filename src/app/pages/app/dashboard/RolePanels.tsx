@@ -11,11 +11,11 @@ export function AdminPanels() {
   // Sorted most-overdue-first — Admin scanning this section only cares
   // which one has been sitting the longest, not the ones still on track.
   const results = [
-    { patient: "Oliver Folate", test: "Comprehensive Blood", days: 2, doctor: "Dr. Claudia Reis" },
-    { patient: "Arysse Arcerola", test: "Genetic Panel", days: 5, doctor: "Dr. Felix Andersen" },
-    { patient: "Gustavo Propolis", test: "Hormone Screen", days: 1, doctor: "Dr. Chad Okonkwo" },
-    { patient: "Cynthia Riboflavin", test: "Lipid Panel", days: 3, doctor: "Dr. Claudia Reis" },
-    { patient: "Dylan Daniel", test: "Metabolic Panel", days: 2, doctor: "Dr. Felix Andersen" },
+    { patient: "Cem Polat", test: "Comprehensive Blood", days: 2, doctor: "Dr. Ebru Reis" },
+    { patient: "Gül Korkmaz", test: "Genetic Panel", days: 5, doctor: "Dr. Kaan Öztürk" },
+    { patient: "Hakan Bulut", test: "Hormone Screen", days: 1, doctor: "Dr. Emre Yalçın" },
+    { patient: "Yasemin Kaplan", test: "Lipid Panel", days: 3, doctor: "Dr. Ebru Reis" },
+    { patient: "Burak Kocaman", test: "Metabolic Panel", days: 2, doctor: "Dr. Kaan Öztürk" },
   ].sort((a, b) => b.days - a.days);
 
   // Wait reasons reflect the nurse's own patient-journey stations (mirrors
@@ -24,10 +24,10 @@ export function AdminPanels() {
   // time, not the check-in gate. Sorted longest-wait-first so Admin can spot
   // "is anything backed up" without reading every row.
   const waiting = [
-    { patient: "Penny Pelargonium", checkIn: "08:40", wait: 34, step: "Waiting for Body Scan", nurse: "Berna Koç" },
-    { patient: "Riley Guarana", checkIn: "08:52", wait: 22, step: "Waiting for Machine 1", nurse: "Aylin Demir" },
-    { patient: "Oliver Folate", checkIn: "08:56", wait: 18, step: "Waiting for Sample Collection", nurse: "Aylin Demir" },
-    { patient: "Bob Bromelain", checkIn: "09:08", wait: 6, step: "Waiting for Consultation", nurse: "Aylin Demir" },
+    { patient: "Aslı Kutlu", checkIn: "08:40", wait: 34, step: "Waiting for Body Scan", nurse: "Berna Koç" },
+    { patient: "Tarkan Solmaz", checkIn: "08:52", wait: 22, step: "Waiting for Machine 1", nurse: "Aylin Demir" },
+    { patient: "Cem Polat", checkIn: "08:56", wait: 18, step: "Waiting for Sample Collection", nurse: "Aylin Demir" },
+    { patient: "Serkan Çetin", checkIn: "09:08", wait: 6, step: "Waiting for Consultation", nurse: "Aylin Demir" },
   ].sort((a, b) => b.wait - a.wait);
 
   const waitColor = (m: number) => (m > 30 ? "text-red-600" : m > 15 ? "text-orange-600" : "text-gray-800");

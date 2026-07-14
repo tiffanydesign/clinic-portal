@@ -30,10 +30,10 @@ export const CURRENT_ADMIN_ID = "EMP-001";
 
 export const MOCK_STAFF: Staff[] = [
   // Clinicians
-  { id: "EMP-003", name: "Dr. Claudia Reis", avatar: "CR", role: "Clinician", email: "claudia@phenome.com", phone: "+90 532 555 0103", status: "Active", today: "On Duty", patients: 24, workload: 82, nextShift: "Today, 8:30", lastActive: "2h ago", lastActiveDays: 0, joined: "15 Mar 2025", specialisation: "Preventive Medicine & Genomics", licenseNumber: "TC-2026-44821" },
-  { id: "EMP-004", name: "Dr. Chad Okonkwo", avatar: "CO", role: "Clinician", email: "chad@phenome.com", phone: "+90 532 555 0104", status: "Active", today: "On Duty", patients: 18, workload: 65, nextShift: "Today, 9:00", lastActive: "1h ago", lastActiveDays: 0, joined: "02 Apr 2025", specialisation: "Longevity Medicine", licenseNumber: "TC-2026-45102" },
-  { id: "EMP-005", name: "Dr. Felix Andersen", avatar: "FA", role: "Clinician", email: "felix@phenome.com", phone: "+90 532 555 0105", status: "Active", today: "On Duty", patients: 21, workload: 78, nextShift: "Today, 10:00", lastActive: "30min ago", lastActiveDays: 0, joined: "20 Apr 2025", specialisation: "Sports & Metabolic Health", licenseNumber: "TC-2026-45333" },
-  { id: "EMP-006", name: "Dr. Adobe Martinez", avatar: "AM", role: "Clinician", email: "adobe@phenome.com", phone: "+90 532 555 0106", status: "On Leave", leaveRange: "1 – 5 Jul 2026", today: "Off", patients: 15, workload: 58, nextShift: "Mon, 9:00", lastActive: "2 days ago", lastActiveDays: 2, joined: "11 May 2025", specialisation: "Cardiometabolic Health", licenseNumber: "TC-2026-45890" },
+  { id: "EMP-003", name: "Dr. Ebru Reis", avatar: "ER", role: "Clinician", email: "ebru@phenome.com", phone: "+90 532 555 0103", status: "Active", today: "On Duty", patients: 24, workload: 82, nextShift: "Today, 8:30", lastActive: "2h ago", lastActiveDays: 0, joined: "15 Mar 2025", specialisation: "Preventive Medicine & Genomics", licenseNumber: "TC-2026-44821" },
+  { id: "EMP-004", name: "Dr. Emre Yalçın", avatar: "EY", role: "Clinician", email: "emre@phenome.com", phone: "+90 532 555 0104", status: "Active", today: "On Duty", patients: 18, workload: 65, nextShift: "Today, 9:00", lastActive: "1h ago", lastActiveDays: 0, joined: "02 Apr 2025", specialisation: "Longevity Medicine", licenseNumber: "TC-2026-45102" },
+  { id: "EMP-005", name: "Dr. Kaan Öztürk", avatar: "KO", role: "Clinician", email: "kaan@phenome.com", phone: "+90 532 555 0105", status: "Active", today: "On Duty", patients: 21, workload: 78, nextShift: "Today, 10:00", lastActive: "30min ago", lastActiveDays: 0, joined: "20 Apr 2025", specialisation: "Sports & Metabolic Health", licenseNumber: "TC-2026-45333" },
+  { id: "EMP-006", name: "Dr. Onur Şimşek", avatar: "OS", role: "Clinician", email: "onur@phenome.com", phone: "+90 532 555 0106", status: "On Leave", leaveRange: "1 – 5 Jul 2026", today: "Off", patients: 15, workload: 58, nextShift: "Mon, 9:00", lastActive: "2 days ago", lastActiveDays: 2, joined: "11 May 2025", specialisation: "Cardiometabolic Health", licenseNumber: "TC-2026-45890" },
   // Nurses
   { id: "EMP-007", name: "Berna Koç", avatar: "BK", role: "Nurse", email: "berna@phenome.com", phone: "+90 532 555 0107", status: "Active", today: "On Duty", patients: 14, workload: 71, nextShift: "Today, 8:00", lastActive: "45min ago", lastActiveDays: 0, joined: "01 Jun 2025" },
   { id: "EMP-008", name: "Aylin Demir", avatar: "AD", role: "Nurse", email: "aylin@phenome.com", phone: "+90 532 555 0108", status: "Active", today: "On Duty", patients: 12, workload: 63, nextShift: "Today, 8:00", lastActive: "1h ago", lastActiveDays: 0, joined: "01 Jun 2025" },
@@ -98,7 +98,7 @@ export function todayDotClass(today: TodayStatus): string {
   }
 }
 
-// --- Workload tab: patient assignment mock (Dr. Claudia Reis) ---
+// --- Workload tab: patient assignment mock (Dr. Ebru Reis) ---
 
 export type AssignedPatient = {
   name: string;
@@ -111,14 +111,14 @@ export type AssignedPatient = {
 };
 
 export const ASSIGNED_PATIENTS: AssignedPatient[] = [
-  { name: "Mackenzie Messineo", patientRoute: "/patients/P-001", since: "18 Mar 2025", lastVisit: "1 Jul", nextAppt: "3 Jul · Scan", journeyStatus: "Active", complexity: "High" },
-  { name: "Riley Guarana", patientRoute: "/patients/P-001", since: "02 Apr 2025", lastVisit: "30 Jun", nextAppt: "3 Jul · Scan", journeyStatus: "Active", complexity: "Medium" },
-  { name: "Sophia Ascorbic", patientRoute: "/patients/P-001", since: "15 Apr 2025", lastVisit: "30 Jun", nextAppt: "5 Jul · Consult", journeyStatus: "Active", complexity: "Low" },
-  { name: "Gustavo Propolis", patientRoute: "/patients/P-001", since: "20 Apr 2025", lastVisit: "2 Jul", nextAppt: "—", journeyStatus: "Completed", complexity: "Medium" },
-  { name: "Arysse Arcerola", patientRoute: "/patients/P-001", since: "05 May 2025", lastVisit: "2 Jul", nextAppt: "10 Jul · Consult", journeyStatus: "Active", complexity: "High" },
-  { name: "Oliver Folate", patientRoute: "/patients/P-001", since: "12 May 2025", lastVisit: "30 Jun", nextAppt: "—", journeyStatus: "Active", complexity: "Medium" },
-  { name: "Bob Bromelain", patientRoute: "/patients/P-001", since: "28 May 2025", lastVisit: "1 Jul", nextAppt: "8 Jul · Scan", journeyStatus: "Active", complexity: "Low" },
-  { name: "Dylan Daniel", patientRoute: "/patients/P-001", since: "10 Jun 2025", lastVisit: "1 Jul", nextAppt: "—", journeyStatus: "None", complexity: "Low" },
+  { name: "Ece Yıldırım", patientRoute: "/patients/PH-2026-0042", since: "18 Mar 2025", lastVisit: "1 Jul", nextAppt: "3 Jul · Scan", journeyStatus: "Active", complexity: "High" },
+  { name: "Tarkan Solmaz", patientRoute: "/patients/PH-2026-0051", since: "02 Apr 2025", lastVisit: "30 Jun", nextAppt: "3 Jul · Scan", journeyStatus: "Active", complexity: "Medium" },
+  { name: "Derya Toprak", patientRoute: "/patients/PH-2026-0044", since: "15 Apr 2025", lastVisit: "30 Jun", nextAppt: "5 Jul · Consult", journeyStatus: "Active", complexity: "Low" },
+  { name: "Hakan Bulut", patientRoute: "/patients/PH-2026-0063", since: "20 Apr 2025", lastVisit: "2 Jul", nextAppt: "—", journeyStatus: "Completed", complexity: "Medium" },
+  { name: "Gül Korkmaz", patientRoute: "/patients/PH-2026-0015", since: "05 May 2025", lastVisit: "2 Jul", nextAppt: "10 Jul · Consult", journeyStatus: "Active", complexity: "High" },
+  { name: "Cem Polat", patientRoute: "/patients/PH-2026-0088", since: "12 May 2025", lastVisit: "30 Jun", nextAppt: "—", journeyStatus: "Active", complexity: "Medium" },
+  { name: "Serkan Çetin", patientRoute: "/patients/PH-2026-0029", since: "28 May 2025", lastVisit: "1 Jul", nextAppt: "8 Jul · Scan", journeyStatus: "Active", complexity: "Low" },
+  { name: "Burak Kocaman", patientRoute: "/patients/PH-2026-0071", since: "10 Jun 2025", lastVisit: "1 Jul", nextAppt: "—", journeyStatus: "None", complexity: "Low" },
 ];
 
 export const APPOINTMENT_DISTRIBUTION = [
@@ -142,4 +142,4 @@ export const WEEKLY_TREND = [
 
 export const CAPACITY_THRESHOLD = 12;
 
-export const OTHER_CLINICIANS = ["Dr. Chad Okonkwo", "Dr. Felix Andersen", "Dr. Adobe Martinez"];
+export const OTHER_CLINICIANS = ["Dr. Emre Yalçın", "Dr. Kaan Öztürk", "Dr. Onur Şimşek"];

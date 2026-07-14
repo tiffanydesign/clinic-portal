@@ -42,18 +42,22 @@ function StatusBadge({ status, lastSeen }: { status: TerminalStatus; lastSeen: s
 function AddTerminalModal({ onClose, onCreate }: { onClose: () => void; onCreate: (input: NewTerminalInput) => void }) {
   const [label, setLabel] = useState("");
   const [model, setModel] = useState(TERMINAL_MODELS[0]);
-  const [serialNumber, setSerialNumber] = useState("");
+  const [shortCode, setShortCode] = useState("");
   const [assignedTo, setAssignedTo] = useState("");
 
   const inputCls = "w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-slate-500";
   const labelCls = "block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2";
 
   const handleSubmit = () => {
-    if (!label.trim() || !serialNumber.trim() || !assignedTo.trim()) {
+    if (!label.trim() || !assignedTo.trim()) {
       toast.error("Please fill in all required fields.");
       return;
     }
-    onCreate({ label: label.trim(), model, serialNumber: serialNumber.trim(), assignedTo: assignedTo.trim() });
+    if (!/^\d{4}$/.test(shortCode)) {
+      toast.error("Short code must be exactly 4 digits.");
+      return;
+    }
+    onCreate({ label: label.trim(), model, shortCode, assignedTo: assignedTo.trim() });
   };
 
   return (
@@ -77,8 +81,16 @@ function AddTerminalModal({ onClose, onCreate }: { onClose: () => void; onCreate
             </select>
           </div>
           <div>
-            <label className={labelCls}>Serial Number <span className="text-red-500">*</span></label>
-            <input type="text" value={serialNumber} onChange={(e) => setSerialNumber(e.target.value)} placeholder="e.g. WPE-4471-AB" className={inputCls} />
+            <label className={labelCls}>Short Code <span className="text-red-500">*</span></label>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={shortCode}
+              onChange={(e) => setShortCode(e.target.value.replace(/\D/g, "").slice(0, 4))}
+              placeholder="e.g. 4471"
+              maxLength={4}
+              className={`${inputCls} font-mono tracking-widest`}
+            />
           </div>
           <div>
             <label className={labelCls}>Assigned To <span className="text-red-500">*</span></label>
@@ -128,8 +140,8 @@ function EditTerminalModal({ terminal, onClose, onSave }: { terminal: Terminal; 
             <input type="text" value={label} onChange={(e) => setLabel(e.target.value)} className={inputCls} />
           </div>
           <div>
-            <label className={labelCls}>Serial Number</label>
-            <input type="text" value={terminal.serialNumber} disabled className={`${inputCls} bg-gray-50 text-gray-400 cursor-not-allowed`} />
+            <label className={labelCls}>Short Code</label>
+            <input type="text" value={terminal.shortCode} disabled className={`${inputCls} bg-gray-50 text-gray-400 cursor-not-allowed font-mono tracking-widest`} />
           </div>
           <div>
             <label className={labelCls}>Assigned To</label>
@@ -258,7 +270,7 @@ export function PaymentTerminalsPage() {
                 <tr>
                   <th className="px-4 py-3 font-bold text-gray-600 border-b border-gray-200">Label</th>
                   <th className="px-4 py-3 font-bold text-gray-600 border-b border-gray-200">Model</th>
-                  <th className="px-4 py-3 font-bold text-gray-600 border-b border-gray-200">Serial Number</th>
+                  <th className="px-4 py-3 font-bold text-gray-600 border-b border-gray-200">Short Code</th>
                   <th className="px-4 py-3 font-bold text-gray-600 border-b border-gray-200">Assigned To</th>
                   <th className="px-4 py-3 font-bold text-gray-600 border-b border-gray-200">Status</th>
                   <th className="px-4 py-3 font-bold text-gray-600 border-b border-gray-200">Last Seen</th>
@@ -270,7 +282,7 @@ export function PaymentTerminalsPage() {
                   <tr key={t.id} className="hover:bg-gray-50/60 transition-colors">
                     <td className="px-4 py-3 font-bold text-gray-800">{t.label}</td>
                     <td className="px-4 py-3 text-gray-600">{t.model}</td>
-                    <td className="px-4 py-3 text-gray-500 font-mono text-xs">{t.serialNumber}</td>
+                    <td className="px-4 py-3 text-gray-500 font-mono text-xs tracking-widest">{t.shortCode}</td>
                     <td className="px-4 py-3 text-gray-600">{t.assignedTo}</td>
                     <td className="px-4 py-3"><StatusBadge status={t.status} lastSeen={t.lastSeen} /></td>
                     <td className="px-4 py-3 text-gray-500">{t.lastSeen}</td>

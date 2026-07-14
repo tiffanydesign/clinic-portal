@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, CalendarDays, Plus, Check, Info, SlidersHorizontal } from "lucide-react";
+import { addDays, addMonths, format, isSameDay, startOfMonth, startOfWeek, subMonths } from "date-fns";
 import type { Role } from "../../../context/AppContext";
-import { CLINICIANS, ROOMS, APPT_TYPES } from "./scheduleData";
+import { CLINICIANS, ROOMS, APPT_TYPES, ANCHOR_DATE } from "./scheduleData";
 import { FilterSelect } from "../../../components/FilterSelect";
+import { FloatingPopover } from "../../../components/glass/FloatingPopover";
 
 export type View = "day" | "week";
 export type Mode = "calendar" | "list";
@@ -88,13 +90,88 @@ function ClinicianMultiSelect({ selected, onToggle }: { selected: Set<string>; o
   );
 }
 
+// Single-month jump-to-date popover — a lighter-weight sibling of
+// RangeDatePicker (which is built for two-month range selection and doesn't
+// fit a single "pick one day" control). Highlights the demo's anchor day
+// with a dot, same visual language as RangeDatePicker's "today" marker.
+// Renders via FloatingPopover (portal + position:fixed) rather than a plain
+// absolute child — the date navigator cluster around it has overflow-hidden
+// (to keep its own rounded corners clean), which would otherwise clip the
+// dropdown to invisible, per the project's own "dropdown in overflow-hidden
+// container" pitfall.
+function DatePickerPopover({ selectedDate, onPick }: { selectedDate: Date; onPick: (d: Date) => void }) {
+  const [open, setOpen] = useState(false);
+  const [viewMonth, setViewMonth] = useState(() => startOfMonth(selectedDate));
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  const toggle = () => {
+    if (!open) setViewMonth(startOfMonth(selectedDate));
+    setOpen((o) => !o);
+  };
+
+  const gridStart = startOfWeek(startOfMonth(viewMonth), { weekStartsOn: 0 });
+  const days = Array.from({ length: 42 }, (_, i) => addDays(gridStart, i));
+
+  return (
+    <>
+      <button
+        ref={buttonRef}
+        onClick={toggle}
+        title="Jump to date"
+        className={`px-2.5 text-gray-500 hover:bg-gray-100 border-l border-gray-200 h-full flex items-center ${open ? "bg-gray-100" : ""}`}
+      >
+        <CalendarDays className="w-4 h-4" />
+      </button>
+      {open && (
+        <FloatingPopover anchorRef={buttonRef} onClose={() => setOpen(false)} align="left">
+          <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-3 w-64" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-2 px-1">
+              <button onClick={() => setViewMonth((m) => subMonths(m, 1))} className="p-1 hover:bg-gray-100 rounded text-gray-500"><ChevronLeft className="w-4 h-4" /></button>
+              <span className="text-sm font-bold text-gray-800">{format(viewMonth, "MMMM yyyy")}</span>
+              <button onClick={() => setViewMonth((m) => addMonths(m, 1))} className="p-1 hover:bg-gray-100 rounded text-gray-500"><ChevronRight className="w-4 h-4" /></button>
+            </div>
+            <div className="grid grid-cols-7 mb-1">
+              {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
+                <div key={i} className="text-center text-[10px] font-bold text-gray-400">{d}</div>
+              ))}
+            </div>
+            <div className="grid grid-cols-7 gap-y-1">
+              {days.map((day) => {
+                const inMonth = day.getMonth() === viewMonth.getMonth();
+                const isSelected = isSameDay(day, selectedDate);
+                const isAnchor = isSameDay(day, ANCHOR_DATE);
+                return (
+                  <button
+                    key={day.toISOString()}
+                    onClick={() => { onPick(day); setOpen(false); }}
+                    className={`h-8 w-8 mx-auto flex items-center justify-center rounded-full text-xs font-semibold transition-colors relative ${
+                      isSelected ? "bg-slate-700 text-white" : inMonth ? "text-gray-700 hover:bg-gray-100" : "text-gray-300 hover:bg-gray-50"
+                    }`}
+                  >
+                    {day.getDate()}
+                    {isAnchor && !isSelected && <span className="absolute bottom-0.5 w-1 h-1 bg-slate-600 rounded-full" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </FloatingPopover>
+      )}
+    </>
+  );
+}
+
 export function ScheduleToolbar({
-  role, dateLabel, view, setView, mode, setMode, grouping, setGrouping,
+  role, dateLabel, selectedDate, onPrev, onNext, onToday, onPickDate, disableCreate,
+  view, setView, mode, setMode, grouping, setGrouping,
   clinicianFilter, toggleClinician, room, setRoom, type, setType,
   overlay, setOverlay, onNew, onBlock,
 }: {
   role: Role;
   dateLabel: string;
+  selectedDate: Date;
+  onPrev: () => void; onNext: () => void; onToday: () => void; onPickDate: (d: Date) => void;
+  disableCreate?: boolean;
   view: View; setView: (v: View) => void;
   mode: Mode; setMode: (m: Mode) => void;
   grouping: Grouping; setGrouping: (g: Grouping) => void;
@@ -108,6 +185,7 @@ export function ScheduleToolbar({
   const hasListToggle = role === "Admin" || role === "Reception";
   const isList = mode === "list";
   const filtersActive = clinicianFilter.size > 0 || room !== "" || type !== "";
+  const isToday = isSameDay(selectedDate, ANCHOR_DATE);
 
   return (
     <div className="relative z-30 shrink-0 border-b border-gray-200 bg-white/95 backdrop-blur-sm shadow-[0_1px_0_rgba(0,0,0,0.04)]">
@@ -116,12 +194,20 @@ export function ScheduleToolbar({
         <div className="flex items-center gap-2">
           {/* unified date navigator — one bordered cluster instead of four loose buttons */}
           <div className="flex items-stretch bg-white border border-gray-300 rounded-lg shadow-sm overflow-hidden">
-            <button className="px-2 text-gray-500 hover:bg-gray-100 border-r border-gray-200"><ChevronLeft className="w-4 h-4" /></button>
+            <button onClick={onPrev} className="px-2 text-gray-500 hover:bg-gray-100 border-r border-gray-200"><ChevronLeft className="w-4 h-4" /></button>
             <span className="text-sm font-bold text-gray-800 min-w-[150px] flex items-center justify-center px-2 tabular-nums">{dateLabel}</span>
-            <button className="px-2 text-gray-500 hover:bg-gray-100 border-l border-gray-200"><ChevronRight className="w-4 h-4" /></button>
-            <button title="Jump to date" className="px-2.5 text-gray-500 hover:bg-gray-100 border-l border-gray-200"><CalendarDays className="w-4 h-4" /></button>
+            <button onClick={onNext} className="px-2 text-gray-500 hover:bg-gray-100 border-l border-gray-200"><ChevronRight className="w-4 h-4" /></button>
+            <DatePickerPopover selectedDate={selectedDate} onPick={onPickDate} />
           </div>
-          <button className="px-3 py-2 border border-gray-300 rounded-lg text-xs font-bold text-gray-700 bg-white hover:bg-gray-50 shadow-sm">Today</button>
+          <button
+            onClick={onToday}
+            disabled={isToday}
+            className={`px-3 py-2 border rounded-lg text-xs font-bold shadow-sm transition-colors ${
+              isToday ? "border-gray-200 text-gray-300 bg-gray-50 cursor-not-allowed" : "border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
+            }`}
+          >
+            Today
+          </button>
         </div>
 
         <div className="flex items-center gap-3">
@@ -143,10 +229,28 @@ export function ScheduleToolbar({
           )}
           <LegendPopover />
           {(role === "Admin" || role === "Reception") && (
-            <button onClick={onNew} className="px-3.5 py-2 bg-slate-700 text-white text-xs font-bold rounded-lg hover:bg-slate-800 shadow-sm flex items-center gap-1.5 transition-colors"><Plus className="w-3.5 h-3.5" /> New Appointment</button>
+            <button
+              onClick={onNew}
+              disabled={disableCreate}
+              title={disableCreate ? "Only the demo day (Fri, 3 Jul 2026) has bookable data" : undefined}
+              className={`px-3.5 py-2 text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-colors ${
+                disableCreate ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-slate-700 text-white hover:bg-slate-800"
+              }`}
+            >
+              <Plus className="w-3.5 h-3.5" /> New Appointment
+            </button>
           )}
           {role === "Clinician" && (
-            <button onClick={onBlock} className="px-3.5 py-2 bg-slate-700 text-white text-xs font-bold rounded-lg hover:bg-slate-800 shadow-sm flex items-center gap-1.5 transition-colors"><Plus className="w-3.5 h-3.5" /> Block Time</button>
+            <button
+              onClick={onBlock}
+              disabled={disableCreate}
+              title={disableCreate ? "Only the demo day (Fri, 3 Jul 2026) has bookable data" : undefined}
+              className={`px-3.5 py-2 text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-colors ${
+                disableCreate ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-slate-700 text-white hover:bg-slate-800"
+              }`}
+            >
+              <Plus className="w-3.5 h-3.5" /> Block Time
+            </button>
           )}
         </div>
       </div>

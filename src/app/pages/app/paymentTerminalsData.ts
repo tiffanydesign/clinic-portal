@@ -10,7 +10,10 @@ export type Terminal = {
   id: string;
   label: string;
   model: string;
-  serialNumber: string;
+  // A short, spoken/typed-friendly 4-digit code — reception staff match this
+  // against the number shown on the physical terminal's own screen, rather
+  // than hunting for a long manufacturer serial number.
+  shortCode: string;
   assignedTo: string;
   status: TerminalStatus;
   lastSeen: string;
@@ -27,10 +30,10 @@ export type PendingTransaction = {
 export const TERMINAL_MODELS = ["BBPOS WisePOS E", "Stripe Reader S700", "BBPOS WisePad 3"];
 
 export const INITIAL_TERMINALS: Terminal[] = [
-  { id: "t1", label: "Front Desk 1", model: "BBPOS WisePOS E", serialNumber: "WPE-2291-KX", assignedTo: "Reception 1", status: "online", lastSeen: "Just now" },
-  { id: "t2", label: "Front Desk 2", model: "Stripe Reader S700", serialNumber: "S700-7734-QW", assignedTo: "Reception 2", status: "online", lastSeen: "2 min ago" },
-  { id: "t3", label: "Front Desk 3", model: "BBPOS WisePad 3", serialNumber: "WP3-5561-ZT", assignedTo: "Reception 3", status: "needs-attention", lastSeen: "3 hours ago" },
-  { id: "t4", label: "Front Desk 4", model: "BBPOS WisePOS E", serialNumber: "WPE-3382-LM", assignedTo: "Reception 4", status: "offline", lastSeen: "5 min ago" },
+  { id: "t1", label: "Front Desk 1", model: "BBPOS WisePOS E", shortCode: "2291", assignedTo: "Reception 1", status: "online", lastSeen: "Just now" },
+  { id: "t2", label: "Front Desk 2", model: "Stripe Reader S700", shortCode: "7734", assignedTo: "Reception 2", status: "online", lastSeen: "2 min ago" },
+  { id: "t3", label: "Front Desk 3", model: "BBPOS WisePad 3", shortCode: "5561", assignedTo: "Reception 3", status: "needs-attention", lastSeen: "3 hours ago" },
+  { id: "t4", label: "Front Desk 4", model: "BBPOS WisePOS E", shortCode: "3382", assignedTo: "Reception 4", status: "offline", lastSeen: "5 min ago" },
 ];
 
 // Keyed by terminal id — only t3 has unresolved transactions in the demo, so
@@ -38,7 +41,7 @@ export const INITIAL_TERMINALS: Terminal[] = [
 export const INITIAL_PENDING_TRANSACTIONS: Record<string, PendingTransaction[]> = {
   t3: [
     { patient: "Bora Yılmaz", amount: "₺450", initiatedAt: "Today 09:12", status: "Awaiting card" },
-    { patient: "Elena Popescu", amount: "₺1,200", initiatedAt: "Yesterday 16:40", status: "Failed - retry needed" },
+    { patient: "İpek Sarıkaya", amount: "₺1,200", initiatedAt: "Yesterday 16:40", status: "Failed - retry needed" },
   ],
 };
 

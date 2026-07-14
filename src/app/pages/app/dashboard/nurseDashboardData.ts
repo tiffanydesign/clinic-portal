@@ -12,7 +12,7 @@ import type { JourneyEntries } from "./journey/journeyEngine";
 export type PatientIdentity = {
   name: string;
   tag: string; // "34 · F"
-  meta: string; // "Body Scan · 08:00 · Dr. Claudia Reis · Room 3"
+  meta: string; // "Body Scan · 08:00 · Dr. Ebru Reis · Room 3"
   route: string;
 };
 
@@ -41,9 +41,9 @@ export type CompletedItem = {
 };
 
 export const INITIAL_PATIENT: PatientIdentity = {
-  name: "Mackenzie Messineo",
+  name: "Ece Yıldırım",
   tag: "34 · F",
-  meta: "Body Scan · 08:00 · Dr. Claudia Reis · Room 3",
+  meta: "Body Scan · 08:00 · Dr. Ebru Reis · Room 3",
   route: "/patients/P-001",
 };
 
@@ -60,29 +60,34 @@ export const INITIAL_ENTRIES: JourneyEntries = {
   machine1: { enter: 538 },
 };
 
+// Every station is a real 60-120 min block and the whole day is strictly
+// sequential — a nurse's own supervised list is never room-scoped like the
+// shared multi-clinician calendar, so nothing here is ever meant to overlap
+// (unlike that grid, which legitimately lane-packs concurrent bookings
+// across different rooms/doctors).
 export const INITIAL_SCHEDULE: ScheduleItem[] = [
-  { time: "08:00", name: "Mackenzie Messineo", type: "Body Scan", doctor: "Dr. Claudia Reis", room: "Room 3", duration: "45 min", status: "in-progress" },
-  { time: "08:30", name: "Gustavo Propolis", type: "Consultation", doctor: "Dr. Chad Okonkwo", room: "Room 1", duration: "20 min", status: "upcoming" },
-  { time: "09:00", name: "Penny Pelargonium", type: "Body Scan", doctor: "Dr. Claudia Reis", room: "Room 3", duration: "45 min", status: "cancelled" },
-  { time: "09:15", name: "Cynthia Riboflavin", type: "Check-in", doctor: "Dr. Chad Okonkwo", room: "Room 2", duration: "10 min", status: "upcoming" },
-  { time: "10:00", name: "Dylan Daniel", type: "Vitals", doctor: "Dr. Claudia Reis", room: "Room 1", duration: "15 min", status: "upcoming" },
-  { time: "10:30", name: "Amara Chen", type: "Body Scan", doctor: "Dr. Claudia Reis", room: "Room 3", duration: "45 min", status: "upcoming" },
-  { time: "11:00", name: "Noah Kimura", type: "Blood Draw", doctor: "Lab 1", room: "Lab 1", duration: "10 min", status: "upcoming" },
-  { time: "14:00", name: "Gustavo Propolis", type: "Follow-up", doctor: "Dr. Chad Okonkwo", room: "Room 1", duration: "20 min", status: "upcoming" },
+  { time: "08:00", name: "Ece Yıldırım", type: "Body Scan", doctor: "Dr. Ebru Reis", room: "Room 3", duration: "90 min", status: "in-progress" },
+  { time: "09:30", name: "Hakan Bulut", type: "Consultation", doctor: "Dr. Emre Yalçın", room: "Room 1", duration: "60 min", status: "upcoming" },
+  { time: "10:30", name: "Aslı Kutlu", type: "Body Scan", doctor: "Dr. Ebru Reis", room: "Room 3", duration: "90 min", status: "cancelled" },
+  { time: "12:00", name: "Yasemin Kaplan", type: "Check-in", doctor: "Dr. Emre Yalçın", room: "Room 2", duration: "60 min", status: "upcoming" },
+  { time: "13:00", name: "Burak Kocaman", type: "Vitals", doctor: "Dr. Ebru Reis", room: "Room 1", duration: "90 min", status: "upcoming" },
+  { time: "14:30", name: "Defne Korkut", type: "Body Scan", doctor: "Dr. Ebru Reis", room: "Room 3", duration: "90 min", status: "upcoming" },
+  { time: "16:00", name: "Ozan Bilgin", type: "Blood Draw", doctor: "Lab 1", room: "Lab 1", duration: "90 min", status: "upcoming" },
+  { time: "17:30", name: "Hakan Bulut", type: "Follow-up", doctor: "Dr. Emre Yalçın", room: "Room 1", duration: "60 min", status: "upcoming" },
 ];
 
 export const INITIAL_UP_NEXT: QueueItem[] = [
-  { name: "Gustavo Propolis", time: "08:30", type: "Consultation" },
-  { name: "Cynthia Riboflavin", time: "09:15", type: "Check-in" },
-  { name: "Dylan Daniel", time: "10:00", type: "Vitals" },
-  { name: "Amara Chen", time: "10:30", type: "Body Scan" },
-  { name: "Noah Kimura", time: "11:00", type: "Blood Draw" },
+  { name: "Hakan Bulut", time: "09:30", type: "Consultation" },
+  { name: "Yasemin Kaplan", time: "12:00", type: "Check-in" },
+  { name: "Burak Kocaman", time: "13:00", type: "Vitals" },
+  { name: "Defne Korkut", time: "14:30", type: "Body Scan" },
+  { name: "Ozan Bilgin", time: "16:00", type: "Blood Draw" },
 ];
 
 export const INITIAL_COMPLETED_TODAY: CompletedItem[] = [
-  { name: "Sophia Lindqvist", type: "Consultation", time: "07:40" },
-  { name: "Marco Duarte", type: "Body Scan", time: "07:55" },
-  { name: "Elena Popescu", type: "Check-in", time: "08:10" },
+  { name: "Ceyda Aksu", type: "Consultation", time: "07:40" },
+  { name: "Emir Tekin", type: "Body Scan", time: "07:55" },
+  { name: "İpek Sarıkaya", type: "Check-in", time: "08:10" },
 ];
 
 // Starting the next patient from the queue: consent & payment are already
@@ -127,13 +132,15 @@ export type NurseDemoScenario = {
 };
 
 // Before the first patient has checked in: no one's arrived yet, so the
-// queue is empty and every appointment is still just "upcoming".
+// queue is empty and every appointment is still just "upcoming". Same
+// non-overlapping 60-120 min blocks as INITIAL_SCHEDULE, minus the
+// cancelled Aslı Kutlu slot and the second (Follow-up) Hakan Bulut visit.
 const DAY_START_SCHEDULE: ScheduleItem[] = [
-  { time: "08:00", name: "Mackenzie Messineo", type: "Body Scan", doctor: "Dr. Claudia Reis", room: "Room 3", duration: "45 min", status: "upcoming" },
-  { time: "08:30", name: "Gustavo Propolis", type: "Consultation", doctor: "Dr. Chad Okonkwo", room: "Room 1", duration: "20 min", status: "upcoming" },
-  { time: "09:15", name: "Cynthia Riboflavin", type: "Check-in", doctor: "Dr. Chad Okonkwo", room: "Room 2", duration: "10 min", status: "upcoming" },
-  { time: "10:00", name: "Dylan Daniel", type: "Vitals", doctor: "Dr. Claudia Reis", room: "Room 1", duration: "15 min", status: "upcoming" },
-  { time: "10:30", name: "Amara Chen", type: "Body Scan", doctor: "Dr. Claudia Reis", room: "Room 3", duration: "45 min", status: "upcoming" },
+  { time: "08:00", name: "Ece Yıldırım", type: "Body Scan", doctor: "Dr. Ebru Reis", room: "Room 3", duration: "90 min", status: "upcoming" },
+  { time: "09:30", name: "Hakan Bulut", type: "Consultation", doctor: "Dr. Emre Yalçın", room: "Room 1", duration: "60 min", status: "upcoming" },
+  { time: "12:00", name: "Yasemin Kaplan", type: "Check-in", doctor: "Dr. Emre Yalçın", room: "Room 2", duration: "60 min", status: "upcoming" },
+  { time: "13:00", name: "Burak Kocaman", type: "Vitals", doctor: "Dr. Ebru Reis", room: "Room 1", duration: "90 min", status: "upcoming" },
+  { time: "14:30", name: "Defne Korkut", type: "Body Scan", doctor: "Dr. Ebru Reis", room: "Room 3", duration: "90 min", status: "upcoming" },
 ];
 
 // End of shift: everyone assigned today has been checked out, so no
@@ -142,11 +149,11 @@ const DAY_WRAP_SCHEDULE: ScheduleItem[] = INITIAL_SCHEDULE.map((item) =>
   item.status === "in-progress" ? { ...item, status: "upcoming" as ScheduleStatus } : item
 );
 const DAY_WRAP_COMPLETED: CompletedItem[] = [
-  { name: "Sophia Lindqvist", type: "Consultation", time: "07:40" },
-  { name: "Marco Duarte", type: "Body Scan", time: "07:55" },
-  { name: "Elena Popescu", type: "Check-in", time: "08:10" },
-  { name: "Mackenzie Messineo", type: "Body Scan", time: "09:20" },
-  { name: "Gustavo Propolis", type: "Consultation", time: "10:05" },
+  { name: "Ceyda Aksu", type: "Consultation", time: "07:40" },
+  { name: "Emir Tekin", type: "Body Scan", time: "07:55" },
+  { name: "İpek Sarıkaya", type: "Check-in", time: "08:10" },
+  { name: "Ece Yıldırım", type: "Body Scan", time: "09:20" },
+  { name: "Hakan Bulut", type: "Consultation", time: "10:05" },
 ];
 
 export const NURSE_DEMO_SCENARIOS: Record<DemoMoment, NurseDemoScenario> = {

@@ -1,8 +1,27 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router";
-import { Bell, Search, Map, HelpCircle, X, ChevronRight, ChevronDown } from "lucide-react";
+import {
+  Bell, Map, HelpCircle, ChevronRight, ChevronDown,
+  LayoutDashboard, Calendar, Users, UserCog, Settings, CreditCard,
+  MessageSquare, Clock, ClipboardList, User, LogOut, PanelLeftClose, PanelLeftOpen,
+} from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 import { SubmitFeedbackModal } from "./SubmitFeedbackModal";
+import { GlobalSearch } from "./GlobalSearch";
+
+const NAV_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
+  "/dashboard": LayoutDashboard,
+  "/calendar": Calendar,
+  "/patients": Users,
+  "/staff": UserCog,
+  "/clinic-settings": Settings,
+  "/billing": CreditCard,
+  "/feedback": MessageSquare,
+  "/timesheet": Clock,
+  "/notifications": Bell,
+  "/approval": ClipboardList,
+  "/profile": User,
+};
 
 const NAV_ITEMS = {
   Admin: [
@@ -64,6 +83,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const currentNav = NAV_ITEMS[role];
   
   const [calendarExpanded, setCalendarExpanded] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     if (location.pathname.startsWith('/calendar')) {
@@ -83,29 +103,43 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen w-screen min-w-[1024px] bg-white text-gray-800 font-sans overflow-hidden">
-      <div className="w-64 bg-white border-r border-gray-300 flex flex-col shrink-0">
-        <div className="h-16 flex items-center px-6 border-b border-gray-300 font-bold text-lg text-gray-800 tracking-tight">
-          Phenome Portal
+      <div className={`${sidebarCollapsed ? "w-16" : "w-64"} bg-white border-r border-gray-300 flex flex-col shrink-0 transition-[width] duration-200`}>
+        <div className={`h-16 flex items-center border-b border-gray-300 shrink-0 ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-6"}`}>
+          {!sidebarCollapsed && <span className="font-bold text-lg text-gray-800 tracking-tight truncate">Phenome Portal</span>}
+          <button
+            onClick={() => setSidebarCollapsed((v) => !v)}
+            title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors shrink-0"
+          >
+            {sidebarCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
+          </button>
         </div>
         <div className="flex-1 overflow-y-auto py-4">
           {currentNav.map(item => {
             const isActive = location.pathname.startsWith(item.path);
-            
+            const Icon = NAV_ICON[item.path] ?? LayoutDashboard;
+
             if (item.children) {
-              const isExpanded = calendarExpanded;
+              const isExpanded = calendarExpanded && !sidebarCollapsed;
               return (
                 <div key={item.label} className="flex flex-col">
-                  <div 
+                  <div
                     onClick={() => {
+                      if (sidebarCollapsed) { navigate(item.children[0].path); return; }
                       if (!isExpanded) {
                         navigate(item.children[0].path);
                       }
                       setCalendarExpanded(!isExpanded);
                     }}
-                    className={`flex items-center justify-between px-6 py-3 text-sm font-medium cursor-pointer transition-colors ${isActive ? 'bg-slate-50 text-slate-800' : 'text-gray-600 hover:bg-gray-50'}`}
+                    title={sidebarCollapsed ? item.label : undefined}
+                    className={`flex items-center ${sidebarCollapsed ? "justify-center px-0 py-3" : "justify-between px-6 py-3"} text-sm font-medium cursor-pointer transition-colors ${isActive ? 'bg-slate-50 text-slate-800' : 'text-gray-600 hover:bg-gray-50'}`}
                   >
-                    <span>{item.label}</span>
-                    {isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400" /> : <ChevronRight className="w-4 h-4 text-gray-400" />}
+                    <span className="flex items-center gap-3 min-w-0">
+                      <Icon className="w-[18px] h-[18px] shrink-0" />
+                      {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
+                    </span>
+                    {!sidebarCollapsed && (isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" /> : <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />)}
                   </div>
                   {isExpanded && (
                     <div className="flex flex-col bg-slate-50/50 py-1">
@@ -132,20 +166,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.label}
                 to={item.path}
-                className={`flex items-center px-6 py-3 text-sm font-medium transition-colors ${isActive && !item.children ? 'bg-slate-100 text-slate-800 border-r-4 border-slate-500' : 'text-gray-600 hover:bg-gray-50'}`}
+                title={sidebarCollapsed ? item.label : undefined}
+                className={`flex items-center gap-3 ${sidebarCollapsed ? "justify-center px-0 py-3" : "px-6 py-3"} text-sm font-medium transition-colors ${isActive && !item.children ? 'bg-slate-100 text-slate-800 border-r-4 border-slate-500' : 'text-gray-600 hover:bg-gray-50'}`}
               >
-                {item.label}
+                <Icon className="w-[18px] h-[18px] shrink-0" />
+                {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
               </Link>
             );
           })}
-          
+
           <div className="my-4 border-t border-gray-200"></div>
-          
+
           <button
             onClick={handleLogout}
-            className="w-full flex items-center px-6 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 text-left"
+            title={sidebarCollapsed ? "Logout" : undefined}
+            className={`w-full flex items-center gap-3 ${sidebarCollapsed ? "justify-center px-0 py-3" : "px-6 py-3"} text-sm font-medium text-gray-600 hover:bg-gray-50 text-left`}
           >
-            Logout
+            <LogOut className="w-[18px] h-[18px] shrink-0" />
+            {!sidebarCollapsed && "Logout"}
           </button>
         </div>
       </div>
@@ -153,14 +191,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0">
         <div className="h-16 bg-white border-b border-gray-300 flex items-center justify-between px-6 shrink-0 z-10">
           <div className="flex items-center space-x-4 flex-1">
-            <div className="relative w-64">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input 
-                type="text" 
-                placeholder="Search patients, staff..." 
-                className="w-full pl-8 pr-4 py-1.5 border border-gray-300 rounded text-sm outline-none focus:border-slate-500 bg-white"
-              />
-            </div>
+            <GlobalSearch />
           </div>
           
           <div className="flex items-center space-x-6">

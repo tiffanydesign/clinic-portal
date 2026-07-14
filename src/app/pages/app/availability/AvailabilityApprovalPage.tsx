@@ -11,7 +11,7 @@ import { RejectReasonModal } from "./RejectReasonModal";
 // Weekly Hours and Date Override both apply instantly now (see
 // availabilityStore.ts) — Leave is the only request kind that still needs a
 // real Admin decision, so this queue only ever shows Leave.
-const EMPLOYEE_NAME = "Dr. Claudia Reis";
+const EMPLOYEE_NAME = "Dr. Ebru Reis";
 
 function ConflictList({ conflicts, onResolve }: { conflicts: BookedAppt[]; onResolve: (index: number) => void }) {
   return (

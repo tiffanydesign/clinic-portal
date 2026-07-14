@@ -2,8 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router";
 import { MoreHorizontal } from "lucide-react";
-import { toast } from "sonner";
-import { Staff, CURRENT_ADMIN_ID } from "./staffData";
+import { Staff } from "./staffData";
 
 // Three-dot actions menu rendered in a portal with fixed positioning,
 // so it escapes the table's overflow-auto container.
@@ -11,8 +10,6 @@ export function StaffRowMenu({ staff }: { staff: Staff }) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
-
-  const isSelf = staff.id === CURRENT_ADMIN_ID;
 
   const toggle = () => {
     if (!open && btnRef.current) {
@@ -48,7 +45,7 @@ export function StaffRowMenu({ staff }: { staff: Staff }) {
       {open && pos && createPortal(
         <>
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <MenuItems staff={staff} isSelf={isSelf} pos={pos} onClose={() => setOpen(false)} />
+          <MenuItems staff={staff} pos={pos} onClose={() => setOpen(false)} />
         </>,
         document.body
       )}
@@ -56,35 +53,17 @@ export function StaffRowMenu({ staff }: { staff: Staff }) {
   );
 }
 
-function MenuItems({ staff, isSelf, pos, onClose }: { staff: Staff; isSelf: boolean; pos: { top: number; left: number }; onClose: () => void }) {
+function MenuItems({ staff, pos, onClose }: { staff: Staff; pos: { top: number; left: number }; onClose: () => void }) {
   const navigate = useNavigate();
 
   const go = (path: string) => { onClose(); navigate(path); };
-  const act = (msg: string) => { onClose(); toast(msg); };
 
   const itemCls = "w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50";
 
   return (
     <div className="fixed w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1" style={{ top: pos.top, left: pos.left }}>
       <button className={itemCls} onClick={() => go(`/staff/${staff.id}/overview`)}>View Profile</button>
-      <button className={itemCls} onClick={() => act("Edit details (demo)")}>Edit Details</button>
-      <button className={itemCls} onClick={() => go(`/staff/${staff.id}/permissions`)}>Manage Permissions</button>
       <button className={itemCls} onClick={() => go(`/staff/${staff.id}/workload`)}>View Workload</button>
-      <div className="border-t border-gray-100 my-1" />
-      <button className={itemCls} onClick={() => act(`${staff.name} set On Leave (demo)`)}>Set On Leave</button>
-      {isSelf ? (
-        <button
-          disabled
-          title="You cannot deactivate your own account"
-          className="w-full text-left px-4 py-2 text-sm text-gray-300 cursor-not-allowed"
-        >
-          Deactivate
-        </button>
-      ) : (
-        <button className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50" onClick={() => act(`${staff.name} deactivated (demo)`)}>
-          Deactivate
-        </button>
-      )}
     </div>
   );
 }

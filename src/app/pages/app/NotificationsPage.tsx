@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { Calendar, FlaskConical, ShieldCheck, CreditCard, Settings, Bell } from "lucide-react";
+import { Calendar, CalendarDays, FlaskConical, ShieldCheck, CreditCard, Settings, Bell } from "lucide-react";
+import { format, isWithinInterval } from "date-fns";
 import { useAppContext } from "../../context/AppContext";
-import { FilterSelect } from "../../components/FilterSelect";
+import { RangeDatePicker } from "../../components/RangeDatePicker";
 import {
-  NotificationItem, NotificationKind, KIND_LABEL,
+  NotificationItem, NotificationKind, KIND_LABEL, notificationDate,
   staticNotificationsForRole, pendingRequestNotifications, decisionNotifications, scheduleChangeNotifications,
 } from "./notificationsData";
 import { useAvailabilityStore, getPendingRequests } from "./availability/availabilityStore";
@@ -19,6 +20,20 @@ const KIND_ICON: Record<NotificationKind, React.ReactNode> = {
 };
 
 const KIND_FILTERS: ("All" | NotificationKind)[] = ["All", "appointment", "result", "approval", "payment", "system"];
+
+function CategoryTab({ label, total, unread, active, onClick }: { label: string; total: number; unread: number; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`relative px-3 py-1.5 text-xs font-bold rounded-md transition-colors whitespace-nowrap ${active ? "bg-slate-700 text-white" : "text-gray-500 hover:text-gray-700"}`}
+    >
+      {label} ({total})
+      {unread > 0 && (
+        <span className={`absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-red-500 ring-2 ${active ? "ring-slate-700" : "ring-white"}`} aria-hidden />
+      )}
+    </button>
+  );
+}
 
 function NotificationRow({ item, unread, onOpen }: { item: NotificationItem; unread: boolean; onOpen: () => void }) {
   return (
@@ -56,6 +71,23 @@ export function NotificationsPage() {
   const readIds = useReadIds();
   const [kindFilter, setKindFilter] = useState<"All" | NotificationKind>("All");
   const [unreadOnly, setUnreadOnly] = useState(false);
+  const [dateRange, setDateRange] = useState(() => {
+    const end = new Date(2026, 6, 3);
+    const start = new Date(2026, 6, 3);
+    start.setDate(start.getDate() - 7);
+    return { start, end };
+  });
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const dateRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!datePickerOpen) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (dateRef.current && !dateRef.current.contains(e.target as Node)) setDatePickerOpen(false);
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [datePickerOpen]);
 
   // Live, store-derived entries: Admin sees what's waiting on their own
   // decision; a Clinician sees decisions made on what they submitted. Never
@@ -69,9 +101,27 @@ export function NotificationsPage() {
 
   const allItems = useMemo(() => [...liveItems, ...staticNotificationsForRole(role)], [liveItems, role]);
 
+  // Per-tab total + unread counts, computed once over the full set so
+  // switching tabs never changes another tab's own badge.
+  const kindCounts = useMemo(() => {
+    const counts: Record<"All" | NotificationKind, { total: number; unread: number }> = {
+      All: { total: 0, unread: 0 }, appointment: { total: 0, unread: 0 }, result: { total: 0, unread: 0 },
+      approval: { total: 0, unread: 0 }, payment: { total: 0, unread: 0 }, system: { total: 0, unread: 0 },
+    };
+    allItems.forEach((n) => {
+      const unread = !readIds.has(n.id);
+      counts.All.total++;
+      if (unread) counts.All.unread++;
+      counts[n.kind].total++;
+      if (unread) counts[n.kind].unread++;
+    });
+    return counts;
+  }, [allItems, readIds]);
+
   const filtered = allItems
     .filter((n) => kindFilter === "All" || n.kind === kindFilter)
-    .filter((n) => !unreadOnly || !readIds.has(n.id));
+    .filter((n) => !unreadOnly || !readIds.has(n.id))
+    .filter((n) => isWithinInterval(notificationDate(n.time), { start: dateRange.start, end: dateRange.end }));
 
   const unreadCount = allItems.filter((n) => !readIds.has(n.id)).length;
 
@@ -102,25 +152,48 @@ export function NotificationsPage() {
       </div>
 
       <div className="p-8 max-w-3xl mx-auto space-y-4">
-        <div className="flex items-center gap-3">
-          <div className="inline-flex bg-white p-0.5 rounded-lg border border-gray-200 shadow-sm">
-            {(["All", "Unread"] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => setUnreadOnly(t === "Unread")}
-                className={`px-3 py-1.5 text-xs font-bold rounded-md transition-all ${
-                  (t === "Unread") === unreadOnly ? "bg-slate-700 text-white" : "text-gray-500 hover:text-gray-700"
-                }`}
-              >
-                {t}
-              </button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="inline-flex flex-wrap gap-0.5 bg-white p-0.5 rounded-lg border border-gray-200 shadow-sm">
+            {KIND_FILTERS.map((k) => (
+              <CategoryTab
+                key={k}
+                label={k === "All" ? "All" : KIND_LABEL[k]}
+                total={kindCounts[k].total}
+                unread={kindCounts[k].unread}
+                active={kindFilter === k}
+                onClick={() => setKindFilter(k)}
+              />
             ))}
           </div>
-          <FilterSelect
-            value={kindFilter}
-            onChange={(v) => setKindFilter(v as "All" | NotificationKind)}
-            options={KIND_FILTERS.map((k) => ({ value: k, label: k === "All" ? "All types" : KIND_LABEL[k] }))}
-          />
+
+          <label className="flex items-center gap-1.5 text-xs font-bold text-gray-600 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={unreadOnly}
+              onChange={(e) => setUnreadOnly(e.target.checked)}
+              className="rounded border-gray-300 text-slate-600 focus:ring-slate-500"
+            />
+            Unread only
+          </label>
+
+          <div className="relative" ref={dateRef}>
+            <button
+              onClick={() => setDatePickerOpen((v) => !v)}
+              className="flex items-center gap-2 px-3 py-1.5 border border-gray-300 bg-white rounded-lg text-xs font-bold text-gray-700 shadow-sm hover:border-gray-400 transition-colors"
+            >
+              <CalendarDays className="w-3.5 h-3.5 text-gray-400" />
+              {format(dateRange.start, "d MMM")} – {format(dateRange.end, "d MMM yyyy")}
+            </button>
+            {datePickerOpen && (
+              <RangeDatePicker
+                initialStart={dateRange.start}
+                initialEnd={dateRange.end}
+                initialPreset="Custom Range"
+                onCancel={() => setDatePickerOpen(false)}
+                onApply={(start, end) => { setDateRange({ start, end }); setDatePickerOpen(false); }}
+              />
+            )}
+          </div>
         </div>
 
         <div className="border border-gray-300 rounded-xl bg-white shadow-sm overflow-hidden">

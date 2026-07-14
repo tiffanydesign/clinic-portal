@@ -43,14 +43,14 @@ export type FeedbackItem = {
 export const CURRENT_ADMIN_NAME = "Ayşe Hançer";
 
 export const MOCK_DATA: FeedbackItem[] = [
-  { id: "1", source: "Patient", type: "Visit Feedback", rating: 5, title: "Excellent care during my body scan", body: "The entire process was smooth. The nurse was very polite and the doctor explained everything clearly. I felt completely taken care of.", patientName: "Mackenzie Messineo", clinician: "Dr. Claudia", visitDate: "1 Jul 2026", timeAgo: "2 hours ago", receivedHoursAgo: 2, authorName: "Mackenzie Messineo", status: "New",
+  { id: "1", source: "Patient", type: "Visit Feedback", rating: 5, title: "Excellent care during my body scan", body: "The entire process was smooth. The nurse was very polite and the doctor explained everything clearly. I felt completely taken care of.", patientName: "Ece Yıldırım", clinician: "Dr. Ebru Reis", visitDate: "1 Jul 2026", timeAgo: "2 hours ago", receivedHoursAgo: 2, authorName: "Ece Yıldırım", status: "New",
     changeHistory: [{ time: "2 hours ago", label: "Received", kind: "received" }] },
-  { id: "2", source: "Patient", type: "Complaint", rating: 2, title: "Waited over 40 minutes past appointment time", body: "I arrived on time but was left waiting in the reception area for almost 45 minutes with no updates. This is unacceptable.", patientName: "Penny Pelargonium", clinician: "Dr. Higgs", visitDate: "1 Jul 2026", timeAgo: "5 hours ago", receivedHoursAgo: 5, authorName: "Penny Pelargonium", status: "New", flagged: true,
+  { id: "2", source: "Patient", type: "Complaint", rating: 2, title: "Waited over 40 minutes past appointment time", body: "I arrived on time but was left waiting in the reception area for almost 45 minutes with no updates. This is unacceptable.", patientName: "Aslı Kutlu", clinician: "Dr. Emre Yalçın", visitDate: "1 Jul 2026", timeAgo: "5 hours ago", receivedHoursAgo: 5, authorName: "Aslı Kutlu", status: "New", flagged: true,
     changeHistory: [
       { time: "5 hours ago", label: "Received", kind: "received" },
       { time: "4 hours ago", label: "Flagged for follow-up", by: CURRENT_ADMIN_NAME, kind: "flagged" },
     ] },
-  { id: "3", source: "Patient", type: "Visit Feedback", rating: 4, title: "Very thorough consultation, minor wait", body: "The doctor was great and answered all my questions. I just wish the initial check-in process was a bit faster.", patientName: "Riley Guarana", clinician: "Dr. Claudia", visitDate: "30 Jun 2026", timeAgo: "1 day ago", receivedHoursAgo: 24, authorName: "Riley Guarana", status: "In Review",
+  { id: "3", source: "Patient", type: "Visit Feedback", rating: 4, title: "Very thorough consultation, minor wait", body: "The doctor was great and answered all my questions. I just wish the initial check-in process was a bit faster.", patientName: "Tarkan Solmaz", clinician: "Dr. Ebru Reis", visitDate: "30 Jun 2026", timeAgo: "1 day ago", receivedHoursAgo: 24, authorName: "Tarkan Solmaz", status: "In Review",
     changeHistory: [
       { time: "1 day ago", label: "Received", kind: "received" },
       { time: "20 hours ago", label: "Marked In Review", by: CURRENT_ADMIN_NAME, kind: "in_review" },
@@ -61,7 +61,7 @@ export const MOCK_DATA: FeedbackItem[] = [
       { time: "22 hours ago", label: "Marked In Review", by: CURRENT_ADMIN_NAME, kind: "in_review" },
       { time: "20 hours ago", label: "Internal note added", by: CURRENT_ADMIN_NAME, kind: "note" },
     ] },
-  { id: "5", source: "Patient", type: "Compliment", rating: 5, title: "Berna was incredibly attentive throughout", body: "The nurse Berna made sure I was comfortable the entire time. Huge thanks to her!", patientName: "Arysse Arcerola", nurse: "Berna Koç", visitDate: "29 Jun 2026", timeAgo: "2 days ago", receivedHoursAgo: 48, authorName: "Arysse Arcerola", status: "Resolved",
+  { id: "5", source: "Patient", type: "Compliment", rating: 5, title: "Berna was incredibly attentive throughout", body: "The nurse Berna made sure I was comfortable the entire time. Huge thanks to her!", patientName: "Gül Korkmaz", nurse: "Berna Koç", visitDate: "29 Jun 2026", timeAgo: "2 days ago", receivedHoursAgo: 48, authorName: "Gül Korkmaz", status: "Resolved",
     changeHistory: [
       { time: "2 days ago", label: "Received", kind: "received" },
       { time: "1 day ago", label: "Marked Resolved", by: CURRENT_ADMIN_NAME, kind: "resolved" },
@@ -71,14 +71,14 @@ export const MOCK_DATA: FeedbackItem[] = [
       { time: "3 days ago", label: "Received", kind: "received" },
       { time: "2 days ago", label: "Marked In Review", by: CURRENT_ADMIN_NAME, kind: "in_review" },
     ] },
-  { id: "7", source: "Clinician", type: "Incident Report", title: "Patient reported dizziness after blood draw", body: "Patient felt lightheaded immediately after the blood draw procedure. We provided juice and observed them for 30 minutes until symptoms cleared.", urgency: "High", authorName: "Dr. Chad Okonkwo", authorRole: "Clinician", timeAgo: "3 days ago", receivedHoursAgo: 72, status: "Resolved", internalNotes: [{ author: CURRENT_ADMIN_NAME, time: "2 days ago", text: "Followed up with patient by phone, no further issues reported." }],
+  { id: "7", source: "Clinician", type: "Incident Report", title: "Patient reported dizziness after blood draw", body: "Patient felt lightheaded immediately after the blood draw procedure. We provided juice and observed them for 30 minutes until symptoms cleared.", urgency: "High", authorName: "Dr. Emre Yalçın", authorRole: "Clinician", timeAgo: "3 days ago", receivedHoursAgo: 72, status: "Resolved", internalNotes: [{ author: CURRENT_ADMIN_NAME, time: "2 days ago", text: "Followed up with patient by phone, no further issues reported." }],
     changeHistory: [
       { time: "3 days ago", label: "Received", kind: "received" },
       { time: "3 days ago", label: "Marked In Review", by: CURRENT_ADMIN_NAME, kind: "in_review" },
       { time: "2 days ago", label: "Internal note added", by: CURRENT_ADMIN_NAME, kind: "note" },
       { time: "2 days ago", label: "Marked Resolved", by: CURRENT_ADMIN_NAME, kind: "resolved" },
     ] },
-  { id: "8", source: "Patient", type: "Visit Feedback", rating: 3, title: "Good results explanation but facility felt rushed", body: "The doctor explained my test results well, but the clinic felt very busy and chaotic today.", patientName: "Bob Bromelain", clinician: "Dr. Adobe", visitDate: "27 Jun 2026", timeAgo: "4 days ago", receivedHoursAgo: 96, authorName: "Bob Bromelain", status: "Archived",
+  { id: "8", source: "Patient", type: "Visit Feedback", rating: 3, title: "Good results explanation but facility felt rushed", body: "The doctor explained my test results well, but the clinic felt very busy and chaotic today.", patientName: "Serkan Çetin", clinician: "Dr. Onur Şimşek", visitDate: "27 Jun 2026", timeAgo: "4 days ago", receivedHoursAgo: 96, authorName: "Serkan Çetin", status: "Archived",
     changeHistory: [
       { time: "4 days ago", label: "Received", kind: "received" },
       { time: "3 days ago", label: "Marked Resolved", by: CURRENT_ADMIN_NAME, kind: "resolved" },
@@ -86,7 +86,7 @@ export const MOCK_DATA: FeedbackItem[] = [
     ] },
   { id: "9", source: "Nurse", type: "Suggestion", title: "Need a way to message clinician when patient is ready", body: "Currently we have to walk down the hall to tell the doctor the patient is in the room. A simple ping button in the app would save time.", urgency: "Low", authorName: "Aylin Demir", authorRole: "Nurse", timeAgo: "5 days ago", receivedHoursAgo: 120, status: "New",
     changeHistory: [{ time: "5 days ago", label: "Received", kind: "received" }] },
-  { id: "10", source: "Patient", type: "Visit Feedback", rating: 5, title: "Life-changing health insights", body: "The digital twin visualization was amazing. I finally understand my health metrics clearly.", patientName: "Dylan Daniel", clinician: "Dr. Felix", visitDate: "25 Jun 2026", timeAgo: "6 days ago", receivedHoursAgo: 144, authorName: "Dylan Daniel", status: "Resolved",
+  { id: "10", source: "Patient", type: "Visit Feedback", rating: 5, title: "Life-changing health insights", body: "The digital twin visualization was amazing. I finally understand my health metrics clearly.", patientName: "Burak Kocaman", clinician: "Dr. Kaan Öztürk", visitDate: "25 Jun 2026", timeAgo: "6 days ago", receivedHoursAgo: 144, authorName: "Burak Kocaman", status: "Resolved",
     changeHistory: [
       { time: "6 days ago", label: "Received", kind: "received" },
       { time: "5 days ago", label: "Marked Resolved", by: CURRENT_ADMIN_NAME, kind: "resolved" },
@@ -99,7 +99,7 @@ export const MOCK_DATA: FeedbackItem[] = [
   // Google Review sync demo — external, read-only reviews pulled from Google
   // Business. Never editable in-line; Admin can only mark Addressed/Flagged
   // and add internal notes, plus jump to Google Business to reply.
-  { id: "google-1", source: "Google Review", type: "Google Review", rating: 5, title: "Amazing experience, the staff were so professional and the results were incredibly detailed.", body: "Amazing experience, the staff were so professional and the results were incredibly detailed.", authorName: "Sarah M.", timeAgo: "1 day ago", receivedHoursAgo: 24, status: "Addressed", reviewUrl: "https://business.google.com/reviews",
+  { id: "google-1", source: "Google Review", type: "Google Review", rating: 5, title: "Amazing experience, the staff were so professional and the results were incredibly detailed.", body: "Amazing experience, the staff were so professional and the results were incredibly detailed.", authorName: "Fatma S.", timeAgo: "1 day ago", receivedHoursAgo: 24, status: "Addressed", reviewUrl: "https://business.google.com/reviews",
     changeHistory: [
       { time: "1 day ago", label: "Synced from Google", kind: "synced" },
       { time: "12 hours ago", label: "Marked Addressed", by: CURRENT_ADMIN_NAME, kind: "addressed" },
@@ -109,7 +109,7 @@ export const MOCK_DATA: FeedbackItem[] = [
       { time: "3 days ago", label: "Synced from Google", kind: "synced" },
       { time: "2 days ago", label: "Flagged for follow-up", by: CURRENT_ADMIN_NAME, kind: "flagged" },
     ] },
-  { id: "google-3", source: "Google Review", type: "Google Review", rating: 5, title: "Life-changing health insights. Highly recommend Phenome.", body: "Life-changing health insights. Highly recommend Phenome.", authorName: "Elena R.", timeAgo: "5 days ago", receivedHoursAgo: 120, status: "New", reviewUrl: "https://business.google.com/reviews",
+  { id: "google-3", source: "Google Review", type: "Google Review", rating: 5, title: "Life-changing health insights. Highly recommend Phenome.", body: "Life-changing health insights. Highly recommend Phenome.", authorName: "Hülya T.", timeAgo: "5 days ago", receivedHoursAgo: 120, status: "New", reviewUrl: "https://business.google.com/reviews",
     changeHistory: [{ time: "5 days ago", label: "Synced from Google", kind: "synced" }] },
 ];
 

@@ -10,7 +10,7 @@ import {
 type Column = { key: string; label: string; sub?: string; appts: Appt[] };
 type ViewMode = "room" | "clinician";
 
-// "Dr. Claudia Reis" → "Dr. Reis" — enough to tell three clinicians apart in
+// "Dr. Ebru Reis" → "Dr. Reis" — enough to tell three clinicians apart in
 // a compact block without repeating the full name every room shows her in.
 function doctorShort(doctor: string): string {
   const parts = doctor.split(" ");
@@ -113,51 +113,56 @@ export function CalendarWidget() {
         <h3 className="font-bold text-gray-800 text-sm shrink-0">
           Today's Schedule <span className="text-gray-400 font-medium ml-1">{TODAY_SHORT}</span>
         </h3>
-        <div className="flex items-center gap-3">
-          <ViewModeToggle mode={mode} onChange={setMode} />
-          <button
-            onClick={() => navigate("/calendar/schedule")}
-            className="text-xs font-bold text-slate-600 hover:text-slate-800 flex items-center gap-1 transition-colors shrink-0"
-          >
-            Open Calendar <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </div>
+        <button
+          onClick={() => navigate("/calendar/schedule")}
+          className="text-xs font-bold text-slate-600 hover:text-slate-800 flex items-center gap-1 transition-colors shrink-0"
+        >
+          Open Calendar <ArrowRight className="w-3.5 h-3.5" />
+        </button>
       </div>
 
-      {/* Progress summary */}
-      <div className="px-4 py-2 bg-white flex items-center gap-2 text-xs shrink-0 overflow-x-auto">
-        <span className="font-bold text-gray-700 whitespace-nowrap">{summary.total} appointments</span>
-        <span className="text-gray-300">·</span>
-        <span className="font-semibold text-gray-500 whitespace-nowrap">{summary.completed} completed</span>
-        <span className="text-gray-300">·</span>
-        <span className="font-semibold text-amber-600 whitespace-nowrap">{summary.inProgress} in progress</span>
-        <span className="text-gray-300">·</span>
-        <span className="font-semibold text-blue-600 whitespace-nowrap">{summary.upcoming} upcoming</span>
-        <span className="text-gray-300">·</span>
-        <span className="font-semibold text-red-600 whitespace-nowrap">{summary.noShow} no-show</span>
+      {/* Progress summary + room/clinician toggle */}
+      <div className="px-4 py-2 bg-white flex items-center justify-between gap-3 shrink-0">
+        <div className="flex items-center gap-2 text-xs overflow-x-auto">
+          <span className="font-bold text-gray-700 whitespace-nowrap">{summary.total} appointments</span>
+          <span className="text-gray-300">·</span>
+          <span className="font-semibold text-gray-500 whitespace-nowrap">{summary.completed} completed</span>
+          <span className="text-gray-300">·</span>
+          <span className="font-semibold text-amber-600 whitespace-nowrap">{summary.inProgress} in progress</span>
+          <span className="text-gray-300">·</span>
+          <span className="font-semibold text-blue-600 whitespace-nowrap">{summary.upcoming} upcoming</span>
+          <span className="text-gray-300">·</span>
+          <span className="font-semibold text-red-600 whitespace-nowrap">{summary.noShow} no-show</span>
+        </div>
+        <ViewModeToggle mode={mode} onChange={setMode} />
       </div>
       {/* A soft tint of each status color, in the same left-to-right order as
           the counts above, replaces a plain gray rule — ties the divider
           back to what it's separating without shouting. */}
       <div className="h-[3px] shrink-0 bg-gradient-to-r from-gray-200 via-amber-200 via-30% via-blue-200 via-70% to-red-200" />
 
-      {/* Column headers — room or clinician, per the toggle above */}
-      {columns.length > 1 && (
-        <div className="flex border-b border-gray-200 bg-gradient-to-b from-gray-50 to-gray-50/50 shrink-0 pl-14">
-          {columns.map((c) => (
-            <div key={c.key} className="flex-1 px-1.5 py-2 text-center border-l border-gray-200 min-w-0">
-              <div className="text-xs font-bold text-gray-700 truncate">{c.label}</div>
-              {c.sub && <div className="text-[9px] text-gray-400 truncate mt-0.5">{c.sub}</div>}
-              <span className="inline-block mt-1 px-1.5 py-0.5 rounded-full bg-gray-100 text-[9px] font-bold text-gray-500 tabular-nums">
-                {c.appts.length}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
-
       {/* Scrollable timeline */}
       <div className="flex-1 overflow-y-auto">
+        {/* Column headers — room or clinician, per the toggle above. Lives
+            inside the same scroll container as the grid below (sticky, not
+            a separate row above it) so both share the exact same available
+            width. Keeping it outside meant this row never lost width to the
+            vertical scrollbar while the grid row right below it did, so
+            every column divider drifted a little further out of line with
+            its own header the further right it sat. */}
+        {columns.length > 1 && (
+          <div className="sticky top-0 z-30 flex border-b border-gray-200 bg-gradient-to-b from-gray-50 to-gray-50/50 pl-14">
+            {columns.map((c) => (
+              <div key={c.key} className="flex-1 px-1.5 py-2 text-center border-l border-gray-200 min-w-0">
+                <div className="text-xs font-bold text-gray-700 truncate">{c.label}</div>
+                {c.sub && <div className="text-[9px] text-gray-400 truncate mt-0.5">{c.sub}</div>}
+                <span className="inline-block mt-1 px-1.5 py-0.5 rounded-full bg-gray-100 text-[9px] font-bold text-gray-500 tabular-nums">
+                  {c.appts.length}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
         <div className="flex" style={{ height: gridHeight }}>
           {/* Hour gutter */}
           <div className="w-14 shrink-0 relative border-r border-gray-200 bg-gray-50/30">

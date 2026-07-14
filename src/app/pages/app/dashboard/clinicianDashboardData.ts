@@ -4,7 +4,7 @@
 
 import { Appt, JOURNEY_STEPS_RECEPTION, NOW_MINUTES } from "./dashboardData";
 
-export const CLINICIAN_ID = "EMP-003"; // Dr. Claudia Reis (signed-in clinician)
+export const CLINICIAN_ID = "EMP-003"; // Dr. Ebru Reis (signed-in clinician)
 
 export const CONSULTATION_STEP_INDEX = JOURNEY_STEPS_RECEPTION.indexOf("Consultation");
 
@@ -17,19 +17,19 @@ export type QueueItem = { patient: string; test: string; submitted: string; over
 // Results waiting for a first look — sorted overdue-first so the queue
 // itself carries the same triage signal as the counter above it.
 export const CLINICIAN_REVIEW_QUEUE: QueueItem[] = [
-  { patient: "Arysse Arcerola", test: "Genetic Panel", submitted: "28 Jun", overdue: true },
-  { patient: "Oliver Folate", test: "Comprehensive Blood", submitted: "01 Jul", overdue: false },
-  { patient: "Cynthia Riboflavin", test: "Lipid Panel", submitted: "02 Jul", overdue: false },
-  { patient: "Mackenzie Messineo", test: "Metabolic Panel", submitted: "02 Jul", overdue: false },
-  { patient: "Dylan Daniel", test: "Hormone Screen", submitted: "03 Jul", overdue: false },
+  { patient: "Gül Korkmaz", test: "Genetic Panel", submitted: "28 Jun", overdue: true },
+  { patient: "Cem Polat", test: "Comprehensive Blood", submitted: "01 Jul", overdue: false },
+  { patient: "Yasemin Kaplan", test: "Lipid Panel", submitted: "02 Jul", overdue: false },
+  { patient: "Ece Yıldırım", test: "Metabolic Panel", submitted: "02 Jul", overdue: false },
+  { patient: "Burak Kocaman", test: "Hormone Screen", submitted: "03 Jul", overdue: false },
 ];
 
 // Reports already reviewed, now awaiting the clinician's own signature —
 // a distinct queue from the one above (never the same report in both).
 export const CLINICIAN_SIGNOFF_QUEUE: QueueItem[] = [
-  { patient: "Gustavo Propolis", test: "Hormone Panel", submitted: "27 Jun", overdue: true },
-  { patient: "Riley Guarana", test: "Body Scan Report", submitted: "30 Jun", overdue: false },
-  { patient: "Bob Bromelain", test: "Metabolic Panel", submitted: "01 Jul", overdue: false },
+  { patient: "Hakan Bulut", test: "Hormone Panel", submitted: "27 Jun", overdue: true },
+  { patient: "Tarkan Solmaz", test: "Body Scan Report", submitted: "30 Jun", overdue: false },
+  { patient: "Serkan Çetin", test: "Metabolic Panel", submitted: "01 Jul", overdue: false },
 ];
 
 // The one appointment currently "in progress" for this clinician, if any —

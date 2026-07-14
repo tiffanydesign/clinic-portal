@@ -11,16 +11,15 @@ function prefersReducedMotion(): boolean {
   return typeof window !== "undefined" && !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 }
 
-// Owns every piece of state the Clinician Dashboard's four surfaces share:
+// Owns every piece of state the Clinician Dashboard's surfaces share:
 // completing/starting a session (local status overrides, seeded from the
 // shared mock data but never mutating it — same pattern as the Nurse
-// dashboard), which Work Queue segment is active, and the scroll target for
-// the top counters' "jump to schedule" action.
+// dashboard) and the scroll targets for the top counters' "jump to" actions.
 export function ClinicianDashboardBody() {
   const navigate = useNavigate();
   const [overrides, setOverrides] = useState<Record<string, ApptStatus>>({});
-  const [queueTab, setQueueTab] = useState<"review" | "signoff">("review");
   const scheduleRef = useRef<HTMLDivElement>(null);
+  const workQueueRef = useRef<HTMLDivElement>(null);
 
   const todaysAppts = useMemo(() => {
     return APPTS
@@ -42,40 +41,37 @@ export function ClinicianDashboardBody() {
   const startOrJoin = (id: string) => setOverrides((prev) => ({ ...prev, [id]: "In Clinic" }));
 
   return (
-    <>
-      <div className="px-6 pb-1">
+    <div className="px-6 py-4 flex gap-4 h-[700px]">
+      <div className="w-[55%] min-w-0 flex flex-col gap-4 h-full">
+        <ClinicianNowCard
+          activeAppt={activeAppt}
+          upNextAppt={upNextAppt}
+          onOpenRecord={openRecord}
+          onComplete={complete}
+          onStartOrJoin={startOrJoin}
+        />
+        <div ref={workQueueRef} className="flex-1 min-h-0">
+          <ClinicianWorkQueue />
+        </div>
+      </div>
+
+      <div className="w-[45%] min-w-0 h-full flex flex-col gap-4">
         <ClinicianQueueCounters
           todaysCount={todaysAppts.length}
           nextTimeLabel={nextTimeLabel}
-          onSelectQueueTab={setQueueTab}
+          onJumpToWorkQueue={() => workQueueRef.current?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" })}
           onJumpToSchedule={() => scheduleRef.current?.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" })}
         />
-      </div>
-
-      <div className="px-6 py-4 flex gap-4 h-[700px]">
-        <div className="w-[55%] min-w-0 flex flex-col gap-4 h-full">
-          <ClinicianNowCard
-            activeAppt={activeAppt}
-            upNextAppt={upNextAppt}
-            onOpenRecord={openRecord}
-            onComplete={complete}
-            onStartOrJoin={startOrJoin}
+        <div ref={scheduleRef} className="flex-1 min-h-0 flex flex-col">
+          <ClinicianScheduleList
+            appts={todaysAppts}
+            activeApptId={activeAppt?.id}
+            hasActiveSession={!!activeAppt}
+            onOpen={openRecord}
+            onJoin={startOrJoin}
           />
-          <div ref={scheduleRef} className="flex-1 min-h-0 flex flex-col">
-            <ClinicianScheduleList
-              appts={todaysAppts}
-              activeApptId={activeAppt?.id}
-              hasActiveSession={!!activeAppt}
-              onOpen={openRecord}
-              onJoin={startOrJoin}
-            />
-          </div>
-        </div>
-
-        <div className="w-[45%] min-w-0 h-full">
-          <ClinicianWorkQueue tab={queueTab} onTabChange={setQueueTab} />
         </div>
       </div>
-    </>
+    </div>
   );
 }

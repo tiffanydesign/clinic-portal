@@ -3,7 +3,7 @@
 // top of the roster already defined in PatientsPage.tsx.
 
 import type { Role } from "../../../context/AppContext";
-import { MOCK_PATIENTS, Patient as RosterPatient } from "../PatientsPage";
+import { MOCK_PATIENTS, Patient as RosterPatient } from "../patientsData";
 
 export type TabKey = "overview" | "results" | "journeys" | "signed-forms" | "notes" | "appointments";
 
@@ -112,20 +112,19 @@ export type PatientRecord = RosterPatient & {
   appointmentsPrevious: RecordAppt[];
 };
 
-// --- Mackenzie Messineo: the fully-detailed reference record ---
+// --- Ece Yıldırım: the fully-detailed reference record ---
 
 const MACKENZIE: PatientRecord = {
   ...(MOCK_PATIENTS.find((p) => p.patientId === "PH-2026-0042") as RosterPatient),
-  dob: "12 Mar 1992",
   nationality: "Turkish",
   preferredLanguage: "English",
   registeredDate: "18 Mar 2025",
-  emergencyContact: { name: "Elena Messineo", relation: "Sister", phone: "+90 532 111 9900" },
+  emergencyContact: { name: "Zeynep Yıldırım", relation: "Sister", phone: "+90 532 111 9900" },
   medicalAlerts: [{ label: "Allergy: Penicillin", severity: "critical" }],
   recentVisits: [
-    { date: "1 Jul 2026", type: "Consultation", clinician: "Dr. Claudia Reis", resultStatus: "Reviewed" },
-    { date: "18 Mar 2026", type: "Body Scan", clinician: "Dr. Claudia Reis", resultStatus: "Reviewed" },
-    { date: "2 Jan 2026", type: "Follow-up", clinician: "Dr. Claudia Reis", resultStatus: "Reviewed" },
+    { date: "1 Jul 2026", type: "Consultation", clinician: "Dr. Ebru Reis", resultStatus: "Reviewed" },
+    { date: "18 Mar 2026", type: "Body Scan", clinician: "Dr. Ebru Reis", resultStatus: "Reviewed" },
+    { date: "2 Jan 2026", type: "Follow-up", clinician: "Dr. Ebru Reis", resultStatus: "Reviewed" },
     { date: "10 Oct 2025", type: "Sample Collection", clinician: "Berna Koç", resultStatus: "Reviewed" },
     { date: "18 Mar 2025", type: "Registration", clinician: "—", resultStatus: "N/A" },
   ],
@@ -145,7 +144,7 @@ const MACKENZIE: PatientRecord = {
       status: "Active",
       startedAt: "1 Jul 2026",
       assignedNurse: "Berna Koç",
-      assignedClinician: "Dr. Claudia Reis",
+      assignedClinician: "Dr. Ebru Reis",
       steps: [
         { name: "Consent", status: "Completed", by: "Elif Yıldız", at: "1 Jul, 07:52" },
         { name: "Changing Room", status: "Completed", by: "Berna Koç", at: "1 Jul, 08:00" },
@@ -162,42 +161,42 @@ const MACKENZIE: PatientRecord = {
       startedAt: "18 Mar 2025",
       completedAt: "18 Mar 2025",
       assignedNurse: "Berna Koç",
-      assignedClinician: "Dr. Claudia Reis",
+      assignedClinician: "Dr. Ebru Reis",
       steps: [
         { name: "Consent", status: "Completed", by: "Elif Yıldız", at: "18 Mar 2025, 09:00" },
-        { name: "Consultation", status: "Completed", by: "Dr. Claudia Reis", at: "18 Mar 2025, 09:30" },
+        { name: "Consultation", status: "Completed", by: "Dr. Ebru Reis", at: "18 Mar 2025, 09:30" },
         { name: "Test Kit", status: "Completed", by: "Berna Koç", at: "18 Mar 2025, 10:00" },
       ],
     },
   ],
   signedForms: [
-    { id: "F-1", name: "Informed Consent — Body Scan", type: "Consent", version: "v2.1", status: "Signed", signedDate: "1 Jul 2026", signedBy: "Mackenzie Messineo" },
-    { id: "F-2", name: "Privacy Agreement", type: "Agreement", version: "v1.4", status: "Signed", signedDate: "15 Jun 2026", signedBy: "Mackenzie Messineo" },
+    { id: "F-1", name: "Informed Consent — Body Scan", type: "Consent", version: "v2.1", status: "Signed", signedDate: "1 Jul 2026", signedBy: "Ece Yıldırım" },
+    { id: "F-2", name: "Privacy Agreement", type: "Agreement", version: "v1.4", status: "Signed", signedDate: "15 Jun 2026", signedBy: "Ece Yıldırım" },
     { id: "F-3", name: "Genetic Testing Consent", type: "Consent", version: "v1.0", status: "Pending Signature" },
   ],
   clinicianNotes: [
     {
-      id: "N-3", authorId: "EMP-003", author: "Dr. Claudia Reis", authorAvatar: "CR", timestamp: "3 Jul 2026, 09:20",
+      id: "N-3", authorId: "EMP-003", author: "Dr. Ebru Reis", authorAvatar: "ER", timestamp: "3 Jul 2026, 09:20",
       body: "Reviewed body scan results with patient. Vitamin D remains low despite supplementation — recommend increasing to 4000 IU and re-testing in 8 weeks.",
       diagnosisTags: ["Vitamin D Insufficiency"], attachments: [], editable: true,
     },
     {
-      id: "N-2", authorId: "EMP-003", author: "Dr. Claudia Reis", authorAvatar: "CR", timestamp: "1 Jul 2026, 10:15",
+      id: "N-2", authorId: "EMP-003", author: "Dr. Ebru Reis", authorAvatar: "ER", timestamp: "1 Jul 2026, 10:15",
       body: "Follow-up consultation. Patient reports improved energy levels. LDL slightly elevated; discussed dietary adjustments, no medication change at this time.",
       diagnosisTags: ["LDL Elevation"], attachments: ["lipid_panel_1jul.pdf"], editable: false,
     },
     {
-      id: "N-1", authorId: "EMP-003", author: "Dr. Claudia Reis", authorAvatar: "CR", timestamp: "18 Mar 2025, 09:45",
+      id: "N-1", authorId: "EMP-003", author: "Dr. Ebru Reis", authorAvatar: "ER", timestamp: "18 Mar 2025, 09:45",
       body: "Initial consultation completed. Patient in good general health. Baseline body scan and bloodwork ordered as part of the 7-Omics Premium package.",
       diagnosisTags: [], attachments: [], editable: false,
     },
   ],
   appointmentsUpcoming: [
-    { id: "A-01", dateLabel: "3 Jul 2026, 08:00", type: "Body Scan", clinician: "Dr. Claudia Reis", room: "Scan A", status: "In Clinic" },
-    { id: "A-13", dateLabel: "10 Jul 2026, 09:00", type: "Consultation", clinician: "Dr. Claudia Reis", room: "Room 1", status: "Booked" },
+    { id: "A-01", dateLabel: "3 Jul 2026, 08:00", type: "Body Scan", clinician: "Dr. Ebru Reis", room: "Scan A", status: "In Clinic" },
+    { id: "A-13", dateLabel: "10 Jul 2026, 09:00", type: "Consultation", clinician: "Dr. Ebru Reis", room: "Room 1", status: "Booked" },
   ],
   appointmentsPrevious: [
-    { id: "A-P1", dateLabel: "1 Jul 2026, 09:00", type: "Consultation", clinician: "Dr. Claudia Reis", room: "Room 1", status: "Completed" },
+    { id: "A-P1", dateLabel: "1 Jul 2026, 09:00", type: "Consultation", clinician: "Dr. Ebru Reis", room: "Room 1", status: "Completed" },
     { id: "A-P2", dateLabel: "15 Jun 2026, 10:00", type: "Registration", clinician: "—", room: "Front Desk", status: "Completed" },
   ],
 };

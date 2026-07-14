@@ -4,6 +4,7 @@
 // the Staff and Patients modules.
 
 import type { Role } from "../../../context/AppContext";
+import { MOCK_PATIENTS, Group } from "../patientsData";
 
 // --- Timeline geometry (Today's Schedule calendar widget) ---
 export const DAY_START_HOUR = 8;
@@ -54,6 +55,8 @@ export type Patient = {
   name: string;
   route: string;
   avatar: string;
+  patientId: string;
+  group: Group;
   dob: string;
   age: number;
   sex: "Female" | "Male";
@@ -95,7 +98,6 @@ export type Appt = {
   isWalkIn?: boolean;
 };
 
-export const JOURNEY_STEPS_ADMIN = ["Consent", "Changing", "Scan", "Sample", "Check Out"];
 export const JOURNEY_STEPS_RECEPTION = [
   "Consent",
   "Changing Room",
@@ -105,17 +107,63 @@ export const JOURNEY_STEPS_RECEPTION = [
   "Test Kit",
 ];
 
-function P(
-  name: string,
-  avatar: string,
-  dob: string,
-  age: number,
-  sex: "Female" | "Male",
-  phone: string,
-  email: string,
-  alert?: string
-): Patient {
-  return { name, route: "/patients/P-001", avatar, dob, age, sex, phone, email, alert };
+// Which of the 6 canonical steps actually apply to a given appointment type —
+// e.g. a Body Scan never touches Blood Collection, a Consultation never
+// touches Changing Room/Scan. `currentStep` still indexes the full
+// JOURNEY_STEPS_RECEPTION list, so relevantJourneySteps() below re-bases it
+// against whichever subset applies, rather than assuming the index lines up.
+const TYPE_STEP_SUBSET: Partial<Record<ApptType, string[]>> = {
+  "Body Scan": ["Consent", "Changing Room", "Scan", "Test Kit"],
+  "Sample Collection": ["Consent", "Blood Collection", "Test Kit"],
+  "Consultation (in-person)": ["Consent", "Consultation", "Test Kit"],
+  "Consultation (video)": ["Consent", "Consultation"],
+  "Follow-up": ["Consent", "Consultation"],
+};
+
+// Dynamic, type-aware journey steps for the Appointment Drawer's stepper.
+// Falls back to the full 6-step list whenever the appointment's actual
+// current step isn't part of the type's expected subset — e.g. a Sample
+// Collection visit that happens to be sitting in "Scan" — rather than
+// silently misrepresenting a real record to fit a heuristic.
+export function relevantJourneySteps(appt: Appt): { steps: string[]; current: number } {
+  const full = JOURNEY_STEPS_RECEPTION;
+  const currentName = full[appt.currentStep];
+  const subset = TYPE_STEP_SUBSET[appt.type];
+  if (subset && currentName && subset.includes(currentName)) {
+    return { steps: subset, current: subset.indexOf(currentName) };
+  }
+  return { steps: full, current: Math.min(appt.currentStep, full.length - 1) };
+}
+
+// Every form must be Signed for consent to be considered cleared — the same
+// rule Reception's check-in gate already uses (canCheckIn below), now
+// exposed as its own helper so the drawer's status-gate card and the gate
+// logic can never silently disagree about what "consent cleared" means.
+export function formsSigned(appt: Appt): boolean {
+  return appt.forms.every((f) => f.status === "Signed");
+}
+
+// Looks the patient up in the canonical roster (patientsData.ts) so name,
+// DOB, age, and contact info can only ever be edited in one place — the
+// route is derived from the same roster entry's real patientId, so every
+// appointment card correctly deep-links to its own patient's record instead
+// of a single hardcoded stand-in.
+function P(patientId: string): Patient {
+  const p = MOCK_PATIENTS.find((x) => x.patientId === patientId);
+  if (!p) throw new Error(`Unknown patientId in dashboardData.APPTS: ${patientId}`);
+  return {
+    name: p.name,
+    route: `/patients/${p.patientId}`,
+    avatar: p.avatar,
+    patientId: p.patientId,
+    group: p.group,
+    dob: p.dob,
+    age: p.age,
+    sex: p.sex === "M" ? "Male" : "Female",
+    phone: p.phone,
+    email: p.email,
+    alert: p.alert,
+  };
 }
 
 const NO_FORMS_ISSUE = [
@@ -126,18 +174,18 @@ const NO_FORMS_ISSUE = [
 export const APPTS: Appt[] = [
   {
     id: "A-01",
-    patient: P("Mackenzie Messineo", "MM", "12 Feb 1988", 38, "Female", "+90 532 111 2201", "mackenzie@example.com", "Penicillin allergy"),
+    patient: P("PH-2026-0042"),
     type: "Body Scan", isVideo: false, startMin: 480, durationMin: 90, timeLabel: "08:00 – 09:30",
-    doctorId: "EMP-003", doctor: "Dr. Claudia Reis", nurse: "Berna Koç", room: "Scan A",
+    doctorId: "EMP-003", doctor: "Dr. Ebru Reis", nurse: "Berna Koç", room: "Scan A",
     status: "In Clinic", consent: "Signed", payment: "Paid", amount: "₺4,800", balance: "₺0",
     checkInTime: "07:52", currentStep: 2, forms: NO_FORMS_ISSUE,
     prep: { sample: "Pending", scan: "Completed" }, previousVisit: "18 Mar 2026",
   },
   {
     id: "A-02",
-    patient: P("Arysse Arcerola", "AA", "03 Sep 1979", 46, "Female", "+90 532 111 2202", "arysse@example.com"),
+    patient: P("PH-2026-0015"),
     type: "Consultation (in-person)", isVideo: false, startMin: 510, durationMin: 60, timeLabel: "08:30 – 09:30",
-    doctorId: "EMP-005", doctor: "Dr. Felix Andersen", nurse: "Aylin Demir", room: "Room 2",
+    doctorId: "EMP-005", doctor: "Dr. Kaan Öztürk", nurse: "Aylin Demir", room: "Room 2",
     // At the final journey step (Test Kit) — her consultation is done and
     // she's ready for Reception to check her out, demoing that row state.
     status: "In Clinic", consent: "Signed", payment: "Paid", amount: "₺2,400", balance: "₺0",
@@ -146,18 +194,18 @@ export const APPTS: Appt[] = [
   },
   {
     id: "A-03",
-    patient: P("Gustavo Propolis", "GP", "27 Jul 1965", 60, "Male", "+90 532 111 2203", "gustavo@example.com"),
+    patient: P("PH-2026-0063"),
     type: "Sample Collection", isVideo: false, startMin: 510, durationMin: 75, timeLabel: "08:30 – 09:45",
-    doctorId: "EMP-004", doctor: "Dr. Chad Okonkwo", nurse: "Berna Koç", room: "Lab 1",
+    doctorId: "EMP-004", doctor: "Dr. Emre Yalçın", nurse: "Berna Koç", room: "Lab 1",
     status: "Completed", consent: "Signed", payment: "Paid", amount: "₺900", balance: "₺0",
     checkInTime: "08:10", currentStep: 5, forms: NO_FORMS_ISSUE,
     prep: { sample: "Collected", scan: "Completed" }, previousVisit: "20 Apr 2026",
   },
   {
     id: "A-04",
-    patient: P("Riley Guarana", "RG", "15 Nov 1992", 33, "Male", "+90 532 111 2204", "riley@example.com"),
+    patient: P("PH-2026-0051"),
     type: "Body Scan", isVideo: false, startMin: 570, durationMin: 90, timeLabel: "09:30 – 11:00",
-    doctorId: "EMP-003", doctor: "Dr. Claudia Reis", nurse: "Aylin Demir", room: "Scan B",
+    doctorId: "EMP-003", doctor: "Dr. Ebru Reis", nurse: "Aylin Demir", room: "Scan B",
     status: "Arrived", consent: "Pending", payment: "Paid", amount: "₺4,800", balance: "₺0",
     arrivedTime: "08:58", waitMinutes: 16, currentStep: 0,
     forms: [
@@ -169,27 +217,27 @@ export const APPTS: Appt[] = [
   },
   {
     id: "A-05",
-    patient: P("Penny Pelargonium", "PP", "08 Jun 1984", 41, "Female", "+90 532 111 2205", "penny@example.com"),
+    patient: P("PH-2026-0038"),
     type: "Consultation (in-person)", isVideo: false, startMin: 585, durationMin: 60, timeLabel: "09:45 – 10:45",
-    doctorId: "EMP-004", doctor: "Dr. Chad Okonkwo", nurse: "Berna Koç", room: "Room 1",
+    doctorId: "EMP-004", doctor: "Dr. Emre Yalçın", nurse: "Berna Koç", room: "Room 1",
     status: "Arrived", consent: "Signed", payment: "Unpaid", amount: "₺2,400", balance: "₺2,400",
     arrivedTime: "08:55", waitMinutes: 19, currentStep: 1, forms: NO_FORMS_ISSUE,
     prep: { sample: "Pending", scan: "Completed" }, previousVisit: "12 Apr 2026",
   },
   {
     id: "A-06",
-    patient: P("Oliver Folate", "OF", "21 Jan 1976", 49, "Male", "+90 532 111 2206", "oliver@example.com"),
+    patient: P("PH-2026-0088"),
     type: "Follow-up", isVideo: false, startMin: 570, durationMin: 60, timeLabel: "09:30 – 10:30",
-    doctorId: "EMP-005", doctor: "Dr. Felix Andersen", nurse: "Aylin Demir", room: "Room 3",
+    doctorId: "EMP-005", doctor: "Dr. Kaan Öztürk", nurse: "Aylin Demir", room: "Room 3",
     status: "Arrived", consent: "Signed", payment: "Paid", amount: "₺1,500", balance: "₺0",
     arrivedTime: "09:05", waitMinutes: 9, currentStep: 1, forms: NO_FORMS_ISSUE,
     prep: { sample: "Collected", scan: "Completed" }, previousVisit: "30 Jun 2026", isWalkIn: true,
   },
   {
     id: "A-07",
-    patient: P("Sophia Ascorbic", "SA", "30 Mar 1990", 35, "Female", "+90 532 111 2207", "sophia@example.com"),
+    patient: P("PH-2026-0044"),
     type: "Consultation (video)", isVideo: true, startMin: 720, durationMin: 30, timeLabel: "12:00 – 12:30",
-    doctorId: "EMP-003", doctor: "Dr. Claudia Reis", room: "Video",
+    doctorId: "EMP-003", doctor: "Dr. Ebru Reis", room: "Video",
     // Booked, not "Checked In": her slot is hours away from the demo clock
     // (09:14) — a "Checked In" status here would mean she checked in before
     // it ever happened.
@@ -199,18 +247,18 @@ export const APPTS: Appt[] = [
   },
   {
     id: "A-08",
-    patient: P("Bob Bromelain", "BB", "17 Oct 1970", 55, "Male", "+90 532 111 2208", "bob@example.com"),
+    patient: P("PH-2026-0029"),
     type: "Body Scan", isVideo: false, startMin: 630, durationMin: 90, timeLabel: "10:30 – 12:00",
-    doctorId: "EMP-005", doctor: "Dr. Felix Andersen", nurse: "Aylin Demir", room: "Scan A",
+    doctorId: "EMP-005", doctor: "Dr. Kaan Öztürk", nurse: "Aylin Demir", room: "Scan A",
     status: "Checked In", consent: "Signed", payment: "Paid", amount: "₺4,800", balance: "₺0",
     checkInTime: "09:12", currentStep: 1, forms: NO_FORMS_ISSUE,
     prep: { sample: "Pending", scan: "Scheduled" }, previousVisit: "28 May 2026",
   },
   {
     id: "A-09",
-    patient: P("Dylan Daniel", "DD", "05 Dec 1995", 30, "Male", "+90 532 111 2209", "dylan@example.com"),
+    patient: P("PH-2026-0071"),
     type: "Sample Collection", isVideo: false, startMin: 645, durationMin: 75, timeLabel: "10:45 – 12:00",
-    doctorId: "EMP-004", doctor: "Dr. Chad Okonkwo", nurse: "Berna Koç", room: "Lab 2",
+    doctorId: "EMP-004", doctor: "Dr. Emre Yalçın", nurse: "Berna Koç", room: "Lab 2",
     status: "Checked In", consent: "Signed", payment: "Paid", amount: "₺900", balance: "₺0",
     // Check-in must fall on or before the demo clock (09:14) for "Checked
     // In" to be a fact that's already happened, regardless of how early
@@ -220,9 +268,9 @@ export const APPTS: Appt[] = [
   },
   {
     id: "A-10",
-    patient: P("Cynthia Riboflavin", "CY", "14 Aug 1982", 43, "Female", "+90 532 111 2210", "cynthia@example.com"),
+    patient: P("PH-2026-0104"),
     type: "Consultation (in-person)", isVideo: false, startMin: 660, durationMin: 60, timeLabel: "11:00 – 12:00",
-    doctorId: "EMP-003", doctor: "Dr. Claudia Reis", nurse: "Berna Koç", room: "Room 2",
+    doctorId: "EMP-003", doctor: "Dr. Ebru Reis", nurse: "Berna Koç", room: "Room 2",
     // Booked, not "In Clinic": her check-in time (09:40) is still ahead of
     // the demo clock (09:14) — Dr. Reis can only have one active session at
     // a time (A-01), and this one hasn't started yet.
@@ -232,18 +280,18 @@ export const APPTS: Appt[] = [
   },
   {
     id: "A-11",
-    patient: P("Noah Nac", "NN", "22 Feb 2000", 26, "Male", "+90 532 111 2211", "noah@example.com"),
+    patient: P("PH-2026-0055"),
     type: "Consultation (video)", isVideo: true, startMin: 720, durationMin: 30, timeLabel: "12:00 – 12:30",
-    doctorId: "EMP-004", doctor: "Dr. Chad Okonkwo", room: "Video",
+    doctorId: "EMP-004", doctor: "Dr. Emre Yalçın", room: "Video",
     status: "Booked", consent: "Signed", payment: "Paid", amount: "₺2,000", balance: "₺0",
     currentStep: 0, forms: NO_FORMS_ISSUE,
     prep: { sample: "Pending", scan: "Scheduled" }, previousVisit: "—",
   },
   {
     id: "A-12",
-    patient: P("Benny Selenium", "BS", "09 May 1968", 58, "Male", "+90 532 111 2212", "benny@example.com"),
+    patient: P("PH-2026-0105"),
     type: "Body Scan", isVideo: false, startMin: 720, durationMin: 90, timeLabel: "12:00 – 13:30",
-    doctorId: "EMP-005", doctor: "Dr. Felix Andersen", nurse: "Aylin Demir", room: "Scan B",
+    doctorId: "EMP-005", doctor: "Dr. Kaan Öztürk", nurse: "Aylin Demir", room: "Scan B",
     status: "Booked", consent: "Pending", payment: "Unpaid", amount: "₺4,800", balance: "₺4,800",
     currentStep: 0,
     forms: [
@@ -254,18 +302,18 @@ export const APPTS: Appt[] = [
   },
   {
     id: "A-13",
-    patient: P("Mackenzie Messineo", "MM", "12 Feb 1988", 38, "Female", "+90 532 111 2201", "mackenzie@example.com", "Penicillin allergy"),
+    patient: P("PH-2026-0042"),
     type: "Follow-up", isVideo: true, startMin: 750, durationMin: 20, timeLabel: "12:30 – 12:50",
-    doctorId: "EMP-003", doctor: "Dr. Claudia Reis", room: "Video",
+    doctorId: "EMP-003", doctor: "Dr. Ebru Reis", room: "Video",
     status: "Booked", consent: "Signed", payment: "Paid", amount: "₺1,500", balance: "₺0",
     currentStep: 0, forms: NO_FORMS_ISSUE,
     prep: { sample: "Collected", scan: "Completed" }, previousVisit: "18 Mar 2026",
   },
   {
     id: "A-14",
-    patient: P("Gustavo Propolis", "GP", "27 Jul 1965", 60, "Male", "+90 532 111 2213", "gustavo@example.com"),
+    patient: P("PH-2026-0063"),
     type: "Consultation (in-person)", isVideo: false, startMin: 840, durationMin: 60, timeLabel: "14:00 – 15:00",
-    doctorId: "EMP-005", doctor: "Dr. Felix Andersen", nurse: "Berna Koç", room: "Room 1",
+    doctorId: "EMP-005", doctor: "Dr. Kaan Öztürk", nurse: "Berna Koç", room: "Room 1",
     // A partial deposit can still be a real ledger fact even though "Partial"
     // is no longer its own payment status — any non-zero balance is Unpaid.
     status: "Booked", consent: "Signed", payment: "Unpaid", amount: "₺2,400", balance: "₺1,200",
@@ -274,9 +322,9 @@ export const APPTS: Appt[] = [
   },
   {
     id: "A-15",
-    patient: P("Zara Quill", "ZQ", "19 Sep 1986", 39, "Female", "+90 532 111 2215", "zara@example.com"),
+    patient: P("PH-2026-0101"),
     type: "Consultation (in-person)", isVideo: false, startMin: 900, durationMin: 45, timeLabel: "15:00 – 15:45",
-    doctorId: "EMP-003", doctor: "Dr. Claudia Reis", nurse: "Aylin Demir", room: "Room 2",
+    doctorId: "EMP-003", doctor: "Dr. Ebru Reis", nurse: "Aylin Demir", room: "Room 2",
     // Neither gate cleared yet — exercises the Front Desk Queue's
     // both-red state, with Take Payment as her next step (payment-first).
     status: "Arrived", consent: "Pending", payment: "Unpaid", amount: "₺3,200", balance: "₺3,200",
@@ -289,18 +337,18 @@ export const APPTS: Appt[] = [
   },
   {
     id: "A-16",
-    patient: P("Mateo Vitalis", "MV", "02 Jan 1974", 52, "Male", "+90 532 111 2216", "mateo@example.com"),
+    patient: P("PH-2026-0102"),
     type: "Body Scan", isVideo: false, startMin: 930, durationMin: 60, timeLabel: "15:30 – 16:30",
-    doctorId: "EMP-005", doctor: "Dr. Felix Andersen", nurse: "Aylin Demir", room: "Scan B",
+    doctorId: "EMP-005", doctor: "Dr. Kaan Öztürk", nurse: "Aylin Demir", room: "Scan B",
     status: "Arrived", consent: "Signed", payment: "Paid", amount: "₺4,800", balance: "₺0",
     arrivedTime: "09:10", waitMinutes: 4, currentStep: 0, forms: NO_FORMS_ISSUE,
     prep: { sample: "Pending", scan: "Scheduled" }, previousVisit: "05 May 2026",
   },
   {
     id: "A-17",
-    patient: P("Priya Chalcone", "PC", "11 Nov 1993", 32, "Female", "+90 532 111 2217", "priya@example.com"),
+    patient: P("PH-2026-0103"),
     type: "Consultation (in-person)", isVideo: false, startMin: 780, durationMin: 60, timeLabel: "13:00 – 14:00",
-    doctorId: "EMP-004", doctor: "Dr. Chad Okonkwo", nurse: "Berna Koç", room: "Room 1",
+    doctorId: "EMP-004", doctor: "Dr. Emre Yalçın", nurse: "Berna Koç", room: "Room 1",
     status: "Booked", consent: "Signed", payment: "Paid", amount: "₺2,400", balance: "₺0",
     currentStep: 0, forms: NO_FORMS_ISSUE,
     prep: { sample: "Pending", scan: "Completed" }, previousVisit: "22 Mar 2026",
@@ -313,13 +361,12 @@ export function getAppt(id: string | undefined): Appt | undefined {
 
 // A Reception check-in is only enabled when consent is signed AND payment settled.
 export function canCheckIn(a: Appt): boolean {
-  const consentOk = a.forms.every((f) => f.status === "Signed");
   const paymentOk = a.payment === "Paid";
-  return consentOk && paymentOk;
+  return formsSigned(a) && paymentOk;
 }
 
 export function checkInBlockReason(a: Appt): string | null {
-  const consentOk = a.forms.every((f) => f.status === "Signed");
+  const consentOk = formsSigned(a);
   const paymentOk = a.payment === "Paid";
   if (!consentOk && !paymentOk) return "Complete consent and payment to enable check-in";
   if (!consentOk) return "Awaiting consent — collect required signatures";
@@ -369,6 +416,24 @@ export function statusPillType(status: ApptStatus): "default" | "success" | "war
   if (status === "In Clinic" || status === "Arrived") return "warning";
   if (status === "No Show" || status === "Cancelled") return "error";
   return "default";
+}
+
+export type ApptStatusTone = "blue" | "amber" | "emerald" | "orange" | "gray" | "red";
+
+// Same per-status hue language as the calendar's own STATUS_STYLE above
+// (Booked=blue, Arrived=amber, Checked In=emerald, In Clinic=orange,
+// Completed/Cancelled=gray, No Show=red), exposed as a named tone for the
+// Appointment Drawer's bold status pill — so a patient's status reads as
+// the same color wherever it appears, calendar block or drawer.
+export function apptStatusTone(status: ApptStatus): ApptStatusTone {
+  switch (status) {
+    case "Booked": return "blue";
+    case "Arrived": return "amber";
+    case "Checked In": return "emerald";
+    case "In Clinic": return "orange";
+    case "No Show": return "red";
+    default: return "gray"; // Completed, Cancelled
+  }
 }
 
 // --- Shared block-geometry math for every time-grid calendar surface ---

@@ -13,7 +13,7 @@ function KpiTile({ value, label, tone }: { value: number; label: string; tone?: 
 export function MyPatientsTodayCard({ scheduled, inProgress, done }: { scheduled: number; inProgress: number; done: number }) {
   const total = scheduled + inProgress + done;
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5">
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-5 shrink-0">
       <div className="flex items-baseline justify-between mb-3.5">
         <h3 className="text-base font-extrabold text-slate-800">My Patients Today</h3>
         <span className="text-xs font-semibold text-gray-400">{total} total</span>

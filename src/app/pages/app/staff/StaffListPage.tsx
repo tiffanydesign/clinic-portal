@@ -1,16 +1,16 @@
 import React, { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { Search, Download, Plus, Upload, ChevronDown, ChevronRight, ArrowUpDown } from "lucide-react";
+import { Search, Plus, Upload, UserPlus, ChevronDown, ChevronRight, ArrowUpDown } from "lucide-react";
 import {
   MOCK_STAFF, ROLE_GROUP_ORDER, ROLE_GROUP_LABEL, Staff, StaffRole,
-  rolePillClass, statusPillClass, workloadColor, todayDotClass,
+  rolePillClass, statusPillClass, workloadColor,
 } from "./staffData";
 import { StaffRowMenu } from "./StaffRowMenu";
 import { AddStaffModal } from "./AddStaffModal";
 import { ImportStaffModal } from "./ImportStaffModal";
 import { FilterSelect } from "../../../components/FilterSelect";
 
-type SortKey = "name" | "patients" | "workload" | "lastActive" | "joined";
+type SortKey = "name" | "patients" | "workload" | "joined";
 
 const ROLE_OPTIONS: StaffRole[] = ["Admin", "Clinician", "Nurse", "Receptionist"];
 
@@ -25,7 +25,7 @@ export function StaffListPage() {
   const [sortAsc, setSortAsc] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
-  const [showExportMenu, setShowExportMenu] = useState(false);
+  const [showAddMenu, setShowAddMenu] = useState(false);
   const [showRoleMenu, setShowRoleMenu] = useState(false);
   const [createdStaff, setCreatedStaff] = useState<Staff[]>([]);
 
@@ -53,7 +53,6 @@ export function StaffListPage() {
       case "name": cmp = a.name.localeCompare(b.name); break;
       case "patients": cmp = (a.patients ?? -1) - (b.patients ?? -1); break;
       case "workload": cmp = (a.workload ?? -1) - (b.workload ?? -1); break;
-      case "lastActive": cmp = a.lastActiveDays - b.lastActiveDays; break;
       case "joined": cmp = a.joined.localeCompare(b.joined); break;
     }
     return sortAsc ? cmp : -cmp;
@@ -102,38 +101,34 @@ export function StaffListPage() {
           <h1 className="text-2xl font-bold text-gray-800">Staff Management</h1>
           <p className="text-sm text-gray-500 mt-1">Manage clinic staff, roles, permissions, and workload</p>
         </div>
-        <div className="flex space-x-3">
-          <div className="relative">
-            <button
-              onClick={() => setShowExportMenu(!showExportMenu)}
-              className="flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm"
-            >
-              <Download className="w-4 h-4 mr-2 text-gray-500" /> Export <ChevronDown className="w-3.5 h-3.5 ml-2 text-gray-400" />
-            </button>
-            {showExportMenu && (
-              <div className="absolute right-0 top-full mt-1 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1" onMouseLeave={() => setShowExportMenu(false)}>
-                <button onClick={() => setShowExportMenu(false)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Export as Excel</button>
-                <button onClick={() => setShowExportMenu(false)} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Export as CSV</button>
-              </div>
-            )}
-          </div>
+        <div className="relative">
           <button
-            onClick={() => setShowImportModal(true)}
-            className="flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm"
-          >
-            <Upload className="w-4 h-4 mr-2 text-gray-500" /> Import Staff
-          </button>
-          <button
-            onClick={() => setShowAddModal(true)}
+            onClick={() => setShowAddMenu(!showAddMenu)}
             className="flex items-center px-4 py-2 bg-slate-600 text-white rounded-lg text-sm font-bold hover:bg-slate-700 transition-colors shadow-sm"
           >
-            <Plus className="w-4 h-4 mr-2" /> Add Staff Member
+            <Plus className="w-4 h-4 mr-2" /> Add Staff <ChevronDown className="w-3.5 h-3.5 ml-2" />
           </button>
+          {showAddMenu && (
+            <div className="absolute right-0 top-full mt-1 w-52 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1" onMouseLeave={() => setShowAddMenu(false)}>
+              <button
+                onClick={() => { setShowAddMenu(false); setShowAddModal(true); }}
+                className="w-full flex items-center gap-2.5 text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              >
+                <UserPlus className="w-4 h-4 text-gray-400" /> Add Individually
+              </button>
+              <button
+                onClick={() => { setShowAddMenu(false); setShowImportModal(true); }}
+                className="w-full flex items-center gap-2.5 text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+              >
+                <Upload className="w-4 h-4 text-gray-400" /> Import from File
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Stat cards */}
-      <div className="px-8 py-5 shrink-0 grid grid-cols-4 gap-6">
+      <div className="px-8 py-5 shrink-0 grid grid-cols-2 gap-6">
         <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
           <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Total Staff</div>
           <div className="text-3xl font-bold text-gray-800">{allStaff.length}</div>
@@ -149,16 +144,6 @@ export function StaffListPage() {
           <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">On Duty Today</div>
           <div className="text-3xl font-bold text-emerald-600">9</div>
           <div className="text-sm text-gray-500 mt-1 font-medium">3 off today</div>
-        </div>
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Avg. Workload</div>
-          <div className="text-3xl font-bold text-orange-600">74%</div>
-          <div className="text-sm text-gray-500 mt-1 font-medium">across clinicians &amp; nurses</div>
-        </div>
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Pending Actions</div>
-          <div className="text-3xl font-bold text-orange-600">3</div>
-          <div className="text-sm text-gray-500 mt-1 font-medium">1 permission review · 2 availability unconfirmed</div>
         </div>
       </div>
 
@@ -227,13 +212,9 @@ export function StaffListPage() {
                   <tr>
                     <SortableTh label="Staff" k="name" className="sticky left-0 z-40 bg-gray-50 w-[200px] shadow-[1px_0_0_#e5e7eb]" />
                     <th className="p-4 font-bold text-gray-600 border-b border-gray-200 w-[100px]">Role</th>
-                    <th className="p-4 font-bold text-gray-600 border-b border-gray-200 w-[150px]">Contact</th>
                     <th className="p-4 font-bold text-gray-600 border-b border-gray-200 w-[90px]">Status</th>
-                    <th className="p-4 font-bold text-gray-600 border-b border-gray-200 w-[80px]">Today</th>
                     <SortableTh label="Patients" k="patients" className="w-[70px]" />
                     <SortableTh label="Workload" k="workload" className="w-[100px]" />
-                    <th className="p-4 font-bold text-gray-600 border-b border-gray-200 w-[100px]">Next Shift</th>
-                    <SortableTh label="Last Active" k="lastActive" className="w-[90px]" />
                     <SortableTh label="Joined" k="joined" className="w-[80px]" />
                     <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-center w-[60px]">Actions</th>
                   </tr>
@@ -241,7 +222,7 @@ export function StaffListPage() {
                 <tbody className="divide-y divide-gray-200">
                   {groups.length === 0 && (
                     <tr>
-                      <td colSpan={11} className="p-16 text-center text-gray-500">
+                      <td colSpan={7} className="p-16 text-center text-gray-500">
                         <div className="text-lg font-bold mb-2">No staff match your criteria</div>
                         <p>Try adjusting your filters or search terms.</p>
                       </td>
@@ -250,7 +231,7 @@ export function StaffListPage() {
                   {groups.map(({ role, members }) => (
                     <React.Fragment key={role}>
                       <tr className="bg-gray-50/80 cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => toggleGroup(role)}>
-                        <td colSpan={11} className="px-4 py-2 sticky left-0">
+                        <td colSpan={7} className="px-4 py-2 sticky left-0">
                           <span className="flex items-center text-xs font-bold text-gray-600 uppercase tracking-wider">
                             {collapsed.has(role) ? <ChevronRight className="w-3.5 h-3.5 mr-1.5" /> : <ChevronDown className="w-3.5 h-3.5 mr-1.5" />}
                             {ROLE_GROUP_LABEL[role]} ({members.length})
@@ -288,7 +269,6 @@ export function StaffListPage() {
 
 function StaffRow({ staff: s, onOpen }: { staff: Staff; onOpen: () => void }) {
   const overCapacity = s.workload !== null && s.workload > 85;
-  const staleLogin = s.lastActiveDays > 7;
 
   return (
     <tr onClick={onOpen} className="cursor-pointer group relative transition-colors bg-white hover:bg-slate-50">
@@ -306,21 +286,11 @@ function StaffRow({ staff: s, onOpen }: { staff: Staff; onOpen: () => void }) {
         <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border ${rolePillClass(s.role)}`}>{s.role}</span>
       </td>
       <td className="p-4">
-        <div className="font-medium text-gray-800">{s.email}</div>
-        <div className="text-[10px] text-gray-500">{s.phone}</div>
-      </td>
-      <td className="p-4">
         <span
           title={s.status === "On Leave" && s.leaveRange ? `On leave: ${s.leaveRange}` : undefined}
           className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border ${statusPillClass(s.status)}`}
         >
-          {s.status}
-        </span>
-      </td>
-      <td className="p-4">
-        <span className="flex items-center text-xs font-medium text-gray-700">
-          <span className={`w-2 h-2 rounded-full mr-1.5 shrink-0 ${todayDotClass(s.today)}`} />
-          {s.today === "Off" && s.todayNote ? s.todayNote : s.today}
+          {s.status === "Active" ? "On Duty" : s.status}
         </span>
       </td>
       <td className="p-4 text-gray-700 font-medium">{s.patients ?? "—"}</td>
@@ -336,8 +306,6 @@ function StaffRow({ staff: s, onOpen }: { staff: Staff; onOpen: () => void }) {
           <span className="text-gray-400">—</span>
         )}
       </td>
-      <td className="p-4 text-gray-600 font-medium">{s.nextShift}</td>
-      <td className={`p-4 font-medium ${staleLogin ? "text-red-600 font-bold" : "text-gray-600"}`}>{s.lastActive}</td>
       <td className="p-4 text-gray-600">{s.joined}</td>
       <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
         <StaffRowMenu staff={s} />

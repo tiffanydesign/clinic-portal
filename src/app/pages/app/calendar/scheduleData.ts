@@ -7,6 +7,7 @@ import {
   APPTS, Appt, ApptType, DAY_START_HOUR, DAY_END_HOUR, HOUR_PX, NOW_MINUTES,
   apptBlockClass, apptStatusDotClass, apptTextClass, blockHeightPx, gapToNext, statusPillType,
 } from "../dashboard/dashboardData";
+import { MOCK_STAFF } from "../staff/staffData";
 
 export {
   APPTS, DAY_START_HOUR, DAY_END_HOUR, HOUR_PX, NOW_MINUTES,
@@ -14,19 +15,25 @@ export {
 };
 export type { Appt, ApptType };
 
-export const CLINICIAN_SELF_ID = "EMP-003"; // signed-in clinician (Dr. Claudia Reis)
+export const CLINICIAN_SELF_ID = "EMP-003"; // signed-in clinician (Dr. Ebru Reis)
 export const NURSE_SELF_NAME = "Berna Koç"; // signed-in nurse
 
 export type Clinician = { id: string; name: string; short: string; avatar: string; onLeave?: boolean };
 
-export const CLINICIANS: Clinician[] = [
-  { id: "EMP-003", name: "Dr. Claudia Reis", short: "Dr. Reis", avatar: "CR" },
-  { id: "EMP-004", name: "Dr. Chad Okonkwo", short: "Dr. Okonkwo", avatar: "CO" },
-  { id: "EMP-005", name: "Dr. Felix Andersen", short: "Dr. Andersen", avatar: "FA" },
-  { id: "EMP-006", name: "Dr. Adobe Martinez", short: "Dr. Martinez", avatar: "AM", onLeave: true },
-];
+// Derived from staffData.MOCK_STAFF (the canonical staff registry) — only
+// the schedule-specific fields (`short`, `onLeave`) live here, so renaming a
+// clinician only ever needs to happen in one place.
+const CLINICIAN_SHORT: Record<string, string> = {
+  "EMP-003": "Dr. Reis",
+  "EMP-004": "Dr. Yalçın",
+  "EMP-005": "Dr. Öztürk",
+  "EMP-006": "Dr. Şimşek",
+};
+export const CLINICIANS: Clinician[] = MOCK_STAFF
+  .filter((s) => s.role === "Clinician")
+  .map((s) => ({ id: s.id, name: s.name, short: CLINICIAN_SHORT[s.id] ?? s.name, avatar: s.avatar, onLeave: s.status === "On Leave" }));
 
-export const NURSES = ["Berna Koç", "Aylin Demir", "Selin Yılmaz"];
+export const NURSES = MOCK_STAFF.filter((s) => s.role === "Nurse" && s.status === "Active").map((s) => s.name);
 
 export type Room = { id: string; label: string; kind: string };
 export const ROOMS: Room[] = [
@@ -117,6 +124,12 @@ export function hasNurseConflict(list: Appt[], nurseName: string, startMin: numb
     list.find((a) => a.id !== ignoreId && a.nurse === nurseName && startMin < a.startMin + a.durationMin && a.startMin < end) ?? null
   );
 }
+
+// The one day (and containing week) the mock appointment data actually
+// models. The Schedule page's date picker lets staff navigate to any date,
+// but only this anchor day/week has real appointments — every other date
+// renders as a legitimately empty schedule rather than fabricating data.
+export const ANCHOR_DATE = new Date(2026, 6, 3); // Fri 3 Jul 2026
 
 // --- week distribution (Mon–Sun of the current week; today = Fri 3 Jul 2026) ---
 export const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];

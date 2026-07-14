@@ -5,6 +5,7 @@ import { useAppContext } from "../../context/AppContext";
 import { Link } from "react-router";
 import { RangeDatePicker } from "../../components/RangeDatePicker";
 import { format } from "date-fns";
+import { getStaff } from "./staff/staffData";
 
 // --- Types ---
 type Role = 'Clinician' | 'Nurse' | 'Receptionist';
@@ -45,10 +46,19 @@ type StaffMember = {
   weeklySummary: WeeklySummary;
 };
 
+// Pulls id/name/avatar from the canonical staff registry (staffData.ts) by
+// real EMP-id — fixes the staff-profile link below, which used to point at
+// a fake "/staff/C1"-style id instead of a real one.
+function staffHeader(empId: string): { id: string; name: string; avatar: string } {
+  const s = getStaff(empId);
+  if (!s) throw new Error(`Unknown staff id in Timesheet: ${empId}`);
+  return { id: s.id, name: s.name, avatar: s.avatar };
+}
+
 // --- Mock Data ---
 const ALL_STAFF: StaffMember[] = [
   {
-    id: "C1", name: "Dr. Claudia Reis", role: "Clinician", avatar: "CR",
+    ...staffHeader("EMP-003"), role: "Clinician",
     weeklySummary: { daysScheduled: 5, daysPresent: 5, daysLeave: 0, totalScheduled: 40, totalActual: 40, totalVariance: 0, totalOvertime: 0, totalAppointments: 32, attendanceRate: 100 },
     dailyRecords: [
       { id: "1", date: "Wed, 1 Jul", type: "Regular", scheduled: "9:00 – 17:00", scheduledHours: 8, actualStart: "8:55", actualEnd: "17:05", actualHours: 8.1, variance: 0.1, overtime: 0, appointments: 6, notes: "" },
@@ -61,7 +71,7 @@ const ALL_STAFF: StaffMember[] = [
     ]
   },
   {
-    id: "C2", name: "Dr. Chad Okonkwo", role: "Clinician", avatar: "CO",
+    ...staffHeader("EMP-004"), role: "Clinician",
     weeklySummary: { daysScheduled: 5, daysPresent: 4, daysLeave: 1, totalScheduled: 40, totalActual: 32, totalVariance: -8, totalOvertime: 0, totalAppointments: 22, attendanceRate: 80 },
     dailyRecords: [
       { id: "1", date: "Wed, 1 Jul", type: "Regular", scheduled: "8:00 – 16:00", scheduledHours: 8, actualStart: "8:00", actualEnd: "16:00", actualHours: 8, variance: 0, overtime: 0, appointments: 6, notes: "" },
@@ -74,7 +84,7 @@ const ALL_STAFF: StaffMember[] = [
     ]
   },
   {
-    id: "N1", name: "Berna Koç", role: "Nurse", avatar: "BK",
+    ...staffHeader("EMP-007"), role: "Nurse",
     weeklySummary: { daysScheduled: 5, daysPresent: 5, daysLeave: 0, totalScheduled: 45, totalActual: 40.5, totalVariance: -4.5, totalOvertime: 0, totalAppointments: 18, attendanceRate: 100 },
     dailyRecords: [
       { id: "1", date: "Wed, 1 Jul", type: "Override", scheduled: "8:30 – 13:00", scheduledHours: 4.5, actualStart: "8:30", actualEnd: "13:00", actualHours: 4.5, variance: -4.5, overtime: 0, appointments: 3, notes: "Override: family commitment" },
@@ -87,7 +97,7 @@ const ALL_STAFF: StaffMember[] = [
     ]
   },
   {
-    id: "R1", name: "Elif Yıldız", role: "Receptionist", avatar: "EY",
+    ...staffHeader("EMP-010"), role: "Receptionist",
     weeklySummary: { daysScheduled: 5, daysPresent: 5, daysLeave: 0, totalScheduled: 50, totalActual: 60, totalVariance: 10, totalOvertime: 10, totalAppointments: 0, attendanceRate: 100 },
     dailyRecords: [
       { id: "1", date: "Wed, 1 Jul", type: "Regular", scheduled: "8:00 – 18:00", scheduledHours: 10, actualStart: "8:00", actualEnd: "20:00", actualHours: 12, variance: 2, overtime: 2, appointments: 0, notes: "Extended shift" },

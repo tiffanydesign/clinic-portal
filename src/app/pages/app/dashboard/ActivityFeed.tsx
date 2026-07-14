@@ -12,16 +12,16 @@ type ActivityItem = {
 };
 
 const FEED: ActivityItem[] = [
-  { time: "09:12", kind: "Patients", text: <><b>Elif Yıldız</b> checked in <b>Mackenzie Messineo</b></> },
-  { time: "09:05", kind: "Payments", text: <>Payment of <b>₺4,800</b> received from <b>Penny Pelargonium</b> (Card)</> },
-  { time: "08:58", kind: "Patients", text: <><b>Dr. Claudia</b> signed off Blood Panel report for <b>Arysse Arcerola</b></> },
-  { time: "08:52", kind: "Appointments", text: <>Appointment cancelled: <b>Amara Chen</b>, 10:30 Body Scan (by Deniz Arslan)</> },
-  { time: "08:45", kind: "Patients", text: <>New patient registered: <b>Noah Nac</b> (by Elif Yıldız)</> },
-  { time: "08:30", kind: "Appointments", text: <>Appointment rescheduled: <b>Bob Bromelain</b>, 3 Jul → 8 Jul (by Deniz Arslan)</> },
-  { time: "08:22", kind: "Appointments", text: <><b>Noah Kimura</b> marked as No Show for 08:00 appointment (auto-flagged)</> },
+  { time: "09:12", kind: "Patients", text: <><b>Elif Yıldız</b> checked in <b>Ece Yıldırım</b></> },
+  { time: "09:05", kind: "Payments", text: <>Payment of <b>₺4,800</b> received from <b>Aslı Kutlu</b> (Card)</> },
+  { time: "08:58", kind: "Patients", text: <><b>Dr. Ebru Reis</b> signed off Blood Panel report for <b>Gül Korkmaz</b></> },
+  { time: "08:52", kind: "Appointments", text: <>Appointment cancelled: <b>Defne Korkut</b>, 10:30 Body Scan (by Deniz Arslan)</> },
+  { time: "08:45", kind: "Patients", text: <>New patient registered: <b>Umut Erdem</b> (by Elif Yıldız)</> },
+  { time: "08:30", kind: "Appointments", text: <>Appointment rescheduled: <b>Serkan Çetin</b>, 3 Jul → 8 Jul (by Deniz Arslan)</> },
+  { time: "08:22", kind: "Appointments", text: <><b>Ozan Bilgin</b> marked as No Show for 08:00 appointment (auto-flagged)</> },
   { time: "08:18", kind: "System", text: <>Automated reminders sent to <b>6 patients</b> for today's appointments</> },
-  { time: "08:05", kind: "Payments", text: <>Refund of <b>₺1,200</b> issued to <b>Dylan Daniel</b> (by Ayşe Hançer)</> },
-  { time: "07:52", kind: "Appointments", text: <><b>Gustavo Propolis</b> arrived for Sample Collection with Dr. Chad</> },
+  { time: "08:05", kind: "Payments", text: <>Refund of <b>₺1,200</b> issued to <b>Burak Kocaman</b> (by Ayşe Hançer)</> },
+  { time: "07:52", kind: "Appointments", text: <><b>Hakan Bulut</b> arrived for Sample Collection with Dr. Emre Yalçın</> },
 ];
 
 const KIND_ICON: Record<EventKind, React.ReactNode> = {

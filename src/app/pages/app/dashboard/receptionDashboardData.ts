@@ -26,46 +26,58 @@ export function isLate(a: Appt): boolean {
   return a.status === "Arrived" && (a.waitMinutes ?? 0) >= 15;
 }
 
-// --- queue grouping: 3 sections, in this fixed order, no "awaiting checkout" group ---
-export type QueueGroup = "needs-action" | "ready-upcoming" | "in-clinic";
+// --- queue grouping: "all" (every row, chronological) plus 3 gate-triage
+// sections, in this fixed order, no "awaiting checkout" group ---
+export type QueueGroup = "all" | "needs-action" | "upcoming" | "in-clinic";
 
 export const GROUP_LABEL: Record<QueueGroup, string> = {
+  all: "All",
   "needs-action": "Needs Action",
-  "ready-upcoming": "Ready / Upcoming",
+  upcoming: "Upcoming",
   "in-clinic": "In Clinic",
 };
 
+// Any patient physically at the desk (Arrived) is, by definition, something
+// the front desk needs to act on next — whether that's clearing a blocked
+// gate or simply tapping Check In once both gates are clear. "Upcoming"
+// therefore only ever holds Booked (not-yet-arrived) appointments.
 export function groupFor(a: Appt): QueueGroup | null {
   if (isSettled(a)) return null; // settled rows leave the queue entirely
   // Video appointments never need a physical arrival/check-in — they stay
   // visible only in Today's Schedule and never occupy a Front Desk Queue
   // row or count toward any group, per the front desk's own scope.
   if (a.isVideo) return null;
-  if (a.status === "Arrived" && (!consentOk(a) || !paymentOk(a))) return "needs-action";
+  if (a.status === "Arrived") return "needs-action";
   if (isReadOnlyInClinic(a)) return "in-clinic";
-  return "ready-upcoming"; // Arrived+ready, or Booked
+  return "upcoming"; // Booked
 }
 
+// "All" is always chronological (by appointment time), same as Upcoming/In
+// Clinic — only Needs Action sorts by wait time, since that's the one tab
+// where triage order matters more than the clock.
 export function sortGroup(appts: Appt[], group: QueueGroup): Appt[] {
   if (group === "needs-action") return [...appts].sort((a, b) => (b.waitMinutes ?? 0) - (a.waitMinutes ?? 0));
-  if (group === "ready-upcoming") {
-    // Arrived-and-ready patients (physically waiting, just need the tap)
-    // surface above still-booked ones, regardless of appointment time.
-    return [...appts].sort((a, b) => {
-      const arrivedRank = (x: Appt) => (x.status === "Arrived" ? 0 : 1);
-      const ra = arrivedRank(a), rb = arrivedRank(b);
-      if (ra !== rb) return ra - rb;
-      return a.startMin - b.startMin;
-    });
-  }
   return [...appts].sort((a, b) => a.startMin - b.startMin);
 }
 
+// "All" is a right-now view of the desk, not the whole day. A patient who's
+// physically present (Arrived / Checked In / In Clinic) is always relevant
+// now regardless of their scheduled slot; a not-yet-arrived Booked
+// appointment only appears once it's within a couple hours of the clock —
+// so the front desk sees who's actually around instead of every far-future
+// booking padding the list.
+const ALL_WINDOW_BEFORE = 120; // 2h before now
+const ALL_WINDOW_AFTER = 180; // 3h after now
+export function nearNow(a: Appt): boolean {
+  if (a.status !== "Booked") return true;
+  return a.startMin >= NOW_MINUTES - ALL_WINDOW_BEFORE && a.startMin <= NOW_MINUTES + ALL_WINDOW_AFTER;
+}
+
 export function groupQueue(appts: Appt[]): Record<QueueGroup, Appt[]> {
-  const out: Record<QueueGroup, Appt[]> = { "needs-action": [], "ready-upcoming": [], "in-clinic": [] };
+  const out: Record<QueueGroup, Appt[]> = { all: [], "needs-action": [], upcoming: [], "in-clinic": [] };
   appts.forEach((a) => {
     const g = groupFor(a);
-    if (g) out[g].push(a);
+    if (g) { out[g].push(a); if (nearNow(a)) out.all.push(a); }
   });
   (Object.keys(out) as QueueGroup[]).forEach((g) => { out[g] = sortGroup(out[g], g); });
   return out;
@@ -92,31 +104,6 @@ export function primaryActionFor(a: Appt): RowAction {
   }
   if (a.status === "Booked") return { kind: "mark-arrived" };
   return { kind: "none" };
-}
-
-// --- header stat chips: fixed pair, not a customisable KPI layout ---
-export type ChipId = "in-clinic" | "unpaid";
-
-export function chipValue(id: ChipId, appts: Appt[]): { count: number; sublabel?: string } {
-  if (id === "in-clinic") return { count: appts.filter(isReadOnlyInClinic).length };
-  const unpaid = appts.filter((a) => !a.isVideo && a.payment !== "Paid");
-  const total = unpaid.reduce((sum, a) => sum + parseCurrency(a.balance), 0);
-  return { count: unpaid.length, sublabel: formatCurrency(total) };
-}
-
-// Each chip also acts as a queue filter — same predicate drives both the
-// count on the chip and which rows appear below when it's tapped. Video
-// appointments never count here either, same as in the queue itself.
-export function matchesChip(a: Appt, id: ChipId): boolean {
-  return id === "in-clinic" ? isReadOnlyInClinic(a) : !a.isVideo && a.payment !== "Paid";
-}
-
-export function parseCurrency(s: string): number {
-  return Number(s.replace(/[^\d]/g, "")) || 0;
-}
-
-export function formatCurrency(n: number): string {
-  return `₺${n.toLocaleString("en-US")}`;
 }
 
 export { NOW_MINUTES };

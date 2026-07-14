@@ -129,10 +129,13 @@ export function NurseDashboardPage() {
   };
 
   return (
-    // No forced page height / overflow-hidden here — the whole page scrolls
-    // as a unit (same pattern as the shared DashboardPage) so a shorter
-    // viewport never clips content with no way to reach it; only the
-    // internal panel math below relies on a concrete height.
+    // No forced page height anywhere — the whole page scrolls as a unit.
+    // The right rail used to be a fixed-height, independently-scrolling
+    // "sidebar" (w-[396px] + h-[760px] row + its own overflow-y-auto); that
+    // meant Up Next's Completed section could end up scrolled out of view
+    // with no visible cue. Now every card (Patient Journey included) sizes
+    // to its own full content and the page itself is the only scroll
+    // surface, so nothing is ever clipped or hidden behind a nested scrollbar.
     <div className="bg-gray-50">
       <div className="px-6 pt-6 pb-4 flex items-start justify-between gap-4 flex-wrap">
         <div>
@@ -142,7 +145,13 @@ export function NurseDashboardPage() {
         <DemoMomentSwitcher value={demoMoment} onChange={handleDemoMomentChange} />
       </div>
 
-      <div className="flex gap-6 px-6 pb-6 h-[760px]">
+      {/* No `items-start` here (default is `items-stretch`) — the right
+          column stretches to match Patient Journey's height, and Up Next
+          (the column's last card, see its own `grow` below) fills whatever
+          space that leaves, so its bottom edge lands exactly on Patient
+          Journey's bottom instead of stopping short at its own natural
+          content height. */}
+      <div className="flex gap-6 px-6 pb-6">
         <div className="flex-1 min-w-0">
           {identity ? (
             <PatientJourneySection
@@ -153,7 +162,13 @@ export function NurseDashboardPage() {
               onComplete={handleComplete}
             />
           ) : (
-            <div className="h-full bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col overflow-hidden">
+            // `h-full` (not just min-h-[500px]) — PatientJourneyCard's own
+            // root already uses `h-full` to fill the row's stretched height
+            // (see the comment above), so without it here too, this empty
+            // state would stay stuck at its min-height floor whenever the
+            // right rail's stacked cards resolve taller than 500px, leaving
+            // it visually shorter than Up Next instead of bottom-aligned.
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col overflow-hidden min-h-[500px] h-full">
               <EmptyJourney
                 hasQueue={upNext.length > 0}
                 completedCount={completedToday.length}
@@ -164,7 +179,7 @@ export function NurseDashboardPage() {
           )}
         </div>
 
-        <div className="w-[396px] shrink-0 flex flex-col gap-5 min-h-0 overflow-y-auto">
+        <div className="w-[396px] shrink-0 flex flex-col gap-5">
           <MyPatientsTodayCard scheduled={upNext.length} inProgress={identity ? 1 : 0} done={completedToday.length} />
           <TodaysSchedulePanel items={schedule} now={clock} />
           <UpNextPanel queue={upNext} completed={completedToday} locked={locked} onStart={handleStartNext} />

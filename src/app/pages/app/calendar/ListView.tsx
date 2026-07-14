@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Search, ChevronUp, ChevronDown, Video } from "lucide-react";
+import { format } from "date-fns";
 import { Appt, APPT_TYPES, CLINICIANS } from "./scheduleData";
 import { FilterSelect } from "../../../components/FilterSelect";
 import { StatusPill } from "../dashboard/DashboardShared";
@@ -10,7 +11,7 @@ const PAGE_SIZE = 10;
 
 type SortKey = "time" | "patient";
 
-export function ListView({ appts, onRowClick }: { appts: Appt[]; onRowClick: (appt: Appt) => void }) {
+export function ListView({ appts, onRowClick, selectedDate }: { appts: Appt[]; onRowClick: (appt: Appt) => void; selectedDate: Date }) {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
   const [type, setType] = useState("");
@@ -50,7 +51,7 @@ export function ListView({ appts, onRowClick }: { appts: Appt[]; onRowClick: (ap
           <Search className="w-4 h-4 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
           <input value={q} onChange={(e) => { setQ(e.target.value); setPage(0); }} placeholder="Search patient or appointment…" className={`${sel} w-full pl-8 bg-white`} />
         </div>
-        <input value="3 Jul 2026" readOnly className={`${sel} bg-gray-100 w-28 tabular-nums`} />
+        <input value={format(selectedDate, "d MMM yyyy")} readOnly className={`${sel} bg-gray-100 w-28 tabular-nums`} />
         <FilterSelect
           value={status}
           onChange={(v) => { setStatus(v); setPage(0); }}

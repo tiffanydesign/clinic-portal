@@ -10,7 +10,7 @@ const SIMULATE_OPTIONS = [
   { value: "berna@phenome.com", label: "Valid — berna@phenome.com" },
   { value: "yourname@phenomelongevity.com", label: "Valid — any @phenomelongevity.com address" },
   { value: "notonfile@phenome.com", label: "Not authorised — notonfile@phenome.com" },
-  { value: "claudia@phenome.com", label: "Already active — claudia@phenome.com" },
+  { value: "ebru@phenome.com", label: "Already active — ebru@phenome.com" },
 ];
 
 export function RegisterEmailPage() {

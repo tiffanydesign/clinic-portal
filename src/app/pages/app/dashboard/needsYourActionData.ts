@@ -39,7 +39,7 @@ export function leaveActionItems(pending: PendingRequest[]): ActionItem[] {
       return {
         id: `leave-${p.id}`,
         kind: "Leave" as const,
-        summary: `Dr. Claudia Reis — ${p.summary}`,
+        summary: `Dr. Ebru Reis — ${p.summary}`,
         waitHours,
         waitLabel: waitLabel(waitHours),
         route: "/approval",

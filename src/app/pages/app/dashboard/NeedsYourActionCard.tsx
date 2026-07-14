@@ -56,22 +56,22 @@ export function NeedsYourActionCard() {
       className="h-full"
       action={
         allItems.length > 0 ? (
-          <div className="flex items-center gap-1.5 text-[11px]">
+          <div className="flex items-center gap-[3.6px] text-[8.4px]">
             <button
               onClick={() => setKindFilter("All")}
-              className={`px-1.5 py-0.5 rounded font-bold border transition-colors ${kindFilter === "All" ? "bg-slate-700 text-white border-slate-700" : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"}`}
+              className={`px-[3.6px] py-[1.8px] rounded font-bold border transition-colors ${kindFilter === "All" ? "bg-slate-700 text-white border-slate-700" : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"}`}
             >
               All ({allItems.length})
             </button>
             <button
               onClick={() => setKindFilter("Leave")}
-              className={`px-1.5 py-0.5 rounded font-bold border transition-colors ${kindFilter === "Leave" ? "bg-amber-100 text-amber-800 border-amber-300" : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"}`}
+              className={`px-[3.6px] py-[1.8px] rounded font-bold border transition-colors ${kindFilter === "Leave" ? "bg-amber-100 text-amber-800 border-amber-300" : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"}`}
             >
               Leave ({leaveCount})
             </button>
             <button
               onClick={() => setKindFilter("Refund")}
-              className={`px-1.5 py-0.5 rounded font-bold border transition-colors ${kindFilter === "Refund" ? "bg-purple-100 text-purple-800 border-purple-300" : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"}`}
+              className={`px-[3.6px] py-[1.8px] rounded font-bold border transition-colors ${kindFilter === "Refund" ? "bg-purple-100 text-purple-800 border-purple-300" : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"}`}
             >
               Refunds ({refundCount})
             </button>

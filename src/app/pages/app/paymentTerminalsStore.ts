@@ -30,7 +30,7 @@ export function getPendingTransactions(id: string): PendingTransaction[] {
 export type NewTerminalInput = {
   label: string;
   model: string;
-  serialNumber: string;
+  shortCode: string;
   assignedTo: string;
 };
 
@@ -39,7 +39,7 @@ export function addTerminal(input: NewTerminalInput): Terminal {
     id: `t-${Date.now()}`,
     label: input.label,
     model: input.model,
-    serialNumber: input.serialNumber,
+    shortCode: input.shortCode,
     assignedTo: input.assignedTo,
     status: "online",
     lastSeen: "Just now",

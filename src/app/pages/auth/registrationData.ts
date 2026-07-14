@@ -14,7 +14,7 @@ export type WhitelistEntry = {
 export const WHITELIST: WhitelistEntry[] = [
   { email: "berna@phenome.com", role: "Nurse", status: "invited" },
   { email: "yeni@phenome.com", role: "Receptionist", status: "invited" },
-  { email: "claudia@phenome.com", role: "Clinician", status: "active" },
+  { email: "ebru@phenome.com", role: "Clinician", status: "active" },
 ];
 
 // Company-wide allowance: any address on this domain is treated as

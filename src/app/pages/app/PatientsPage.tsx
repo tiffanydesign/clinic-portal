@@ -4,52 +4,10 @@ import { Search, ChevronDown, Download, Plus, MoreHorizontal, FileText, Phone, M
 import { toast } from "sonner";
 import { useAppContext, Role } from "../../context/AppContext";
 import { FilterSelect } from "../../components/FilterSelect";
+import { MOCK_PATIENTS, Patient } from "./patientsData";
 
-// --- Types ---
-type PatientStatus = 'Active' | 'Inactive' | 'New' | 'Pending Onboarding';
-type Group = 'VIP' | 'Corporate' | 'Insurance' | 'Walk-in' | '—';
-type Flag = 'Urgent' | 'Follow-up' | 'Watch' | 'No flag';
-type ReviewStatus = 'Results Pending' | 'Awaiting Sign-off' | 'Follow-up Due' | 'Up to Date';
-
-export type Patient = {
-  id: string;
-  name: string;
-  patientId: string;
-  avatar: string;
-  age: number;
-  sex: 'M' | 'F' | 'Other';
-  phone: string;
-  email: string;
-  group: Group;
-  clinician: string | null;
-  nurse: string | null;
-  status: PatientStatus;
-  lastVisit: string;
-  nextAppt: string | null;
-  consent: 'Signed' | 'Pending' | 'Not Sent' | 'N/A';
-  payment: 'Paid' | 'Partial' | 'Unpaid' | 'N/A';
-  checkIn: 'Checked In' | 'Waiting' | 'Not Arrived' | 'Completed';
-  journeyStep: string | null;
-  flag: Flag;
-  reviewStatus?: ReviewStatus;
-  notesCount?: number;
-};
-
-// --- Mock Data ---
-export const MOCK_PATIENTS: Patient[] = [
-  { id: "1", name: "Mackenzie Messineo", patientId: "PH-2026-0042", avatar: "MM", age: 34, sex: "F", phone: "+90 532 111 2233", email: "mackenzie@example.com", group: "VIP", clinician: "Dr. Claudia", nurse: "Berna Koç", status: "Active", lastVisit: "1 Jul", nextAppt: "3 Jul · Scan", consent: "Signed", payment: "Paid", checkIn: "Checked In", journeyStep: "Scan step", flag: "Watch", reviewStatus: "Results Pending", notesCount: 12 },
-  { id: "2", name: "Penny Pelargonium", patientId: "PH-2026-0038", avatar: "PP", age: 28, sex: "F", phone: "+90 542 222 3344", email: "penny@example.com", group: "Corporate", clinician: "Dr. Higgs", nurse: "Aylin Demir", status: "Active", lastVisit: "28 Jun", nextAppt: "3 Jul · Consult", consent: "Signed", payment: "Unpaid", checkIn: "Waiting", journeyStep: null, flag: "Urgent", reviewStatus: "Awaiting Sign-off", notesCount: 5 },
-  { id: "3", name: "Riley Guarana", patientId: "PH-2026-0051", avatar: "RG", age: 42, sex: "M", phone: "+90 552 333 4455", email: "riley@example.com", group: "Walk-in", clinician: "Dr. Claudia", nurse: "Berna Koç", status: "Active", lastVisit: "30 Jun", nextAppt: "3 Jul · Scan", consent: "Pending", payment: "Unpaid", checkIn: "Not Arrived", journeyStep: null, flag: "No flag", reviewStatus: "Up to Date", notesCount: 2 },
-  { id: "4", name: "Arysse Arcerola", patientId: "PH-2026-0015", avatar: "AA", age: 55, sex: "F", phone: "+90 533 444 5566", email: "arysse@example.com", group: "VIP", clinician: "Dr. Chad", nurse: "Berna Koç", status: "Active", lastVisit: "2 Jul", nextAppt: "10 Jul · Consult", consent: "Signed", payment: "Paid", checkIn: "Completed", journeyStep: null, flag: "Follow-up", reviewStatus: "Results Pending", notesCount: 8 },
-  { id: "5", name: "Gustavo Propolis", patientId: "PH-2026-0063", avatar: "GP", age: 61, sex: "M", phone: "+90 543 555 6677", email: "gustavo@example.com", group: "Insurance", clinician: "Dr. Felix", nurse: "Aylin Demir", status: "Active", lastVisit: "2 Jul", nextAppt: null, consent: "N/A", payment: "N/A", checkIn: "Not Arrived", journeyStep: null, flag: "No flag", reviewStatus: "Awaiting Sign-off", notesCount: 15 },
-  { id: "6", name: "Bob Bromelain", patientId: "PH-2026-0029", avatar: "BB", age: 38, sex: "M", phone: "+90 553 666 7788", email: "bob@example.com", group: "Corporate", clinician: "Dr. Adobe", nurse: null, status: "Active", lastVisit: "1 Jul", nextAppt: "8 Jul · Scan", consent: "Signed", payment: "Paid", checkIn: "Not Arrived", journeyStep: null, flag: "No flag", reviewStatus: "Up to Date", notesCount: 4 },
-  { id: "7", name: "Dylan Daniel", patientId: "PH-2026-0071", avatar: "DD", age: 45, sex: "M", phone: "+90 534 777 8899", email: "dylan@example.com", group: "Walk-in", clinician: "Dr. Adobe", nurse: "Aylin Demir", status: "Active", lastVisit: "1 Jul", nextAppt: null, consent: "N/A", payment: "N/A", checkIn: "Not Arrived", journeyStep: null, flag: "Follow-up", reviewStatus: "Follow-up Due", notesCount: 6 },
-  { id: "8", name: "Sophia Ascorbic", patientId: "PH-2026-0044", avatar: "SA", age: 31, sex: "F", phone: "+90 544 888 9900", email: "sophia@example.com", group: "VIP", clinician: "Dr. Chad", nurse: "Berna Koç", status: "Active", lastVisit: "30 Jun", nextAppt: "5 Jul · Consult", consent: "Signed", payment: "Paid", checkIn: "Not Arrived", journeyStep: null, flag: "No flag", reviewStatus: "Up to Date", notesCount: 3 },
-  { id: "9", name: "Oliver Folate", patientId: "PH-2026-0088", avatar: "OF", age: 50, sex: "M", phone: "+90 554 999 0011", email: "oliver@example.com", group: "Insurance", clinician: "Dr. Felix", nurse: null, status: "Active", lastVisit: "30 Jun", nextAppt: null, consent: "N/A", payment: "N/A", checkIn: "Not Arrived", journeyStep: null, flag: "Urgent", reviewStatus: "Results Pending", notesCount: 11 },
-  { id: "10", name: "Cynthia Cromium", patientId: "PH-2026-0092", avatar: "CC", age: 29, sex: "F", phone: "+90 535 000 1122", email: "cynthia@example.com", group: "—", clinician: null, nurse: null, status: "Pending Onboarding", lastVisit: "Never", nextAppt: null, consent: "Pending", payment: "Unpaid", checkIn: "Not Arrived", journeyStep: null, flag: "No flag", notesCount: 0 },
-  { id: "11", name: "Noah Nac", patientId: "PH-2026-0055", avatar: "NN", age: 36, sex: "M", phone: "+90 545 111 2233", email: "noah@example.com", group: "Corporate", clinician: "Dr. Chad", nurse: "Aylin Demir", status: "New", lastVisit: "Never", nextAppt: "7 Jul · Scan", consent: "Not Sent", payment: "Unpaid", checkIn: "Not Arrived", journeyStep: null, flag: "No flag", notesCount: 0 },
-  { id: "12", name: "Benny Betaine", patientId: "PH-2026-0033", avatar: "BB", age: 47, sex: "M", phone: "+90 555 222 3344", email: "benny@example.com", group: "Walk-in", clinician: "Dr. Higgs", nurse: null, status: "Inactive", lastVisit: "20 May", nextAppt: null, consent: "N/A", payment: "N/A", checkIn: "Not Arrived", journeyStep: null, flag: "No flag", notesCount: 1 },
-];
+export type { Patient };
+export { MOCK_PATIENTS };
 
 export function PatientsPage() {
   const { role } = useAppContext();
@@ -69,7 +27,7 @@ export function PatientsPage() {
 
   // Filters based on Role
   let patients = MOCK_PATIENTS;
-  if (role === 'Clinician') patients = patients.filter(p => p.clinician === "Dr. Claudia");
+  if (role === 'Clinician') patients = patients.filter(p => p.clinician === "Dr. Ebru Reis");
   if (role === 'Nurse') patients = patients.filter(p => p.nurse === "Berna Koç" && p.nextAppt?.includes("3 Jul"));
   
   if (search) {
@@ -131,7 +89,7 @@ export function PatientsPage() {
           <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, ID, email..." className="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded text-sm outline-none focus:border-slate-500 bg-white shadow-sm" />
         </div>
         <FilterSelect value={statusFilter} onChange={setStatusFilter} options={["Status: All", "Active", "Inactive", "New", "Pending Onboarding"]} />
-        <FilterSelect value={clinicianFilter} onChange={setClinicianFilter} options={["Assigned Clinician: All", "Dr. Claudia Reis", "Dr. Chad Okonkwo"]} />
+        <FilterSelect value={clinicianFilter} onChange={setClinicianFilter} options={["Assigned Clinician: All", "Dr. Ebru Reis", "Dr. Emre Yalçın"]} />
         <FilterSelect value={groupFilter} onChange={setGroupFilter} options={["Group: All", "VIP", "Corporate", "Insurance", "Walk-in"]} />
       </div>
     );

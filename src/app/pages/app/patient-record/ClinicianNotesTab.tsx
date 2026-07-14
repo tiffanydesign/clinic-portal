@@ -5,7 +5,7 @@ import { usePatientOutletContext } from "./PatientRecordLayout";
 import { ClinicianNote } from "./patientRecordData";
 import { DIAGNOSIS_LIBRARY } from "../clinic-settings/diagnosesData";
 
-const CURRENT_CLINICIAN_ID = "EMP-003"; // Dr. Claudia Reis (signed-in clinician)
+const CURRENT_CLINICIAN_ID = "EMP-003"; // Dr. Ebru Reis (signed-in clinician)
 
 function NoteCard({ note, canManage, onDelete }: { note: ClinicianNote; canManage: boolean; onDelete: () => void }) {
   return (
@@ -114,7 +114,7 @@ export function ClinicianNotesTab() {
 
   const addNote = (body: string, tags: string[]) => {
     setNotes((prev) => [
-      { id: `N-${prev.length + 1}`, authorId: CURRENT_CLINICIAN_ID, author: "Dr. Claudia Reis", authorAvatar: "CR", timestamp: "3 Jul 2026, now", body, diagnosisTags: tags, attachments: [], editable: true },
+      { id: `N-${prev.length + 1}`, authorId: CURRENT_CLINICIAN_ID, author: "Dr. Ebru Reis", authorAvatar: "ER", timestamp: "3 Jul 2026, now", body, diagnosisTags: tags, attachments: [], editable: true },
       ...prev,
     ]);
     setModalOpen(false);

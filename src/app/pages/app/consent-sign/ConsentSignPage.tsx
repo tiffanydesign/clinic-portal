@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { Check, Trash2 } from "lucide-react";
+import { Check, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { useAppointments, signConsent } from "../dashboard/appointmentsStore";
 import { CONSENT_FORM_VERSIONS } from "../clinic-settings/consentFormData";
@@ -31,7 +31,7 @@ export function ConsentSignPage() {
 
   // Escape-proofing: push a history entry on mount and re-push on every
   // popstate, so the browser back gesture can never leave this screen. The
-  // only sanctioned exits are the Staff button (confirm required) and
+  // only sanctioned exits are the close button (confirm required) and
   // completing the flow.
   useEffect(() => {
     window.history.pushState(null, "", window.location.href);
@@ -93,9 +93,10 @@ export function ConsentSignPage() {
         </div>
         <button
           onClick={() => setExitConfirmOpen(true)}
-          className="px-3 py-2 text-xs font-bold text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors shrink-0"
+          aria-label="Exit signing"
+          className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors shrink-0"
         >
-          Staff
+          <X className="w-5 h-5" />
         </button>
       </div>
 

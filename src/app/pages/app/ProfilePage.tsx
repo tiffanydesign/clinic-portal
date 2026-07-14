@@ -8,14 +8,33 @@ import { toast } from "sonner";
 import { GlassStatusPill } from "../../components/glass/GlassStatusPill";
 import { GlassButton } from "../../components/glass/GlassButton";
 import { InfoRow, SectionTitle, EditToggle, ToggleSwitch } from "../../components/glass/ProfilePatterns";
+import { getStaff } from "./staff/staffData";
 
 // --- Mock Data ---
 
+// The demo "self" account for each role, by real EMP-id — sourced from the
+// canonical staff registry (staffData.ts) instead of a fourth independent
+// copy of the same identities, so a name/email/phone change there is
+// reflected here automatically.
+const PROFILE_STAFF_ID: Record<Role, string> = {
+  Admin: "EMP-001",
+  Clinician: "EMP-003",
+  Reception: "EMP-010",
+  Nurse: "EMP-007",
+};
+
+function roleProfile(role: Role): { first: string; last: string; email: string; phone: string; roleLabel: string } {
+  const s = getStaff(PROFILE_STAFF_ID[role])!;
+  const [first, ...rest] = s.name.replace(/^Dr\.\s*/, "").split(" ");
+  // InfoRow prepends "+90 " itself, so this field stays prefix-free.
+  return { first, last: rest.join(" "), email: s.email, phone: s.phone.replace(/^\+90\s*/, ""), roleLabel: s.role };
+}
+
 export const ROLE_DATA: Record<Role, { first: string; last: string; email: string; phone: string; roleLabel: string }> = {
-  Admin: { first: "Ayşe", last: "Hançer", email: "ayse@phenome.com", phone: "532 123 4567", roleLabel: "Admin" },
-  Clinician: { first: "Claudia", last: "Reis", email: "claudia@phenome.com", phone: "555 987 6543", roleLabel: "Clinician" },
-  Reception: { first: "Elif", last: "Yıldız", email: "elif@phenome.com", phone: "533 456 7890", roleLabel: "Receptionist" },
-  Nurse: { first: "Berna", last: "Koç", email: "berna@phenome.com", phone: "544 111 2222", roleLabel: "Nurse" }
+  Admin: roleProfile("Admin"),
+  Clinician: roleProfile("Clinician"),
+  Reception: roleProfile("Reception"),
+  Nurse: roleProfile("Nurse"),
 };
 
 const CLINIC_NAME = "Istanbul Clinic";
@@ -359,7 +378,7 @@ export function ProfilePage() {
                 { time: "Just now", desc: "Viewed Profile Settings" },
                 { time: "2 hours ago", desc: "Logged in from iPad Air · Istanbul" },
                 { time: "Yesterday, 14:20", desc: "Updated password" },
-                { time: "Yesterday, 09:15", desc: "Viewed patient record: M. Messineo" },
+                { time: "Yesterday, 09:15", desc: "Viewed patient record: E. Yıldırım" },
                 { time: "Oct 12, 16:00", desc: "Changed notification preferences" },
                 { time: "Oct 11, 11:30", desc: "Logged out" },
                 { time: "Oct 11, 08:45", desc: "Logged in from iPhone 14 Pro · Istanbul" },

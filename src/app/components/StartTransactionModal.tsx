@@ -33,6 +33,7 @@ function TerminalRow({ terminal, selected, onSelect }: { terminal: Terminal; sel
       <div className="flex items-center gap-2.5 min-w-0">
         <span className={`w-2 h-2 rounded-full shrink-0 ${dotClass}`} />
         <span className={`text-sm font-bold truncate ${selectable ? "text-gray-800" : "text-gray-400"}`}>{terminal.label}</span>
+        <span className={`text-xs font-mono tracking-widest shrink-0 ${selectable ? "text-gray-400" : "text-gray-300"}`}>#{terminal.shortCode}</span>
       </div>
       <span className={`text-xs font-medium shrink-0 ${terminal.status === "needs-attention" ? "text-amber-600" : selectable ? "text-emerald-600" : "text-gray-400"}`}>
         {terminal.status === "online" ? "Online" : terminal.status === "needs-attention" ? `Offline ${compactDuration(terminal.lastSeen)}` : "Offline"}

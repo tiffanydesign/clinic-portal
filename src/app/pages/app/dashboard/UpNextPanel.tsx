@@ -13,6 +13,7 @@ function QueueRow({ item, locked, onStart }: { item: QueueItem; locked: boolean;
       <button
         onClick={onStart}
         disabled={!ready}
+        title={!ready ? "Requires next patient check-in and current journey completion." : undefined}
         className={`px-4 py-1.5 text-xs font-bold rounded-lg shrink-0 transition-colors ${
           ready ? "bg-emerald-600 text-white hover:bg-emerald-700" : "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed"
         }`}
@@ -26,13 +27,21 @@ function QueueRow({ item, locked, onStart }: { item: QueueItem; locked: boolean;
 function CompletedSection({ items }: { items: CompletedItem[] }) {
   const [open, setOpen] = useState(true);
   return (
-    <div className="border-t border-gray-100 shrink-0">
-      <button onClick={() => setOpen((o) => !o)} className="w-full flex items-center justify-between px-4 py-3 text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors">
+    // `grow` (not shrink-0) — this is the one section of the card that
+    // absorbs whatever extra height items-stretch hands the card from
+    // NurseDashboardPage's row, so Up Next's own bottom edge lands flush
+    // with Patient Journey's. `min-h-0` on both this and the list below is
+    // required for the flex-1 list's own overflow-y-auto to ever kick in
+    // (a flex child's automatic min-height is its content size otherwise,
+    // which would keep growing the card past the row's height instead of
+    // scrolling internally).
+    <div className="border-t border-gray-100 grow flex flex-col min-h-0">
+      <button onClick={() => setOpen((o) => !o)} className="w-full flex items-center justify-between px-4 py-3 text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors shrink-0">
         <span>Completed today ({items.length})</span>
         <ChevronDown className={`w-3.5 h-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
-        <div className="max-h-[220px] overflow-y-auto px-4 pb-3 space-y-2.5">
+        <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-3 space-y-2.5">
           {items.map((it, i) => (
             <div key={i} className="flex items-center gap-2 text-xs text-gray-500">
               <Check className="w-3 h-3 text-emerald-500 shrink-0" strokeWidth={3} />
@@ -59,7 +68,20 @@ export function UpNextPanel({
 }) {
   const next = queue[0];
   return (
-    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col overflow-hidden">
+    // shrink-0 is still load-bearing: without it, this being the only rail
+    // card whose root has overflow other than "visible" makes its flexbox
+    // automatic minimum size 0 (per spec), so if the column's content ever
+    // exceeded the row's height, the browser would shrink THIS card first —
+    // all the way down if needed — and overflow-hidden would then clip
+    // whatever doesn't fit with no scrollbar, silently. `grow` is the new
+    // half of the story: NurseDashboardPage's row now stretches this
+    // column to Patient Journey's height, and `grow` is what lets this
+    // card (rather than blank space below it) absorb that extra room, so
+    // its own bottom edge lines up with Patient Journey's — CompletedSection
+    // below is where that extra height actually gets spent (its own list
+    // scrolls internally via min-h-0 + overflow-y-auto rather than
+    // stretching past whatever height it's given).
+    <div className="bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col overflow-hidden shrink-0 grow">
       <div className="px-5 pt-5 pb-1 shrink-0">
         <h3 className="text-base font-extrabold text-slate-800">Up Next</h3>
       </div>

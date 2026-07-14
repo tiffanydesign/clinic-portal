@@ -33,20 +33,42 @@ export const KIND_LABEL: Record<NotificationKind, string> = {
 
 // Hand-authored, static — everything that isn't derived from a live store.
 export const STATIC_NOTIFICATIONS: NotificationItem[] = [
-  { id: "N-01", kind: "appointment", text: "Appointment cancelled: Amara Chen, 10:30 Body Scan (by Deniz Arslan)", time: "08:52", roles: ["Admin", "Reception", "Clinician", "Nurse"], actionRoute: "/calendar/schedule" },
-  { id: "N-02", kind: "appointment", text: "Appointment rescheduled: Bob Bromelain, 3 Jul → 8 Jul", time: "08:30", roles: ["Admin", "Reception", "Clinician", "Nurse"], actionRoute: "/calendar/schedule" },
-  { id: "N-03", kind: "appointment", text: "Noah Kimura marked as No Show for 08:00 appointment (auto-flagged)", time: "08:22", roles: ["Admin", "Reception"], actionRoute: "/calendar/schedule" },
-  { id: "N-04", kind: "result", text: "New Genetic Panel result ready for review: Arysse Arcerola", time: "07:40", roles: ["Admin", "Clinician"], actionRoute: "/patients/P-001/results" },
-  { id: "N-05", kind: "result", text: "Dr. Claudia signed off Blood Panel report for Arysse Arcerola", time: "08:58", roles: ["Admin", "Nurse"], actionRoute: "/patients/P-001/results" },
-  { id: "N-06", kind: "result", text: "Metabolic Panel overdue 5 days: Arysse Arcerola", time: "Yesterday", roles: ["Admin", "Clinician"], actionRoute: "/patients/P-001/results" },
-  { id: "N-07", kind: "payment", text: "Payment of ₺4,800 received from Penny Pelargonium (Card)", time: "09:05", roles: ["Admin", "Reception"], actionRoute: "/billing" },
-  { id: "N-08", kind: "payment", text: "Refund of ₺1,200 issued to Dylan Daniel (by Ayşe Hançer)", time: "08:05", roles: ["Admin", "Reception"], actionRoute: "/billing" },
+  { id: "N-01", kind: "appointment", text: "Appointment cancelled: Defne Korkut, 10:30 Body Scan (by Deniz Arslan)", time: "08:52", roles: ["Admin", "Reception", "Clinician", "Nurse"], actionRoute: "/calendar/schedule" },
+  { id: "N-02", kind: "appointment", text: "Appointment rescheduled: Serkan Çetin, 3 Jul → 8 Jul", time: "08:30", roles: ["Admin", "Reception", "Clinician", "Nurse"], actionRoute: "/calendar/schedule" },
+  { id: "N-03", kind: "appointment", text: "Ozan Bilgin marked as No Show for 08:00 appointment (auto-flagged)", time: "08:22", roles: ["Admin", "Reception"], actionRoute: "/calendar/schedule" },
+  { id: "N-04", kind: "result", text: "New Genetic Panel result ready for review: Gül Korkmaz", time: "07:40", roles: ["Admin", "Clinician"], actionRoute: "/patients/P-001/results" },
+  { id: "N-05", kind: "result", text: "Dr. Ebru Reis signed off Blood Panel report for Gül Korkmaz", time: "08:58", roles: ["Admin", "Nurse"], actionRoute: "/patients/P-001/results" },
+  { id: "N-06", kind: "result", text: "Metabolic Panel overdue 5 days: Gül Korkmaz", time: "Yesterday", roles: ["Admin", "Clinician"], actionRoute: "/patients/P-001/results" },
+  { id: "N-07", kind: "payment", text: "Payment of ₺4,800 received from Aslı Kutlu (Card)", time: "09:05", roles: ["Admin", "Reception"], actionRoute: "/billing" },
+  { id: "N-08", kind: "payment", text: "Refund of ₺1,200 issued to Burak Kocaman (by Ayşe Hançer)", time: "08:05", roles: ["Admin", "Reception"], actionRoute: "/billing" },
   { id: "N-09", kind: "system", text: "Automated reminders sent to 6 patients for today's appointments", time: "08:18", roles: ["Admin", "Reception"] },
-  { id: "N-10", kind: "system", text: "New patient registered: Noah Nac (by Elif Yıldız)", time: "08:45", roles: ["Admin", "Reception"] },
+  { id: "N-10", kind: "system", text: "New patient registered: Umut Erdem (by Elif Yıldız)", time: "08:45", roles: ["Admin", "Reception"] },
 ];
 
 export function staticNotificationsForRole(role: Role): NotificationItem[] {
   return STATIC_NOTIFICATIONS.filter((n) => n.roles.includes(role));
+}
+
+// Approximates a real calendar date from a notification's free-text time
+// label ("08:52", "Yesterday", "3 days ago", ...), anchored to the same
+// mock "today" (Fri 3 Jul 2026) every other dashboard surface uses — enough
+// to drive the date-range filter without needing a structured date on every
+// mock entry.
+const MOCK_TODAY = new Date(2026, 6, 3);
+
+export function notificationDate(time: string): Date {
+  if (time.startsWith("Yesterday")) {
+    const d = new Date(MOCK_TODAY);
+    d.setDate(d.getDate() - 1);
+    return d;
+  }
+  const daysAgo = time.match(/^(\d+)\s*days?\s*ago$/i);
+  if (daysAgo) {
+    const d = new Date(MOCK_TODAY);
+    d.setDate(d.getDate() - parseInt(daysAgo[1], 10));
+    return d;
+  }
+  return MOCK_TODAY; // "HH:MM", "Just now", or anything else — today
 }
 
 // --- Availability-workflow entries, derived from the live store ---
@@ -56,7 +78,7 @@ export function pendingRequestNotifications(pending: PendingRequest[]): Notifica
   return pending.map((p) => ({
     id: `avail-pending-${p.id}`,
     kind: "approval",
-    text: `Dr. Claudia Reis submitted a ${p.kind} request: ${p.summary}`,
+    text: `Dr. Ebru Reis submitted a ${p.kind} request: ${p.summary}`,
     time: p.submittedAt,
     roles: ["Admin"],
     actionRoute: "/approval",
@@ -83,7 +105,7 @@ export function scheduleChangeNotifications(log: ScheduleChangeLogItem[]): Notif
   return log.map((entry) => ({
     id: `avail-schedule-${entry.id}`,
     kind: "system",
-    text: `Dr. Claudia Reis updated their weekly hours: ${entry.summary}`,
+    text: `Dr. Ebru Reis updated their weekly hours: ${entry.summary}`,
     time: entry.at,
     roles: ["Admin"],
     actionRoute: "/calendar/team-availability",
