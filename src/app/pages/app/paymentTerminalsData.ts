@@ -17,6 +17,11 @@ export type Terminal = {
   assignedTo: string;
   status: TerminalStatus;
   lastSeen: string;
+  // Optional clinical-room assignment, surfaced only in the unified Devices
+  // page's "Assigned Room" column. Front-desk terminals default to Unassigned
+  // (their physical desk lives in `assignedTo`); this never affects the
+  // Reception Start-Transaction picker, which keys off status/label/shortCode.
+  roomId?: string | null;
 };
 
 export type PendingTransaction = {

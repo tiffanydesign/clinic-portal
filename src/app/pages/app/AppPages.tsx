@@ -81,7 +81,8 @@ export { StaffWorkloadTab } from "./staff/StaffWorkloadTab";
 
 export { ConsentFormPage } from "./clinic-settings/ConsentFormPage";
 export { ClinicSettingsHubPage } from "./clinic-settings/ClinicSettingsHubPage";
-export { PaymentTerminalsPage } from "./clinic-settings/PaymentTerminalsPage";
+export { RoomsPage } from "./clinic-settings/RoomsPage";
+export { DevicesPage } from "./clinic-settings/DevicesPage";
 
 // Expose the Profile Page instead of the skeleton
 export { ProfilePage } from "./ProfilePage";
@@ -139,7 +140,9 @@ export function SiteMap() {
       { path: "/staff/EMP-003", label: "Staff Detail -> Redirects to Overview" },
       { path: "/clinic-settings", label: "Clinic Settings (Hub)" },
       { path: "/clinic-settings/consent-form", label: "Clinic Settings -> Consent Form Template" },
-      { path: "/clinic-settings/payment-terminals", label: "Clinic Settings -> Payment Terminals" },
+      { path: "/clinic-settings/rooms", label: "Clinic Settings -> Rooms" },
+      { path: "/clinic-settings/devices", label: "Clinic Settings -> Devices" },
+      { path: "/clinic-settings/payment-terminals", label: "Clinic Settings -> Payment Terminals (redirects to Devices)" },
       { path: "/feedback", label: "Feedback" },
       { path: "/timesheet", label: "Timesheet" },
       { path: "/approval", label: "Approvals" },

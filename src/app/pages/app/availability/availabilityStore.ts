@@ -8,10 +8,12 @@
 
 import { useSyncExternalStore } from "react";
 import {
-  DAYS, WeekSchedule, Slot, BookedAppt,
+  DAYS, WeekSchedule, Slot, BookedAppt, BlockedTime,
   buildDefaultSchedule, checkLeaveConflicts, OverrideItem, LeaveItem, LeaveDuration, LeaveReason,
   PendingRequest, Decision, fmtSlots,
 } from "./availabilityData";
+
+export type { BlockedTime } from "./availabilityData";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 export function dayOfWeekForDate(dateStr: string): string {
@@ -34,6 +36,7 @@ type State = {
   overrides: OverrideItem[];
   leaves: LeaveItem[];
   decisions: Decision[];
+  blockedTime: BlockedTime[];
 };
 
 function initialState(): State {
@@ -48,9 +51,17 @@ function initialState(): State {
       { id: "OV-1", date: "15 Jul 2026", dayOfWeek: "Wednesday", slots: [{ start: "10:00am", end: "2:00pm" }], status: "Approved" },
     ],
     leaves: [
+      // An already-approved full day inside the demo week, so the My Schedule
+      // availability layer shows a real leave block (Thu 2 Jul 2026).
+      { id: "LV-0", dateFrom: "2 Jul 2026", dateTo: "2 Jul 2026", duration: "Full Day", reason: "Conference / Training", status: "Approved", conflicts: [], submittedAt: "1w ago" },
       { id: "LV-1", dateFrom: "22 Jul 2026", dateTo: "24 Jul 2026", duration: "Full Day", reason: "Annual Leave", status: "Pending", conflicts: [], submittedAt: "1d ago" },
       { id: "LV-2", dateFrom: "2 Aug 2026", dateTo: "2 Aug 2026", duration: "Full Day", reason: "Sick Leave", status: "Pending", conflicts: [], submittedAt: "5h ago" },
       { id: "LV-3", dateFrom: "10 Aug 2026", dateTo: "12 Aug 2026", duration: "Full Day", reason: "Conference / Training", status: "Pending", conflicts: [], submittedAt: "3d ago" },
+    ],
+    // Read-only Blocked Time inside the demo week (Wed 1 Jul + Fri 3 Jul 2026).
+    blockedTime: [
+      { id: "BT-1", date: "1 Jul 2026", startMin: 15 * 60, durationMin: 60, reason: "Team meeting" },
+      { id: "BT-2", date: "3 Jul 2026", startMin: 13 * 60, durationMin: 60, reason: "Admin & report notes" },
     ],
     decisions: [
       { id: "DEC-1", kind: "Date Override", summary: "8 Jul: 9:00am–1:00pm", result: "Approved", by: ADMIN_NAME, at: "3 Jul" },

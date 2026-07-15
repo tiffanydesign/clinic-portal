@@ -8,6 +8,7 @@ import type { Role } from "../../../context/AppContext";
 import {
   Appt, canCheckIn, checkInBlockReason, relevantJourneySteps, formsSigned,
 } from "./dashboardData";
+import { roomName } from "../clinic-settings/roomsStore";
 import { StatusPill } from "./DashboardShared";
 import {
   KV, Block, AllergyBanner, PatientHeaderBody, StatusGateCard, JourneyStepperLarge,
@@ -101,12 +102,12 @@ function AdminBody({ appt }: { appt: Appt }) {
         <KV label="Type" value={typeLabel(appt)} />
         <KV label="Time" value={appt.timeLabel} />
         <KV label="Duration" value={`${appt.durationMin} min`} />
-        <KV label="Room" value={appt.room} />
+        <KV label="Room" value={roomName(appt.room)} />
       </Block>
       <Block title="Assigned">
         <KV label="Clinician" value={appt.doctor} />
         <KV label="Nurse" value={appt.nurse ?? "—"} />
-        <KV label="Room" value={appt.room} />
+        <KV label="Room" value={roomName(appt.room)} />
       </Block>
       <Block title="Payment Detail">
         <KV label="Amount" value={appt.amount} />
@@ -266,7 +267,7 @@ function NurseBody({ appt }: { appt: Appt }) {
       </Block>
       <Block title="Preparation">
         <KV label="Sample" value={appt.prep.sample} />
-        <KV label="Room" value={`${appt.room} · In Use`} />
+        <KV label="Room" value={`${roomName(appt.room)} · In Use`} />
       </Block>
     </>
   );
@@ -357,7 +358,7 @@ function OverlayReadOnly({ appt, onClose }: { appt: Appt; onClose: () => void })
       <Block title="Details">
         <KV label="Time" value={appt.timeLabel} />
         <KV label="Booked by" value={appt.doctor} />
-        <KV label="Room" value={appt.room} />
+        <KV label="Room" value={roomName(appt.room)} />
       </Block>
     </DrawerShell>
   );

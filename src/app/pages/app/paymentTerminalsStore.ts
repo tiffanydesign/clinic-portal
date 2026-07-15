@@ -27,6 +27,12 @@ export function getPendingTransactions(id: string): PendingTransaction[] {
   return pendingByTerminal[id] ?? [];
 }
 
+// Non-reactive snapshot for the unified Devices page's global short-code
+// uniqueness check (terminals share the code namespace with scanners/TVs).
+export function getTerminalsSnapshot(): Terminal[] {
+  return terminals;
+}
+
 export type NewTerminalInput = {
   label: string;
   model: string;
@@ -49,7 +55,7 @@ export function addTerminal(input: NewTerminalInput): Terminal {
   return newTerminal;
 }
 
-export function updateTerminal(id: string, patch: Partial<Pick<Terminal, "label" | "assignedTo">>) {
+export function updateTerminal(id: string, patch: Partial<Pick<Terminal, "label" | "assignedTo" | "roomId">>) {
   terminals = terminals.map((t) => (t.id === id ? { ...t, ...patch } : t));
   emit();
 }

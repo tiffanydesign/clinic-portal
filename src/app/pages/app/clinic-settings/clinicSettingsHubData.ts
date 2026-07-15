@@ -33,13 +33,21 @@ export const SETTINGS_CATEGORIES: SettingsCategory[] = [
     ],
   },
   {
-    name: "Payments",
+    // Payment Terminals folds in here as one device type — the old Payments
+    // card is gone and its route redirects into Devices' terminal filter.
+    name: "Rooms & Devices",
     modules: [
       {
-        name: "Payment Terminals",
-        description: "Manage Stripe card readers used for in-person payments",
+        name: "Rooms",
+        description: "Manage consultation, scan and sample rooms",
         enabled: true,
-        route: "/clinic-settings/payment-terminals",
+        route: "/clinic-settings/rooms",
+      },
+      {
+        name: "Devices",
+        description: "Scanners, TVs and payment terminals",
+        enabled: true,
+        route: "/clinic-settings/devices",
       },
     ],
   },

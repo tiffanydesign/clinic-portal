@@ -6,6 +6,7 @@ import { usePatientOutletContext } from "./PatientRecordLayout";
 import { RecordAppt } from "./patientRecordData";
 import { StatusPill } from "../dashboard/DashboardShared";
 import { statusPillType } from "../dashboard/dashboardData";
+import { roomName } from "../clinic-settings/roomsStore";
 
 function ApptTable({ title, appts, expandable, editable, action }: {
   title: string; appts: RecordAppt[]; expandable?: boolean; editable?: boolean; action?: React.ReactNode;
@@ -38,7 +39,7 @@ function ApptTable({ title, appts, expandable, editable, action }: {
                   <td className="px-4 py-3 font-medium text-gray-800">{a.dateLabel}</td>
                   <td className="px-4 py-3 text-gray-600"><span className="flex items-center gap-1.5">{a.isVideo ? <Video className="w-3.5 h-3.5 text-slate-400" /> : <MapPin className="w-3.5 h-3.5 text-gray-300" />}{a.type}</span></td>
                   <td className="px-4 py-3 text-gray-600">{a.clinician}</td>
-                  <td className="px-4 py-3 text-gray-600">{a.room}</td>
+                  <td className="px-4 py-3 text-gray-600">{roomName(a.room)}</td>
                   <td className="px-4 py-3"><StatusPill status={a.status} type={statusPillType(a.status as any)} /></td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end items-center gap-2">
@@ -81,7 +82,7 @@ function NurseTodayCard({ appt }: { appt?: RecordAppt }) {
           <div className="flex justify-between"><span className="text-gray-500">Time</span><span className="font-medium text-gray-800">{appt.dateLabel}</span></div>
           <div className="flex justify-between"><span className="text-gray-500">Type</span><span className="font-medium text-gray-800">{appt.type}</span></div>
           <div className="flex justify-between"><span className="text-gray-500">Clinician</span><span className="font-medium text-gray-800">{appt.clinician}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">Room</span><span className="font-medium text-gray-800">{appt.room}</span></div>
+          <div className="flex justify-between"><span className="text-gray-500">Room</span><span className="font-medium text-gray-800">{roomName(appt.room)}</span></div>
           <div className="flex justify-between items-center"><span className="text-gray-500">Status</span><StatusPill status={appt.status} type={statusPillType(appt.status as any)} /></div>
         </div>
       ) : (

@@ -35,16 +35,13 @@ export const CLINICIANS: Clinician[] = MOCK_STAFF
 
 export const NURSES = MOCK_STAFF.filter((s) => s.role === "Nurse" && s.status === "Active").map((s) => s.name);
 
-export type Room = { id: string; label: string; kind: string };
-export const ROOMS: Room[] = [
-  { id: "Scan A", label: "Scan A", kind: "Scan Room" },
-  { id: "Scan B", label: "Scan B", kind: "Scan Room" },
-  { id: "Room 1", label: "Room 1", kind: "Consult Room" },
-  { id: "Room 2", label: "Room 2", kind: "Consult Room" },
-  { id: "Room 3", label: "Room 3", kind: "Consult Room" },
-  { id: "Lab 1", label: "Lab 1", kind: "Sample Room" },
-  { id: "Lab 2", label: "Lab 2", kind: "Sample Room" },
-];
+// Rooms are no longer hardcoded here — they live in the Clinic Settings rooms
+// store (the single source of truth an admin manages). The calendar consumes
+// ACTIVE rooms in sort order via useActiveRooms(); roomName() resolves a raw
+// appointment `room` id to its current display name (with an "(inactive)"
+// suffix for history). These re-exports keep calendar imports local.
+export { useActiveRooms, getActiveRoomsSnapshot, roomName } from "../clinic-settings/roomsStore";
+export type { Room, RoomType } from "../clinic-settings/roomsData";
 
 export const APPT_TYPES: ApptType[] = [
   "Body Scan",

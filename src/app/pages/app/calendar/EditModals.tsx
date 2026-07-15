@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { ModalShell, Field } from "./CreateModals";
 import { FilterSelect } from "../../../components/FilterSelect";
 import {
-  Appt, ApptOverride, CLINICIANS, NURSES, ROOMS, APPT_TYPES, DURATION_OPTIONS,
+  Appt, ApptOverride, CLINICIANS, NURSES, useActiveRooms, roomName, APPT_TYPES, DURATION_OPTIONS,
   clockToMin, minToClock, fmtRange,
 } from "./scheduleData";
 
@@ -62,6 +62,7 @@ export function EditAppointmentModal({ appt, onClose, onApply }: { appt: Appt; o
 }
 
 export function ReassignModal({ appt, onClose, onApply }: { appt: Appt; onClose: () => void; onApply: (ov: ApptOverride) => void }) {
+  const rooms = useActiveRooms();
   const [doctorId, setDoctorId] = useState(appt.doctorId);
   const [nurse, setNurse] = useState(appt.nurse ?? "");
   const [room, setRoom] = useState(appt.room);
@@ -82,7 +83,7 @@ export function ReassignModal({ appt, onClose, onApply }: { appt: Appt; onClose:
       <div className="space-y-4">
         <Field label="Clinician"><select value={doctorId} onChange={(e) => setDoctorId(e.target.value)} className={inputCls}>{CLINICIANS.map((c) => <option key={c.id} value={c.id}>{c.name}{c.onLeave ? " (on leave)" : ""}</option>)}</select></Field>
         <Field label="Nurse"><select value={nurse} onChange={(e) => setNurse(e.target.value)} className={inputCls}><option value="">— None —</option>{NURSES.map((n) => <option key={n} value={n}>{n}</option>)}</select></Field>
-        <Field label="Room"><select value={room} onChange={(e) => setRoom(e.target.value)} className={inputCls}>{ROOMS.map((r) => <option key={r.id} value={r.id}>{r.label} · {r.kind}</option>)}</select></Field>
+        <Field label="Room"><select value={room} onChange={(e) => setRoom(e.target.value)} className={inputCls}>{!rooms.some((r) => r.id === room) && <option value={room}>{roomName(room)}</option>}{rooms.map((r) => <option key={r.id} value={r.id}>{r.name} · {r.type}</option>)}</select></Field>
       </div>
     </ModalShell>
   );

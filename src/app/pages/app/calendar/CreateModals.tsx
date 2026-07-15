@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { FilterSelect } from "../../../components/FilterSelect";
 import { ClinicianAvailabilitySelect } from "./ClinicianAvailabilitySelect";
 import {
-  APPTS, Appt, CLINICIANS, NURSES, ROOMS, NEW_APPT_TYPES, DURATION_DEFAULTS,
+  APPTS, Appt, CLINICIANS, NURSES, useActiveRooms, NEW_APPT_TYPES, DURATION_DEFAULTS,
   TimeBlock, clockToMin, fmtRange, minToClock,
   hasClinicianConflict, hasRoomConflict, hasNurseConflict, DAY_START_HOUR, DAY_END_HOUR,
 } from "./scheduleData";
@@ -79,6 +79,7 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
   defaults?: { doctorId?: string; room?: string; startMin?: number };
 }) {
   const navigate = useNavigate();
+  const rooms = useActiveRooms();
   const [patientName, setPatientName] = useState("");
   const [type, setType] = useState(NEW_APPT_TYPES[0]);
   const [manualDate, setManualDate] = useState(DATE_OPTIONS[0].value);
@@ -104,12 +105,12 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
       const startMin = clockToMin(t);
       if (startMin + duration > DAY_END_HOUR * 60) return false;
       const clinicianOk = CLINICIANS.some((c) => !c.onLeave && !hasClinicianConflict(conflicts, c.id, startMin, duration));
-      const roomOk = roomKind === null || ROOMS.some((r) => r.kind === roomKind && !hasRoomConflict(conflicts, r.id, startMin, duration));
+      const roomOk = roomKind === null || rooms.some((r) => r.type === roomKind && !hasRoomConflict(conflicts, r.id, startMin, duration));
       const nurseOk = NURSES.some((n) => !hasNurseConflict(conflicts, n, startMin, duration));
       return clinicianOk && roomOk && nurseOk;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [type, duration, roomKind, dateIsToday]);
+  }, [type, duration, roomKind, dateIsToday, rooms]);
 
   const time = manualTime && availableTimeOptions.includes(manualTime) ? manualTime : (availableTimeOptions[0] ?? TIME_OPTIONS[0]);
   const startMin = clockToMin(time);
@@ -123,8 +124,8 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
   const doctor = CLINICIANS.find((c) => c.id === doctorId)!;
 
   const availableRooms = useMemo(
-    () => (roomKind === null ? [] : ROOMS.filter((r) => r.kind === roomKind && !hasRoomConflict(conflicts, r.id, startMin, duration))),
-    [conflicts, roomKind, startMin, duration]
+    () => (roomKind === null ? [] : rooms.filter((r) => r.type === roomKind && !hasRoomConflict(conflicts, r.id, startMin, duration))),
+    [conflicts, roomKind, startMin, duration, rooms]
   );
   const room = roomKind === null ? "Video" : (availableRooms[0]?.id ?? "");
 
@@ -230,7 +231,7 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
           </Field>
           <Field label="Room">
             <div className={`${inputCls} bg-gray-50 text-gray-700 flex items-center justify-between`}>
-              <span>{roomKind === null ? "Video call" : (ROOMS.find((r) => r.id === room)?.label ?? "—")}</span>
+              <span>{roomKind === null ? "Video call" : (rooms.find((r) => r.id === room)?.name ?? "—")}</span>
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider shrink-0 ml-2">Auto</span>
             </div>
           </Field>

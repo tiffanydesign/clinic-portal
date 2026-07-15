@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { Search, ChevronUp, ChevronDown, Video } from "lucide-react";
 import { format } from "date-fns";
-import { Appt, APPT_TYPES, CLINICIANS } from "./scheduleData";
+import { Appt, APPT_TYPES, CLINICIANS, roomName } from "./scheduleData";
 import { FilterSelect } from "../../../components/FilterSelect";
 import { StatusPill } from "../dashboard/DashboardShared";
 import { statusPillType } from "../dashboard/dashboardData";
@@ -98,7 +98,7 @@ export function ListView({ appts, onRowClick, selectedDate }: { appts: Appt[]; o
                 </td>
                 <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{a.doctor.replace("Dr. ", "Dr. ")}</td>
                 <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{a.nurse ?? "—"}</td>
-                <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{a.room}</td>
+                <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{roomName(a.room)}</td>
                 <td className="px-4 py-3"><StatusPill status={a.status} type={statusPillType(a.status)} /></td>
                 <td className="px-4 py-3"><StatusPill status={a.payment} type={a.payment === "Paid" ? "success" : a.payment === "Partial" ? "warning" : "error"} /></td>
                 <td className="px-4 py-3"><StatusPill status={a.consent} type={a.consent === "Signed" ? "success" : a.consent === "Pending" ? "warning" : "error"} /></td>

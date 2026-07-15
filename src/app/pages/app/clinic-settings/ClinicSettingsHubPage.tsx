@@ -1,17 +1,22 @@
 import React from "react";
 import { useNavigate } from "react-router";
-import { ShieldCheck, CreditCard, LucideIcon } from "lucide-react";
+import { ShieldCheck, DoorOpen, MonitorSmartphone, LucideIcon } from "lucide-react";
 import { SETTINGS_CATEGORIES, SettingsModule } from "./clinicSettingsHubData";
+import { useRooms } from "./roomsStore";
+import { useDeviceViews } from "./deviceView";
 
 // One icon per module name — deliberately keyed by name rather than a data
 // field, since lucide's icon set has no single "module icon id" concept and
 // this keeps clinicSettingsHubData.ts a plain data file.
 const MODULE_ICON: Record<string, LucideIcon> = {
   "Consent Form Template": ShieldCheck,
-  "Payment Terminals": CreditCard,
+  Rooms: DoorOpen,
+  Devices: MonitorSmartphone,
 };
 
-function ModuleCard({ module }: { module: SettingsModule }) {
+type CardMeta = { text: string; alert?: boolean };
+
+function ModuleCard({ module, meta }: { module: SettingsModule; meta?: CardMeta }) {
   const navigate = useNavigate();
   const Icon = MODULE_ICON[module.name];
 
@@ -33,7 +38,7 @@ function ModuleCard({ module }: { module: SettingsModule }) {
   return (
     <button
       onClick={() => navigate(module.route!)}
-      className="text-left border border-gray-300 rounded-xl p-5 bg-white shadow-sm hover:border-slate-400 hover:shadow-md transition-all"
+      className="text-left border border-gray-300 rounded-xl p-5 bg-white shadow-sm hover:border-slate-400 hover:shadow-md transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
     >
       <div className="flex items-start justify-between mb-3">
         <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
@@ -47,12 +52,34 @@ function ModuleCard({ module }: { module: SettingsModule }) {
       </div>
       <h3 className="text-sm font-bold text-gray-800">{module.name}</h3>
       <p className="text-xs text-gray-500 mt-1 leading-relaxed">{module.description}</p>
+      {meta && (
+        <p className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-500 mt-3 tabular-nums">
+          {meta.alert && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" aria-hidden />}
+          {meta.text}
+        </p>
+      )}
       {module.lastEdited && <p className="text-[11px] text-gray-400 mt-3">{module.lastEdited}</p>}
     </button>
   );
 }
 
 export function ClinicSettingsHubPage() {
+  const rooms = useRooms();
+  const devices = useDeviceViews();
+
+  // Live subtext, so the counts never drift from what the detail pages show.
+  const activeRoomCount = rooms.filter((r) => r.status === "active").length;
+  const liveDevices = devices.filter((d) => !d.retired);
+  const needAttention = liveDevices.filter((d) => d.status === "needs-attention").length;
+
+  const META: Record<string, CardMeta> = {
+    Rooms: { text: `${rooms.length} rooms · ${activeRoomCount} active` },
+    Devices: {
+      text: `${liveDevices.length} devices · ${needAttention} need attention`,
+      alert: needAttention > 0,
+    },
+  };
+
   return (
     <div className="h-full overflow-y-auto bg-gray-50">
       <div className="px-8 py-6 border-b border-gray-200 bg-white">
@@ -66,7 +93,7 @@ export function ClinicSettingsHubPage() {
             <h2 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">{category.name}</h2>
             <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(260px, 300px))" }}>
               {category.modules.map((module) => (
-                <ModuleCard key={module.name} module={module} />
+                <ModuleCard key={module.name} module={module} meta={META[module.name]} />
               ))}
             </div>
           </div>

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { Video, ArrowRight } from "lucide-react";
-import { ROOMS, CLINICIANS } from "../calendar/scheduleData";
+import { useActiveRooms, roomName, CLINICIANS } from "../calendar/scheduleData";
 import {
   APPTS, Appt, DAY_START_HOUR, DAY_END_HOUR, HOUR_PX,
   NOW_MINUTES, TODAY_SHORT, apptBlockClass, apptStatusDotClass, blockHeightPx, gapToNext, minToClock,
@@ -20,8 +20,8 @@ function doctorShort(doctor: string): string {
 // Room view: a room is only ever booked by one patient at a time (~2h
 // turnover), so this maps directly onto the clinic's physical layout.
 // Video consultations occupy no physical room and simply don't appear here.
-function buildRoomColumns(): Column[] {
-  return ROOMS.map((r) => ({ key: r.id, label: r.label, sub: r.kind, appts: APPTS.filter((a) => a.room === r.id) }));
+function buildRoomColumns(rooms: { id: string; name: string; type: string }[]): Column[] {
+  return rooms.map((r) => ({ key: r.id, label: r.name, sub: r.type, appts: APPTS.filter((a) => a.room === r.id) }));
 }
 
 // Clinician view: one column per doctor, every appointment they're running
@@ -86,8 +86,9 @@ function ViewModeToggle({ mode, onChange }: { mode: ViewMode; onChange: (m: View
 
 export function CalendarWidget() {
   const navigate = useNavigate();
+  const activeRooms = useActiveRooms();
   const [mode, setMode] = useState<ViewMode>("room");
-  const columns = mode === "room" ? buildRoomColumns() : buildClinicianColumns();
+  const columns = mode === "room" ? buildRoomColumns(activeRooms) : buildClinicianColumns();
   const hours = Array.from({ length: DAY_END_HOUR - DAY_START_HOUR + 1 }, (_, i) => DAY_START_HOUR + i);
   const gridHeight = (DAY_END_HOUR - DAY_START_HOUR) * HOUR_PX;
   const nowTop = ((NOW_MINUTES - DAY_START_HOUR * 60) / 60) * HOUR_PX;
@@ -208,7 +209,7 @@ export function CalendarWidget() {
                         key={appt.id}
                         appt={appt}
                         gapMin={gapToNext(sorted, appt.startMin)}
-                        secondary={mode === "room" ? doctorShort(appt.doctor) : (appt.isVideo ? "Video" : appt.room)}
+                        secondary={mode === "room" ? doctorShort(appt.doctor) : (appt.isVideo ? "Video" : roomName(appt.room))}
                       />
                     ))}
                   </div>

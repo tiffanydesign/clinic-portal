@@ -7,6 +7,12 @@ export type Slot = { start: string; end: string };
 export type DayConfig = { active: boolean; slots: Slot[] };
 export type WeekSchedule = Record<string, DayConfig>;
 
+// A one-off "Blocked Time" the signed-in staff member holds against a specific
+// date (admin, paperwork, a meeting) — read-only in the My Schedule
+// availability layer. Minute offsets from midnight so the calendar can place it
+// directly.
+export type BlockedTime = { id: string; date: string; startMin: number; durationMin: number; reason: string };
+
 export const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 export function buildDefaultSchedule(start: string, end: string): WeekSchedule {

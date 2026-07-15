@@ -9,8 +9,9 @@ import { WeekGrid } from "./WeekGrid";
 import { ListView } from "./ListView";
 import { NewAppointmentModal, BlockTimeModal } from "./CreateModals";
 import { EditAppointmentModal, ReassignModal, RescheduleModal, CancelModal, ConfirmDialog } from "./EditModals";
+import { MyScheduleView } from "./MyScheduleView";
 import {
-  APPTS, Appt, ApptOverride, TimeBlock, CLINICIANS, ROOMS, CLINICIAN_SELF_ID,
+  APPTS, Appt, ApptOverride, TimeBlock, CLINICIANS, useActiveRooms, CLINICIAN_SELF_ID,
   NURSE_SELF_NAME, ANCHOR_DATE, applyOverride, buildWeek, minToClock,
 } from "./scheduleData";
 
@@ -30,6 +31,7 @@ export function SchedulePage() {
   const { role } = useAppContext();
   const navigate = useNavigate();
   const { apptId } = useParams();
+  const activeRooms = useActiveRooms();
 
   const [view, setView] = useState<View>("day");
   const [mode, setMode] = useState<Mode>("calendar");
@@ -88,9 +90,9 @@ export function SchedulePage() {
     }
     if (role === "Reception") return CLINICIANS.filter((c) => scoped.some((a) => a.doctorId === c.id)).map((c) => ({ key: c.id, title: c.short, avatar: c.avatar, count: scoped.filter((a) => a.doctorId === c.id).length }));
     // Admin
-    if (byRoom) return ROOMS.filter((r) => !room || r.id === room).map((r) => ({ key: r.id, title: r.label, sub: r.kind }));
+    if (byRoom) return activeRooms.filter((r) => !room || r.id === room).map((r) => ({ key: r.id, title: r.name, sub: r.type }));
     return CLINICIANS.filter((c) => clinicianFilter.size === 0 || clinicianFilter.has(c.id)).map((c) => ({ key: c.id, title: c.short, avatar: c.avatar, muted: c.onLeave, count: scoped.filter((a) => a.doctorId === c.id).length }));
-  }, [role, overlay, byRoom, room, clinicianFilter, scoped]);
+  }, [role, overlay, byRoom, room, clinicianFilter, scoped, activeRooms]);
 
   const colOf = (a: Appt) => (role === "Nurse" ? "me" : byRoom ? a.room : a.doctorId);
 
@@ -161,6 +163,20 @@ export function SchedulePage() {
     }
     return h;
   }, [selected, isOverlayAppt, role]);
+
+  // Clinician & Nurse get the dedicated sidebar + calendar surface (left rail,
+  // week/day grid, collision layout, layers). Admin & Reception keep the
+  // existing clinician/room column grid below, untouched.
+  if (role === "Nurse" || role === "Clinician") {
+    return (
+      <div className="h-full flex flex-col bg-gray-50 min-h-0">
+        <MyScheduleView role={role} onOpenAppt={(id) => navigate(`${BASE}/appointment/${id}`)} />
+        {selected && (
+          <AppointmentDrawer appt={selected} role={role} basePath={BASE} readOnlyOverlay={isOverlayAppt} handlers={handlers} />
+        )}
+      </div>
+    );
+  }
 
   const dateLabel = view === "week"
     ? `${format(weekStart, "d MMM")} – ${format(weekEnd, "d MMM yyyy")}`
