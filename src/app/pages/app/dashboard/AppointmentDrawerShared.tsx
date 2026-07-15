@@ -96,25 +96,31 @@ function GateBlock({ label, children }: { label: string; children: React.ReactNo
   );
 }
 
-// The drawer's most prominent element: Status / Payment / Consent as three
-// side-by-side blocks, placed directly under the patient header — the three
+// The drawer's most prominent element: Status / Payment / Consent as
+// side-by-side blocks, placed directly under the patient header — the
 // operational facts that matter most at a glance ("is this person okay, or
 // stuck on payment/consent?"). Payment is omitted for Nurse/Clinician, who
-// don't need the money picture. Either red state (Unpaid, consent not
-// cleared) puts a red border around the whole card, not just its own block,
-// so an at-a-glance scan down a list of open drawers still catches it.
+// don't need the money picture. Video consultations skip Payment and Consent
+// entirely — there's no in-clinic consent form to sign or terminal to
+// charge, so Status is the only fact that applies. Either red state (Unpaid,
+// consent not cleared) puts a red border around the whole card, not just its
+// own block, so an at-a-glance scan down a list of open drawers still
+// catches it.
 export function StatusGateCard({ appt, showPayment = true }: { appt: Appt; showPayment?: boolean }) {
   const consentOk = formsSigned(appt);
-  const hasAlert = (showPayment && appt.payment === "Unpaid") || !consentOk;
+  const showPaymentBlock = showPayment && !appt.isVideo;
+  const showConsentBlock = !appt.isVideo;
+  const hasAlert = (showPaymentBlock && appt.payment === "Unpaid") || (showConsentBlock && !consentOk);
+  const cols = 1 + (showPaymentBlock ? 1 : 0) + (showConsentBlock ? 1 : 0);
 
   return (
     <div className={`mx-5 mt-4 rounded-xl border bg-white shadow-sm shrink-0 ${hasAlert ? "border-red-300" : "border-gray-200"}`}>
-      <div className={`grid divide-x divide-gray-100 ${showPayment ? "grid-cols-3" : "grid-cols-2"}`}>
+      <div className={`grid divide-x divide-gray-100 ${cols === 3 ? "grid-cols-3" : cols === 2 ? "grid-cols-2" : "grid-cols-1"}`}>
         <GateBlock label="Status">
           <BigPill tone={apptStatusTone(appt.status)}>{appt.status.toUpperCase()}</BigPill>
         </GateBlock>
 
-        {showPayment && (
+        {showPaymentBlock && (
           <GateBlock label="Payment">
             {appt.payment === "Paid" ? (
               <BigPill tone="emerald"><CheckCircle2 className="w-3.5 h-3.5" /> PAID</BigPill>
@@ -127,13 +133,15 @@ export function StatusGateCard({ appt, showPayment = true }: { appt: Appt; showP
           </GateBlock>
         )}
 
-        <GateBlock label="Consent">
-          {consentOk ? (
-            <BigPill tone="emerald"><CheckCircle2 className="w-3.5 h-3.5" /> SIGNED</BigPill>
-          ) : (
-            <BigPill tone="red"><AlertTriangle className="w-3.5 h-3.5" /> PENDING</BigPill>
-          )}
-        </GateBlock>
+        {showConsentBlock && (
+          <GateBlock label="Consent">
+            {consentOk ? (
+              <BigPill tone="emerald"><CheckCircle2 className="w-3.5 h-3.5" /> SIGNED</BigPill>
+            ) : (
+              <BigPill tone="red"><AlertTriangle className="w-3.5 h-3.5" /> PENDING</BigPill>
+            )}
+          </GateBlock>
+        )}
       </div>
     </div>
   );

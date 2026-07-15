@@ -73,9 +73,12 @@ function typeLabel(a: Appt): string {
 // prev/current/next strip — they're clicking in from the calendar for
 // at-a-glance context, not running the journey themselves — while Nurse and
 // Clinician (who DO act on each station) keep the full station-by-station
-// stepper.
+// stepper. Video consultations have no in-clinic journey at all (no
+// changing room, scan or blood draw to walk through), so this renders
+// nothing for them rather than a hollow "Consent → Consultation" stub.
 function JourneyBlock({ appt, condensed }: { appt: Appt; condensed?: boolean }) {
   const { steps, current } = relevantJourneySteps(appt);
+  if (appt.isVideo) return null;
   return (
     <div className="px-5 py-4 border-b border-gray-100">
       <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-3.5">Journey Today</h4>
@@ -109,10 +112,12 @@ function AdminBody({ appt }: { appt: Appt }) {
         <KV label="Nurse" value={appt.nurse ?? "—"} />
         <KV label="Room" value={roomName(appt.room)} />
       </Block>
-      <Block title="Payment Detail">
-        <KV label="Amount" value={appt.amount} />
-        <KV label="Balance" value={appt.balance} />
-      </Block>
+      {!appt.isVideo && (
+        <Block title="Payment Detail">
+          <KV label="Amount" value={appt.amount} />
+          <KV label="Balance" value={appt.balance} />
+        </Block>
+      )}
 
       <PatientDetailsCollapsible patient={appt.patient} />
     </>
@@ -178,40 +183,44 @@ function ReceptionInner({ appt }: { appt: Appt }) {
         <KV label="Clinician" value={appt.doctor} />
       </Block>
 
-      <Block title="Signed Forms">
-        <div className="space-y-2">
-          {appt.forms.map((f) => (
-            <div key={f.name} className="flex items-center justify-between text-sm gap-3">
-              <span className="text-gray-700 truncate">{f.name}</span>
-              {f.status === "Signed" ? (
-                <button onClick={() => toast("Opening signed form (demo)")} className="text-xs font-bold text-slate-600 hover:underline shrink-0">View Signed Form</button>
-              ) : (
-                <StatusPill status={f.status} type={f.status === "Pending" ? "warning" : "error"} />
-              )}
+      {!appt.isVideo && (
+        <Block title="Signed Forms">
+          <div className="space-y-2">
+            {appt.forms.map((f) => (
+              <div key={f.name} className="flex items-center justify-between text-sm gap-3">
+                <span className="text-gray-700 truncate">{f.name}</span>
+                {f.status === "Signed" ? (
+                  <button onClick={() => toast("Opening signed form (demo)")} className="text-xs font-bold text-slate-600 hover:underline shrink-0">View Signed Form</button>
+                ) : (
+                  <StatusPill status={f.status} type={f.status === "Pending" ? "warning" : "error"} />
+                )}
+              </div>
+            ))}
+          </div>
+          {appt.forms.some((f) => f.status !== "Signed") && (
+            <div className="flex gap-2 mt-3">
+              <button onClick={() => toast("Signing request sent to reception iPad")} className="flex-1 px-3 py-2 bg-slate-600 text-white text-xs font-bold rounded hover:bg-slate-700">Initialize Signing</button>
+              <button onClick={() => toast("Form sent to patient app")} className="flex-1 px-3 py-2 border border-gray-300 bg-white text-gray-700 text-xs font-bold rounded hover:bg-gray-50">Send Form</button>
             </div>
-          ))}
-        </div>
-        {appt.forms.some((f) => f.status !== "Signed") && (
-          <div className="flex gap-2 mt-3">
-            <button onClick={() => toast("Signing request sent to reception iPad")} className="flex-1 px-3 py-2 bg-slate-600 text-white text-xs font-bold rounded hover:bg-slate-700">Initialize Signing</button>
-            <button onClick={() => toast("Form sent to patient app")} className="flex-1 px-3 py-2 border border-gray-300 bg-white text-gray-700 text-xs font-bold rounded hover:bg-gray-50">Send Form</button>
-          </div>
-        )}
-      </Block>
+          )}
+        </Block>
+      )}
 
-      <Block title="Payment Detail">
-        <div className="flex justify-between items-center mb-1">
-          <StatusPill status={appt.payment} type={payType} />
-          <span className="font-bold text-gray-800 text-sm">{appt.amount}</span>
-        </div>
-        {appt.balance !== "₺0" && <div className="text-xs text-red-600 font-medium text-right mb-2">Balance due: {appt.balance}</div>}
-        {appt.payment !== "Paid" && (
-          <div className="flex gap-2 mt-2">
-            <button onClick={() => toast("Transaction started on Terminal #1")} className="flex-1 px-3 py-2 bg-slate-600 text-white text-xs font-bold rounded hover:bg-slate-700 flex items-center justify-center gap-1.5"><CreditCard className="w-3.5 h-3.5" />Start Transaction</button>
-            <button onClick={() => toast("Payment link sent to patient")} className="flex-1 px-3 py-2 border border-gray-300 bg-white text-gray-700 text-xs font-bold rounded hover:bg-gray-50">Send Payment Link</button>
+      {!appt.isVideo && (
+        <Block title="Payment Detail">
+          <div className="flex justify-between items-center mb-1">
+            <StatusPill status={appt.payment} type={payType} />
+            <span className="font-bold text-gray-800 text-sm">{appt.amount}</span>
           </div>
-        )}
-      </Block>
+          {appt.balance !== "₺0" && <div className="text-xs text-red-600 font-medium text-right mb-2">Balance due: {appt.balance}</div>}
+          {appt.payment !== "Paid" && (
+            <div className="flex gap-2 mt-2">
+              <button onClick={() => toast("Transaction started on Terminal #1")} className="flex-1 px-3 py-2 bg-slate-600 text-white text-xs font-bold rounded hover:bg-slate-700 flex items-center justify-center gap-1.5"><CreditCard className="w-3.5 h-3.5" />Start Transaction</button>
+              <button onClick={() => toast("Payment link sent to patient")} className="flex-1 px-3 py-2 border border-gray-300 bg-white text-gray-700 text-xs font-bold rounded hover:bg-gray-50">Send Payment Link</button>
+            </div>
+          )}
+        </Block>
+      )}
 
       <PatientDetailsCollapsible patient={appt.patient} />
     </>
@@ -313,7 +322,7 @@ function ClinicianBody({ appt, nav }: { appt: Appt; nav: (r: string) => void }) 
         <KV label="Time" value={appt.timeLabel} />
       </Block>
       <Block title="Preparation">
-        <PrepRow ok={formsOk} label="Signed Forms" detail={formsOk ? "Signed" : "Pending"} />
+        {!appt.isVideo && <PrepRow ok={formsOk} label="Signed Forms" detail={formsOk ? "Signed" : "Pending"} />}
         <PrepRow ok={appt.prep.sample === "Collected"} label="Sample Status" detail={appt.prep.sample} />
         <PrepRow ok={appt.prep.scan === "Completed"} label="Scan Status" detail={appt.prep.scan} />
         <div className="flex items-center justify-between text-sm py-1 mt-1 border-t border-gray-100 pt-2">

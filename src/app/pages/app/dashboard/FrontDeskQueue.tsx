@@ -78,12 +78,32 @@ function ConfirmCheckInModal({ appt, onCancel, onConfirm }: { appt: Appt; onCanc
   );
 }
 
-// The row's one next-step control on the right. The three gated actions
-// (Take Payment / Sign Consent / Check In) are identical-size solid buttons
-// so the action column reads as one consistent control. Mark Arrived is the
-// deliberate exception: an instant status flip (Booked → Arrived, no gate,
-// no dialog), so it's a compact soft-blue badge, not a heavyweight button —
-// it looks like a tap-to-mark toggle rather than a committed action.
+// One compact pill shape for every action in this column — same height,
+// same rounded-full form, same soft tint treatment as the row's own gate
+// badges (GateBadge, "Ready to check in" above). Only the accent color
+// tells the four actions apart, so Take Payment / Sign Consent / Check In /
+// Mark Arrived read as one consistent control language instead of three
+// heavyweight solid buttons next to one lightweight badge.
+const PILL_TONE: Record<"blue" | "amber" | "emerald" | "sky", string> = {
+  blue: "bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200",
+  amber: "bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200",
+  emerald: "bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-200",
+  sky: "bg-sky-100 text-sky-700 border-sky-200 hover:bg-sky-200",
+};
+
+function ActionPill({ onClick, tone, icon, label }: {
+  onClick: () => void; tone: keyof typeof PILL_TONE; icon?: React.ReactNode; label: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-xs font-bold border whitespace-nowrap transition-colors ${PILL_TONE[tone]}`}
+    >
+      {icon}{label}
+    </button>
+  );
+}
+
 function ActionCell({ appt, onSignConsent, onTakePayment, onCheckIn, onMarkArrived }: {
   appt: Appt;
   onSignConsent: () => void;
@@ -92,26 +112,18 @@ function ActionCell({ appt, onSignConsent, onTakePayment, onCheckIn, onMarkArriv
   onMarkArrived: () => void;
 }) {
   const action = primaryActionFor(appt);
-  const btn = "w-[128px] h-11 justify-center px-3 text-sm font-bold rounded-lg shrink-0 flex items-center gap-1.5 whitespace-nowrap transition-colors";
 
   if (action.kind === "take-payment") {
-    return <button onClick={onTakePayment} className={`${btn} bg-blue-600 text-white hover:bg-blue-700`}><CreditCard className="w-4 h-4" /> Take Payment</button>;
+    return <ActionPill onClick={onTakePayment} tone="blue" icon={<CreditCard className="w-3.5 h-3.5" />} label="Take Payment" />;
   }
   if (action.kind === "sign-consent") {
-    return <button onClick={onSignConsent} className={`${btn} bg-amber-500 text-white hover:bg-amber-600`}>Sign Consent</button>;
+    return <ActionPill onClick={onSignConsent} tone="amber" label="Sign Consent" />;
   }
   if (action.kind === "check-in") {
-    return <button onClick={onCheckIn} className={`${btn} bg-emerald-600 text-white hover:bg-emerald-700`}>Check In</button>;
+    return <ActionPill onClick={onCheckIn} tone="emerald" label="Check In" />;
   }
   if (action.kind === "mark-arrived") {
-    return (
-      <button
-        onClick={onMarkArrived}
-        className="shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-xs font-bold bg-sky-100 text-sky-700 border border-sky-200 hover:bg-sky-200 transition-colors"
-      >
-        <LogIn className="w-3.5 h-3.5" /> Mark Arrived
-      </button>
-    );
+    return <ActionPill onClick={onMarkArrived} tone="sky" icon={<LogIn className="w-3.5 h-3.5" />} label="Mark Arrived" />;
   }
   return null;
 }
@@ -220,8 +232,9 @@ function QueueRow({ appt, readOnly, selected, onOpen, onMarkArrived }: {
   );
 }
 
-function EmptyGroup({ group }: { group: QueueGroup }) {
-  const message = group === "all" ? "No one in the queue around now."
+function EmptyGroup({ group, unpaidOnly }: { group: QueueGroup; unpaidOnly?: boolean }) {
+  const message = unpaidOnly ? "No unpaid patients right now."
+    : group === "all" ? "No one in the queue around now."
     : group === "needs-action" ? "Nothing needs action right now."
     : group === "upcoming" ? "No upcoming appointments."
     : "No one in clinic right now.";
@@ -235,14 +248,15 @@ function EmptyGroup({ group }: { group: QueueGroup }) {
 // A row's own status — not which tab it's being viewed through — decides
 // whether it renders read-only. "All" mixes every status in one list, so
 // each row carries its own answer rather than switching on the tab.
-function QueueList({ group, appts, selectedId, onOpen, onMarkArrived }: {
+function QueueList({ group, appts, unpaidOnly, selectedId, onOpen, onMarkArrived }: {
   group: QueueGroup;
   appts: Appt[];
+  unpaidOnly?: boolean;
   selectedId: string | null;
   onOpen: (id: string) => void;
   onMarkArrived: (id: string) => void;
 }) {
-  if (appts.length === 0) return <EmptyGroup group={group} />;
+  if (appts.length === 0) return <EmptyGroup group={group} unpaidOnly={unpaidOnly} />;
   return (
     <div className="p-3 space-y-2.5">
       {appts.map((appt) => (
@@ -272,28 +286,36 @@ function QueueTab({ label, count, active, onClick }: { label: string; count: num
 
 // The Reception Dashboard's single work surface: every non-settled
 // appointment today, exactly one row each, grouped by how much the front
-// desk needs to act on it. Marking a Booked patient Arrived flips them into
-// Needs Action — so the tab auto-switches there and the just-arrived row is
-// selected (blue ring + scrolled into view), landing the front desk on
-// their next step without hunting for the patient again.
-export function FrontDeskQueue({ appts, onOpen }: {
+// desk needs to act on it. Tab selection is controlled from the parent (the
+// header Stat Strip drives it too, see ReceptionDashboardBody) so both
+// controls stay in sync; `unpaidOnly` narrows the active tab down to unpaid
+// rows only, the one Stat Strip filter with no matching QueueGroup of its
+// own. Marking a Booked patient Arrived flips them into Needs Action — so
+// the tab auto-switches there and the just-arrived row is selected (blue
+// ring + scrolled into view), landing the front desk on their next step
+// without hunting for the patient again.
+export function FrontDeskQueue({ appts, tab, onTabChange, unpaidOnly = false, onOpen }: {
   appts: Appt[];
+  tab: QueueGroup;
+  onTabChange: (g: QueueGroup) => void;
+  unpaidOnly?: boolean;
   onOpen: (id: string) => void;
 }) {
   const grouped = groupQueue(appts);
-  const [tab, setTab] = useState<QueueGroup>("needs-action");
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const handleMarkArrived = (id: string) => {
     markArrived(id);
-    setTab("needs-action");
+    onTabChange("needs-action");
     setSelectedId(id);
   };
 
   const selectTab = (g: QueueGroup) => {
-    setTab(g);
+    onTabChange(g);
     setSelectedId(null); // a manual tab change is a fresh look, not a follow-up on a just-arrived patient
   };
+
+  const listAppts = unpaidOnly ? grouped[tab].filter((a) => !paymentOk(a)) : grouped[tab];
 
   return (
     <div className="h-full border border-gray-200 rounded-xl bg-white shadow-sm flex flex-col">
@@ -310,7 +332,7 @@ export function FrontDeskQueue({ appts, onOpen }: {
         </div>
       </div>
 
-      <QueueList group={tab} appts={grouped[tab]} selectedId={selectedId} onOpen={onOpen} onMarkArrived={handleMarkArrived} />
+      <QueueList group={tab} appts={listAppts} unpaidOnly={unpaidOnly} selectedId={selectedId} onOpen={onOpen} onMarkArrived={handleMarkArrived} />
     </div>
   );
 }
