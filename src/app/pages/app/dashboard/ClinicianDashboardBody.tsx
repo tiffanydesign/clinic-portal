@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { APPTS, ApptStatus } from "./dashboardData";
+import { ApptStatus } from "./dashboardData";
+import { useAppointments } from "./appointmentsStore";
 import { CLINICIAN_ID, activeApptFor, upNextApptFor } from "./clinicianDashboardData";
 import { ClinicianQueueCounters } from "./ClinicianQueueCounters";
 import { ClinicianNowCard } from "./ClinicianNowCard";
@@ -20,13 +21,14 @@ export function ClinicianDashboardBody() {
   const [overrides, setOverrides] = useState<Record<string, ApptStatus>>({});
   const scheduleRef = useRef<HTMLDivElement>(null);
   const workQueueRef = useRef<HTMLDivElement>(null);
+  const appts = useAppointments();
 
   const todaysAppts = useMemo(() => {
-    return APPTS
+    return appts
       .filter((a) => a.doctorId === CLINICIAN_ID)
       .map((a) => (overrides[a.id] ? { ...a, status: overrides[a.id] } : a))
       .sort((a, b) => a.startMin - b.startMin);
-  }, [overrides]);
+  }, [appts, overrides]);
 
   const activeAppt = activeApptFor(todaysAppts);
   const upNextAppt = activeAppt ? undefined : upNextApptFor(todaysAppts);

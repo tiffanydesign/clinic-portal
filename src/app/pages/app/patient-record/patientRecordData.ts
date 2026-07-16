@@ -4,6 +4,8 @@
 
 import type { Role } from "../../../context/AppContext";
 import { MOCK_PATIENTS, Patient as RosterPatient } from "../patientsData";
+import { buildJourneyRows } from "../dashboard/journey/journeyEngine";
+import { INITIAL_ENTRIES, INITIAL_CLOCK } from "../dashboard/nurseDashboardData";
 
 export type TabKey = "overview" | "results" | "journeys" | "signed-forms" | "notes" | "appointments";
 
@@ -39,12 +41,17 @@ export type MedicalAlert = { label: string; severity: "critical" | "high" | "inf
 
 export type Visit = { date: string; type: string; clinician: string; resultStatus: string };
 
-export type JourneyStepStatus = "Completed" | "In Progress" | "Pending";
+export type JourneyStepStatus = "Completed" | "In Progress" | "Pending" | "Skipped";
 export type JourneyStep = {
   name: string;
   status: JourneyStepStatus;
   by?: string;
   at?: string;
+  // Real wait-before-this-station duration, in minutes — only ever set when
+  // derived from actual enter/exit timestamps (see journeyStepsFromNurseEngine
+  // below); never fabricated for a step with no real timing data.
+  waitedMin?: number;
+  skipReason?: string;
   notes?: string[];
   attachments?: string[];
 };
@@ -59,6 +66,30 @@ export type Journey = {
   assignedNurse?: string;
   assignedClinician?: string;
 };
+
+// Derives Ece Yıldırım's active journey via the exact same buildJourneyRows()
+// the Nurse Dashboard's own Patient Journey card uses (see useJourneyEngine.ts),
+// fed the same nurseDashboardData.ts entries — not an independently-authored
+// second fiction of "where she is right now." Station names, status, timing
+// text, and wait durations therefore can never drift from what the nurse
+// actually recorded.
+function journeyStepsFromNurseEngine(): JourneyStep[] {
+  const { rows } = buildJourneyRows(INITIAL_ENTRIES, INITIAL_CLOCK);
+  return rows.map((r): JourneyStep => {
+    const status: JourneyStepStatus =
+      r.state === "done" ? "Completed" :
+      r.state === "prog" ? "In Progress" :
+      r.state === "skip" ? "Skipped" : "Pending";
+    return {
+      name: r.name,
+      status,
+      by: status === "Completed" || status === "In Progress" ? "Berna Koç" : undefined,
+      at: r.showTime ? r.timeTxt : r.showDur ? r.durTxt : undefined,
+      waitedMin: r.showWaited ? r.waited : undefined,
+      skipReason: r.showSkip ? r.skipCap : undefined,
+    };
+  });
+}
 
 export type FormStatus = "Signed" | "Pending Signature" | "Not Sent" | "Expired";
 export type SignedForm = {
@@ -145,14 +176,7 @@ const MACKENZIE: PatientRecord = {
       startedAt: "1 Jul 2026",
       assignedNurse: "Berna Koç",
       assignedClinician: "Dr. Ebru Reis",
-      steps: [
-        { name: "Consent", status: "Completed", by: "Elif Yıldız", at: "1 Jul, 07:52" },
-        { name: "Changing Room", status: "Completed", by: "Berna Koç", at: "1 Jul, 08:00" },
-        { name: "Scan", status: "In Progress", by: "Berna Koç", at: "1 Jul, 08:10" },
-        { name: "Sample Collection", status: "Pending" },
-        { name: "Consultation", status: "Pending" },
-        { name: "Home Test Kit", status: "Pending" },
-      ],
+      steps: journeyStepsFromNurseEngine(),
     },
     {
       id: "J-INITIAL",
@@ -163,9 +187,9 @@ const MACKENZIE: PatientRecord = {
       assignedNurse: "Berna Koç",
       assignedClinician: "Dr. Ebru Reis",
       steps: [
-        { name: "Consent", status: "Completed", by: "Elif Yıldız", at: "18 Mar 2025, 09:00" },
-        { name: "Consultation", status: "Completed", by: "Dr. Ebru Reis", at: "18 Mar 2025, 09:30" },
-        { name: "Test Kit", status: "Completed", by: "Berna Koç", at: "18 Mar 2025, 10:00" },
+        { name: "Checked In", status: "Completed", by: "Elif Yıldız", at: "18 Mar 2025, 09:00" },
+        { name: "Results Consultation", status: "Completed", by: "Dr. Ebru Reis", at: "18 Mar 2025, 09:30" },
+        { name: "Check Out", status: "Completed", by: "Berna Koç", at: "18 Mar 2025, 10:00" },
       ],
     },
   ],
@@ -229,10 +253,10 @@ function synthesize(base: RosterPatient): PatientRecord {
           assignedNurse: base.nurse ?? undefined,
           assignedClinician: base.clinician ?? undefined,
           steps: [
-            { name: "Consent", status: "Completed" },
-            { name: "Changing Room", status: "Completed" },
-            { name: "Scan", status: "In Progress" },
-            { name: "Consultation", status: "Pending" },
+            { name: "Checked In", status: "Completed" },
+            { name: "Preparation", status: "Completed" },
+            { name: "Scan 1", status: "In Progress" },
+            { name: "Check Out", status: "Pending" },
           ],
         }]
       : [],
@@ -298,7 +322,7 @@ export function journeyStatusPillType(status: JourneyStatus): "success" | "defau
 
 export function journeyProgress(j: Journey): { done: number; total: number; currentIndex: number } {
   const total = j.steps.length;
-  const done = j.steps.filter((s) => s.status === "Completed").length;
+  const done = j.steps.filter((s) => s.status === "Completed" || s.status === "Skipped").length;
   const currentIndex = j.steps.findIndex((s) => s.status === "In Progress");
   return { done, total, currentIndex: currentIndex === -1 ? done : currentIndex };
 }

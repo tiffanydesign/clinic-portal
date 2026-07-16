@@ -20,6 +20,14 @@ export function markAllRead(ids: string[]) {
   emit();
 }
 
+export function markUnread(id: string) {
+  if (!readIds.has(id)) return;
+  const next = new Set(readIds);
+  next.delete(id);
+  readIds = next;
+  emit();
+}
+
 export function useReadIds(): Set<string> {
   return useSyncExternalStore(
     (cb) => { listeners.add(cb); return () => listeners.delete(cb); },

@@ -88,7 +88,7 @@ export type Appt = {
   checkInTime?: string;
   arrivedTime?: string;
   waitMinutes?: number;
-  // Journey step index into JOURNEY_STEPS_RECEPTION
+  // Journey step index into journey/journeyTemplates.ts's CANONICAL_STATIONS
   currentStep: number;
   forms: { name: string; status: FormStatus }[];
   prep: { sample: "Collected" | "Pending"; scan: "Completed" | "Scheduled" };
@@ -97,43 +97,6 @@ export type Appt = {
   // Reception dashboard's optional "Walk-ins" KPI card only.
   isWalkIn?: boolean;
 };
-
-export const JOURNEY_STEPS_RECEPTION = [
-  "Consent",
-  "Changing Room",
-  "Scan",
-  "Blood Collection",
-  "Consultation",
-  "Test Kit",
-];
-
-// Which of the 6 canonical steps actually apply to a given appointment type —
-// e.g. a Body Scan never touches Blood Collection, a Consultation never
-// touches Changing Room/Scan. `currentStep` still indexes the full
-// JOURNEY_STEPS_RECEPTION list, so relevantJourneySteps() below re-bases it
-// against whichever subset applies, rather than assuming the index lines up.
-const TYPE_STEP_SUBSET: Partial<Record<ApptType, string[]>> = {
-  "Body Scan": ["Consent", "Changing Room", "Scan", "Test Kit"],
-  "Sample Collection": ["Consent", "Blood Collection", "Test Kit"],
-  "Consultation (in-person)": ["Consent", "Consultation", "Test Kit"],
-  "Consultation (video)": ["Consent", "Consultation"],
-  "Follow-up": ["Consent", "Consultation"],
-};
-
-// Dynamic, type-aware journey steps for the Appointment Drawer's stepper.
-// Falls back to the full 6-step list whenever the appointment's actual
-// current step isn't part of the type's expected subset — e.g. a Sample
-// Collection visit that happens to be sitting in "Scan" — rather than
-// silently misrepresenting a real record to fit a heuristic.
-export function relevantJourneySteps(appt: Appt): { steps: string[]; current: number } {
-  const full = JOURNEY_STEPS_RECEPTION;
-  const currentName = full[appt.currentStep];
-  const subset = TYPE_STEP_SUBSET[appt.type];
-  if (subset && currentName && subset.includes(currentName)) {
-    return { steps: subset, current: subset.indexOf(currentName) };
-  }
-  return { steps: full, current: Math.min(appt.currentStep, full.length - 1) };
-}
 
 // Every form must be Signed for consent to be considered cleared — the same
 // rule Reception's check-in gate already uses (canCheckIn below), now
@@ -178,7 +141,7 @@ export const APPTS: Appt[] = [
     type: "Body Scan", isVideo: false, startMin: 480, durationMin: 90, timeLabel: "08:00 – 09:30",
     doctorId: "EMP-003", doctor: "Dr. Ebru Reis", nurse: "Berna Koç", room: "Scan A",
     status: "In Clinic", consent: "Signed", payment: "Paid", amount: "₺4,800", balance: "₺0",
-    checkInTime: "07:52", currentStep: 2, forms: NO_FORMS_ISSUE,
+    checkInTime: "07:52", currentStep: 4, forms: NO_FORMS_ISSUE,
     prep: { sample: "Pending", scan: "Completed" }, previousVisit: "18 Mar 2026",
   },
   {
@@ -186,10 +149,10 @@ export const APPTS: Appt[] = [
     patient: P("PH-2026-0015"),
     type: "Consultation (in-person)", isVideo: false, startMin: 510, durationMin: 60, timeLabel: "08:30 – 09:30",
     doctorId: "EMP-005", doctor: "Dr. Kaan Öztürk", nurse: "Aylin Demir", room: "Room 2",
-    // At the final journey step (Test Kit) — her consultation is done and
+    // At the final journey step (Check Out) — her consultation is done and
     // she's ready for Reception to check her out, demoing that row state.
     status: "In Clinic", consent: "Signed", payment: "Paid", amount: "₺2,400", balance: "₺0",
-    checkInTime: "08:20", currentStep: 5, forms: NO_FORMS_ISSUE,
+    checkInTime: "08:20", currentStep: 11, forms: NO_FORMS_ISSUE,
     prep: { sample: "Collected", scan: "Completed" }, previousVisit: "02 May 2026",
   },
   {
@@ -198,7 +161,7 @@ export const APPTS: Appt[] = [
     type: "Sample Collection", isVideo: false, startMin: 510, durationMin: 75, timeLabel: "08:30 – 09:45",
     doctorId: "EMP-004", doctor: "Dr. Emre Yalçın", nurse: "Berna Koç", room: "Lab 1",
     status: "Completed", consent: "Signed", payment: "Paid", amount: "₺900", balance: "₺0",
-    checkInTime: "08:10", currentStep: 5, forms: NO_FORMS_ISSUE,
+    checkInTime: "08:10", currentStep: 11, forms: NO_FORMS_ISSUE,
     prep: { sample: "Collected", scan: "Completed" }, previousVisit: "20 Apr 2026",
   },
   {
@@ -221,7 +184,7 @@ export const APPTS: Appt[] = [
     type: "Consultation (in-person)", isVideo: false, startMin: 585, durationMin: 60, timeLabel: "09:45 – 10:45",
     doctorId: "EMP-004", doctor: "Dr. Emre Yalçın", nurse: "Berna Koç", room: "Room 1",
     status: "Arrived", consent: "Signed", payment: "Unpaid", amount: "₺2,400", balance: "₺2,400",
-    arrivedTime: "08:55", waitMinutes: 19, currentStep: 1, forms: NO_FORMS_ISSUE,
+    arrivedTime: "08:55", waitMinutes: 19, currentStep: 2, forms: NO_FORMS_ISSUE,
     prep: { sample: "Pending", scan: "Completed" }, previousVisit: "12 Apr 2026",
   },
   {
@@ -230,7 +193,7 @@ export const APPTS: Appt[] = [
     type: "Follow-up", isVideo: false, startMin: 570, durationMin: 60, timeLabel: "09:30 – 10:30",
     doctorId: "EMP-005", doctor: "Dr. Kaan Öztürk", nurse: "Aylin Demir", room: "Room 3",
     status: "Arrived", consent: "Signed", payment: "Paid", amount: "₺1,500", balance: "₺0",
-    arrivedTime: "09:05", waitMinutes: 9, currentStep: 1, forms: NO_FORMS_ISSUE,
+    arrivedTime: "09:05", waitMinutes: 9, currentStep: 2, forms: NO_FORMS_ISSUE,
     prep: { sample: "Collected", scan: "Completed" }, previousVisit: "30 Jun 2026", isWalkIn: true,
   },
   {
@@ -251,7 +214,7 @@ export const APPTS: Appt[] = [
     type: "Body Scan", isVideo: false, startMin: 630, durationMin: 90, timeLabel: "10:30 – 12:00",
     doctorId: "EMP-005", doctor: "Dr. Kaan Öztürk", nurse: "Aylin Demir", room: "Scan A",
     status: "Checked In", consent: "Signed", payment: "Paid", amount: "₺4,800", balance: "₺0",
-    checkInTime: "09:12", currentStep: 1, forms: NO_FORMS_ISSUE,
+    checkInTime: "09:12", currentStep: 2, forms: NO_FORMS_ISSUE,
     prep: { sample: "Pending", scan: "Scheduled" }, previousVisit: "28 May 2026",
   },
   {
@@ -263,7 +226,7 @@ export const APPTS: Appt[] = [
     // Check-in must fall on or before the demo clock (09:14) for "Checked
     // In" to be a fact that's already happened, regardless of how early
     // relative to his own slot.
-    checkInTime: "09:00", currentStep: 2, forms: NO_FORMS_ISSUE,
+    checkInTime: "09:00", currentStep: 4, forms: NO_FORMS_ISSUE,
     prep: { sample: "Pending", scan: "Completed" }, previousVisit: "10 Jun 2026",
   },
   {
@@ -357,6 +320,22 @@ export const APPTS: Appt[] = [
 
 export function getAppt(id: string | undefined): Appt | undefined {
   return APPTS.find((a) => a.id === id);
+}
+
+// A patient can have more than one appointment on the books today (e.g. a
+// Body Scan plus a same-day follow-up) — this picks the single one worth
+// surfacing a journey-progress chip for: whichever is actually in progress,
+// else the earliest still-booked one, else the most recently completed.
+// Used anywhere a roster/patient-identity view (not an appointment-identity
+// view) needs to show "where is this patient's journey right now."
+export function primaryApptForPatient(appts: Appt[], patientId: string): Appt | undefined {
+  const mine = appts.filter((a) => a.patient.patientId === patientId);
+  if (mine.length === 0) return undefined;
+  const active = mine.find((a) => a.status === "Arrived" || a.status === "Checked In" || a.status === "In Clinic");
+  if (active) return active;
+  const upcoming = mine.filter((a) => a.status === "Booked").sort((a, b) => a.startMin - b.startMin)[0];
+  if (upcoming) return upcoming;
+  return mine.find((a) => a.status === "Completed") ?? mine[0];
 }
 
 // A Reception check-in is only enabled when consent is signed AND payment settled.

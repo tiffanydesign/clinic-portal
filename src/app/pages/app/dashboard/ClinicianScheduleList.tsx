@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { Video, ArrowRight, MapPin } from "lucide-react";
 import {
-  Appt, JOURNEY_STEPS_RECEPTION, TODAY_SHORT, NOW_MINUTES, minToClock, apptStatusDotClass,
+  Appt, TODAY_SHORT, NOW_MINUTES, minToClock, apptStatusDotClass,
   DAY_START_HOUR, DAY_END_HOUR, HOUR_PX, blockHeightPx, gapToNext, apptBlockClass,
 } from "./dashboardData";
 import { StatusPill } from "./DashboardShared";
 import { statusPillType } from "./dashboardData";
 import { videoJoinState } from "./clinicianDashboardData";
+import { JourneyProgressChip } from "./journey/JourneyProgress";
 
 type ScheduleView = "list" | "calendar";
 
@@ -22,7 +23,11 @@ function StatusCell({ appt, isActive, hasActiveSession, onJoin }: {
   onJoin: (id: string) => void;
 }) {
   if (isActive) {
-    return <span className="text-xs font-bold text-orange-700 whitespace-nowrap">In Clinic · {JOURNEY_STEPS_RECEPTION[appt.currentStep]}</span>;
+    return (
+      <span className="text-xs font-bold text-orange-700 whitespace-nowrap">
+        In Clinic · <JourneyProgressChip appt={appt} className="!text-orange-700" />
+      </span>
+    );
   }
   if (appt.status === "Completed" || appt.status === "Cancelled") {
     return <StatusPill status={appt.status} type={statusPillType(appt.status)} />;

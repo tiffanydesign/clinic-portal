@@ -1,13 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router";
 import {
-  Bell, Map, HelpCircle, ChevronRight, ChevronDown,
+  Bell, ChevronRight, ChevronDown, Search,
   LayoutDashboard, Calendar, Users, UserCog, Settings, CreditCard,
-  MessageSquare, Clock, ClipboardList, User, LogOut, PanelLeftClose, PanelLeftOpen,
+  MessageSquare, Clock, ClipboardList, User, PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 import { SubmitFeedbackModal } from "./SubmitFeedbackModal";
 import { GlobalSearch } from "./GlobalSearch";
+import { GlobalSearchOverlay } from "./GlobalSearchOverlay";
+import { DemoControlsPill } from "./DemoControlsPill";
+import { FloatingPopover } from "./glass/FloatingPopover";
+import { IS_DEMO_BUILD } from "../config/buildMode";
+import { useUnreadNotificationCount } from "../pages/app/notificationsSelectors";
+import { ROLE_GREETING } from "../pages/app/dashboard/dashboardData";
 
 const NAV_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
   "/dashboard": LayoutDashboard,
@@ -28,7 +35,7 @@ const NAV_ITEMS = {
     { label: "Dashboard", path: "/dashboard" },
     { label: "Calendar", path: "/calendar", children: [
       { label: "Schedule", path: "/calendar/schedule" },
-      { label: "Team Availability", path: "/calendar/team-availability" }
+      { label: "Availability", path: "/calendar/availability" }
     ]},
     { label: "Patients", path: "/patients" },
     { label: "Staff", path: "/staff" },
@@ -44,7 +51,7 @@ const NAV_ITEMS = {
     { label: "Dashboard", path: "/dashboard" },
     { label: "Calendar", path: "/calendar", children: [
       { label: "Schedule", path: "/calendar/schedule" },
-      { label: "Team Availability", path: "/calendar/team-availability" }
+      { label: "Availability", path: "/calendar/availability" }
     ]},
     { label: "Patients", path: "/patients" },
     { label: "Billing", path: "/billing" },
@@ -55,8 +62,7 @@ const NAV_ITEMS = {
     { label: "Dashboard", path: "/dashboard" },
     { label: "Calendar", path: "/calendar", children: [
       { label: "Schedule", path: "/calendar/schedule" },
-      { label: "My Availability", path: "/calendar/my-availability" },
-      { label: "Team Availability", path: "/calendar/team-availability" }
+      { label: "Availability", path: "/calendar/availability" }
     ]},
     { label: "Patients", path: "/patients" },
     { label: "Notifications", path: "/notifications" },
@@ -67,7 +73,7 @@ const NAV_ITEMS = {
     { label: "Calendar", path: "/calendar", children: [
       { label: "Schedule", path: "/calendar/schedule" },
       { label: "My Availability", path: "/calendar/my-availability" },
-      { label: "Team Availability", path: "/calendar/team-availability" }
+      { label: "Availability", path: "/calendar/availability" }
     ]},
     { label: "Patients", path: "/patients" },
     { label: "Notifications", path: "/notifications" },
@@ -76,14 +82,28 @@ const NAV_ITEMS = {
   ]
 };
 
+const LONG_PRESS_MS = 450;
+
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const { role, setRole, logout, isFeedbackModalOpen, setFeedbackModalOpen } = useAppContext();
+  const {
+    role, isFeedbackModalOpen,
+    sidebarCollapsed, setSidebarCollapsed,
+  } = useAppContext();
+  const unreadNotifications = useUnreadNotificationCount(role);
   const location = useLocation();
   const navigate = useNavigate();
-  const currentNav = NAV_ITEMS[role];
-  
+  // Profile gets its own richer footer block below (avatar + name + role) —
+  // it isn't rendered twice as a plain nav row too.
+  const mainNav = NAV_ITEMS[role].filter((item) => item.path !== "/profile");
+
   const [calendarExpanded, setCalendarExpanded] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [calendarFlyoutOpen, setCalendarFlyoutOpen] = useState(false);
+  const [searchOverlayOpen, setSearchOverlayOpen] = useState(false);
+  const calendarAnchorRef = useRef<HTMLDivElement>(null);
+
+  // Manual toggle wins forever once used; only the orientation default
+  // (below) is allowed to move the rail before that happens.
+  const userToggledRef = useRef(false);
 
   useEffect(() => {
     if (location.pathname.startsWith('/calendar')) {
@@ -91,65 +111,131 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
   }, [location.pathname]);
 
-  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setRole(e.target.value as any);
-    navigate("/dashboard");
+  // Flyout is a transient overlay, not a persistent state — drop it on
+  // navigation or whenever the rail's expanded/collapsed state changes.
+  useEffect(() => {
+    setCalendarFlyoutOpen(false);
+  }, [location.pathname, sidebarCollapsed]);
+
+  // iPad portrait defaults to the collapsed rail; landscape defaults to
+  // expanded. Only applies before the user has manually toggled the rail.
+  useEffect(() => {
+    const mq = window.matchMedia("(orientation: portrait)");
+    const applyDefault = () => {
+      if (userToggledRef.current) return;
+      setSidebarCollapsed(mq.matches);
+    };
+    applyDefault();
+    mq.addEventListener("change", applyDefault);
+    return () => mq.removeEventListener("change", applyDefault);
+  }, [setSidebarCollapsed]);
+
+  const toggleSidebar = () => {
+    userToggledRef.current = true;
+    setSidebarCollapsed(!sidebarCollapsed);
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  // Collapsed-rail label reveal: long-press instead of hover (no reliable
+  // hover on iPad). One shared bubble, portalled so it escapes the rail.
+  const [pressedLabel, setPressedLabel] = useState<{ label: string; rect: DOMRect } | null>(null);
+  const pressTimerRef = useRef<number | null>(null);
+
+  const clearLongPress = () => {
+    if (pressTimerRef.current !== null) {
+      window.clearTimeout(pressTimerRef.current);
+      pressTimerRef.current = null;
+    }
+    setPressedLabel(null);
+  };
+
+  useEffect(() => () => {
+    if (pressTimerRef.current !== null) window.clearTimeout(pressTimerRef.current);
+  }, []);
+
+  const longPressHandlers = (label: string) => {
+    if (!sidebarCollapsed) return {};
+    return {
+      onPointerDown: (e: React.PointerEvent<HTMLElement>) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        pressTimerRef.current = window.setTimeout(() => setPressedLabel({ label, rect }), LONG_PRESS_MS);
+      },
+      onPointerUp: clearLongPress,
+      onPointerLeave: clearLongPress,
+      onPointerCancel: clearLongPress,
+    };
   };
 
   return (
     <div className="flex h-screen w-screen min-w-[1024px] bg-white text-gray-800 font-sans overflow-hidden">
-      <div className={`${sidebarCollapsed ? "w-16" : "w-64"} bg-white border-r border-gray-300 flex flex-col shrink-0 transition-[width] duration-200`}>
-        <div className={`h-16 flex items-center border-b border-gray-300 shrink-0 ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-6"}`}>
-          {!sidebarCollapsed && <span className="font-bold text-lg text-gray-800 tracking-tight truncate">Phenome Portal</span>}
+      <div className={`${sidebarCollapsed ? "w-16" : "w-60"} bg-white border-r border-gray-300 flex flex-col shrink-0 transition-[width] duration-200 ease-out`}>
+        {/* Brand + collapse toggle */}
+        <div className={`h-16 flex items-center border-b border-gray-300 shrink-0 ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-4"}`}>
+          {!sidebarCollapsed && <span className="font-bold text-lg text-gray-800 tracking-tight truncate pl-2">Phenome Portal</span>}
           <button
-            onClick={() => setSidebarCollapsed((v) => !v)}
+            onClick={toggleSidebar}
             title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
             aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded transition-colors shrink-0"
+            className="w-11 h-11 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
           >
             {sidebarCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto py-4">
-          {currentNav.map(item => {
+
+        {/* Search — inline field expanded, icon-to-overlay collapsed */}
+        <div className={`shrink-0 border-b border-gray-200 ${sidebarCollapsed ? "py-2 flex justify-center" : "px-3 py-3"}`}>
+          {sidebarCollapsed ? (
+            <button
+              onClick={() => setSearchOverlayOpen(true)}
+              title="Search"
+              aria-label="Search"
+              {...longPressHandlers("Search")}
+              className="w-12 h-12 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+          ) : (
+            <GlobalSearch />
+          )}
+        </div>
+
+        {/* Primary navigation */}
+        <div className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5">
+          {mainNav.map(item => {
             const isActive = location.pathname.startsWith(item.path);
             const Icon = NAV_ICON[item.path] ?? LayoutDashboard;
+            const isNotifications = item.path === "/notifications";
+            const showBadge = isNotifications && unreadNotifications > 0;
 
             if (item.children) {
-              const isExpanded = calendarExpanded && !sidebarCollapsed;
+              const isInlineExpanded = calendarExpanded && !sidebarCollapsed;
               return (
                 <div key={item.label} className="flex flex-col">
                   <div
+                    ref={sidebarCollapsed ? calendarAnchorRef : undefined}
                     onClick={() => {
-                      if (sidebarCollapsed) { navigate(item.children[0].path); return; }
-                      if (!isExpanded) {
-                        navigate(item.children[0].path);
-                      }
-                      setCalendarExpanded(!isExpanded);
+                      if (sidebarCollapsed) { setCalendarFlyoutOpen(v => !v); return; }
+                      if (!isInlineExpanded) navigate(item.children[0].path);
+                      setCalendarExpanded(!isInlineExpanded);
                     }}
-                    title={sidebarCollapsed ? item.label : undefined}
-                    className={`flex items-center ${sidebarCollapsed ? "justify-center px-0 py-3" : "justify-between px-6 py-3"} text-sm font-medium cursor-pointer transition-colors ${isActive ? 'bg-slate-50 text-slate-800' : 'text-gray-600 hover:bg-gray-50'}`}
+                    {...longPressHandlers(item.label)}
+                    className={`w-full flex items-center rounded-lg cursor-pointer transition-colors ${sidebarCollapsed ? "justify-center h-12" : "justify-between px-3 min-h-11 py-2.5"} text-sm font-medium ${isActive ? "bg-slate-100 text-slate-800" : "text-gray-600 hover:bg-gray-50"}`}
                   >
                     <span className="flex items-center gap-3 min-w-0">
                       <Icon className="w-[18px] h-[18px] shrink-0" />
                       {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
                     </span>
-                    {!sidebarCollapsed && (isExpanded ? <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" /> : <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />)}
+                    {!sidebarCollapsed && (isInlineExpanded ? <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" /> : <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />)}
                   </div>
-                  {isExpanded && (
-                    <div className="flex flex-col bg-slate-50/50 py-1">
+
+                  {isInlineExpanded && (
+                    <div className="flex flex-col bg-slate-50/60 rounded-lg py-1 mt-0.5">
                       {item.children.map(child => {
                         const isChildActive = location.pathname.startsWith(child.path);
                         return (
                           <Link
                             key={child.label}
                             to={child.path}
-                            className={`flex items-center pl-10 pr-6 py-2.5 text-sm font-medium transition-colors ${isChildActive ? 'bg-slate-200 text-slate-800 border-r-4 border-slate-500' : 'text-gray-500 hover:bg-slate-100 hover:text-gray-700'}`}
+                            className={`flex items-center pl-8 pr-3 min-h-11 py-2.5 rounded-lg text-sm font-medium transition-colors ${isChildActive ? "bg-slate-200 text-slate-800" : "text-gray-500 hover:bg-slate-100 hover:text-gray-700"}`}
                           >
                             <span className="w-1 h-1 rounded-full bg-slate-400 mr-2 shrink-0"></span>
                             {child.label}
@@ -157,6 +243,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                         );
                       })}
                     </div>
+                  )}
+
+                  {sidebarCollapsed && calendarFlyoutOpen && (
+                    <FloatingPopover anchorRef={calendarAnchorRef} onClose={() => setCalendarFlyoutOpen(false)} align="left">
+                      <div className="w-52 bg-white border border-gray-200 rounded-lg shadow-lg py-1.5">
+                        <div className="px-3 pb-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">{item.label}</div>
+                        {item.children.map(child => {
+                          const isChildActive = location.pathname.startsWith(child.path);
+                          return (
+                            <Link
+                              key={child.label}
+                              to={child.path}
+                              onClick={() => setCalendarFlyoutOpen(false)}
+                              className={`flex items-center min-h-11 py-2.5 px-3 text-sm font-medium transition-colors ${isChildActive ? "bg-slate-100 text-slate-800" : "text-gray-600 hover:bg-gray-50"}`}
+                            >
+                              {child.label}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </FloatingPopover>
                   )}
                 </div>
               );
@@ -166,76 +273,69 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.label}
                 to={item.path}
-                title={sidebarCollapsed ? item.label : undefined}
-                className={`flex items-center gap-3 ${sidebarCollapsed ? "justify-center px-0 py-3" : "px-6 py-3"} text-sm font-medium transition-colors ${isActive && !item.children ? 'bg-slate-100 text-slate-800 border-r-4 border-slate-500' : 'text-gray-600 hover:bg-gray-50'}`}
+                {...longPressHandlers(item.label)}
+                className={`w-full flex items-center gap-3 rounded-lg transition-colors ${sidebarCollapsed ? "justify-center h-12" : "px-3 min-h-11 py-2.5"} text-sm font-medium ${isActive ? "bg-slate-100 text-slate-800" : "text-gray-600 hover:bg-gray-50"}`}
               >
-                <Icon className="w-[18px] h-[18px] shrink-0" />
-                {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
+                <span className="relative shrink-0">
+                  <Icon className="w-[18px] h-[18px]" />
+                  {showBadge && sidebarCollapsed && (
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-slate-600 rounded-full border-2 border-white" />
+                  )}
+                </span>
+                {!sidebarCollapsed && <span className="truncate flex-1">{item.label}</span>}
+                {!sidebarCollapsed && showBadge && (
+                  <span className="shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-slate-600 text-white text-[10px] font-bold flex items-center justify-center">
+                    {unreadNotifications}
+                  </span>
+                )}
               </Link>
             );
           })}
+        </div>
 
-          <div className="my-4 border-t border-gray-200"></div>
-
-          <button
-            onClick={handleLogout}
-            title={sidebarCollapsed ? "Logout" : undefined}
-            className={`w-full flex items-center gap-3 ${sidebarCollapsed ? "justify-center px-0 py-3" : "px-6 py-3"} text-sm font-medium text-gray-600 hover:bg-gray-50 text-left`}
+        {/* Profile — pinned footer, outside the scrollable nav. Logout and
+            Help both live on the Profile page now (Log Out action, and the
+            "Contact Administrator" button which already opens the same
+            feedback modal Help used to). */}
+        <div className="shrink-0 border-t border-gray-200">
+          <Link
+            to="/profile"
+            title="Profile"
+            {...longPressHandlers("Profile")}
+            className={`w-full flex items-center gap-3 hover:bg-gray-50 transition-colors ${sidebarCollapsed ? "justify-center h-14" : "px-4 h-16"}`}
           >
-            <LogOut className="w-[18px] h-[18px] shrink-0" />
-            {!sidebarCollapsed && "Logout"}
-          </button>
+            <div className="w-9 h-9 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">
+              {role.charAt(0)}
+            </div>
+            {!sidebarCollapsed && (
+              <div className="min-w-0 flex-1 text-left">
+                <div className="text-sm font-semibold text-gray-800 truncate">{ROLE_GREETING[role]}</div>
+                <div className="text-xs text-gray-500 truncate">{role}</div>
+              </div>
+            )}
+          </Link>
         </div>
       </div>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="h-16 bg-white border-b border-gray-300 flex items-center justify-between px-6 shrink-0 z-10">
-          <div className="flex items-center space-x-4 flex-1">
-            <GlobalSearch />
-          </div>
-          
-          <div className="flex items-center space-x-6">
-            {role !== "Admin" && (
-              <button onClick={() => setFeedbackModalOpen(true)} className="flex items-center text-sm font-semibold text-slate-600 hover:text-slate-800 transition-colors">
-                <HelpCircle className="w-4 h-4 mr-1.5" /> Help
-              </button>
-            )}
-            
-            <Link to="/site-map" className="flex items-center text-sm font-semibold text-slate-600 hover:text-slate-800">
-              <Map className="w-4 h-4 mr-1.5" /> Site Map
-            </Link>
-
-            <div className="flex items-center space-x-2">
-              <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Demo Role:</span>
-              <select 
-                value={role}
-                onChange={handleRoleChange}
-                className="border border-gray-300 rounded text-sm px-2 py-1 outline-none focus:border-slate-500 bg-white"
-              >
-                <option value="Admin">Admin</option>
-                <option value="Reception">Reception</option>
-                <option value="Nurse">Nurse</option>
-                <option value="Clinician">Clinician</option>
-              </select>
-            </div>
-            
-            <Link to="/notifications" className="relative">
-              <Bell className="w-5 h-5 text-gray-600" />
-              <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-slate-600 rounded-full border-2 border-white"></div>
-            </Link>
-            
-            <Link to="/profile" className="w-8 h-8 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-xs font-bold text-slate-600">
-              {role.charAt(0)}
-            </Link>
-          </div>
-        </div>
-
         <div className="flex-1 overflow-auto bg-gray-50 relative">
           {children}
         </div>
       </div>
-      
+
+      {searchOverlayOpen && <GlobalSearchOverlay onClose={() => setSearchOverlayOpen(false)} />}
       {isFeedbackModalOpen && <SubmitFeedbackModal />}
+      {IS_DEMO_BUILD && <DemoControlsPill />}
+
+      {pressedLabel && createPortal(
+        <div
+          className="fixed z-[110] px-2.5 py-1.5 rounded-lg bg-slate-800 text-white text-xs font-medium shadow-lg pointer-events-none whitespace-nowrap"
+          style={{ top: pressedLabel.rect.top + pressedLabel.rect.height / 2, left: pressedLabel.rect.right + 10, transform: "translateY(-50%)" }}
+        >
+          {pressedLabel.label}
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

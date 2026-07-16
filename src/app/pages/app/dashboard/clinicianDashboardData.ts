@@ -2,11 +2,10 @@
 // Kept out of dashboardData.ts (already at the project's file-size ceiling)
 // so the shared Appt model stays generic and this role's rules stay together.
 
-import { Appt, JOURNEY_STEPS_RECEPTION, NOW_MINUTES } from "./dashboardData";
+import { Appt, NOW_MINUTES } from "./dashboardData";
+import { CANONICAL_STATIONS, RESULTS_CONSULTATION_INDEX } from "./journey/journeyTemplates";
 
 export const CLINICIAN_ID = "EMP-003"; // Dr. Ebru Reis (signed-in clinician)
-
-export const CONSULTATION_STEP_INDEX = JOURNEY_STEPS_RECEPTION.indexOf("Consultation");
 
 // A video call may only be joined inside a window around its own start time;
 // outside that window (or before its check-in), it isn't callable yet.
@@ -50,8 +49,8 @@ export function upNextApptFor(appts: Appt[]): Appt | undefined {
 // In-person "Start Consultation" gate: the patient's own journey has to have
 // reached the consultation station itself, not just arrived at the clinic.
 export function inPersonStartState(appt: Appt): { enabled: boolean; reason: string } {
-  if (appt.currentStep >= CONSULTATION_STEP_INDEX) return { enabled: true, reason: "" };
-  return { enabled: false, reason: `Patient currently in ${JOURNEY_STEPS_RECEPTION[appt.currentStep]}` };
+  if (appt.currentStep >= RESULTS_CONSULTATION_INDEX) return { enabled: true, reason: "" };
+  return { enabled: false, reason: `Patient currently in ${CANONICAL_STATIONS[appt.currentStep]}` };
 }
 
 // Video "Join Call" gate: blocked outright while another session (in-person

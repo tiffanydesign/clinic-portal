@@ -1,7 +1,8 @@
 import React from "react";
+import { useNavigate } from "react-router";
 import { Video, MapPin, CheckCircle2 } from "lucide-react";
-import { Appt, relevantJourneySteps } from "./dashboardData";
-import { CondensedJourneyStrip } from "./AppointmentDrawerShared";
+import { Appt } from "./dashboardData";
+import { ApptJourneyStrip } from "./journey/JourneyProgress";
 import { inPersonStartState, videoJoinState } from "./clinicianDashboardData";
 
 function typeLabel(a: Appt): string {
@@ -36,6 +37,7 @@ export function ClinicianNowCard({
   onComplete: (id: string) => void;
   onStartOrJoin: (id: string) => void;
 }) {
+  const navigate = useNavigate();
   const heading = activeAppt ? "Current Patient" : upNextAppt ? "Next Patient" : null;
 
   return (
@@ -45,7 +47,6 @@ export function ClinicianNowCard({
       {activeAppt ? (
         (() => {
           const a = activeAppt;
-          const { steps, current } = relevantJourneySteps(a);
           return (
             <div className="border border-orange-200 bg-orange-50/60 rounded-xl shadow-sm p-5">
               <div className="flex items-center gap-2 mb-3">
@@ -65,8 +66,8 @@ export function ClinicianNowCard({
               </div>
 
               {!a.isVideo && (
-                <div className="mt-4 px-1">
-                  <CondensedJourneyStrip steps={steps} current={current} />
+                <div className="mt-4">
+                  <ApptJourneyStrip appt={a} onOpen={() => navigate(`${a.patient.route}/journeys`)} />
                 </div>
               )}
 
@@ -81,7 +82,7 @@ export function ClinicianNowCard({
                   onClick={() => onComplete(a.id)}
                   className="flex-1 px-4 py-2.5 bg-slate-700 text-white text-sm font-bold rounded-lg hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
                 >
-                  <CheckCircle2 className="w-4 h-4" /> Complete Consultation
+                  <CheckCircle2 className="w-4 h-4" /> Complete
                 </button>
               </div>
             </div>
@@ -90,9 +91,8 @@ export function ClinicianNowCard({
       ) : upNextAppt ? (
         (() => {
           const a = upNextAppt;
-          const { steps, current } = relevantJourneySteps(a);
           const gate = a.isVideo ? videoJoinState(a, false) : inPersonStartState(a);
-          const actionLabel = a.isVideo ? "Join Call" : "Start Consultation";
+          const actionLabel = a.isVideo ? "Join Call" : "Start";
           return (
             <div className="border border-blue-200 bg-blue-50/50 rounded-xl shadow-sm p-5">
               <div className="flex items-center gap-2 mb-3">
@@ -109,8 +109,8 @@ export function ClinicianNowCard({
               {a.isVideo ? (
                 <VideoWaitingLine appt={a} />
               ) : (
-                <div className="mt-4 px-1">
-                  <CondensedJourneyStrip steps={steps} current={current} />
+                <div className="mt-4">
+                  <ApptJourneyStrip appt={a} onOpen={() => navigate(`${a.patient.route}/journeys`)} />
                 </div>
               )}
 
@@ -136,7 +136,7 @@ export function ClinicianNowCard({
           );
         })()
       ) : (
-        <div className="border border-gray-200 bg-white rounded-xl shadow-sm p-6 flex items-center gap-3">
+        <div className="border border-gray-200 bg-white rounded-xl shadow-sm p-5 flex items-center gap-3">
           <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
           <p className="text-sm font-medium text-gray-600">All caught up — no more patients scheduled today.</p>
         </div>

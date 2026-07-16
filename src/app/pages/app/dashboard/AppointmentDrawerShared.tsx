@@ -1,5 +1,5 @@
 import React from "react";
-import { AlertTriangle, Check, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Appt, ApptStatusTone, Patient, apptStatusTone, formsSigned } from "./dashboardData";
 
 // Shared building blocks for the Appointment Drawer's redesigned hierarchy:
@@ -151,7 +151,7 @@ export function StatusGateCard({ appt, showPayment = true }: { appt: Appt; showP
 // fields the Appt model actually has (check-in time, arrival + wait) — the
 // model has no per-step timestamps, so this deliberately doesn't invent a
 // fake "in this step for N minutes" figure it can't back with real data.
-function journeyTimingCaption(appt: Appt): string | null {
+export function journeyTimingCaption(appt: Appt): string | null {
   if (appt.status === "In Clinic" && appt.checkInTime) return `Checked in at ${appt.checkInTime}`;
   if (appt.status === "Arrived" && appt.arrivedTime) {
     return appt.waitMinutes != null ? `Arrived ${appt.arrivedTime} · waiting ${appt.waitMinutes} min` : `Arrived ${appt.arrivedTime}`;
@@ -160,93 +160,11 @@ function journeyTimingCaption(appt: Appt): string | null {
   return null;
 }
 
-// Enlarged journey stepper: bigger circles, readable (not tiny-uppercase)
-// labels, a solid checkmark for completed steps, and a pulsing ring on the
-// current one — the same current-step "ping" language already used by the
-// Nurse dashboard's own Patient Journey card (PatientJourneyCard.tsx),
-// just reapplied to a horizontal row so the two surfaces read as the same
-// visual system.
-export function JourneyStepperLarge({ appt, steps, current }: { appt: Appt; steps: string[]; current: number }) {
-  const caption = journeyTimingCaption(appt);
-  return (
-    <div>
-      <div className="relative pt-1">
-        <div className="absolute top-[18px] left-4 right-4 h-0.5 bg-gray-200" />
-        <div className="relative flex justify-between">
-          {steps.map((step, i) => {
-            const done = i < current;
-            const isCurrent = i === current;
-            return (
-              <div key={step} className="flex flex-col items-center flex-1 min-w-0 px-0.5">
-                {done ? (
-                  <div className="w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 mb-2">
-                    <Check className="w-4 h-4" strokeWidth={3} />
-                  </div>
-                ) : isCurrent ? (
-                  <div className="relative w-7 h-7 shrink-0 flex items-center justify-center mb-2">
-                    <div className="absolute inset-0 rounded-full bg-slate-400/30 motion-safe:animate-ping" />
-                    <div className="relative w-7 h-7 rounded-full bg-white border-[3px] border-slate-600 flex items-center justify-center">
-                      <div className="w-2 h-2 rounded-full bg-slate-600" />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="w-6 h-6 m-0.5 rounded-full border-2 border-gray-300 bg-white shrink-0 mb-2" />
-                )}
-                <span className={`text-[11px] font-bold text-center leading-tight truncate max-w-full ${isCurrent ? "text-slate-800" : done ? "text-gray-500" : "text-gray-400"}`}>
-                  {step}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      {caption && <p className="text-xs text-gray-500 font-medium mt-3 text-center">{caption}</p>}
-    </div>
-  );
-}
-
-// A 3-item window onto a journey's steps — the previous completed station,
-// the one actually in progress right now (a green, pulsing "status ball" —
-// deliberately its own color, not reused from JourneyStepperLarge's done/
-// current styling above, so it reads as a distinct "at a glance" indicator
-// rather than a shrunken copy of the full stepper), and the next station up.
-// For roles that don't run the journey themselves (Admin/Reception clicking
-// into an appointment from the calendar; Clinician's own dashboard preview
-// of "where is this patient right now") — a full station-by-station history
-// is more detail than the question they're actually asking.
-export function CondensedJourneyStrip({ steps, current }: { steps: string[]; current: number }) {
-  const indices = [current - 1, current, current + 1].filter((i) => i >= 0 && i < steps.length);
-  return (
-    <div className="relative pt-1">
-      <div className="absolute top-[13px] left-4 right-4 h-0.5 bg-gray-200" />
-      <div className="relative flex justify-between">
-        {indices.map((i) => {
-          const done = i < current;
-          const isCurrent = i === current;
-          return (
-            <div key={i} className="flex flex-col items-center flex-1 min-w-0 px-1">
-              {done ? (
-                <div className="w-6 h-6 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center shrink-0 mb-1.5">
-                  <Check className="w-3.5 h-3.5" strokeWidth={3} />
-                </div>
-              ) : isCurrent ? (
-                <div className="relative w-6 h-6 shrink-0 flex items-center justify-center mb-1.5">
-                  <div className="absolute inset-0 rounded-full bg-emerald-400/50 motion-safe:animate-ping" />
-                  <div className="relative w-6 h-6 rounded-full bg-emerald-500 ring-2 ring-white" />
-                </div>
-              ) : (
-                <div className="w-5 h-5 m-0.5 rounded-full border-2 border-gray-300 bg-white shrink-0 mb-1.5" />
-              )}
-              <span className={`text-[10px] font-bold text-center leading-tight truncate max-w-full ${isCurrent ? "text-emerald-700" : "text-gray-400"}`}>
-                {steps[i]}
-              </span>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
+// The old full-step-list dot stepper has been retired in favor of the
+// unified Prev/Current/Next JourneyProgressStrip (see
+// dashboard/journey/JourneyProgress.tsx) — kept out of this file so every
+// journey-progress surface reads through one shared component instead of
+// two independent renderers.
 
 // The drawer's single primary call-to-action — full-width, filled. Every
 // role body uses exactly one of these in its sticky footer.

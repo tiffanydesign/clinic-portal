@@ -52,6 +52,7 @@ function StepBody({ row }: { row: StepRow }) {
       )}
       <div className="flex items-baseline gap-1.5">
         <span className={`min-w-0 truncate text-sm ${nameCls}`}>{row.name}</span>
+        {row.subtitle && <span className="shrink-0 text-xs font-medium text-gray-400 truncate">({row.subtitle})</span>}
         {row.showOwner && <span className="shrink-0 text-[10px] font-extrabold uppercase tracking-wide text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">{row.owner}</span>}
         {row.showWaitLive && <span className="shrink-0 inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-full">◷ Waiting · {row.waitLive} min</span>}
         <span className="ml-auto shrink-0 text-xs font-bold text-gray-500 tabular-nums">

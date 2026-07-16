@@ -11,7 +11,7 @@
 
 import type { Appt, ApptStatus } from "../dashboard/dashboardData";
 
-export type RoomType = "Scan Room" | "Consult Room" | "Sample Room" | "Other";
+export type RoomType = "Scan Room" | "Consult Room" | "Sample Room" | "Changing Room" | "Other";
 export type RoomStatus = "active" | "inactive";
 
 export type Room = {
@@ -25,7 +25,7 @@ export type Room = {
 
 // Order matters: this is the order the New Room drawer's Type <select> offers,
 // and the grouping order used by the Calendar's room columns.
-export const ROOM_TYPES: RoomType[] = ["Scan Room", "Consult Room", "Sample Room", "Other"];
+export const ROOM_TYPES: RoomType[] = ["Changing Room", "Scan Room", "Consult Room", "Sample Room", "Other"];
 
 // Seed rooms. The seven active rooms reproduce the legacy calendar exactly
 // (same ids, same order); "Room 4" is a pre-deactivated example so the
@@ -39,6 +39,14 @@ export const SEED_ROOMS: Room[] = [
   { id: "Lab 1", name: "Lab 1", type: "Sample Room", status: "active", sortOrder: 5, notes: "Phlebotomy" },
   { id: "Lab 2", name: "Lab 2", type: "Sample Room", status: "active", sortOrder: 6, notes: "Phlebotomy" },
   { id: "Room 4", name: "Room 4", type: "Consult Room", status: "inactive", sortOrder: 7, notes: "Out of service — being refurbished" },
+  // Six changing rooms feeding the Patient Journey's "Changing Room" station
+  // (see journeyEngine.ts) — patients change into a gown here before Scan.
+  { id: "Changing 1", name: "Changing 1", type: "Changing Room", status: "active", sortOrder: 8, notes: "Locker + gown, ground floor" },
+  { id: "Changing 2", name: "Changing 2", type: "Changing Room", status: "active", sortOrder: 9, notes: "Locker + gown, ground floor" },
+  { id: "Changing 3", name: "Changing 3", type: "Changing Room", status: "active", sortOrder: 10, notes: "Locker + gown, ground floor" },
+  { id: "Changing 4", name: "Changing 4", type: "Changing Room", status: "active", sortOrder: 11, notes: "Locker + gown, 1st floor · wheelchair accessible" },
+  { id: "Changing 5", name: "Changing 5", type: "Changing Room", status: "active", sortOrder: 12, notes: "Locker + gown, 1st floor" },
+  { id: "Changing 6", name: "Changing 6", type: "Changing Room", status: "inactive", sortOrder: 13, notes: "Out of service — lock replacement" },
 ];
 
 // Statuses that mean a booking is still going to happen (or is happening) and

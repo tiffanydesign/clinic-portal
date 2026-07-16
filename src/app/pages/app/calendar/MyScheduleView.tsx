@@ -1,10 +1,12 @@
 // Orchestrator for the Clinician/Nurse "My Schedule" surface: left rail
-// (mini calendar + search + layers) beside the week/day time grid, with a top
-// bar (Today, paging, date title + picker, Day/Week), swipe-to-page, and a
-// responsive rail that collapses to an overlay on narrow/portrait screens.
+// (mini calendar + search + layers) beside the week/day/month grid, with a
+// top bar (Today, paging, date title + picker, Day/Week[/Month]),
+// swipe-to-page, and a responsive rail that collapses to an overlay on
+// narrow/portrait screens. Month is Nurse-only (see VIEW_OPTIONS below) —
+// Clinician's toggle is unchanged.
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { addDays, endOfWeek, format, isSameDay } from "date-fns";
+import { addDays, addMonths, endOfWeek, format, isSameDay, startOfMonth, subMonths } from "date-fns";
 import { ChevronLeft, ChevronRight, PanelLeftOpen, X, FileText, PanelRightOpen } from "lucide-react";
 import { ANCHOR_DATE, NOW_MINUTES, Appt } from "./scheduleData";
 import {
@@ -13,9 +15,11 @@ import {
 import { ScheduleLeftRail, LayerKey } from "./ScheduleLeftRail";
 import { MiniCalendar } from "./MiniCalendar";
 import { MyScheduleGrid } from "./MyScheduleGrid";
+import { MyScheduleMonthGrid } from "./MyScheduleMonthGrid";
 import { useAvailabilityStore } from "../availability/availabilityStore";
 
 const TODAY = ANCHOR_DATE;
+type ScheduleView = "day" | "week" | "month";
 
 function useWideScreen(threshold = 1100) {
   const [wide, setWide] = useState(typeof window !== "undefined" ? window.innerWidth >= threshold : true);
@@ -32,7 +36,8 @@ export function MyScheduleView({ role, onOpenAppt }: { role: ScheduleRole; onOpe
   const wide = useWideScreen();
   const { savedSchedule, blockedTime, leaves } = useAvailabilityStore();
 
-  const [view, setView] = useState<"week" | "day">("week");
+  const viewOptions: readonly ScheduleView[] = role === "Nurse" ? (["day", "week", "month"] as const) : (["day", "week"] as const);
+  const [view, setView] = useState<ScheduleView>("day");
   const [selectedDate, setSelectedDate] = useState<Date>(TODAY);
   const [layers, setLayers] = useState<LayerState>(defaultLayers);
   const [search, setSearch] = useState("");
@@ -51,9 +56,14 @@ export function MyScheduleView({ role, onOpenAppt }: { role: ScheduleRole; onOpe
   const counts = useMemo(() => layerCounts(weekDaysAll), [weekDaysAll]);
   const totalVisible = gridDays.flatMap((d) => d.appts).filter((a) => apptVisible(a, layers)).length;
   const hasApptsOn = (d: Date) => apptsForDate(role, d).length > 0;
+  const countFor = (d: Date) => apptsForDate(role, d).length;
 
-  const page = (dir: 1 | -1) => setSelectedDate((d) => addDays(d, dir * (view === "week" ? 7 : 1)));
+  const page = (dir: 1 | -1) => {
+    if (view === "month") { setSelectedDate((d) => (dir === 1 ? addMonths(d, 1) : subMonths(d, 1))); return; }
+    setSelectedDate((d) => addDays(d, dir * (view === "week" ? 7 : 1)));
+  };
   const goToday = () => setSelectedDate(TODAY);
+  const selectMonthDay = (d: Date) => { setSelectedDate(d); setView("day"); };
 
   const toggleLayer = (key: LayerKey) => setLayers((p) => {
     if (key === "mine") return { ...p, mine: !p.mine };
@@ -64,7 +74,9 @@ export function MyScheduleView({ role, onOpenAppt }: { role: ScheduleRole; onOpe
 
   const openAppt = (a: Appt) => onOpenAppt(a.id.replace(/-w\d+-\d+$/, ""));
 
-  const title = view === "week"
+  const title = view === "month"
+    ? format(selectedDate, "MMMM yyyy")
+    : view === "week"
     ? `${format(weekStart, "MMM d")} – ${format(endOfWeek(weekStart, { weekStartsOn: 1 }), "d, yyyy")}`
     : format(selectedDate, "EEE, MMM d, yyyy");
 
@@ -129,7 +141,7 @@ export function MyScheduleView({ role, onOpenAppt }: { role: ScheduleRole; onOpe
             </div>
           </div>
           <div className="inline-flex bg-gray-100 rounded-lg p-0.5 border border-gray-200">
-            {(["day", "week"] as const).map((v) => (
+            {viewOptions.map((v) => (
               <button key={v} onClick={() => setView(v)} className={`px-3 py-1.5 text-xs font-bold rounded-md capitalize transition-colors ${view === v ? "bg-white text-slate-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>{v}</button>
             ))}
           </div>
@@ -137,26 +149,38 @@ export function MyScheduleView({ role, onOpenAppt }: { role: ScheduleRole; onOpe
 
         {/* grid */}
         <div className="flex-1 min-h-0 p-4 relative" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-          <MyScheduleGrid
-            role={role}
-            view={view}
-            weekDays={gridDays}
-            nowMinutes={NOW_MINUTES}
-            layers={layers}
-            schedule={savedSchedule}
-            blockedTime={blockedTime}
-            leaves={leaves}
-            search={search}
-            onApptClick={openAppt}
-            onLongPress={setQuick}
-          />
-          {totalVisible === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="text-center bg-white/80 rounded-xl px-6 py-4">
-                <p className="text-sm font-bold text-gray-500">No appointments this {view}</p>
-                <p className="text-xs text-gray-400 mt-1">{search ? "No patients match your search." : "Nothing scheduled in this range."}</p>
-              </div>
-            </div>
+          {view === "month" ? (
+            <MyScheduleMonthGrid
+              viewMonth={startOfMonth(selectedDate)}
+              selectedDate={selectedDate}
+              today={TODAY}
+              countFor={countFor}
+              onSelectDay={selectMonthDay}
+            />
+          ) : (
+            <>
+              <MyScheduleGrid
+                role={role}
+                view={view}
+                weekDays={gridDays}
+                nowMinutes={NOW_MINUTES}
+                layers={layers}
+                schedule={savedSchedule}
+                blockedTime={blockedTime}
+                leaves={leaves}
+                search={search}
+                onApptClick={openAppt}
+                onLongPress={setQuick}
+              />
+              {totalVisible === 0 && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="text-center bg-white/80 rounded-xl px-6 py-4">
+                    <p className="text-sm font-bold text-gray-500">No appointments this {view}</p>
+                    <p className="text-xs text-gray-400 mt-1">{search ? "No patients match your search." : "Nothing scheduled in this range."}</p>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

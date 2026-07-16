@@ -42,7 +42,7 @@ export function DashboardSkeleton() {
 export { CalendarLayout, CalendarScheduleSkeleton, AvailabilityList } from "./CalendarViews";
 export { AvailabilityEditorPage as AvailabilityEdit } from "./availability/AvailabilityEditorPage";
 export { SchedulePage } from "./calendar/SchedulePage";
-export { TeamAvailability } from "./TeamAvailability";
+export { AvailabilityPage } from "./AvailabilityPage";
 
 export function AppointmentDrawerSkeleton() {
   const navigate = useNavigate();

@@ -8,7 +8,6 @@ import { addDays, isSameDay, startOfWeek } from "date-fns";
 import {
   APPTS, Appt, ApptType, CLINICIAN_SELF_ID, NURSE_SELF_NAME, ANCHOR_DATE, fmtRange,
 } from "./scheduleData";
-import { relevantJourneySteps } from "../dashboard/dashboardData";
 import { DAYS, WeekSchedule, timeToMinutes } from "../availability/availabilityData";
 import { BlockedTime } from "../availability/availabilityStore";
 import { LeaveItem } from "../availability/availabilityData";
@@ -30,21 +29,36 @@ export function myAppts(role: ScheduleRole): Appt[] {
 // Fabricate a fuller week from the single modelled day, the same demo device
 // the existing Week view uses: the anchor day carries the real set, a few
 // other weekdays get shifted subsets, and Thursday is deliberately left as an
-// approved-leave day (no appts). Wednesday's subset is engineered to overlap so
-// the collision layout is demonstrable. Non-anchor weeks are genuinely empty.
-// `at` pins an absolute start (used to engineer overlaps that exercise the
-// collision layout); otherwise `delta` shifts the appt's natural time.
-type ShiftPlan = { idx: number; delta?: number; at?: number };
+// approved-leave day (no appts). Non-anchor weeks are genuinely empty. Every
+// day's list is run through deoverlapSequential() below — a patient is never
+// shown overlapping another, and each occupies its own real 1-2h slot.
+type ShiftPlan = { idx: number; delta?: number };
 const WEEKDAY_PLANS: Record<number, ShiftPlan[]> = {
-  1: [{ idx: 0, delta: 30 }, { idx: 3, delta: 60 }], // Mon — spread
-  2: [{ idx: 0, at: 600 }, { idx: 1, at: 615 }], // Tue — two overlapping → side-by-side lanes
-  3: [{ idx: 0, at: 600 }, { idx: 1, at: 610 }, { idx: 2, at: 620 }, { idx: 3, at: 630 }], // Wed — four overlapping → "+N more"
+  1: [{ idx: 0, delta: 30 }, { idx: 1, delta: 45 }, { idx: 3, delta: 60 }], // Mon — spread
+  2: [{ idx: 0, delta: 0 }, { idx: 2, delta: 15 }, { idx: 4, delta: 30 }], // Tue
+  3: [{ idx: 1, delta: 0 }, { idx: 3, delta: 20 }, { idx: 5, delta: 40 }, { idx: 6, delta: 60 }], // Wed
   4: [], // Thu — approved leave day, intentionally empty
 };
 
 function placeAppt(a: Appt, p: ShiftPlan, suffix: string): Appt {
-  const startMin = p.at != null ? p.at : Math.max(DAY_START, Math.min(DAY_END - a.durationMin, a.startMin + (p.delta ?? 0)));
+  const startMin = Math.max(DAY_START, Math.min(DAY_END - a.durationMin, a.startMin + (p.delta ?? 0)));
   return { ...a, id: `${a.id}${suffix}`, startMin, timeLabel: fmtRange(startMin, a.durationMin) };
+}
+
+// Guarantees a day's appointment list never overlaps: sorted by start time,
+// any appointment that would start before the previous one ends is pushed
+// out to start right when it does (duration untouched — every patient still
+// gets their real 1-2h slot, just sequentially). Applied uniformly so no
+// single hand-authored time ever needs to be re-checked by hand.
+export function deoverlapSequential(appts: Appt[]): Appt[] {
+  const sorted = [...appts].sort((a, b) => a.startMin - b.startMin);
+  let prevEnd = -Infinity;
+  return sorted.map((a) => {
+    const startMin = Math.max(a.startMin, prevEnd);
+    prevEnd = startMin + a.durationMin;
+    if (startMin === a.startMin) return a;
+    return { ...a, startMin, timeLabel: fmtRange(startMin, a.durationMin) };
+  });
 }
 
 export type WeekDay = { date: Date; isToday: boolean; appts: Appt[] };
@@ -56,12 +70,12 @@ export function buildMyWeek(role: ScheduleRole, weekStart: Date): WeekDay[] {
     const date = addDays(weekStart, i);
     const isToday = isSameDay(date, ANCHOR_DATE);
     if (!isAnchorWeek) return { date, isToday: false, appts: [] };
-    if (isToday) return { date, isToday, appts: base };
+    if (isToday) return { date, isToday, appts: deoverlapSequential(base) };
     const plan = WEEKDAY_PLANS[date.getDay()] ?? [];
     const appts = plan
       .map((p, k) => (base[p.idx % base.length] ? placeAppt(base[p.idx % base.length], p, `-w${date.getDay()}-${k}`) : null))
       .filter((a): a is Appt => a !== null);
-    return { date, isToday, appts };
+    return { date, isToday, appts: deoverlapSequential(appts) };
   });
 }
 
@@ -69,62 +83,16 @@ export function apptsForDate(role: ScheduleRole, date: Date): Appt[] {
   return buildMyWeek(role, weekStartOf(date)).find((d) => isSameDay(d.date, date))?.appts ?? [];
 }
 
-// --- collision lane-packing ---
-// Overlapping appointments must render side by side, never stacked with
-// colliding text. Events are grouped into connected overlap clusters; within a
-// cluster each event greedily takes the first free lane. A cluster that needs
-// 3+ lanes shows the first two and collapses the rest into a "+N more" chip so
-// nothing shrinks to an unreadable sliver.
-const MAX_VISIBLE_LANES = 2;
-
-export type LaidItem =
-  | { kind: "appt"; appt: Appt; startMin: number; durationMin: number; lane: number; lanes: number }
-  | { kind: "more"; startMin: number; durationMin: number; lane: number; lanes: number; hidden: Appt[] };
+// --- day layout ---
+// Every day's appts are guaranteed non-overlapping by deoverlapSequential()
+// above, so each one is simply its own full-width row — no lane-packing or
+// "+N more" collapsing needed.
+export type LaidItem = { appt: Appt; startMin: number; durationMin: number };
 
 export function layoutDay(appts: Appt[]): LaidItem[] {
-  const sorted = [...appts].sort((a, b) => a.startMin - b.startMin || b.durationMin - a.durationMin);
-  const clusters: Appt[][] = [];
-  let cur: Appt[] = [];
-  let curEnd = -1;
-  for (const a of sorted) {
-    if (cur.length && a.startMin < curEnd) {
-      cur.push(a);
-      curEnd = Math.max(curEnd, a.startMin + a.durationMin);
-    } else {
-      if (cur.length) clusters.push(cur);
-      cur = [a];
-      curEnd = a.startMin + a.durationMin;
-    }
-  }
-  if (cur.length) clusters.push(cur);
-
-  const out: LaidItem[] = [];
-  for (const cluster of clusters) {
-    const laneEnds: number[] = [];
-    const withLane = cluster.map((a) => {
-      let lane = laneEnds.findIndex((end) => end <= a.startMin);
-      if (lane === -1) {
-        lane = laneEnds.length;
-        laneEnds.push(0);
-      }
-      laneEnds[lane] = a.startMin + a.durationMin;
-      return { appt: a, lane };
-    });
-    const used = laneEnds.length;
-    if (used <= MAX_VISIBLE_LANES) {
-      withLane.forEach(({ appt, lane }) => out.push({ kind: "appt", appt, startMin: appt.startMin, durationMin: appt.durationMin, lane, lanes: Math.max(1, used) }));
-    } else {
-      const lanes = MAX_VISIBLE_LANES + 1;
-      const hidden = withLane.filter((x) => x.lane >= MAX_VISIBLE_LANES).map((x) => x.appt);
-      withLane
-        .filter((x) => x.lane < MAX_VISIBLE_LANES)
-        .forEach(({ appt, lane }) => out.push({ kind: "appt", appt, startMin: appt.startMin, durationMin: appt.durationMin, lane, lanes }));
-      const hStart = Math.min(...hidden.map((a) => a.startMin));
-      const hEnd = Math.max(...hidden.map((a) => a.startMin + a.durationMin));
-      out.push({ kind: "more", startMin: hStart, durationMin: hEnd - hStart, lane: MAX_VISIBLE_LANES, lanes, hidden });
-    }
-  }
-  return out;
+  return [...appts]
+    .sort((a, b) => a.startMin - b.startMin)
+    .map((appt) => ({ appt, startMin: appt.startMin, durationMin: appt.durationMin }));
 }
 
 // --- layers ---
@@ -181,13 +149,6 @@ export function layerCounts(week: WeekDay[]) {
 // --- event helpers ---
 export function typeShort(t: ApptType): string {
   return t.replace(" (in-person)", "").replace(" (video)", "");
-}
-
-// The nurse's block subtext: the patient's current journey station.
-export function journeyStepLabel(a: Appt): string | null {
-  if (a.status !== "In Clinic" && a.status !== "Checked In") return null;
-  const { steps, current } = relevantJourneySteps(a);
-  return steps[current] ?? null;
 }
 
 // --- availability layer (read-only, from availabilityStore) ---

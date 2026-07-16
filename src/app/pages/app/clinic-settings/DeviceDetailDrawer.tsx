@@ -1,7 +1,7 @@
 // Device detail drawer. General fields for every device, an inline room
-// reassignment, editable label/notes, plus type-specific blocks: TV pairing,
-// and the Payment Terminal's preserved Stripe state (needs-attention +
-// unresolved transactions + remove-with-guard). Ends with the audit history.
+// reassignment, editable label/notes, plus the Payment Terminal's preserved
+// Stripe state (needs-attention + unresolved transactions + remove-with-guard).
+// Ends with the audit history.
 import React, { useState } from "react";
 import { toast } from "sonner";
 import { ScanLine, Tv, CreditCard, AlertTriangle, Archive, RotateCcw, Trash2, LucideIcon } from "lucide-react";
@@ -11,7 +11,6 @@ import { updateTerminal, removeTerminal, getPendingTransactions } from "../payme
 import { useActiveRooms } from "./roomsStore";
 import { SettingsDrawer, Field, inputCls, Pill, ConfirmDialog } from "./settingsUiShared";
 import { ActivitySection } from "./ActivitySection";
-import { TvPairingBlock } from "./TvPairingBlock";
 
 const TYPE_ICON: Record<string, LucideIcon> = { "Scan Device": ScanLine, TV: Tv, "Payment Terminal": CreditCard };
 
@@ -62,7 +61,6 @@ export function DeviceDetailDrawer({ view, onClose }: { view: DeviceView; onClos
   const rooms = useActiveRooms();
   const Icon = TYPE_ICON[view.type] ?? ScanLine;
   const isTerminal = view.source === "terminal";
-  const isTv = view.type === "TV" && view.source === "device";
 
   const [label, setLabel] = useState(view.label);
   const [notes, setNotes] = useState(view.notes ?? "");
@@ -141,7 +139,6 @@ export function DeviceDetailDrawer({ view, onClose }: { view: DeviceView; onClos
           </Field>
         )}
 
-        {isTv && <TvPairingBlock view={view} />}
         {isTerminal && <TerminalStripeBlock view={view} />}
 
         <div className="rounded-lg border border-gray-200 divide-y divide-gray-100 px-4">

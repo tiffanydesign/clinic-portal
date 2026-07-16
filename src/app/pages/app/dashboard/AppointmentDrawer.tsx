@@ -6,14 +6,15 @@ import {
 import { toast } from "sonner";
 import type { Role } from "../../../context/AppContext";
 import {
-  Appt, canCheckIn, checkInBlockReason, relevantJourneySteps, formsSigned,
+  Appt, canCheckIn, checkInBlockReason, formsSigned,
 } from "./dashboardData";
 import { roomName } from "../clinic-settings/roomsStore";
 import { StatusPill } from "./DashboardShared";
 import {
-  KV, Block, AllergyBanner, PatientHeaderBody, StatusGateCard, JourneyStepperLarge,
-  CondensedJourneyStrip, PrimaryActionButton, SecondaryChip,
+  KV, Block, AllergyBanner, PatientHeaderBody, StatusGateCard,
+  PrimaryActionButton, SecondaryChip,
 } from "./AppointmentDrawerShared";
+import { ApptJourneyStrip } from "./journey/JourneyProgress";
 
 // Optional action handlers. When supplied (e.g. by the editable Calendar page),
 // the drawer opens real modals; when omitted (e.g. the read-only Dashboard
@@ -67,26 +68,22 @@ function typeLabel(a: Appt): string {
   return a.type.replace(" (in-person)", "").replace(" (video)", "");
 }
 
-// Journey Today — every role's own current step (relevantJourneySteps
-// dynamically narrows the 6 canonical steps to the ones that actually apply
-// to this appointment's type). Admin/Reception get the condensed 3-item
-// prev/current/next strip — they're clicking in from the calendar for
-// at-a-glance context, not running the journey themselves — while Nurse and
-// Clinician (who DO act on each station) keep the full station-by-station
-// stepper. Video consultations have no in-clinic journey at all (no
-// changing room, scan or blood draw to walk through), so this renders
-// nothing for them rather than a hollow "Consent → Consultation" stub.
-function JourneyBlock({ appt, condensed }: { appt: Appt; condensed?: boolean }) {
-  const { steps, current } = relevantJourneySteps(appt);
+// Journey Today — every role sees the SAME prev/current/next strip (journey
+// station names come from journey/journeyTemplates.ts, the app-wide canonical
+// list): every role clicking into an appointment is asking the same question
+// — what's done, what's happening now, what's next — so there's no reason
+// for Admin/Reception to see different information than Nurse/Clinician.
+// Video consultations have no in-clinic journey at all (no changing room,
+// scan or blood draw to walk through), so this renders nothing for them
+// rather than a hollow stub. Tapping the strip opens the patient's Journeys
+// tab — the drawer itself has no journey-editing controls (timeline-only).
+function JourneyBlock({ appt }: { appt: Appt }) {
+  const navigate = useNavigate();
   if (appt.isVideo) return null;
   return (
     <div className="px-5 py-4 border-b border-gray-100">
       <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-3.5">Journey Today</h4>
-      {condensed ? (
-        <CondensedJourneyStrip steps={steps} current={current} />
-      ) : (
-        <JourneyStepperLarge appt={appt} steps={steps} current={current} />
-      )}
+      <ApptJourneyStrip appt={appt} onOpen={() => navigate(`${appt.patient.route}/journeys`)} />
     </div>
   );
 }
@@ -98,7 +95,7 @@ function AdminBody({ appt }: { appt: Appt }) {
     <>
       <StatusGateCard appt={appt} />
       <div className="mt-1">
-        <JourneyBlock appt={appt} condensed />
+        <JourneyBlock appt={appt} />
       </div>
 
       <Block title="Appointment">
@@ -174,7 +171,7 @@ function ReceptionInner({ appt }: { appt: Appt }) {
     <>
       <StatusGateCard appt={appt} />
       <div className="mt-1">
-        <JourneyBlock appt={appt} condensed />
+        <JourneyBlock appt={appt} />
       </div>
 
       <Block title="Appointment">
@@ -337,10 +334,8 @@ function ClinicianBody({ appt, nav }: { appt: Appt; nav: (r: string) => void }) 
 function ClinicianFooter({ appt, nav, onClose, h }: { appt: Appt; nav: (r: string) => void; onClose: () => void; h: DrawerHandlers }) {
   return (
     <>
-      {appt.isVideo ? (
+      {appt.isVideo && (
         <PrimaryActionButton icon={<Video className="w-4 h-4" />} label="Join Video Call" onClick={() => toast.success("Joining video call (demo)")} />
-      ) : (
-        <PrimaryActionButton label="Start Consultation" onClick={() => toast.success("Consultation started (demo)")} />
       )}
       <div className="flex flex-wrap gap-1.5">
         <SecondaryChip label="Open Patient Record" onClick={() => nav(appt.patient.route)} />

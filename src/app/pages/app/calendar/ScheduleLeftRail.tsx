@@ -74,9 +74,11 @@ export function ScheduleLeftRail({
         <h4 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider px-2 mb-1">Layers</h4>
         <LayerRow label="My appointments" count={counts.mine} color="bg-slate-600" checked={layers.mine} onToggle={() => onToggleLayer("mine")} />
         {role === "Clinician" && (
-          <LayerRow label="Video consultations" count={counts.video} color="bg-cyan-500" checked={layers.video} onToggle={() => onToggleLayer("video")} />
+          <>
+            <LayerRow label="Video consultations" count={counts.video} color="bg-cyan-500" checked={layers.video} onToggle={() => onToggleLayer("video")} />
+            <LayerRow label="My availability" color="bg-gray-400" checked={layers.availability} onToggle={() => onToggleLayer("availability")} striped />
+          </>
         )}
-        <LayerRow label="My availability" color="bg-gray-400" checked={layers.availability} onToggle={() => onToggleLayer("availability")} striped />
       </div>
 
       <div>

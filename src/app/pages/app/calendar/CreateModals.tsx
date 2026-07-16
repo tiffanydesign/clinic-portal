@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { FilterSelect } from "../../../components/FilterSelect";
 import { ClinicianAvailabilitySelect } from "./ClinicianAvailabilitySelect";
 import {
-  APPTS, Appt, CLINICIANS, NURSES, useActiveRooms, NEW_APPT_TYPES, DURATION_DEFAULTS,
+  APPTS, Appt, CLINICIANS, NURSES, useSchedulableRooms, NEW_APPT_TYPES, DURATION_DEFAULTS,
   TimeBlock, clockToMin, fmtRange, minToClock,
   hasClinicianConflict, hasRoomConflict, hasNurseConflict, DAY_START_HOUR, DAY_END_HOUR,
 } from "./scheduleData";
@@ -79,7 +79,7 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
   defaults?: { doctorId?: string; room?: string; startMin?: number };
 }) {
   const navigate = useNavigate();
-  const rooms = useActiveRooms();
+  const rooms = useSchedulableRooms();
   const [patientName, setPatientName] = useState("");
   const [type, setType] = useState(NEW_APPT_TYPES[0]);
   const [manualDate, setManualDate] = useState(DATE_OPTIONS[0].value);

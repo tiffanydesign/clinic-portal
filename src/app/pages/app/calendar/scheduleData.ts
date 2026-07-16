@@ -36,11 +36,14 @@ export const CLINICIANS: Clinician[] = MOCK_STAFF
 export const NURSES = MOCK_STAFF.filter((s) => s.role === "Nurse" && s.status === "Active").map((s) => s.name);
 
 // Rooms are no longer hardcoded here — they live in the Clinic Settings rooms
-// store (the single source of truth an admin manages). The calendar consumes
-// ACTIVE rooms in sort order via useActiveRooms(); roomName() resolves a raw
-// appointment `room` id to its current display name (with an "(inactive)"
-// suffix for history). These re-exports keep calendar imports local.
-export { useActiveRooms, getActiveRoomsSnapshot, roomName } from "../clinic-settings/roomsStore";
+// store (the single source of truth an admin manages). Calendar columns,
+// booking pickers, and by-room breakdowns consume useSchedulableRooms() —
+// active rooms minus "Changing Room" type, which is an admin-config-only
+// room type never meant to appear as a schedule column or booking location.
+// roomName() resolves a raw appointment `room` id to its current display name
+// (with an "(inactive)" suffix for history). These re-exports keep calendar
+// imports local.
+export { useActiveRooms, getActiveRoomsSnapshot, useSchedulableRooms, getSchedulableRoomsSnapshot, roomName } from "../clinic-settings/roomsStore";
 export type { Room, RoomType } from "../clinic-settings/roomsData";
 
 export const APPT_TYPES: ApptType[] = [

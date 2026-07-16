@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
-import { TODAY_LABEL, ROLE_GREETING } from "./dashboardData";
+import { getAppt, TODAY_LABEL, ROLE_GREETING } from "./dashboardData";
 import {
   PatientIdentity, ScheduleItem, QueueItem, CompletedItem, DemoMoment,
   NURSE_DEMO_SCENARIOS, nextUpcomingAppointment, buildPatientFromQueueItem,
@@ -8,10 +9,12 @@ import {
 import type { JourneyEntries } from "./journey/journeyEngine";
 import { useJourneyEngine } from "./journey/useJourneyEngine";
 import { PatientJourneyCard, EmptyJourney } from "./journey/PatientJourneyCard";
-import { TodaysSchedulePanel } from "./TodaysSchedulePanel";
+import { AppointmentDrawer } from "./AppointmentDrawer";
+import { ClinicianScheduleList } from "./ClinicianScheduleList";
 import { UpNextPanel } from "./UpNextPanel";
 import { MyPatientsTodayCard } from "./MyPatientsTodayCard";
-import { nurseCheckOutByName } from "./appointmentsStore";
+import { nurseCheckOutByName, nurseMarkPatientArrived, useAppointments } from "./appointmentsStore";
+import { NURSE_SELF_NAME } from "../calendar/scheduleData";
 
 const DEMO_MOMENTS: DemoMoment[] = ["day-start", "mid-shift", "day-wrap"];
 
@@ -51,11 +54,20 @@ function PatientJourneySection({
 }) {
   const engine = useJourneyEngine(initialEntries, initialClock);
   const isDoneAll = engine.cur.mode === "done";
+  const hasArrived = !!engine.entries["arrived-room"]?.at;
 
   useEffect(() => {
     if (isDoneAll) onComplete(identity);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isDoneAll]);
+
+  // Unlocks the Clinician Dashboard's "Start" gate the moment the nurse
+  // confirms the patient has arrived in their assigned room — see
+  // nurseMarkPatientArrived() in appointmentsStore.ts.
+  useEffect(() => {
+    if (hasArrived) nurseMarkPatientArrived(identity.name);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasArrived]);
 
   return (
     <PatientJourneyCard
@@ -69,8 +81,18 @@ function PatientJourneySection({
 }
 
 export function NurseDashboardPage() {
+  const navigate = useNavigate();
+  const { apptId } = useParams();
+  const deepLinkedAppt = getAppt(apptId);
   const [demoMoment, setDemoMoment] = useState<DemoMoment>("mid-shift");
   const initialScenario = NURSE_DEMO_SCENARIOS[demoMoment];
+
+  // Today's Schedule (below) reads the real shared Appt store — same
+  // component and drawer-click behavior as the Clinician Dashboard's own
+  // schedule list — rather than the Patient Journey card's own name-only
+  // demo-scenario data. No video rows: a nurse's in-clinic day never
+  // includes a video consultation to join.
+  const nurseAppts = useAppointments().filter((a) => a.nurse === NURSE_SELF_NAME && !a.isVideo);
 
   const [patientKey, setPatientKey] = useState(0);
   const [identity, setIdentity] = useState<PatientIdentity | null>(initialScenario.patient);
@@ -181,10 +203,23 @@ export function NurseDashboardPage() {
 
         <div className="w-[396px] shrink-0 flex flex-col gap-5">
           <MyPatientsTodayCard scheduled={upNext.length} inProgress={identity ? 1 : 0} done={completedToday.length} />
-          <TodaysSchedulePanel items={schedule} now={clock} />
+          <ClinicianScheduleList
+            appts={nurseAppts}
+            activeApptId={identity ? nurseAppts.find((a) => a.patient.name === identity.name)?.id : undefined}
+            hasActiveSession={false}
+            onOpen={(id) => navigate(`/dashboard/appointment/${id}`)}
+            onJoin={() => {}}
+          />
           <UpNextPanel queue={upNext} completed={completedToday} locked={locked} onStart={handleStartNext} />
         </div>
       </div>
+
+      {/* This page returns early out of DashboardPage.tsx (see
+          DashboardPage's Nurse branch), so it never reaches that file's own
+          drawer rendering — Today's Schedule's row clicks need their own
+          copy here, same as ReceptionDashboardBody.tsx already does for
+          Reception. */}
+      {deepLinkedAppt && <AppointmentDrawer appt={deepLinkedAppt} role="Nurse" />}
     </div>
   );
 }

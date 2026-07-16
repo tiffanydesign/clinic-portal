@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useParams } from "react-router";
-import { ChevronLeft, Check, Clock, Circle, Paperclip, Plus } from "lucide-react";
+import { ChevronLeft, Check, Clock, Circle, SkipForward, Paperclip } from "lucide-react";
 import { toast } from "sonner";
 import { usePatientOutletContext } from "./PatientRecordLayout";
 import { JourneyStep, journeyStatusPillType, journeyProgress } from "./patientRecordData";
@@ -9,15 +9,17 @@ import { StatusPill } from "../dashboard/DashboardShared";
 function StepIcon({ status }: { status: JourneyStep["status"] }) {
   if (status === "Completed") return <div className="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center shrink-0"><Check className="w-4 h-4 text-white" /></div>;
   if (status === "In Progress") return <div className="w-8 h-8 rounded-full bg-slate-600 ring-4 ring-slate-100 flex items-center justify-center shrink-0 animate-pulse"><Clock className="w-4 h-4 text-white" /></div>;
+  if (status === "Skipped") return <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center shrink-0"><SkipForward className="w-4 h-4 text-white" /></div>;
   return <div className="w-8 h-8 rounded-full border-2 border-gray-300 bg-white flex items-center justify-center shrink-0"><Circle className="w-3 h-3 text-gray-300" /></div>;
 }
 
-function StepNode({ step, index, isLast, nurseControls, onMarkStarted, onMarkComplete }: {
-  step: JourneyStep; index: number; isLast: boolean; nurseControls: boolean;
-  onMarkStarted: () => void; onMarkComplete: () => void;
+function StepNode({ step, isLast, nurseControls, onMarkStarted, onMarkComplete, onSkip }: {
+  step: JourneyStep; isLast: boolean; nurseControls: boolean;
+  onMarkStarted: () => void; onMarkComplete: () => void; onSkip: () => void;
 }) {
   const [expanded, setExpanded] = useState(step.status === "In Progress");
   const [note, setNote] = useState("");
+  const muted = step.status === "Pending" || step.status === "Skipped";
 
   return (
     <div className="flex gap-4">
@@ -27,11 +29,17 @@ function StepNode({ step, index, isLast, nurseControls, onMarkStarted, onMarkCom
       </div>
       <div className="flex-1 pb-6 min-w-0">
         <button onClick={() => setExpanded((e) => !e)} className="w-full text-left">
-          <div className="flex items-center justify-between">
-            <span className={`text-sm font-bold ${step.status === "Pending" ? "text-gray-400" : "text-gray-800"}`}>{step.name}</span>
-            <span className="text-xs font-medium text-gray-400">{step.status}</span>
+          <div className="flex items-center justify-between gap-2">
+            <span className={`text-sm font-bold ${muted ? "text-gray-400" : "text-gray-800"}`}>{step.name}</span>
+            <span className="text-xs font-medium text-gray-400 shrink-0">{step.status}</span>
           </div>
+          {step.status === "Skipped" && step.skipReason && <div className="text-xs text-gray-500 mt-0.5">{step.skipReason}</div>}
           {step.at && <div className="text-xs text-gray-500 mt-0.5">{step.by} · {step.at}</div>}
+          {step.waitedMin != null && step.waitedMin > 0 && (
+            <span className="inline-flex items-center text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5 mt-1">
+              Waited {step.waitedMin} min
+            </span>
+          )}
         </button>
 
         {expanded && (
@@ -51,12 +59,17 @@ function StepNode({ step, index, isLast, nurseControls, onMarkStarted, onMarkCom
 
             {nurseControls && (
               <div className="border border-gray-200 rounded-lg p-3 bg-gray-50 space-y-2.5">
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   {step.status === "Pending" && (
                     <button onClick={onMarkStarted} className="px-3 py-1.5 bg-slate-600 text-white text-xs font-bold rounded hover:bg-slate-700">Mark as Started</button>
                   )}
                   {step.status === "In Progress" && (
                     <button onClick={onMarkComplete} className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded hover:bg-emerald-700">Mark as Complete</button>
+                  )}
+                  {(step.status === "Pending" || step.status === "In Progress") && (
+                    <button onClick={onSkip} className="px-3 py-1.5 border border-gray-300 bg-white text-gray-600 text-xs font-bold rounded hover:bg-gray-50 flex items-center gap-1.5">
+                      <SkipForward className="w-3.5 h-3.5" /> Skip
+                    </button>
                   )}
                   <button onClick={() => toast("Attachment upload (demo)")} className="px-3 py-1.5 border border-gray-300 bg-white text-gray-700 text-xs font-bold rounded hover:bg-gray-50 flex items-center gap-1.5"><Paperclip className="w-3.5 h-3.5" /> Add Attachment</button>
                 </div>
@@ -90,6 +103,11 @@ export function JourneyDetailPage() {
     if (i === idx + 1 && s.status === "Pending") return { ...s, status: "In Progress" as const };
     return s;
   }));
+  const markSkipped = (idx: number) => setSteps((prev) => prev.map((s, i) => {
+    if (i === idx) return { ...s, status: "Skipped" as const, skipReason: "Skipped by nurse" };
+    if (i === idx + 1 && s.status === "Pending") return { ...s, status: "In Progress" as const };
+    return s;
+  }));
 
   return (
     <div className="p-8 max-w-3xl mx-auto">
@@ -117,11 +135,11 @@ export function JourneyDetailPage() {
           <StepNode
             key={step.name}
             step={step}
-            index={i}
             isLast={i === steps.length - 1}
             nurseControls={nurseControls}
             onMarkStarted={() => markStarted(i)}
             onMarkComplete={() => markComplete(i)}
+            onSkip={() => markSkipped(i)}
           />
         ))}
       </div>

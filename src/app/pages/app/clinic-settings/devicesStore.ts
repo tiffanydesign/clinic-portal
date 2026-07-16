@@ -42,9 +42,8 @@ export function addDevice(input: NewDeviceInput): Device {
     shortCode: input.shortCode.trim(),
     label: input.label.trim() || input.shortCode.trim(),
     roomId: input.roomId,
-    status: input.type === "TV" ? "offline" : "online",
-    lastSeen: input.type === "TV" ? "—" : "Just now",
-    pairing: input.type === "TV" ? "not-paired" : undefined,
+    status: "online",
+    lastSeen: "Just now",
     addedBy: AUDIT_ACTOR,
     addedOn: "Today",
   };
@@ -96,29 +95,5 @@ export function restoreDevice(id: string): void {
   if (!d) return;
   devices = devices.map((x) => (x.id === id ? { ...x, retired: false } : x));
   logAudit({ actor: AUDIT_ACTOR, entityType: "device", entityId: id, action: "Restored device", detail: d.label });
-  emit();
-}
-
-// --- TV pairing lifecycle ---
-export function startPairing(id: string): void {
-  devices = devices.map((d) => (d.id === id ? { ...d, pairing: "pairing" } : d));
-  emit();
-}
-export function cancelPairing(id: string): void {
-  devices = devices.map((d) => (d.id === id ? { ...d, pairing: "not-paired" } : d));
-  emit();
-}
-export function confirmPairing(id: string): void {
-  const d = devices.find((x) => x.id === id);
-  if (!d) return;
-  devices = devices.map((x) => (x.id === id ? { ...x, pairing: "paired", pairedOn: "Just now", status: "online", lastSeen: "Just now" } : x));
-  logAudit({ actor: AUDIT_ACTOR, entityType: "device", entityId: id, action: "Paired TV", detail: `${d.label} paired with the Phenome TV app` });
-  emit();
-}
-export function unpairDevice(id: string): void {
-  const d = devices.find((x) => x.id === id);
-  if (!d) return;
-  devices = devices.map((x) => (x.id === id ? { ...x, pairing: "not-paired", pairedOn: undefined, status: "offline", lastSeen: "Just now" } : x));
-  logAudit({ actor: AUDIT_ACTOR, entityType: "device", entityId: id, action: "Unpaired TV", detail: d.label });
   emit();
 }

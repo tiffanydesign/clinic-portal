@@ -17,6 +17,14 @@
 
 import type { Role } from "../../../context/AppContext";
 import type { TimeRange } from "./kpiRangeStore";
+import { APPTS } from "./dashboardData";
+import { getSchedulableRoomsSnapshot } from "../clinic-settings/roomsStore";
+import { clinicUtilisationPct } from "../clinic-settings/roomAvailability";
+
+// Same rooms + same appts + same pure function as the Availability page's
+// Rooms tab — this card and that tab's row-end % can never show two
+// different numbers for "how busy is the clinic".
+const TODAY_UTILISATION_PCT = clinicUtilisationPct(getSchedulableRoomsSnapshot(), APPTS);
 
 export type Trend = "up" | "down" | "flat";
 export type MetricKind = "period" | "live" | "hybrid";
@@ -89,12 +97,12 @@ const ADMIN_POOL: Kpi[] = [
     },
   },
   {
-    id: "utilisation", label: "Utilisation", kind: "live", route: "/calendar/schedule",
+    id: "utilisation", label: "Utilisation", kind: "live", route: "/calendar/availability?tab=rooms",
     desc: "Clinic capacity used across all rooms.",
     byRange: {
-      today: { value: "78%", deltaText: "4% vs last Friday", trend: "up", spark: [70, 72, 74, 73, 76, 77, 78] },
-      "7d": { value: "78%", deltaText: "avg 75% over period", trend: "flat", informational: true, spark: [70, 71, 73, 74, 75, 76, 75, 75] },
-      "30d": { value: "78%", deltaText: "avg 73% over period", trend: "flat", informational: true, spark: [68, 70, 71, 72, 73, 73] },
+      today: { value: `${TODAY_UTILISATION_PCT}%`, deltaText: "4% vs last Friday", trend: "up", spark: [70, 72, 74, 73, 76, 77, TODAY_UTILISATION_PCT] },
+      "7d": { value: `${TODAY_UTILISATION_PCT}%`, deltaText: "avg 75% over period", trend: "flat", informational: true, spark: [70, 71, 73, 74, 75, 76, 75, 75] },
+      "30d": { value: `${TODAY_UTILISATION_PCT}%`, deltaText: "avg 73% over period", trend: "flat", informational: true, spark: [68, 70, 71, 72, 73, 73] },
     },
   },
   {

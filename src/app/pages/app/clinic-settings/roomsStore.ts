@@ -26,9 +26,9 @@ export function useRooms(): Room[] {
   return useSyncExternalStore(subscribe, () => rooms);
 }
 
-// Active rooms in sort order — what the calendar columns and booking pickers
-// consume. Filtering happens in the hook body (not getSnapshot) so the
-// snapshot reference stays stable.
+// Active rooms in sort order — every admin-facing room picker (device
+// assignment, etc.) consumes this. Filtering happens in the hook body (not
+// getSnapshot) so the snapshot reference stays stable.
 export function useActiveRooms(): Room[] {
   return useRooms().filter((r) => r.status === "active");
 }
@@ -38,6 +38,17 @@ export function getRoomsSnapshot(): Room[] {
 }
 export function getActiveRoomsSnapshot(): Room[] {
   return rooms.filter((r) => r.status === "active");
+}
+
+// Active rooms minus "Changing Room" type — what the calendar's columns,
+// booking pickers, and by-room breakdowns consume. Changing rooms are purely
+// an admin-defined config (e.g. for tagging where a device physically sits)
+// and were never meant to be scheduled into or shown as a schedule column.
+export function useSchedulableRooms(): Room[] {
+  return useActiveRooms().filter((r) => r.type !== "Changing Room");
+}
+export function getSchedulableRoomsSnapshot(): Room[] {
+  return getActiveRoomsSnapshot().filter((r) => r.type !== "Changing Room");
 }
 
 // Display resolver for anywhere an appointment's raw `room` id is shown as

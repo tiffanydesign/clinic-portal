@@ -55,6 +55,8 @@ export const INITIAL_CLOCK = NOW_MINUTES;
 export const INITIAL_ENTRIES: JourneyEntries = {
   signed: { at: 480 },
   pickup: { at: 495 },
+  changing: { enter: 496, exit: 499 },
+  "arrived-room": { at: 499 },
   scan1: { enter: 500, exit: 515 },
   scan2: { enter: 521, exit: 533 },
   machine1: { enter: 538 },
@@ -91,9 +93,9 @@ export const INITIAL_COMPLETED_TODAY: CompletedItem[] = [
 ];
 
 // Starting the next patient from the queue: consent & payment are already
-// settled by the time the nurse takes over, but pickup is left unconfirmed —
-// the nurse's journey always starts with her manually confirming "Picked up
-// from waiting area" before the journey engine will advance to Scan 1.
+// settled by the time the nurse takes over, but Patient Intake is left
+// unconfirmed — the nurse's journey always starts with her manually
+// confirming intake before the journey engine will advance to Preparation.
 export function buildPatientFromQueueItem(item: QueueItem, clock: number): { identity: PatientIdentity; entries: JourneyEntries } {
   return {
     identity: { name: item.name, tag: "—", meta: `${item.type} · ${item.time}`, route: "/patients/P-001" },

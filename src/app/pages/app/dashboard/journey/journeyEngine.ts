@@ -9,6 +9,7 @@ export type StepKind = "milestone" | "station";
 export type JourneyStepConfig = {
   id: string;
   name: string;
+  subtitle?: string; // small parenthetical shown next to the name (e.g. what "Checked In" actually means)
   kind: StepKind;
   room?: string;
   est?: number; // minutes, stations only
@@ -17,11 +18,19 @@ export type JourneyStepConfig = {
 
 // Consent & Payment is settled before the nurse's involvement, so
 // `currentStep` never returns it as actionable. Every other milestone —
-// Pickup and the final Check Out handoff — is something the nurse confirms
-// herself with an explicit tap.
+// Patient Intake and the final Check Out handoff — is something the nurse
+// confirms herself with an explicit tap.
 export const JOURNEY_STEPS: JourneyStepConfig[] = [
-  { id: "signed", name: "Consent & Payment Complete", kind: "milestone", owner: null },
-  { id: "pickup", name: "Picked up from waiting area", kind: "milestone", owner: null },
+  { id: "signed", name: "Checked In", subtitle: "Consent & Payment Complete", kind: "milestone", owner: null },
+  { id: "pickup", name: "Patient Intake", kind: "milestone", owner: null },
+  { id: "changing", name: "Preparation", kind: "station", room: "Changing 1", est: 5 },
+  // Milestone, not folded into "scan1"'s own enter/exit: once the patient
+  // has changed, the nurse escorts them to their assigned room and confirms
+  // arrival there before anything downstream proceeds. Confirming it is also
+  // what unlocks the Clinician Dashboard's Start gate — see
+  // nurseMarkPatientArrived() in appointmentsStore.ts, which this milestone
+  // triggers.
+  { id: "arrived-room", name: "In Room", kind: "milestone", owner: null },
   { id: "scan1", name: "Scan 1", kind: "station", room: "Room 3", est: 15 },
   { id: "scan2", name: "Scan 2", kind: "station", room: "Room 4", est: 12 },
   { id: "machine1", name: "Machine 1", kind: "station", room: "Room 3", est: 27 },
@@ -87,6 +96,7 @@ export type StepRow = {
   id: string;
   state: StepRenderState;
   name: string;
+  subtitle?: string;
   notLast: boolean;
   isStation: boolean;
   showDur: boolean; durTxt: string;
@@ -148,7 +158,7 @@ export function buildJourneyRows(entries: JourneyEntries, clock: number) {
     if (state === "done") prevEnd = endT ?? prevEnd;
 
     return {
-      id: s.id, state, name: s.name, notLast: i < JOURNEY_STEPS.length - 1, isStation: s.kind === "station",
+      id: s.id, state, name: s.name, subtitle: s.subtitle, notLast: i < JOURNEY_STEPS.length - 1, isStation: s.kind === "station",
       showDur, durTxt, showProg, progTxt, showInfo, infoTxt, showTime, timeTxt, showSkip, skipCap,
       showWaited, waited, showWaitLive: state === "wait" && waitLive > 0, waitLive,
       showOwner: !!s.owner, owner: s.owner || "",

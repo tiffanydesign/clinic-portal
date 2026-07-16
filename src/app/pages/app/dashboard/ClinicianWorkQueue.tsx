@@ -22,18 +22,22 @@ function QueueRow({ item, onAction }: { item: QueueItem; onAction: () => void })
 
 // Single-purpose Work Queue card: results awaiting a first look. The queue
 // used to be segmented Review/Sign-off, but sign-off happens elsewhere now —
-// this card only ever shows Review, so there's nothing left to toggle.
+// this card only ever shows Review, so there's nothing left to toggle. Shares
+// ClinicianScheduleList's ("Today's Schedule") exact shell — same rounded-xl
+// border, same bordered/tinted header bar — so the two cards stacked in the
+// dashboard's two columns read as one consistent card language instead of
+// two different ones (this one used to be a plain h-12 header with no tint).
 export function ClinicianWorkQueue() {
   const nav = useNavigate();
   const sorted = [...CLINICIAN_REVIEW_QUEUE].sort((a, b) => Number(b.overdue) - Number(a.overdue));
 
   return (
-    <div className="border border-gray-300 rounded bg-white flex flex-col h-full">
-      <div className="h-12 border-b border-gray-200 px-4 flex items-center justify-between shrink-0">
+    <div className="border border-gray-200 rounded-xl shadow-sm bg-white flex flex-col h-full min-h-0">
+      <div className="border-b border-gray-200 bg-gray-50/70 px-4 py-2.5 flex items-center justify-between shrink-0">
         <h3 className="font-bold text-gray-800 text-sm">Work Queue</h3>
         <span className="text-xs font-semibold text-gray-400">{sorted.length} pending review</span>
       </div>
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto min-h-0">
         {sorted.length === 0 ? (
           <div className="h-full flex items-center justify-center gap-2 text-sm font-medium text-gray-400">
             <CheckCircle2 className="w-4 h-4 text-emerald-500" /> All clear

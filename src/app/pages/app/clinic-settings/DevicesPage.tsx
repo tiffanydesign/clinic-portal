@@ -24,7 +24,6 @@ const STATUS_OPTIONS = [
   { value: "all", label: "All statuses" },
   { value: "online", label: "Online" },
   { value: "needs-attention", label: "Needs attention" },
-  { value: "not-paired", label: "Not paired" },
   { value: "offline", label: "Offline" },
   { value: "retired", label: "Retired" },
 ];

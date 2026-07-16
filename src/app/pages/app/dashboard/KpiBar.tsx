@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { Lock, X, Check, Settings2 } from "lucide-react";
 import { toast } from "sonner";
@@ -42,7 +42,6 @@ function Card({
   const isLive = kpi.kind === "live";
   const pillText = isLive ? "LIVE" : RANGE_PILL[range];
   const inverse = rv.inverse ?? kpi.inverse ?? false;
-  const sparkSentiment = rv.informational ? "neutral" : sentimentFor(rv.trend, inverse);
   // Today's cards are a live glance at right-now counts, not a drill-down
   // entry point — only 7d/30d have a real filtered list behind them.
   const clickable = range !== "today";
@@ -50,21 +49,36 @@ function Card({
   return (
     <button
       onClick={clickable ? () => onOpen(kpi.route) : undefined}
-      className={`text-left border border-gray-300 rounded bg-white p-4 flex flex-col justify-between relative transition-all ${clickable ? "hover:border-slate-400 hover:shadow-sm cursor-pointer" : "cursor-default"}`}
+      className={`text-left border border-gray-300 rounded bg-white px-4 py-2.5 min-h-[88px] flex items-center gap-3 relative transition-all ${clickable ? "hover:border-slate-400 hover:shadow-sm cursor-pointer" : "cursor-default"}`}
     >
-      <div className="flex justify-between items-start mb-2 gap-2">
+      {/* Left region: label over the headline number. The badge/lock live in
+          the right column instead of sharing this row — at a true 4-up
+          layout there isn't width for "Results Pending Review" *and* a
+          pill *and* a lock icon on one line without either truncating the
+          label (data, not decoration — never truncated) or wrapping it
+          awkwardly around a badge stub. */}
+      <div className="flex-1 min-w-0 flex flex-col justify-between gap-1 self-stretch">
         <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider leading-tight">{label}</span>
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="text-[28px] font-semibold text-gray-800 leading-none">
+          <AnimatedNumber value={rv.value} />
+        </div>
+      </div>
+
+      {/* Right region: badge/lock, then sparkline, then delta — same
+          information as before, just stacked so the left column's label
+          gets the full column width to itself. */}
+      <div className="flex flex-col items-end justify-between gap-1.5 shrink-0 self-stretch">
+        <div className="flex items-center gap-1.5">
           <span
-            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
-              isLive ? "bg-emerald-50 text-emerald-600" : "bg-gray-100 text-gray-600"
+            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider shrink-0 ${
+              isLive ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-600"
             }`}
           >
             {isLive && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
             {pillText}
           </span>
           {locked && (
-            <span className="relative group/lock">
+            <span className="relative group/lock shrink-0">
               <Lock className="w-3.5 h-3.5 text-gray-400" />
               <span className="absolute right-0 top-full mt-1 w-44 bg-gray-800 text-white text-[10px] font-medium normal-case tracking-normal px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover/lock:opacity-100 transition-opacity pointer-events-none z-20">
                 Default metric — set by your clinic
@@ -72,13 +86,8 @@ function Card({
             </span>
           )}
         </div>
-      </div>
-      <div className="text-3xl font-bold text-gray-800 leading-none mb-3">
-        <AnimatedNumber value={rv.value} />
-      </div>
-      <div className="flex items-end justify-between gap-2">
+        <Sparkline data={rv.spark} trend={rv.trend} inverse={inverse} sentiment={rv.informational ? "neutral" : undefined} width={72} height={28} />
         <DeltaLine text={rv.deltaText} trend={rv.trend} inverse={inverse} informational={rv.informational} />
-        <Sparkline data={rv.spark} trend={rv.trend} inverse={inverse} sentiment={rv.informational ? "neutral" : undefined} />
       </div>
     </button>
   );
@@ -87,13 +96,25 @@ function Card({
 // The KPI Bar owns the global time-range selection (shared store) and the
 // "Customise" modal's open state, so it is a fully self-contained region of
 // the dashboard — the rest of the page never needs to know about either.
-export function KpiBar() {
+// Split into a hook + two presentational pieces (KpiControls / KpiCards) so
+// the caller can place the range switcher and Customise button on the
+// greeting row instead of their own dedicated line, while the card grid
+// still renders as a single block underneath.
+export function useKpiBar() {
   const { role } = useAppContext();
   const navigate = useNavigate();
   const range = useKpiRange();
   const config = KPI_CONFIG[role];
   const [selected, setSelected] = useState<string[]>(config.defaultSelected);
   const [customiseOpen, setCustomiseOpen] = useState(false);
+
+  // DashboardPage never remounts on a role switch (it's the same route), so
+  // without this, switching roles could leave `selected` holding stale ids
+  // from the previous role's pool.
+  useEffect(() => {
+    setSelected(config.defaultSelected);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [role]);
 
   const configurableCards = selected
     .map((id) => config.pool.find((k) => k.id === id))
@@ -104,37 +125,49 @@ export function KpiBar() {
     else toast("Opening filtered list (demo)");
   };
 
+  return { range, config, selected, setSelected, customiseOpen, setCustomiseOpen, configurableCards, openRoute };
+}
+
+export type KpiBarState = ReturnType<typeof useKpiBar>;
+
+export function KpiControls({ kpi }: { kpi: KpiBarState }) {
+  return (
+    <div className="flex items-center gap-3">
+      <RangeSwitcher range={kpi.range} />
+      <button
+        onClick={() => kpi.setCustomiseOpen(true)}
+        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 border border-gray-300 bg-white rounded hover:bg-gray-50 hover:border-slate-400 transition-colors"
+      >
+        <Settings2 className="w-4 h-4" /> Customise KPIs
+      </button>
+    </div>
+  );
+}
+
+export function KpiCards({ kpi }: { kpi: KpiBarState }) {
   return (
     <>
-      <div className="flex justify-end items-center gap-3 mb-3">
-        <RangeSwitcher range={range} />
-        <button
-          onClick={() => setCustomiseOpen(true)}
-          className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-600 border border-gray-300 bg-white rounded hover:bg-gray-50 hover:border-slate-400 transition-colors"
-        >
-          <Settings2 className="w-4 h-4" /> Customise KPIs
-        </button>
+      <div className="@container">
+        <div className="grid grid-cols-2 @[760px]:grid-cols-4 gap-4">
+          {kpi.config.locked.map((k) => (
+            <Card key={k.id} kpi={k} locked range={kpi.range} onOpen={kpi.openRoute} />
+          ))}
+          {kpi.configurableCards.map((k) => (
+            <Card key={k.id} kpi={k} locked={false} range={kpi.range} onOpen={kpi.openRoute} />
+          ))}
+        </div>
       </div>
 
-      <div className="grid grid-cols-4 gap-4">
-        {config.locked.map((kpi) => (
-          <Card key={kpi.id} kpi={kpi} locked range={range} onOpen={openRoute} />
-        ))}
-        {configurableCards.map((kpi) => (
-          <Card key={kpi.id} kpi={kpi} locked={false} range={range} onOpen={openRoute} />
-        ))}
-      </div>
-
-      {customiseOpen && (
+      {kpi.customiseOpen && (
         <CustomiseModal
-          locked={config.locked}
-          pool={config.pool}
-          selected={selected}
-          range={range}
-          onClose={() => setCustomiseOpen(false)}
+          locked={kpi.config.locked}
+          pool={kpi.config.pool}
+          selected={kpi.selected}
+          range={kpi.range}
+          onClose={() => kpi.setCustomiseOpen(false)}
           onSave={(next) => {
-            setSelected(next);
-            setCustomiseOpen(false);
+            kpi.setSelected(next);
+            kpi.setCustomiseOpen(false);
             toast.success("KPI cards updated.");
           }}
         />

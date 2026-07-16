@@ -83,53 +83,6 @@ export function groupQueue(appts: Appt[]): Record<QueueGroup, Appt[]> {
   return out;
 }
 
-// --- header Stat Strip: counts derived from the exact same groupQueue()
-// buckets the Front Desk Queue itself renders, so the strip's numbers and
-// the Queue's own tab counts can never drift apart ---
-export type StatKey = "appointments" | "in-clinic" | "awaiting-checkin" | "unpaid";
-
-export type ReceptionStats = {
-  appointments: number;
-  inClinic: number;
-  awaitingCheckIn: number;
-  unpaidCount: number;
-  unpaidAmount: number;
-};
-
-function parseLira(text: string): number {
-  const digits = text.replace(/[^0-9]/g, "");
-  return digits ? parseInt(digits, 10) : 0;
-}
-
-export function formatLira(amount: number): string {
-  return `₺${amount.toLocaleString("en-US")}`;
-}
-
-export function computeReceptionStats(appts: Appt[]): ReceptionStats {
-  const grouped = groupQueue(appts);
-  const unpaid = grouped.all.filter((a) => !paymentOk(a));
-  return {
-    appointments: grouped.all.length,
-    inClinic: grouped["in-clinic"].length,
-    awaitingCheckIn: grouped["needs-action"].length,
-    unpaidCount: unpaid.length,
-    unpaidAmount: unpaid.reduce((sum, a) => sum + parseLira(a.balance), 0),
-  };
-}
-
-// Which Queue tab a Stat Strip click focuses, plus whether it also narrows
-// that tab to unpaid rows only — Unpaid has no QueueGroup of its own, so it
-// reuses "all" plus this one extra filter dimension rather than inventing a
-// parallel filtering UI.
-export function statTarget(key: StatKey): { tab: QueueGroup; unpaidOnly: boolean } {
-  switch (key) {
-    case "appointments": return { tab: "all", unpaidOnly: false };
-    case "in-clinic": return { tab: "in-clinic", unpaidOnly: false };
-    case "awaiting-checkin": return { tab: "needs-action", unpaidOnly: false };
-    case "unpaid": return { tab: "all", unpaidOnly: true };
-  }
-}
-
 // --- row action state machine (consent-first: Consent → Payment → Check In) ---
 // No "send-link"/video case — video appointments never reach this function
 // at all, since groupFor excludes them from the queue upstream.

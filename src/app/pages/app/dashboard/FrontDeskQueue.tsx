@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import { CreditCard, MapPin, CheckCircle2, XCircle, Clock, Stethoscope, LogIn } from "lucide-react";
 import { toast } from "sonner";
-import { Appt, JOURNEY_STEPS_RECEPTION } from "./dashboardData";
+import { Appt } from "./dashboardData";
+import { JourneyProgressChip } from "./journey/JourneyProgress";
 import { StartTransactionModal } from "../../../components/StartTransactionModal";
 import {
   QueueGroup, GROUP_LABEL, groupQueue, primaryActionFor,
@@ -15,9 +16,6 @@ import { markArrived, checkIn, recordPayment } from "./appointmentsStore";
 // no room/format branching left to do.
 function typeLabel(a: Appt): string {
   return a.type.replace(" (in-person)", "").replace(" (video)", "");
-}
-function journeyStepLabel(a: Appt): string | null {
-  return JOURNEY_STEPS_RECEPTION[a.currentStep] ?? null;
 }
 
 // Small unified gate badge — one consistent pill for each of the two gates
@@ -138,7 +136,6 @@ function QueueRow({ appt, readOnly, selected, onOpen, onMarkArrived }: {
   const navigate = useNavigate();
   const [transactionOpen, setTransactionOpen] = useState(false);
   const [confirmCheckIn, setConfirmCheckIn] = useState(false);
-  const step = journeyStepLabel(appt);
   const late = isLate(appt);
   const rowRef = useRef<HTMLDivElement>(null);
 
@@ -183,7 +180,8 @@ function QueueRow({ appt, readOnly, selected, onOpen, onMarkArrived }: {
         </div>
         {readOnly ? (
           <div className="inline-flex items-center gap-1.5 mt-2 text-[11px] font-bold px-2 py-1 rounded-md border bg-gray-50 border-gray-200 text-gray-500 whitespace-nowrap">
-            <span className="w-1.5 h-1.5 rounded-full bg-orange-400" /> In clinic{step ? ` · ${step}` : ""}
+            <span className="w-1.5 h-1.5 rounded-full bg-orange-400" /> In clinic ·{" "}
+            <JourneyProgressChip appt={appt} />
           </div>
         ) : (
           <div className="mt-2">

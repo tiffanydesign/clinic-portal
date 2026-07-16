@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { ModalShell, Field } from "./CreateModals";
 import { FilterSelect } from "../../../components/FilterSelect";
 import {
-  Appt, ApptOverride, CLINICIANS, NURSES, useActiveRooms, roomName, APPT_TYPES, DURATION_OPTIONS,
+  Appt, ApptOverride, CLINICIANS, NURSES, useSchedulableRooms, roomName, APPT_TYPES, DURATION_OPTIONS,
   clockToMin, minToClock, fmtRange,
 } from "./scheduleData";
 
@@ -62,7 +62,7 @@ export function EditAppointmentModal({ appt, onClose, onApply }: { appt: Appt; o
 }
 
 export function ReassignModal({ appt, onClose, onApply }: { appt: Appt; onClose: () => void; onApply: (ov: ApptOverride) => void }) {
-  const rooms = useActiveRooms();
+  const rooms = useSchedulableRooms();
   const [doctorId, setDoctorId] = useState(appt.doctorId);
   const [nurse, setNurse] = useState(appt.nurse ?? "");
   const [room, setRoom] = useState(appt.room);

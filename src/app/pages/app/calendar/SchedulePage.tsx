@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import { addDays, endOfWeek, format, isSameDay, startOfWeek, subDays } from "date-fns";
 import { useAppContext } from "../../../context/AppContext";
 import { AppointmentDrawer, DrawerHandlers } from "../dashboard/AppointmentDrawer";
@@ -11,7 +11,7 @@ import { NewAppointmentModal, BlockTimeModal } from "./CreateModals";
 import { EditAppointmentModal, ReassignModal, RescheduleModal, CancelModal, ConfirmDialog } from "./EditModals";
 import { MyScheduleView } from "./MyScheduleView";
 import {
-  APPTS, Appt, ApptOverride, TimeBlock, CLINICIANS, useActiveRooms, CLINICIAN_SELF_ID,
+  APPTS, Appt, ApptOverride, TimeBlock, CLINICIANS, useSchedulableRooms, CLINICIAN_SELF_ID,
   NURSE_SELF_NAME, ANCHOR_DATE, applyOverride, buildWeek, minToClock,
 } from "./scheduleData";
 
@@ -31,13 +31,19 @@ export function SchedulePage() {
   const { role } = useAppContext();
   const navigate = useNavigate();
   const { apptId } = useParams();
-  const activeRooms = useActiveRooms();
+  const activeRooms = useSchedulableRooms();
+  // Deep-link support (see the Availability page's Rooms tab, and the Admin
+  // Dashboard's Utilisation KPI card): ?grouping=room&room=<id> pre-selects
+  // the By Room view for a specific room, same as picking it from the
+  // toolbar. Only affects the initial state — the toolbar remains the
+  // source of truth for changes after that.
+  const [searchParams] = useSearchParams();
 
   const [view, setView] = useState<View>("day");
   const [mode, setMode] = useState<Mode>("calendar");
-  const [grouping, setGrouping] = useState<Grouping>("staff");
+  const [grouping, setGrouping] = useState<Grouping>(searchParams.get("grouping") === "room" ? "room" : "staff");
   const [clinicianFilter, setClinicianFilter] = useState<Set<string>>(new Set());
-  const [room, setRoom] = useState("");
+  const [room, setRoom] = useState(searchParams.get("room") ?? "");
   const [type, setType] = useState("");
   const [overlay, setOverlay] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(ANCHOR_DATE);

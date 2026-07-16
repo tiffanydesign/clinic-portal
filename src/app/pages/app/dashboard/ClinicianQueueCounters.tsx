@@ -62,7 +62,7 @@ export function ClinicianQueueCounters({
   const signoffOverdue = CLINICIAN_SIGNOFF_QUEUE.some((q) => q.overdue);
 
   return (
-    <div className="flex items-stretch bg-white border border-gray-300 rounded-lg divide-x divide-gray-200 overflow-hidden shadow-sm shrink-0">
+    <div className="flex items-stretch bg-white border border-gray-200 rounded-xl divide-x divide-gray-200 overflow-hidden shadow-sm shrink-0">
       <CounterButton
         label="Results to Review"
         value={CLINICIAN_REVIEW_QUEUE.length}

@@ -5,6 +5,9 @@ import { toast } from "sonner";
 import { useAppContext, Role } from "../../context/AppContext";
 import { FilterSelect } from "../../components/FilterSelect";
 import { MOCK_PATIENTS, Patient } from "./patientsData";
+import { primaryApptForPatient } from "./dashboard/dashboardData";
+import { useAppointments } from "./dashboard/appointmentsStore";
+import { JourneyProgressChip } from "./dashboard/journey/JourneyProgress";
 
 export type { Patient };
 export { MOCK_PATIENTS };
@@ -12,6 +15,7 @@ export { MOCK_PATIENTS };
 export function PatientsPage() {
   const { role } = useAppContext();
   const navigate = useNavigate();
+  const appts = useAppointments();
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showNewPatientModal, setShowNewPatientModal] = useState(false);
@@ -295,8 +299,7 @@ export function PatientsPage() {
                     <>
                       <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Today's Appt</th>
                       <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Clinician</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Journey Status</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Current Step</th>
+                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Journey</th>
                       <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Waiting Since</th>
                       <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Room</th>
                       <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-center w-[100px]">Actions</th>
@@ -483,19 +486,11 @@ export function PatientsPage() {
                           <td className="p-4 font-bold text-gray-800">{p.nextAppt}</td>
                           <td className="p-4 text-gray-600 font-medium">{p.clinician}</td>
                           <td className="p-4">
-                            <div className="flex items-center space-x-1">
-                              <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                              <div className="w-4 h-px bg-emerald-500"></div>
-                              <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                              <div className="w-4 h-px bg-emerald-500"></div>
-                              <div className="w-3 h-3 rounded-full bg-blue-500 ring-2 ring-blue-100 animate-pulse"></div>
-                              <div className="w-4 h-px bg-gray-200"></div>
-                              <div className="w-3 h-3 rounded-full bg-gray-200"></div>
-                              <div className="w-4 h-px bg-gray-200"></div>
-                              <div className="w-3 h-3 rounded-full bg-gray-200"></div>
-                            </div>
+                            {(() => {
+                              const appt = primaryApptForPatient(appts, p.patientId);
+                              return appt ? <JourneyProgressChip appt={appt} /> : <span className="text-gray-400">—</span>;
+                            })()}
                           </td>
-                          <td className="p-4 font-bold text-gray-800">{p.journeyStep || '—'}</td>
                           <td className="p-4 font-bold text-orange-600">12 min</td>
                           <td className="p-4 text-gray-600 font-medium">Room 3</td>
                           <td className="p-4 text-center">

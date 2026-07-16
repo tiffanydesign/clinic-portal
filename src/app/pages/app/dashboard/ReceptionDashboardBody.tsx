@@ -5,10 +5,10 @@ import { toast } from "sonner";
 import { TODAY_LABEL, TODAY_SHORT, ROLE_GREETING } from "./dashboardData";
 import { AppointmentDrawer } from "./AppointmentDrawer";
 import { CalendarWidget } from "./CalendarWidget";
-import { StatStrip } from "./StatStrip";
+import { useKpiBar, KpiControls, KpiCards } from "./KpiBar";
 import { FrontDeskQueue } from "./FrontDeskQueue";
 import { useAppointments } from "./appointmentsStore";
-import { QueueGroup, StatKey, computeReceptionStats, statTarget } from "./receptionDashboardData";
+import { QueueGroup } from "./receptionDashboardData";
 
 // The real collapse toggle sits above the calendar column only, but that
 // gave the calendar column extra height Front Desk Queue's column doesn't
@@ -57,35 +57,12 @@ export function ReceptionDashboardBody() {
   const { apptId } = useParams();
   const appts = useAppointments();
   const [scheduleCollapsed, setScheduleCollapsed] = useState(false);
-
-  // Stat Strip and Front Desk Queue share one tab selection so they're always
-  // in sync (see StatStrip / receptionDashboardData.statTarget). `activeStat`
-  // tracks which strip item — if any — currently owns that selection, so a
-  // second click on the same item can cancel back to the Queue's own default
-  // view instead of just toggling the tab back and forth.
   const [tab, setTab] = useState<QueueGroup>("needs-action");
-  const [unpaidOnly, setUnpaidOnly] = useState(false);
-  const [activeStat, setActiveStat] = useState<StatKey | null>(null);
-  const stats = useMemo(() => computeReceptionStats(appts), [appts]);
-
-  const handleTabChange = (g: QueueGroup) => {
-    setTab(g);
-    setActiveStat(null);
-    setUnpaidOnly(false);
-  };
-
-  const handleSelectStat = (key: StatKey) => {
-    if (activeStat === key) {
-      setActiveStat(null);
-      setTab("needs-action");
-      setUnpaidOnly(false);
-      return;
-    }
-    const target = statTarget(key);
-    setActiveStat(key);
-    setTab(target.tab);
-    setUnpaidOnly(target.unpaidOnly);
-  };
+  // Called unconditionally like Admin's DashboardPage — Reception now uses
+  // the exact same KpiBar cards/config (KPI_CONFIG.Reception), just with its
+  // controls row kept separate from the greeting row since that row is
+  // already busy with the Register Patient / New Booking actions.
+  const kpi = useKpiBar();
 
   const appt = useMemo(() => appts.find((a) => a.id === apptId), [appts, apptId]);
 
@@ -104,13 +81,16 @@ export function ReceptionDashboardBody() {
         </div>
       </div>
 
-      {/* Stat Strip — a single compact row (front desk only ever needs "how
-          many, right now", not a trend or a period to pick), replacing the
-          old 4-card KPI grid. Its numbers and the Queue's own tab counts are
-          computed from the same groupQueue() buckets, so they can't drift
-          apart; clicking an item focuses the matching Queue tab below. */}
+      {/* KPI Bar — identical cards/config to Admin's (KPI_CONFIG.Reception
+          mirrors Admin's locked+pool minus New Registrations/Average Wait,
+          which would be redundant next to the Front Desk Queue's own
+          registration and wait-time signal). Controls sit on their own row
+          since the greeting row above is already the quick-actions row. */}
       <div className="px-6 pt-4">
-        <StatStrip stats={stats} active={activeStat} onSelect={handleSelectStat} />
+        <div className="flex justify-end items-center gap-3 mb-3">
+          <KpiControls kpi={kpi} />
+        </div>
+        <KpiCards kpi={kpi} />
       </div>
 
       {/* Today's Schedule (left) + Front Desk Queue (right) — side by side so
@@ -148,8 +128,7 @@ export function ReceptionDashboardBody() {
           <FrontDeskQueue
             appts={appts}
             tab={tab}
-            onTabChange={handleTabChange}
-            unpaidOnly={unpaidOnly}
+            onTabChange={setTab}
             onOpen={(id) => navigate(`/dashboard/appointment/${id}`)}
           />
         </div>

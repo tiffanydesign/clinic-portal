@@ -12,6 +12,12 @@ interface AppState {
   setRole: (role: Role) => void; // for the demo role switcher in the shell
   isFeedbackModalOpen: boolean;
   setFeedbackModalOpen: (open: boolean) => void;
+  // Sidebar expanded/collapsed. Lives here (not local AppShell state, not
+  // localStorage) so the choice is "remembered" for the session via a
+  // reported callback the whole app can see, without writing a persisted
+  // preference to the browser.
+  sidebarCollapsed: boolean;
+  setSidebarCollapsed: (collapsed: boolean) => void;
 }
 
 const AppContext = createContext<AppState | undefined>(undefined);
@@ -27,6 +33,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   
   const [pendingAuth, setPendingAuth] = useState<{ role: Role; isFirstLogin: boolean } | null>(null);
   const [isFeedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     localStorage.setItem("phenome_auth", isAuthenticated.toString());
@@ -62,7 +69,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       logout, 
       setRole,
       isFeedbackModalOpen,
-      setFeedbackModalOpen
+      setFeedbackModalOpen,
+      sidebarCollapsed,
+      setSidebarCollapsed
     }}>
       {children}
     </AppContext.Provider>

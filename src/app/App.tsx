@@ -24,7 +24,7 @@ import {
   StaffListPage, StaffDetailLayout, StaffOverviewTab, StaffAvailabilityTab, StaffPermissionsTab, StaffWorkloadTab,
   ConsentFormPage, ClinicSettingsHubPage, RoomsPage, DevicesPage, BillingPage, FeedbackAdminPage,
   NotificationsPage, ApprovalRouter, ApprovalDetailSkeleton, ProfilePage, SiteMap,
-  NewPatientSkeleton, CalendarLayout, CalendarScheduleSkeleton, AvailabilityList, AvailabilityEdit, TeamAvailability,
+  NewPatientSkeleton, CalendarLayout, CalendarScheduleSkeleton, AvailabilityList, AvailabilityEdit, AvailabilityPage,
   TimesheetPage, SchedulePage
 } from "./pages/app/AppPages";
 
@@ -109,7 +109,7 @@ export default function App() {
           <Route path="/calendar/schedule" element={<AppShellLayout><SchedulePage /></AppShellLayout>} />
           <Route path="/calendar/schedule/appointment/:apptId" element={<AppShellLayout><SchedulePage /></AppShellLayout>} />
 
-          <Route path="/calendar/team-availability" element={<AppShellLayout><CalendarLayout><TeamAvailability /></CalendarLayout></AppShellLayout>} />
+          <Route path="/calendar/availability" element={<AppShellLayout><CalendarLayout><AvailabilityPage /></CalendarLayout></AppShellLayout>} />
 
           {/* New Availability Routes */}
           <Route path="/calendar/my-availability" element={<AppShellLayout><CalendarLayout><AvailabilityList /></CalendarLayout></AppShellLayout>} />

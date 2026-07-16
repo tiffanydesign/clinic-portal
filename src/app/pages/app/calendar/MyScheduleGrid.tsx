@@ -1,20 +1,21 @@
 // The time grid for the My Schedule view — week (7 cols) or day (1 wide col).
-// Renders working-hours shading, the read-only availability layer (non-working
-// bands, blocked time, approved leave), the now line (bold on today's column),
-// and event blocks laid out with the collision algorithm so overlaps sit side
-// by side instead of colliding.
-import React, { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
-import { format, isBefore, isSameDay } from "date-fns";
+// Renders working-hours shading, the read-only availability layer (Clinician
+// only — non-working bands, blocked time, approved leave), the now line (bold
+// on today's column), and event blocks. Every day's appts are pre-guaranteed
+// non-overlapping (deoverlapSequential in myScheduleData.ts), so each block is
+// simply full-width — no lane-packing or "+N more" collapsing.
+import React, { useEffect, useRef } from "react";
+import { format, isBefore } from "date-fns";
 import { Video, Plane } from "lucide-react";
 import { Appt, HOUR_PX, minToClock, apptBlockClass, apptStatusDotClass } from "./scheduleData";
 import { WeekSchedule, BlockedTime, LeaveItem } from "../availability/availabilityData";
 import {
-  ScheduleRole, WeekDay, LayerState, LaidItem, layoutDay, apptVisible, typeShort, journeyStepLabel,
+  ScheduleRole, WeekDay, LayerState, LaidItem, layoutDay, apptVisible, typeShort,
   nonWorkingBands, blocksForDate, leaveForDate, DAY_START, DAY_END, SCROLL_TO,
 } from "./myScheduleData";
+import { JourneyProgressChip } from "../dashboard/journey/JourneyProgress";
 
-const GRID_MIN_H = 44; // touch-friendly floor for event blocks
+const GRID_MIN_H = 66; // touch-friendly floor — tall enough for every info line below (every appt is now a real 1-2h slot)
 const topPx = (min: number) => ((min - DAY_START) / 60) * HOUR_PX;
 const matches = (a: Appt, q: string) => a.patient.name.toLowerCase().includes(q.trim().toLowerCase());
 
@@ -26,51 +27,50 @@ function longPress(handler: () => void) {
 }
 
 function EventBlock({ item, role, dimmed, past, onClick, onLong }: {
-  item: Extract<LaidItem, { kind: "appt" }>; role: ScheduleRole; dimmed: boolean; past: boolean; onClick: () => void; onLong: () => void;
+  item: LaidItem; role: ScheduleRole; dimmed: boolean; past: boolean; onClick: () => void; onLong: () => void;
 }) {
   const a = item.appt;
   const height = Math.max(GRID_MIN_H, (a.durationMin / 60) * HOUR_PX) - 2;
-  const gap = 3;
-  const step = journeyStepLabel(a);
+  const showJourney = role === "Nurse" && (a.status === "In Clinic" || a.status === "Checked In");
   return (
     <div
       onClick={(e) => { e.stopPropagation(); onClick(); }}
       {...longPress(onLong)}
-      style={{
-        top: topPx(a.startMin), height,
-        left: `calc(${(item.lane / item.lanes) * 100}% + 1px)`,
-        width: `calc(${100 / item.lanes}% - ${gap}px)`,
-      }}
-      className={`absolute px-2 py-1 text-left overflow-hidden cursor-pointer transition-all hover:shadow-md hover:z-10 ${apptBlockClass(a.status)} ${past ? "opacity-55" : ""} ${dimmed ? "opacity-25" : ""}`}
+      style={{ top: topPx(a.startMin), height, left: 1, right: 1 }}
+      className={`absolute px-2 py-1.5 text-left overflow-hidden cursor-pointer transition-all hover:shadow-md hover:z-10 ${apptBlockClass(a.status)} ${past ? "opacity-55" : ""} ${dimmed ? "opacity-25" : ""}`}
     >
       <div className="flex items-center gap-1 min-w-0">
         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${apptStatusDotClass(a.status)}`} />
         {a.isVideo && <Video className="w-3 h-3 text-cyan-600 shrink-0" />}
         <span className="text-[11px] font-bold text-gray-800 truncate">{a.patient.name}</span>
       </div>
-      {height >= 34 && (
-        <div className="text-[10px] text-gray-500 truncate">{typeShort(a.type)} · {a.durationMin}m</div>
+      <div className="text-[10px] text-gray-600 truncate mt-0.5">{typeShort(a.type)} · {a.durationMin} min</div>
+      <div className="text-[10px] text-gray-500 truncate">{a.room} · {a.doctor}</div>
+      {showJourney && (
+        <div className="text-[10px] font-semibold text-orange-700 truncate mt-0.5">
+          → <JourneyProgressChip appt={a} className="!text-orange-700" />
+        </div>
       )}
-      {height >= 50 && step && role === "Nurse" && (
-        <div className="text-[10px] font-semibold text-orange-700 truncate mt-0.5">→ {step}</div>
-      )}
-      {height >= 50 && a.isVideo && role === "Clinician" && (
+      {a.isVideo && role === "Clinician" && (
         <div className="text-[10px] font-semibold text-cyan-700 truncate mt-0.5">Video · ready to join</div>
       )}
     </div>
   );
 }
 
-function DayColumn({ day, role, layers, schedule, blockedTime, leaves, search, nowMinutes, isToday, onApptClick, onLongPress, onMore }: {
+function DayColumn({ day, role, layers, schedule, blockedTime, leaves, search, nowMinutes, isToday, onApptClick, onLongPress }: {
   day: WeekDay; role: ScheduleRole; layers: LayerState; schedule: WeekSchedule; blockedTime: BlockedTime[]; leaves: LeaveItem[];
   search: string; nowMinutes: number; isToday: boolean; onApptClick: (a: Appt) => void; onLongPress: (a: Appt) => void;
-  onMore: (x: number, y: number, items: Appt[]) => void;
 }) {
   const visible = day.appts.filter((a) => apptVisible(a, layers));
   const laid = layoutDay(visible);
-  const leave = layers.availability ? leaveForDate(day.date, leaves) : null;
-  const bands = layers.availability ? nonWorkingBands(day.date, schedule) : [];
-  const blocks = layers.availability ? blocksForDate(day.date, blockedTime) : [];
+  // Availability overlay (working-hours shading, blocked time, approved leave)
+  // is Clinician-only — Nurse has no self-service availability page, so the
+  // read-only layer that visualizes it is dropped for that role entirely.
+  const showAvailability = role === "Clinician" && layers.availability;
+  const leave = showAvailability ? leaveForDate(day.date, leaves) : null;
+  const bands = showAvailability ? nonWorkingBands(day.date, schedule) : [];
+  const blocks = showAvailability ? blocksForDate(day.date, blockedTime) : [];
   const hasSearch = search.trim().length > 0;
 
   return (
@@ -101,22 +101,7 @@ function DayColumn({ day, role, layers, schedule, blockedTime, leaves, search, n
       ))}
 
       {/* events */}
-      {laid.map((item, idx) => {
-        if (item.kind === "more") {
-          return (
-            <button
-              key={`more-${idx}`}
-              onClick={(e) => { e.stopPropagation(); const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); onMore(r.left, r.bottom, item.hidden); }}
-              style={{
-                top: topPx(item.startMin), height: Math.max(GRID_MIN_H, (item.durationMin / 60) * HOUR_PX) - 2,
-                left: `calc(${(item.lane / item.lanes) * 100}% + 1px)`, width: `calc(${100 / item.lanes}% - 3px)`,
-              }}
-              className="absolute rounded-lg bg-slate-100 border border-slate-300 text-slate-600 text-[11px] font-bold flex items-center justify-center hover:bg-slate-200 transition-colors"
-            >
-              +{item.hidden.length} more
-            </button>
-          );
-        }
+      {laid.map((item) => {
         const past = isBefore(day.date, new Date(2026, 6, 3)) || (isToday && item.appt.startMin + item.appt.durationMin <= nowMinutes);
         return (
           <EventBlock
@@ -143,33 +128,12 @@ function DayColumn({ day, role, layers, schedule, blockedTime, leaves, search, n
   );
 }
 
-function MorePopover({ x, y, items, onPick, onClose }: { x: number; y: number; items: Appt[]; onPick: (a: Appt) => void; onClose: () => void }) {
-  return createPortal(
-    <>
-      <div className="fixed inset-0 z-50" onClick={onClose} />
-      <div className="fixed z-50 w-60 bg-white border border-gray-200 rounded-lg shadow-xl py-1 max-h-72 overflow-y-auto" style={{ top: Math.min(y + 4, window.innerHeight - 260), left: Math.min(x, window.innerWidth - 250) }}>
-        {items.map((a) => (
-          <button key={a.id} onClick={() => { onClose(); onPick(a); }} className="w-full text-left px-3 py-2 hover:bg-gray-50 transition-colors flex items-center gap-2">
-            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${apptStatusDotClass(a.status)}`} />
-            <div className="min-w-0">
-              <div className="text-sm font-bold text-gray-800 truncate">{a.patient.name}</div>
-              <div className="text-xs text-gray-500">{minToClock(a.startMin)} · {typeShort(a.type)}</div>
-            </div>
-          </button>
-        ))}
-      </div>
-    </>,
-    document.body
-  );
-}
-
 export function MyScheduleGrid({ role, view, weekDays, nowMinutes, layers, schedule, blockedTime, leaves, search, onApptClick, onLongPress }: {
   role: ScheduleRole; view: "week" | "day"; weekDays: WeekDay[]; nowMinutes: number; layers: LayerState;
   schedule: WeekSchedule; blockedTime: BlockedTime[]; leaves: LeaveItem[]; search: string;
   onApptClick: (a: Appt) => void; onLongPress: (a: Appt) => void;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const [more, setMore] = useState<{ x: number; y: number; items: Appt[] } | null>(null);
   const hours = Array.from({ length: (DAY_END - DAY_START) / 60 + 1 }, (_, i) => DAY_START / 60 + i);
   const gridHeight = ((DAY_END - DAY_START) / 60) * HOUR_PX;
   const anyToday = weekDays.some((d) => d.isToday);
@@ -239,15 +203,12 @@ export function MyScheduleGrid({ role, view, weekDays, nowMinutes, layers, sched
                   isToday={d.isToday}
                   onApptClick={onApptClick}
                   onLongPress={onLongPress}
-                  onMore={(x, y, items) => setMore({ x, y, items })}
                 />
               ))}
             </div>
           </div>
         </div>
       </div>
-
-      {more && <MorePopover x={more.x} y={more.y} items={more.items} onPick={onApptClick} onClose={() => setMore(null)} />}
     </div>
   );
 }

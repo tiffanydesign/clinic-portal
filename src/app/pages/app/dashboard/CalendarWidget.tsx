@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { Video, ArrowRight } from "lucide-react";
-import { useActiveRooms, roomName, CLINICIANS } from "../calendar/scheduleData";
+import { useSchedulableRooms, roomName, CLINICIANS } from "../calendar/scheduleData";
 import {
   APPTS, Appt, DAY_START_HOUR, DAY_END_HOUR, HOUR_PX,
   NOW_MINUTES, TODAY_SHORT, apptBlockClass, apptStatusDotClass, blockHeightPx, gapToNext, minToClock,
@@ -86,7 +86,7 @@ function ViewModeToggle({ mode, onChange }: { mode: ViewMode; onChange: (m: View
 
 export function CalendarWidget() {
   const navigate = useNavigate();
-  const activeRooms = useActiveRooms();
+  const activeRooms = useSchedulableRooms();
   const [mode, setMode] = useState<ViewMode>("room");
   const columns = mode === "room" ? buildRoomColumns(activeRooms) : buildClinicianColumns();
   const hours = Array.from({ length: DAY_END_HOUR - DAY_START_HOUR + 1 }, (_, i) => DAY_START_HOUR + i);
@@ -142,15 +142,13 @@ export function CalendarWidget() {
           back to what it's separating without shouting. */}
       <div className="h-[3px] shrink-0 bg-gradient-to-r from-gray-200 via-amber-200 via-30% via-blue-200 via-70% to-red-200" />
 
-      {/* Scrollable timeline */}
-      <div className="flex-1 overflow-y-auto">
-        {/* Column headers — room or clinician, per the toggle above. Lives
-            inside the same scroll container as the grid below (sticky, not
-            a separate row above it) so both share the exact same available
-            width. Keeping it outside meant this row never lost width to the
-            vertical scrollbar while the grid row right below it did, so
-            every column divider drifted a little further out of line with
-            its own header the further right it sat. */}
+      {/* Full timeline, no internal scroll — the whole 08:00-19:00 day
+          always renders in full; the page itself is the only scroll
+          surface (see DashboardPage.tsx). Column headers live in the same
+          flex column as the grid below purely for layout consistency —
+          `sticky` no longer has a scrolling ancestor to pin against here,
+          but is harmless to leave since it degrades to normal flow. */}
+      <div className="flex-1">
         {columns.length > 1 && (
           <div className="sticky top-0 z-30 flex border-b border-gray-200 bg-gradient-to-b from-gray-50 to-gray-50/50 pl-14">
             {columns.map((c) => (

@@ -6,6 +6,7 @@
 
 import { useSyncExternalStore } from "react";
 import { APPTS, Appt, minToClock, NOW_MINUTES } from "./dashboardData";
+import { RESULTS_CONSULTATION_INDEX } from "./journey/journeyTemplates";
 
 let appts: Appt[] = APPTS.map((a) => structuredClone(a));
 const listeners = new Set<() => void>();
@@ -64,4 +65,19 @@ export function checkIn(id: string) {
 export function nurseCheckOutByName(name: string) {
   const candidate = appts.find((a) => a.patient.name === name && (a.status === "Checked In" || a.status === "In Clinic"));
   if (candidate) update(candidate.id, { status: "Completed" });
+}
+
+// Nurse-side confirmation (the Patient Journey card's "Arrived at Room X"
+// milestone — see journeyEngine.ts) that a patient is now physically in
+// their assigned room, early in the visit (right after Changing Room).
+// Deliberately bumps currentStep all the way to Consultation: this is a
+// simplified single-milestone gate (not a per-station one) — its trade-off
+// is that the Clinician Dashboard's in-person "Start" unlocks as soon as
+// the patient arrives, rather than only right before the consultation
+// itself (inPersonStartState in clinicianDashboardData.ts checks
+// `currentStep >= RESULTS_CONSULTATION_INDEX`). Joined by name for the same
+// reason nurseCheckOutByName is (no shared Appt id on the Nurse side).
+export function nurseMarkPatientArrived(name: string) {
+  const candidate = appts.find((a) => a.patient.name === name && (a.status === "Checked In" || a.status === "In Clinic" || a.status === "Arrived"));
+  if (candidate && candidate.currentStep < RESULTS_CONSULTATION_INDEX) update(candidate.id, { currentStep: RESULTS_CONSULTATION_INDEX });
 }

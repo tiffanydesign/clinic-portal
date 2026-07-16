@@ -54,7 +54,7 @@ export function staticNotificationsForRole(role: Role): NotificationItem[] {
 // mock "today" (Fri 3 Jul 2026) every other dashboard surface uses — enough
 // to drive the date-range filter without needing a structured date on every
 // mock entry.
-const MOCK_TODAY = new Date(2026, 6, 3);
+export const MOCK_TODAY = new Date(2026, 6, 3);
 
 export function notificationDate(time: string): Date {
   if (time.startsWith("Yesterday")) {
@@ -108,6 +108,6 @@ export function scheduleChangeNotifications(log: ScheduleChangeLogItem[]): Notif
     text: `Dr. Ebru Reis updated their weekly hours: ${entry.summary}`,
     time: entry.at,
     roles: ["Admin"],
-    actionRoute: "/calendar/team-availability",
+    actionRoute: "/calendar/availability",
   }));
 }

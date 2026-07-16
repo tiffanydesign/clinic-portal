@@ -1,12 +1,13 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
+import { Plane, RefreshCcw } from "lucide-react";
 import { Section } from "./DashboardShared";
 import { useAvailabilityStore, getPendingRequests } from "../availability/availabilityStore";
 import { needsYourActionItems, ActionItem, ActionItemKind } from "./needsYourActionData";
 
-const KIND_PILL: Record<ActionItemKind, string> = {
-  Leave: "bg-amber-50 text-amber-700 border-amber-200",
-  Refund: "bg-purple-50 text-purple-700 border-purple-200",
+const KIND_STYLE: Record<ActionItemKind, { pill: string; icon: React.ReactNode }> = {
+  Leave: { pill: "bg-amber-50 text-amber-700 border-amber-200", icon: <Plane className="w-3.5 h-3.5 text-amber-600" /> },
+  Refund: { pill: "bg-purple-50 text-purple-700 border-purple-200", icon: <RefreshCcw className="w-3.5 h-3.5 text-purple-600" /> },
 };
 
 type Filter = "All" | ActionItemKind;
@@ -17,10 +18,11 @@ type Filter = "All" | ActionItemKind;
 function ActionRow({ item, onOpen }: { item: ActionItem; onOpen: () => void }) {
   const overdue = item.waitHours > 48;
   return (
-    <button onClick={onOpen} className="w-full min-h-[48px] flex items-center justify-between gap-3 px-4 py-3 hover:bg-gray-50 text-left transition-colors">
-      <span className="flex items-center gap-2 min-w-0">
-        <span className={`px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded border shrink-0 ${KIND_PILL[item.kind]}`}>{item.kind}</span>
-        <span className="text-sm font-medium text-gray-800 truncate">{item.summary}</span>
+    <button onClick={onOpen} className="w-full min-h-[48px] flex items-center gap-3 px-4 py-3 hover:bg-gray-50 text-left transition-colors">
+      <span className="shrink-0">{KIND_STYLE[item.kind].icon}</span>
+      <span className="min-w-0 flex-1">
+        <span className={`inline-block px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider rounded border mb-0.5 ${KIND_STYLE[item.kind].pill}`}>{item.kind}</span>
+        <span className="block text-sm font-medium text-gray-800 truncate">{item.summary}</span>
       </span>
       <span className={`text-xs font-bold shrink-0 ${overdue ? "text-red-600" : "text-gray-400"}`}>
         {item.waitLabel}{overdue ? " · overdue" : ""}
@@ -56,22 +58,22 @@ export function NeedsYourActionCard() {
       className="h-full"
       action={
         allItems.length > 0 ? (
-          <div className="flex items-center gap-[3.6px] text-[8.4px]">
+          <div className="inline-flex items-center gap-0.5 bg-gray-100 p-0.5 rounded-lg border border-gray-200">
             <button
               onClick={() => setKindFilter("All")}
-              className={`px-[3.6px] py-[1.8px] rounded font-bold border transition-colors ${kindFilter === "All" ? "bg-slate-700 text-white border-slate-700" : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"}`}
+              className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all ${kindFilter === "All" ? "bg-white text-slate-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
             >
               All ({allItems.length})
             </button>
             <button
               onClick={() => setKindFilter("Leave")}
-              className={`px-[3.6px] py-[1.8px] rounded font-bold border transition-colors ${kindFilter === "Leave" ? "bg-amber-100 text-amber-800 border-amber-300" : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"}`}
+              className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all ${kindFilter === "Leave" ? "bg-white text-amber-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
             >
               Leave ({leaveCount})
             </button>
             <button
               onClick={() => setKindFilter("Refund")}
-              className={`px-[3.6px] py-[1.8px] rounded font-bold border transition-colors ${kindFilter === "Refund" ? "bg-purple-100 text-purple-800 border-purple-300" : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50"}`}
+              className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all ${kindFilter === "Refund" ? "bg-white text-purple-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
             >
               Refunds ({refundCount})
             </button>

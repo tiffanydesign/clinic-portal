@@ -45,7 +45,12 @@ export function FloatingPopover({
 
   return createPortal(
     <>
-      <div className="fixed inset-0 z-[100]" onClick={onClose} />
+      {/* stopPropagation: this backdrop is a React child of whatever renders
+          the popover (portals bubble through the React tree, not the DOM
+          tree), so a dismiss-click here would otherwise also reach — and
+          trigger — a clickable ancestor the popover happens to be nested
+          inside (e.g. a grid cell's own onClick). */}
+      <div className="fixed inset-0 z-[100]" onClick={(e) => { e.stopPropagation(); onClose(); }} />
       <div
         ref={panelRef}
         className="fixed z-[101]"

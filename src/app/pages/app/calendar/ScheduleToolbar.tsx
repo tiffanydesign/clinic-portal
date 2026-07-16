@@ -2,7 +2,7 @@ import React, { useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, CalendarDays, Plus, Check, Info, SlidersHorizontal } from "lucide-react";
 import { addDays, addMonths, format, isSameDay, startOfMonth, startOfWeek, subMonths } from "date-fns";
 import type { Role } from "../../../context/AppContext";
-import { CLINICIANS, useActiveRooms, APPT_TYPES, ANCHOR_DATE } from "./scheduleData";
+import { CLINICIANS, useSchedulableRooms, APPT_TYPES, ANCHOR_DATE } from "./scheduleData";
 import { FilterSelect } from "../../../components/FilterSelect";
 import { FloatingPopover } from "../../../components/glass/FloatingPopover";
 
@@ -181,7 +181,7 @@ export function ScheduleToolbar({
   overlay: boolean; setOverlay: (v: boolean) => void;
   onNew: () => void; onBlock: () => void;
 }) {
-  const rooms = useActiveRooms();
+  const rooms = useSchedulableRooms();
   const hasWeek = role === "Admin" || role === "Clinician";
   const hasListToggle = role === "Admin" || role === "Reception";
   const isList = mode === "list";

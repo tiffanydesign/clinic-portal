@@ -4,6 +4,22 @@ import { LayoutGrid, List } from "lucide-react";
 import { usePatientOutletContext } from "./PatientRecordLayout";
 import { Journey, journeyStatusPillType, journeyProgress } from "./patientRecordData";
 import { StatusPill } from "../dashboard/DashboardShared";
+import { JourneyProgressStrip } from "../dashboard/journey/JourneyProgress";
+
+// Adapts patientRecordData.ts's own Journey/JourneyStep model (a separate
+// shape from dashboard/journey's Appt-based model — see JourneyDetailPage.tsx
+// for why) into the strip's plain steps/current/isDone/caption contract.
+function journeyStripProps(journey: Journey) {
+  const { currentIndex } = journeyProgress(journey);
+  const current = journey.steps[currentIndex];
+  const captionParts = current ? [current.status, current.by, current.at].filter(Boolean) : [];
+  return {
+    steps: journey.steps.map((s) => s.name),
+    current: currentIndex,
+    isDone: journey.status === "Completed",
+    caption: captionParts.length > 0 ? captionParts.join(" · ") : undefined,
+  };
+}
 
 function ProgressBar({ done, total }: { done: number; total: number }) {
   const pct = total === 0 ? 0 : Math.round((done / total) * 100);
@@ -17,24 +33,23 @@ function ProgressBar({ done, total }: { done: number; total: number }) {
   );
 }
 
+// Same unified stepper used on every dashboard card and drawer — done/
+// current/next for this journey's full step list, not just a bare % bar, so
+// "where is this patient right now" reads the same way everywhere it's asked.
 function JourneyCard({ journey, patientId, showOpen }: { journey: Journey; patientId: string; showOpen: boolean }) {
   const navigate = useNavigate();
-  const { done, total, currentIndex } = journeyProgress(journey);
-  const currentStepName = journey.steps[currentIndex]?.name;
   return (
     <div className="border border-gray-300 rounded-lg bg-white p-5 hover:border-slate-400 transition-colors">
-      <div className="flex items-start justify-between mb-3">
-        <div>
-          <h3 className="text-sm font-bold text-gray-800">{journey.name}</h3>
-          <div className="text-xs text-gray-500 mt-0.5">
-            {journey.status === "Active" ? `Current step: ${currentStepName ?? "—"}` : `Started ${journey.startedAt}`}
-          </div>
-        </div>
+      <div className="flex items-start justify-between mb-4">
+        <h3 className="text-sm font-bold text-gray-800">{journey.name}</h3>
         <StatusPill status={journey.status} type={journeyStatusPillType(journey.status)} />
       </div>
-      <ProgressBar done={done} total={total} />
-      <div className="flex items-center justify-between mt-4 text-xs text-gray-500">
-        <span>{journey.assignedClinician ?? "—"} · {journey.assignedNurse ?? "—"}</span>
+      <JourneyProgressStrip {...journeyStripProps(journey)} onOpen={() => navigate(`/patients/${patientId}/journeys/${journey.id}`)} />
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100 text-xs text-gray-500">
+        <span>
+          {journey.startedAt && <>Started {journey.startedAt} · </>}
+          {journey.assignedClinician ?? "—"} · {journey.assignedNurse ?? "—"}
+        </span>
         {showOpen && (
           <button onClick={() => navigate(`/patients/${patientId}/journeys/${journey.id}`)} className="px-3 py-1.5 bg-slate-600 text-white text-xs font-bold rounded hover:bg-slate-700">
             Open Journey
