@@ -45,29 +45,26 @@ export function ReceptionDashboardBody() {
   const [scheduleCollapsed, setScheduleCollapsed] = useState(false);
   const [tab, setTab] = useState<QueueGroup>("needs-action");
   // Called unconditionally like Admin's DashboardPage — Reception now uses
-  // the exact same KpiBar cards/config (KPI_CONFIG.Reception), just with its
-  // controls row kept separate from the greeting row.
+  // the exact same KpiBar cards/config (KPI_CONFIG.Reception) and the same
+  // greeting-row + controls layout Admin's dashboard uses.
   const kpi = useKpiBar();
 
   const appt = useMemo(() => appts.find((a) => a.id === apptId), [appts, apptId]);
 
   return (
     <div className="h-full flex flex-col overflow-y-auto overflow-x-hidden bg-gray-50">
-      {/* Header */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-4">
-        <div className="min-w-0">
-          <span className="text-xl font-semibold text-gray-800">Good morning, {ROLE_GREETING.Reception}</span>
-          <span className="text-sm text-gray-400 ml-2">· {TODAY_LABEL} · Istanbul Clinic</span>
-        </div>
-      </div>
-
-      {/* KPI Bar — identical cards/config to Admin's (KPI_CONFIG.Reception
-          mirrors Admin's locked+pool minus New Registrations/Average Wait,
-          which would be redundant next to the Front Desk Queue's own
-          registration and wait-time signal). Controls sit on their own row
-          since the greeting row above is already the quick-actions row. */}
-      <div className="px-6 pt-4">
-        <div className="flex justify-end items-center gap-3 mb-3">
+      {/* Header — same layout as Admin's dashboard: greeting + date on the
+          left, KPI range/customise controls on the right of that same row,
+          no bordered bar underneath (KPI_CONFIG.Reception mirrors Admin's
+          locked+pool minus New Registrations/Average Wait, which would be
+          redundant next to the Front Desk Queue's own registration and
+          wait-time signal). */}
+      <div className="px-6 pt-6">
+        <div className="flex items-start justify-between gap-4 mb-3">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Good morning, {ROLE_GREETING.Reception}</h1>
+            <p className="text-sm text-gray-500 mt-1">{TODAY_LABEL} · Istanbul Clinic</p>
+          </div>
           <KpiControls kpi={kpi} />
         </div>
         <KpiCards kpi={kpi} />

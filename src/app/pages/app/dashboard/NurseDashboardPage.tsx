@@ -13,7 +13,6 @@ import { AppointmentDrawer } from "./AppointmentDrawer";
 import { ClinicianScheduleList } from "./ClinicianScheduleList";
 import { UpNextPanel } from "./UpNextPanel";
 import { MyPatientsTodayCard } from "./MyPatientsTodayCard";
-import { useKpiBar, KpiControls, KpiCards } from "./KpiBar";
 import { nurseCheckOutByName, nurseMarkPatientArrived, useAppointments } from "./appointmentsStore";
 import { NURSE_SELF_NAME } from "../calendar/scheduleData";
 
@@ -85,7 +84,6 @@ export function NurseDashboardPage() {
   const navigate = useNavigate();
   const { apptId } = useParams();
   const deepLinkedAppt = getAppt(apptId);
-  const kpi = useKpiBar();
   const [demoMoment, setDemoMoment] = useState<DemoMoment>("mid-shift");
   const initialScenario = NURSE_DEMO_SCENARIOS[demoMoment];
 
@@ -167,10 +165,8 @@ export function NurseDashboardPage() {
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <DemoMomentSwitcher value={demoMoment} onChange={handleDemoMomentChange} />
-            <KpiControls kpi={kpi} />
           </div>
         </div>
-        <KpiCards kpi={kpi} />
       </div>
 
       <div className="flex items-start gap-6 px-6 pt-4 pb-6">
