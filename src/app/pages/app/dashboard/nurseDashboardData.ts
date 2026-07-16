@@ -1,8 +1,8 @@
-// Mock data and types for the redesigned, single-focus Nurse Dashboard.
-// Unlike the shared multi-role dashboard (KPI bar + calendar + queue panels),
-// this page has its own dedicated model built around one question: what does
-// this nurse do right now, and who's next — not a KPI/metrics summary.
-// The Patient Journey card's own step/state-machine model lives in
+// Mock data and types for the Nurse Dashboard's own patient-focused body.
+// It shares the standard KPI bar (KPI_CONFIG.Nurse, in kpiData.ts) with every
+// other role, but below that header this page has its own dedicated model
+// built around one question: what does this nurse do right now, and who's
+// next. The Patient Journey card's own step/state-machine model lives in
 // ./journey/journeyEngine.ts; this file only carries patient identity plus
 // the rail cards (schedule, queue, completed).
 

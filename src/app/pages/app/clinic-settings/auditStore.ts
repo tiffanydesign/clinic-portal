@@ -5,7 +5,7 @@
 // as the other prototype stores.
 import { useSyncExternalStore } from "react";
 
-export type AuditEntityType = "room" | "device";
+export type AuditEntityType = "room" | "device" | "staff";
 
 export type AuditEntry = {
   id: string;

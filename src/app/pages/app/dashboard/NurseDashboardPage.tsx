@@ -13,6 +13,7 @@ import { AppointmentDrawer } from "./AppointmentDrawer";
 import { ClinicianScheduleList } from "./ClinicianScheduleList";
 import { UpNextPanel } from "./UpNextPanel";
 import { MyPatientsTodayCard } from "./MyPatientsTodayCard";
+import { useKpiBar, KpiControls, KpiCards } from "./KpiBar";
 import { nurseCheckOutByName, nurseMarkPatientArrived, useAppointments } from "./appointmentsStore";
 import { NURSE_SELF_NAME } from "../calendar/scheduleData";
 
@@ -84,6 +85,7 @@ export function NurseDashboardPage() {
   const navigate = useNavigate();
   const { apptId } = useParams();
   const deepLinkedAppt = getAppt(apptId);
+  const kpi = useKpiBar();
   const [demoMoment, setDemoMoment] = useState<DemoMoment>("mid-shift");
   const initialScenario = NURSE_DEMO_SCENARIOS[demoMoment];
 
@@ -151,29 +153,27 @@ export function NurseDashboardPage() {
   };
 
   return (
-    // No forced page height anywhere — the whole page scrolls as a unit.
-    // The right rail used to be a fixed-height, independently-scrolling
-    // "sidebar" (w-[396px] + h-[760px] row + its own overflow-y-auto); that
-    // meant Up Next's Completed section could end up scrolled out of view
-    // with no visible cue. Now every card (Patient Journey included) sizes
-    // to its own full content and the page itself is the only scroll
-    // surface, so nothing is ever clipped or hidden behind a nested scrollbar.
+    // No forced page height anywhere — the whole page scrolls as a unit, and
+    // neither column is stretched to match the other's height (plain
+    // `items-start`): each card now simply sizes to its own natural content,
+    // including Today's Schedule which renders the full day inline with no
+    // nested scrollbar of its own (see ClinicianScheduleList's `scrollable`).
     <div className="bg-gray-50">
-      <div className="px-6 pt-6 pb-4 flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Good morning, {ROLE_GREETING.Nurse}</h1>
-          <p className="text-sm text-gray-500 mt-1">{TODAY_LABEL} · Istanbul Clinic</p>
+      <div className="px-6 pt-6">
+        <div className="flex items-start justify-between gap-4 mb-3">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Good morning, {ROLE_GREETING.Nurse}</h1>
+            <p className="text-sm text-gray-500 mt-1">{TODAY_LABEL} · Istanbul Clinic</p>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <DemoMomentSwitcher value={demoMoment} onChange={handleDemoMomentChange} />
+            <KpiControls kpi={kpi} />
+          </div>
         </div>
-        <DemoMomentSwitcher value={demoMoment} onChange={handleDemoMomentChange} />
+        <KpiCards kpi={kpi} />
       </div>
 
-      {/* No `items-start` here (default is `items-stretch`) — the right
-          column stretches to match Patient Journey's height, and Up Next
-          (the column's last card, see its own `grow` below) fills whatever
-          space that leaves, so its bottom edge lands exactly on Patient
-          Journey's bottom instead of stopping short at its own natural
-          content height. */}
-      <div className="flex gap-6 px-6 pb-6">
+      <div className="flex items-start gap-6 px-6 pt-4 pb-6">
         <div className="flex-1 min-w-0">
           {identity ? (
             <PatientJourneySection
@@ -184,13 +184,7 @@ export function NurseDashboardPage() {
               onComplete={handleComplete}
             />
           ) : (
-            // `h-full` (not just min-h-[500px]) — PatientJourneyCard's own
-            // root already uses `h-full` to fill the row's stretched height
-            // (see the comment above), so without it here too, this empty
-            // state would stay stuck at its min-height floor whenever the
-            // right rail's stacked cards resolve taller than 500px, leaving
-            // it visually shorter than Up Next instead of bottom-aligned.
-            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col overflow-hidden min-h-[500px] h-full">
+            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col overflow-hidden min-h-[420px]">
               <EmptyJourney
                 hasQueue={upNext.length > 0}
                 completedCount={completedToday.length}
@@ -203,14 +197,15 @@ export function NurseDashboardPage() {
 
         <div className="w-[396px] shrink-0 flex flex-col gap-5">
           <MyPatientsTodayCard scheduled={upNext.length} inProgress={identity ? 1 : 0} done={completedToday.length} />
+          <UpNextPanel queue={upNext} completed={completedToday} locked={locked} onStart={handleStartNext} />
           <ClinicianScheduleList
             appts={nurseAppts}
             activeApptId={identity ? nurseAppts.find((a) => a.patient.name === identity.name)?.id : undefined}
             hasActiveSession={false}
             onOpen={(id) => navigate(`/dashboard/appointment/${id}`)}
             onJoin={() => {}}
+            scrollable={false}
           />
-          <UpNextPanel queue={upNext} completed={completedToday} locked={locked} onStart={handleStartNext} />
         </div>
       </div>
 

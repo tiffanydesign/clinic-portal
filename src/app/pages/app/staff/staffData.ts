@@ -37,7 +37,7 @@ export const MOCK_STAFF: Staff[] = [
   // Nurses
   { id: "EMP-007", name: "Berna Koç", avatar: "BK", role: "Nurse", email: "berna@phenome.com", phone: "+90 532 555 0107", status: "Active", today: "On Duty", patients: 14, workload: 71, nextShift: "Today, 8:00", lastActive: "45min ago", lastActiveDays: 0, joined: "01 Jun 2025" },
   { id: "EMP-008", name: "Aylin Demir", avatar: "AD", role: "Nurse", email: "aylin@phenome.com", phone: "+90 532 555 0108", status: "Active", today: "On Duty", patients: 12, workload: 63, nextShift: "Today, 8:00", lastActive: "1h ago", lastActiveDays: 0, joined: "01 Jun 2025" },
-  { id: "EMP-009", name: "Selin Yılmaz", avatar: "SY", role: "Nurse", email: "selin@phenome.com", phone: "+90 532 555 0109", status: "Active", today: "Off", todayNote: "Day Off", patients: 10, workload: 55, nextShift: "Tomorrow, 8:00", lastActive: "Yesterday", lastActiveDays: 1, joined: "15 Jun 2025" },
+  { id: "EMP-009", name: "Selin Yılmaz", avatar: "SY", role: "Nurse", email: "selin@phenome.com", phone: "+90 532 555 0109", status: "Active", today: "On Duty", patients: 10, workload: 55, nextShift: "Today, 8:30", lastActive: "Yesterday", lastActiveDays: 1, joined: "15 Jun 2025" },
   // Receptionists
   { id: "EMP-010", name: "Elif Yıldız", avatar: "EY", role: "Receptionist", email: "elif@phenome.com", phone: "+90 532 555 0110", status: "Active", today: "On Duty", patients: null, workload: null, nextShift: "Today, 7:30", lastActive: "20min ago", lastActiveDays: 0, joined: "10 Feb 2025" },
   { id: "EMP-011", name: "Deniz Arslan", avatar: "DA", role: "Receptionist", email: "deniz@phenome.com", phone: "+90 532 555 0111", status: "Active", today: "On Duty", patients: null, workload: null, nextShift: "Today, 7:30", lastActive: "1h ago", lastActiveDays: 0, joined: "10 Feb 2025" },
@@ -143,3 +143,158 @@ export const WEEKLY_TREND = [
 export const CAPACITY_THRESHOLD = 12;
 
 export const OTHER_CLINICIANS = ["Dr. Emre Yalçın", "Dr. Kaan Öztürk", "Dr. Onur Şimşek"];
+
+// --- Overview tab: quick-fact profile details ---
+// Kept as its own map (not extra columns on MOCK_STAFF) so the roster array
+// above stays scannable — same pattern as ASSIGNED_PATIENTS etc.
+export type StaffProfileDetails = {
+  dob: string;
+  nationality: string;
+  preferredLanguage: string;
+  contractType: "Full-time" | "Part-time";
+};
+
+const DEFAULT_PROFILE: StaffProfileDetails = { dob: "—", nationality: "—", preferredLanguage: "—", contractType: "Full-time" };
+
+export const STAFF_PROFILE: Record<string, StaffProfileDetails> = {
+  "EMP-001": { dob: "3 Jan 1985", nationality: "Turkish", preferredLanguage: "Turkish", contractType: "Full-time" },
+  "EMP-003": { dob: "15 May 1988", nationality: "Portuguese", preferredLanguage: "English", contractType: "Full-time" },
+  "EMP-004": { dob: "22 Sep 1990", nationality: "Turkish", preferredLanguage: "Turkish", contractType: "Full-time" },
+  "EMP-005": { dob: "9 Feb 1986", nationality: "Turkish", preferredLanguage: "English", contractType: "Full-time" },
+  "EMP-006": { dob: "30 Nov 1983", nationality: "Turkish", preferredLanguage: "Turkish", contractType: "Full-time" },
+  "EMP-007": { dob: "4 Jul 1994", nationality: "Turkish", preferredLanguage: "Turkish", contractType: "Full-time" },
+  "EMP-008": { dob: "17 Aug 1996", nationality: "Turkish", preferredLanguage: "Turkish", contractType: "Part-time" },
+  "EMP-009": { dob: "2 Mar 1998", nationality: "Turkish", preferredLanguage: "Turkish", contractType: "Full-time" },
+  "EMP-010": { dob: "11 Jun 1992", nationality: "Turkish", preferredLanguage: "Turkish", contractType: "Full-time" },
+  "EMP-011": { dob: "25 Dec 1995", nationality: "Turkish", preferredLanguage: "Turkish", contractType: "Full-time" },
+  "EMP-012": { dob: "8 Apr 1991", nationality: "Turkish", preferredLanguage: "Turkish", contractType: "Part-time" },
+  "EMP-013": { dob: "19 Oct 1997", nationality: "Turkish", preferredLanguage: "Turkish", contractType: "Full-time" },
+  "EMP-014": { dob: "14 Jan 1993", nationality: "Turkish", preferredLanguage: "Turkish", contractType: "Full-time" },
+};
+
+export function getProfileDetails(id: string): StaffProfileDetails {
+  return STAFF_PROFILE[id] ?? DEFAULT_PROFILE;
+}
+
+// --- Overview tab: account & security snapshot ---
+export type StaffSession = { device: string; location: string; current: boolean };
+export type StaffSecurity = {
+  lastLogin: string; // display text, e.g. "2 hours ago"
+  device: string;
+  location: string;
+  lastLoginDaysAgo: number; // drives the >30-day staleness flag
+  twoFactorEnabled: boolean;
+  twoFactorMethod?: string;
+  sessions: StaffSession[];
+};
+
+const DEFAULT_SECURITY: StaffSecurity = {
+  lastLogin: "Never", device: "—", location: "—", lastLoginDaysAgo: 9999, twoFactorEnabled: false, sessions: [],
+};
+
+export const STAFF_SECURITY: Record<string, StaffSecurity> = {
+  "EMP-001": { lastLogin: "Just now", device: "MacBook Pro · Chrome", location: "Istanbul, TR", lastLoginDaysAgo: 0, twoFactorEnabled: true, twoFactorMethod: "Authenticator app", sessions: [{ device: "MacBook Pro · Chrome", location: "Istanbul, TR", current: true }] },
+  "EMP-003": { lastLogin: "2 hours ago", device: "iPad Air 13\" · Safari", location: "Istanbul, TR", lastLoginDaysAgo: 0, twoFactorEnabled: true, twoFactorMethod: "Email", sessions: [{ device: "iPad Air 13\" · Safari", location: "Istanbul, TR", current: true }, { device: "MacBook Pro · Chrome", location: "Istanbul, TR", current: false }] },
+  "EMP-004": { lastLogin: "1 hour ago", device: "MacBook Air · Chrome", location: "Istanbul, TR", lastLoginDaysAgo: 0, twoFactorEnabled: true, twoFactorMethod: "Email", sessions: [{ device: "MacBook Air · Chrome", location: "Istanbul, TR", current: true }] },
+  // Deliberate demo anomaly: 2FA never set up — Overview should flag this row amber.
+  "EMP-005": { lastLogin: "30 min ago", device: "iPhone 15 · Safari", location: "Istanbul, TR", lastLoginDaysAgo: 0, twoFactorEnabled: false, sessions: [{ device: "iPhone 15 · Safari", location: "Istanbul, TR", current: true }] },
+  // Deliberate demo anomaly: on leave and hasn't logged in for 45 days.
+  "EMP-006": { lastLogin: "45 days ago", device: "MacBook Pro · Chrome", location: "Istanbul, TR", lastLoginDaysAgo: 45, twoFactorEnabled: true, twoFactorMethod: "Email", sessions: [] },
+  "EMP-007": { lastLogin: "45 min ago", device: "iPad Air 13\" · Safari", location: "Istanbul, TR", lastLoginDaysAgo: 0, twoFactorEnabled: true, twoFactorMethod: "Email", sessions: [{ device: "iPad Air 13\" · Safari", location: "Istanbul, TR", current: true }] },
+  "EMP-008": { lastLogin: "1 hour ago", device: "iPad Air 13\" · Safari", location: "Istanbul, TR", lastLoginDaysAgo: 0, twoFactorEnabled: true, twoFactorMethod: "Email", sessions: [{ device: "iPad Air 13\" · Safari", location: "Istanbul, TR", current: true }] },
+  "EMP-009": { lastLogin: "Yesterday", device: "iPad Air 13\" · Safari", location: "Istanbul, TR", lastLoginDaysAgo: 1, twoFactorEnabled: true, twoFactorMethod: "Email", sessions: [{ device: "iPad Air 13\" · Safari", location: "Istanbul, TR", current: true }] },
+  "EMP-010": { lastLogin: "20 min ago", device: "Front Desk iPad · Safari", location: "Istanbul, TR", lastLoginDaysAgo: 0, twoFactorEnabled: true, twoFactorMethod: "Email", sessions: [{ device: "Front Desk iPad · Safari", location: "Istanbul, TR", current: true }] },
+  "EMP-011": { lastLogin: "1 hour ago", device: "Front Desk iPad · Safari", location: "Istanbul, TR", lastLoginDaysAgo: 0, twoFactorEnabled: true, twoFactorMethod: "Email", sessions: [{ device: "Front Desk iPad · Safari", location: "Istanbul, TR", current: true }] },
+  "EMP-012": { lastLogin: "14 days ago", device: "Front Desk iPad · Safari", location: "Istanbul, TR", lastLoginDaysAgo: 14, twoFactorEnabled: false, sessions: [] },
+  "EMP-013": { lastLogin: "Never · Not activated", device: "—", location: "—", lastLoginDaysAgo: 9999, twoFactorEnabled: false, sessions: [] },
+  "EMP-014": { lastLogin: "Never · Not activated", device: "—", location: "—", lastLoginDaysAgo: 9999, twoFactorEnabled: false, sessions: [] },
+};
+
+export function getSecurity(id: string): StaffSecurity {
+  return STAFF_SECURITY[id] ?? DEFAULT_SECURITY;
+}
+
+// --- Overview tab: stat tiles (operational snapshot) — Clinician/Nurse only.
+// `resultsAwaiting` (Clinician) and `stepsCompletedToday` (Nurse) are
+// mutually exclusive: each role only ever has one of the two set.
+export type OperationalSnapshot = {
+  activeJourneys: number;
+  upcoming7Days: number;
+  resultsAwaiting?: number;
+  stepsCompletedToday?: number;
+};
+
+export const OPERATIONAL_SNAPSHOT: Record<string, OperationalSnapshot> = {
+  "EMP-003": { activeJourneys: 6, upcoming7Days: 8, resultsAwaiting: 3 },
+  "EMP-004": { activeJourneys: 4, upcoming7Days: 6, resultsAwaiting: 0 },
+  "EMP-005": { activeJourneys: 5, upcoming7Days: 7, resultsAwaiting: 2 },
+  "EMP-006": { activeJourneys: 2, upcoming7Days: 0, resultsAwaiting: 1 },
+  "EMP-007": { activeJourneys: 5, upcoming7Days: 9, stepsCompletedToday: 14 },
+  "EMP-008": { activeJourneys: 4, upcoming7Days: 7, stepsCompletedToday: 11 },
+  "EMP-009": { activeJourneys: 3, upcoming7Days: 5, stepsCompletedToday: 9 },
+  "EMP-013": { activeJourneys: 0, upcoming7Days: 0, stepsCompletedToday: 0 },
+};
+
+export function getOperationalSnapshot(id: string): OperationalSnapshot | undefined {
+  return OPERATIONAL_SNAPSHOT[id];
+}
+
+// --- Overview tab: This Month card, Activity sub-section — Clinician only.
+// (Nurses' clinical work isn't modelled as consultations/reports in this app
+// — see journeyEngine.ts — so the Activity sub-section is Clinician-specific;
+// Nurses' "This Month" card shows Attendance only.)
+export type MonthlyActivity = {
+  month: string;
+  appointmentsCompleted: number;
+  inPersonConsults: number;
+  videoConsults: number;
+  reportsSignedOff: number;
+  avgConsultMinutes: number;
+};
+
+export const MONTHLY_ACTIVITY: Record<string, MonthlyActivity> = {
+  "EMP-003": { month: "Jul 2026", appointmentsCompleted: 32, inPersonConsults: 18, videoConsults: 14, reportsSignedOff: 28, avgConsultMinutes: 42 },
+  "EMP-004": { month: "Jul 2026", appointmentsCompleted: 24, inPersonConsults: 16, videoConsults: 8, reportsSignedOff: 20, avgConsultMinutes: 38 },
+  "EMP-005": { month: "Jul 2026", appointmentsCompleted: 27, inPersonConsults: 19, videoConsults: 8, reportsSignedOff: 22, avgConsultMinutes: 40 },
+  "EMP-006": { month: "Jul 2026", appointmentsCompleted: 10, inPersonConsults: 8, videoConsults: 2, reportsSignedOff: 9, avgConsultMinutes: 35 },
+};
+
+export function getMonthlyActivity(id: string): MonthlyActivity | undefined {
+  return MONTHLY_ACTIVITY[id];
+}
+
+// --- Overview tab: This Month card, Attendance sub-section — every role.
+// NOTE on data provenance: this is a genuine monthly aggregate, distinct from
+// Timesheet.tsx's per-week daily records (which only model one real week,
+// 1–7 Jul 2026) — the two aren't literally the same figure at different
+// granularities, so they aren't derived from one another. This map is Overview's
+// own single source for "this month" attendance; nothing else in the app
+// currently computes a monthly figure to drift against.
+export type MonthlyAttendance = {
+  month: string;
+  daysPresent: number;
+  daysScheduled: number;
+  daysOnLeave: number;
+  attendanceRate: number;
+  overtimeHours: number;
+};
+
+const DEFAULT_ATTENDANCE: MonthlyAttendance = { month: "Jul 2026", daysPresent: 0, daysScheduled: 0, daysOnLeave: 0, attendanceRate: 0, overtimeHours: 0 };
+
+export const MONTHLY_ATTENDANCE: Record<string, MonthlyAttendance> = {
+  "EMP-001": { month: "Jul 2026", daysPresent: 22, daysScheduled: 22, daysOnLeave: 0, attendanceRate: 100, overtimeHours: 0 },
+  "EMP-003": { month: "Jul 2026", daysPresent: 20, daysScheduled: 22, daysOnLeave: 2, attendanceRate: 91, overtimeHours: 4.5 },
+  "EMP-004": { month: "Jul 2026", daysPresent: 19, daysScheduled: 22, daysOnLeave: 1, attendanceRate: 86, overtimeHours: 2 },
+  "EMP-005": { month: "Jul 2026", daysPresent: 21, daysScheduled: 22, daysOnLeave: 0, attendanceRate: 95, overtimeHours: 3 },
+  "EMP-006": { month: "Jul 2026", daysPresent: 12, daysScheduled: 22, daysOnLeave: 8, attendanceRate: 55, overtimeHours: 0 },
+  "EMP-007": { month: "Jul 2026", daysPresent: 22, daysScheduled: 22, daysOnLeave: 0, attendanceRate: 100, overtimeHours: 1.5 },
+  "EMP-008": { month: "Jul 2026", daysPresent: 20, daysScheduled: 21, daysOnLeave: 1, attendanceRate: 95, overtimeHours: 0 },
+  "EMP-009": { month: "Jul 2026", daysPresent: 19, daysScheduled: 22, daysOnLeave: 1, attendanceRate: 86, overtimeHours: 0 },
+  "EMP-010": { month: "Jul 2026", daysPresent: 22, daysScheduled: 22, daysOnLeave: 0, attendanceRate: 100, overtimeHours: 10 },
+  "EMP-011": { month: "Jul 2026", daysPresent: 22, daysScheduled: 22, daysOnLeave: 0, attendanceRate: 100, overtimeHours: 6 },
+  "EMP-012": { month: "Jul 2026", daysPresent: 14, daysScheduled: 20, daysOnLeave: 0, attendanceRate: 70, overtimeHours: 0 },
+};
+
+export function getMonthlyAttendance(id: string): MonthlyAttendance {
+  return MONTHLY_ATTENDANCE[id] ?? DEFAULT_ATTENDANCE;
+}

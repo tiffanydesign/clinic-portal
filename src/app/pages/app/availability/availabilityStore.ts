@@ -59,9 +59,14 @@ function initialState(): State {
       { id: "LV-3", dateFrom: "10 Aug 2026", dateTo: "12 Aug 2026", duration: "Full Day", reason: "Conference / Training", status: "Pending", conflicts: [], submittedAt: "3d ago" },
     ],
     // Read-only Blocked Time inside the demo week (Wed 1 Jul + Fri 3 Jul 2026).
+    // BT-2 sits in Dr. Reis's real 14:00–15:00 gap today (between the video
+    // consultations ending at 14:00 and her 15:00 in-person appointment) —
+    // must never coincide with an actual booked appointment/video slot from
+    // dashboardData.ts's APPTS for EMP-003, or "My Availability" would show
+    // her simultaneously blocked and in a live session.
     blockedTime: [
       { id: "BT-1", date: "1 Jul 2026", startMin: 15 * 60, durationMin: 60, reason: "Team meeting" },
-      { id: "BT-2", date: "3 Jul 2026", startMin: 13 * 60, durationMin: 60, reason: "Admin & report notes" },
+      { id: "BT-2", date: "3 Jul 2026", startMin: 14 * 60, durationMin: 60, reason: "Admin & report notes" },
     ],
     decisions: [
       { id: "DEC-1", kind: "Date Override", summary: "8 Jul: 9:00am–1:00pm", result: "Approved", by: ADMIN_NAME, at: "3 Jul" },

@@ -1,97 +1,221 @@
 import React, { useState } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
-import { getStaff } from "./staffData";
+import {
+  getStaff, getProfileDetails, getSecurity, getOperationalSnapshot, getMonthlyActivity, getMonthlyAttendance,
+  CURRENT_ADMIN_ID, statusPillClass,
+} from "./staffData";
+import { logAudit, AUDIT_ACTOR } from "../clinic-settings/auditStore";
 
-function InfoRow({ label, value, highlight = false }: { label: string; value: React.ReactNode; highlight?: boolean }) {
+function InfoRow({ label, value, amber = false }: { label: string; value: React.ReactNode; amber?: boolean }) {
   return (
     <div className="flex justify-between items-baseline py-2.5 border-b border-gray-100 last:border-0">
       <span className="text-sm text-gray-500">{label}</span>
-      <span className={`text-sm font-medium text-right ${highlight ? "text-orange-600 font-bold" : "text-gray-800"}`}>{value}</span>
+      <span className={`text-sm font-medium text-right ${amber ? "text-amber-600 font-bold" : "text-gray-800"}`}>{value}</span>
     </div>
   );
 }
 
-function SectionCard({ title, children, footer }: { title: string; children: React.ReactNode; footer?: React.ReactNode }) {
+function SectionCard({
+  title, action, children, footer,
+}: {
+  title: string; action?: React.ReactNode; children: React.ReactNode; footer?: React.ReactNode;
+}) {
   return (
     <div className="bg-white border border-gray-300 rounded-xl p-6 shadow-sm">
-      <h3 className="text-base font-bold text-gray-800 mb-3">{title}</h3>
+      <div className="flex justify-between items-center mb-3">
+        <h3 className="text-base font-bold text-gray-800">{title}</h3>
+        {action}
+      </div>
       {children}
       {footer && <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">{footer}</div>}
     </div>
   );
 }
 
+// A stat tile is only a button when it has somewhere real to go — a dashed-out
+// "—" for a non-clinical role stays inert rather than pretending to drill down.
+function StatTile({
+  label, value, amber, onClick,
+}: {
+  label: string; value: React.ReactNode; amber?: boolean; onClick?: () => void;
+}) {
+  const Tag = onClick ? "button" : "div";
+  return (
+    <Tag
+      onClick={onClick}
+      className={`min-h-[44px] text-left bg-white border border-gray-300 rounded-xl px-5 py-4 shadow-sm transition-colors ${onClick ? "hover:border-slate-400 hover:shadow-md cursor-pointer" : ""}`}
+    >
+      <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">{label}</div>
+      <div className={`text-2xl font-semibold ${amber ? "text-amber-600" : "text-gray-800"} flex items-center gap-2`}>
+        {value}
+        {amber && <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
+      </div>
+    </Tag>
+  );
+}
+
+function Field({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div>
+      <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">{label}</div>
+      <div className="text-sm font-medium text-gray-800">{value}</div>
+    </div>
+  );
+}
+
+function ConfirmDialog({
+  title, message, confirmLabel, onClose, onConfirm,
+}: {
+  title: string; message: string; confirmLabel: string; onClose: () => void; onConfirm: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50" onClick={onClose}>
+      <div
+        className="bg-white rounded-xl shadow-2xl w-full max-w-md flex flex-col overflow-hidden animate-in fade-in zoom-in-95"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <h2 className="text-lg font-bold text-gray-800">{title}</h2>
+        </div>
+        <div className="p-6">
+          <p className="text-sm text-gray-600">{message}</p>
+        </div>
+        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
+          <button onClick={onClose} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100 transition-colors">Cancel</button>
+          <button onClick={() => { onConfirm(); onClose(); }} className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm font-bold transition-colors shadow-sm">{confirmLabel}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function StaffOverviewTab() {
   const { staffId } = useParams();
+  const navigate = useNavigate();
   const staff = getStaff(staffId);
   const [accountActive, setAccountActive] = useState(staff?.status !== "Inactive");
   const [showSessions, setShowSessions] = useState(false);
+  const [confirming, setConfirming] = useState(false);
 
   if (!staff) return null;
-  const isClinical = staff.role === "Clinician" || staff.role === "Nurse";
+
+  const isClinician = staff.role === "Clinician";
+  const isNurse = staff.role === "Nurse";
+  const isClinical = isClinician || isNurse;
+  const isSelf = staff.id === CURRENT_ADMIN_ID;
+
+  const profile = getProfileDetails(staff.id);
+  const security = getSecurity(staff.id);
+  const snapshot = isClinical ? getOperationalSnapshot(staff.id) : undefined;
+  const activity = isClinician ? getMonthlyActivity(staff.id) : undefined;
+  const attendance = getMonthlyAttendance(staff.id);
+
+  const staleLogin = security.lastLoginDaysAgo > 30;
+  const no2FA = !security.twoFactorEnabled;
+
+  // Patients' clinician/nurse columns store the assignee's display name, not
+  // their Employee ID (see patientsData.ts), so the filter param is name-based
+  // here — unlike Schedule's clinician param below, which matches doctorId.
+  const goPatients = () => navigate(`/patients?${isNurse ? "nurse" : "clinician"}=${encodeURIComponent(staff.name)}`);
+  const goSchedule = () => navigate(isClinician ? `/calendar/schedule?clinician=${staff.id}` : "/calendar/schedule");
+
+  const handleToggleAccount = () => {
+    const next = !accountActive;
+    setAccountActive(next);
+    logAudit({
+      actor: AUDIT_ACTOR, entityType: "staff", entityId: staff.id,
+      action: next ? "Reactivated account" : "Deactivated account", detail: staff.name,
+    });
+    toast[next ? "success" : "error"](`${staff.name}'s account ${next ? "reactivated" : "deactivated"}.`);
+  };
 
   return (
-    <div className="p-8 grid grid-cols-[55fr_45fr] gap-6 items-start">
-      {/* Left column — personal & account */}
-      <div className="space-y-6">
+    <div className="p-8 space-y-6">
+      {/* Stat Tiles — the page's first-paint answer to "how loaded is this
+          person, and is anything backing up". Results Awaiting is the only
+          number on this whole page allowed to turn amber. */}
+      <div className="grid grid-cols-4 gap-4">
+        <StatTile label="Assigned Patients" value={isClinical ? staff.patients : "—"} onClick={isClinical ? goPatients : undefined} />
+        <StatTile label="Active Journeys" value={isClinical ? (snapshot?.activeJourneys ?? 0) : "—"} onClick={isClinical ? goPatients : undefined} />
+        <StatTile label="Upcoming 7 Days" value={isClinical ? (snapshot?.upcoming7Days ?? 0) : "—"} onClick={isClinical ? goSchedule : undefined} />
+        {isNurse ? (
+          <StatTile label="Steps Completed Today" value={snapshot?.stepsCompletedToday ?? 0} />
+        ) : (
+          <StatTile
+            label="Results Awaiting"
+            value={isClinician ? (snapshot?.resultsAwaiting ?? 0) : "—"}
+            amber={isClinician && (snapshot?.resultsAwaiting ?? 0) > 0}
+            onClick={isClinician ? goPatients : undefined}
+          />
+        )}
+      </div>
+
+      <div className="grid grid-cols-[55fr_45fr] gap-6 items-start">
+        {/* This Month — Activity (Clinician only) + Attendance (everyone) */}
         <SectionCard
-          title="Personal Information"
+          title="This Month"
+          action={<span className="text-xs text-gray-400 font-medium">{attendance.month}</span>}
           footer={
-            <button onClick={() => toast("Edit personal information (demo)")} className="px-4 py-1.5 border border-gray-300 rounded text-xs font-bold text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-              Edit
-            </button>
+            <>
+              <Link to={`/staff/${staff.id}/workload`} className="text-xs font-bold text-slate-600 hover:underline">View full workload →</Link>
+              <Link to="/timesheet" className="text-xs font-bold text-slate-600 hover:underline">View timesheet →</Link>
+            </>
           }
         >
-          <InfoRow label="Full Name" value={staff.name} />
-          <InfoRow label="Email" value={staff.email} />
-          <InfoRow label="Phone" value={staff.phone} />
-          <InfoRow label="Date of Birth" value="15 May 1988" />
-          <InfoRow label="Nationality" value="Portuguese" />
-          <InfoRow label="Preferred Language" value="English" />
-        </SectionCard>
-
-        <SectionCard title="Professional Information">
-          <InfoRow label="Role" value={staff.role} />
-          {staff.role === "Clinician" && <InfoRow label="Specialisation" value={staff.specialisation ?? "—"} />}
-          {staff.role === "Clinician" && <InfoRow label="License Number" value={staff.licenseNumber ?? "—"} />}
-          <InfoRow label="Employee ID" value={staff.id} />
-          <InfoRow label="Start Date" value={staff.joined} />
-          <InfoRow label="Contract Type" value="Full-time" />
-        </SectionCard>
-
-        <SectionCard title="Account Status">
-          <div className="flex justify-between items-center py-2.5 border-b border-gray-100">
-            <span className="text-sm text-gray-500">Account Status</span>
-            <div className="flex items-center">
-              <span className={`text-sm font-bold mr-3 ${accountActive ? "text-emerald-600" : "text-gray-400"}`}>{accountActive ? "Active" : "Inactive"}</span>
-              <button
-                onClick={() => { setAccountActive(!accountActive); toast(accountActive ? "Account deactivated (demo)" : "Account activated (demo)"); }}
-                className={`w-10 h-5 rounded-full relative transition-colors ${accountActive ? "bg-emerald-500" : "bg-gray-300"}`}
-                aria-label="Toggle account status"
-              >
-                <span className={`w-3.5 h-3.5 bg-white rounded-full absolute top-[3px] transition-all ${accountActive ? "left-[22px]" : "left-[3px]"}`} />
-              </button>
+          {activity && (
+            <div className="mb-4 pb-4 border-b border-gray-100">
+              <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Activity</div>
+              <InfoRow label="Appointments Completed" value={activity.appointmentsCompleted} />
+              <InfoRow label="Consultations (in-person · video)" value={`${activity.inPersonConsults} · ${activity.videoConsults}`} />
+              <InfoRow label="Reports Signed Off" value={activity.reportsSignedOff} />
+              <InfoRow label="Average Consultation Duration" value={`${activity.avgConsultMinutes} min`} />
+            </div>
+          )}
+          <div>
+            <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1">Attendance</div>
+            <div className="py-2.5 border-b border-gray-100 text-sm text-gray-800 font-medium">
+              {attendance.daysPresent} of {attendance.daysScheduled} days
+              <span className="text-gray-400 font-normal"> · On Leave {attendance.daysOnLeave} · Attendance {attendance.attendanceRate}% · Overtime {attendance.overtimeHours}h</span>
             </div>
           </div>
-          <InfoRow label="Last Login" value={<>2 hours ago · iPad Air 13&quot; · Safari · Istanbul, TR</>} />
-          <InfoRow label="2FA Status" value="Enabled via email" />
+        </SectionCard>
+
+        {/* Account & Security */}
+        <SectionCard
+          title="Account & Security"
+          footer={
+            !isSelf && (
+              <button onClick={() => setConfirming(true)} className="text-xs font-bold text-red-600 hover:underline">
+                {accountActive ? "Deactivate account" : "Reactivate account"}
+              </button>
+            )
+          }
+        >
+          <div className="flex justify-between items-baseline py-2.5 border-b border-gray-100">
+            <span className="text-sm text-gray-500">Status</span>
+            <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border ${statusPillClass(accountActive ? "Active" : "Inactive")}`}>
+              {accountActive ? "Active" : "Inactive"}
+            </span>
+          </div>
+          <InfoRow label="Last Login" value={`${security.lastLogin} · ${security.device} · ${security.location}`} amber={staleLogin} />
+          <InfoRow label="2FA Status" value={security.twoFactorEnabled ? `Enabled via ${security.twoFactorMethod}` : "Not enabled"} amber={no2FA} />
           <div className="flex justify-between items-baseline py-2.5">
             <span className="text-sm text-gray-500">Active Sessions</span>
             <span className="text-sm font-medium text-gray-800">
-              2 devices · <button onClick={() => setShowSessions(!showSessions)} className="text-slate-600 font-bold hover:underline">View sessions</button>
+              {security.sessions.length} device{security.sessions.length === 1 ? "" : "s"} ·{" "}
+              <button onClick={() => setShowSessions(!showSessions)} className="text-slate-600 font-bold hover:underline">View sessions</button>
             </span>
           </div>
           {showSessions && (
             <div className="mt-2 space-y-2">
-              {[
-                { device: "iPad Air 13” · Safari", loc: "Istanbul, TR · Current session", current: true },
-                { device: "MacBook Pro · Chrome", loc: "Istanbul, TR · Last seen 1 day ago", current: false },
-              ].map((s) => (
+              {security.sessions.length === 0 ? (
+                <div className="text-sm text-gray-400 italic px-1">No active sessions</div>
+              ) : security.sessions.map((s) => (
                 <div key={s.device} className="flex justify-between items-center bg-gray-50 border border-gray-200 rounded-lg px-4 py-2.5">
                   <div>
                     <div className="text-sm font-medium text-gray-800">{s.device}</div>
-                    <div className="text-xs text-gray-500">{s.loc}</div>
+                    <div className="text-xs text-gray-500">{s.location}</div>
                   </div>
                   {s.current ? (
                     <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">This device</span>
@@ -105,49 +229,38 @@ export function StaffOverviewTab() {
         </SectionCard>
       </div>
 
-      {/* Right column — operational snapshot (read-only) */}
-      <div className="space-y-6">
-        <SectionCard
-          title="Assignment Summary"
-          footer={<Link to="/patients" className="text-xs font-bold text-slate-600 hover:underline">View Patients →</Link>}
-        >
-          <InfoRow label="Assigned Patients" value={isClinical ? staff.patients : "—"} />
-          <InfoRow label="Active Journeys" value={isClinical ? 6 : "—"} />
-          <InfoRow label="Upcoming Appointments (7 days)" value={isClinical ? 8 : "—"} />
-          <InfoRow label="Results Awaiting Review" value={isClinical ? 3 : "—"} highlight={isClinical} />
-        </SectionCard>
+      {/* Profile Details — sinks to the bottom; Role and Employee ID live only
+          in the header above, so they don't repeat here. */}
+      <SectionCard
+        title="Profile Details"
+        action={<button onClick={() => toast("Edit profile details (demo)")} className="px-3 py-1.5 border border-gray-300 rounded text-xs font-bold text-gray-700 bg-white hover:bg-gray-50 transition-colors">Edit</button>}
+      >
+        <div className="grid grid-cols-3 gap-x-6 gap-y-4">
+          <Field label="Email" value={staff.email} />
+          <Field label="Phone" value={staff.phone} />
+          <Field label="Date of Birth" value={profile.dob} />
+          <Field label="Nationality" value={profile.nationality} />
+          <Field label="Preferred Language" value={profile.preferredLanguage} />
+          <Field label="Contract Type" value={profile.contractType} />
+          {isClinician && <Field label="Specialisation" value={staff.specialisation ?? "—"} />}
+          {isClinician && <Field label="License Number" value={staff.licenseNumber ?? "—"} />}
+          <Field label="Start Date" value={staff.joined} />
+        </div>
+      </SectionCard>
 
-        <SectionCard
-          title="Monthly Activity"
-          footer={
-            <>
-              <span className="text-xs text-gray-400 font-medium">Jul 2026</span>
-              <button onClick={() => toast("Full report (demo)")} className="text-xs font-bold text-slate-600 hover:underline">View full report →</button>
-            </>
+      {confirming && (
+        <ConfirmDialog
+          title={accountActive ? "Deactivate account?" : "Reactivate account?"}
+          message={
+            accountActive
+              ? `${staff.name} will lose access immediately. Future appointments remain assigned to them until reassigned.`
+              : `${staff.name} will regain access immediately.`
           }
-        >
-          <InfoRow label="Appointments Completed" value={32} />
-          <InfoRow label="Consultations (in-person / video)" value="18 / 14" />
-          <InfoRow label="Reports Signed Off" value={28} />
-          <InfoRow label="Average Consultation Duration" value="42 min" />
-        </SectionCard>
-
-        <SectionCard
-          title="Attendance This Month"
-          footer={
-            <>
-              <span className="text-xs text-gray-400 font-medium">Jul 2026</span>
-              <Link to="/timesheet" className="text-xs font-bold text-slate-600 hover:underline">View timesheet →</Link>
-            </>
-          }
-        >
-          <InfoRow label="Days Scheduled" value={22} />
-          <InfoRow label="Days Present" value={20} />
-          <InfoRow label="Days On Leave" value={2} />
-          <InfoRow label="Attendance Rate" value="91%" />
-          <InfoRow label="Overtime Hours" value="4.5h" />
-        </SectionCard>
-      </div>
+          confirmLabel={accountActive ? "Deactivate" : "Reactivate"}
+          onClose={() => setConfirming(false)}
+          onConfirm={handleToggleAccount}
+        />
+      )}
     </div>
   );
 }

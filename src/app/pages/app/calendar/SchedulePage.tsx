@@ -42,7 +42,11 @@ export function SchedulePage() {
   const [view, setView] = useState<View>("day");
   const [mode, setMode] = useState<Mode>("calendar");
   const [grouping, setGrouping] = useState<Grouping>(searchParams.get("grouping") === "room" ? "room" : "staff");
-  const [clinicianFilter, setClinicianFilter] = useState<Set<string>>(new Set());
+  // ?clinician=<doctorId> (see the Staff Overview page's "Upcoming 7 Days"
+  // stat tile) pre-selects that one clinician, same shape as the room param above.
+  const [clinicianFilter, setClinicianFilter] = useState<Set<string>>(
+    searchParams.get("clinician") ? new Set([searchParams.get("clinician")!]) : new Set()
+  );
   const [room, setRoom] = useState(searchParams.get("room") ?? "");
   const [type, setType] = useState("");
   const [overlay, setOverlay] = useState(false);

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation, useNavigate, useParams, Outlet } from "react-router";
 import { ArrowLeft, MoreHorizontal, Pencil, Camera } from "lucide-react";
 import { toast } from "sonner";
-import { getStaff, rolePillClass, statusPillClass, CURRENT_ADMIN_ID } from "./staffData";
+import { getStaff, rolePillClass, statusPillClass, getProfileDetails, CURRENT_ADMIN_ID } from "./staffData";
 
 // Staff Details shell: fixed identity header + horizontal tab nav.
 // Tab content renders below via children / Outlet.
@@ -23,6 +23,7 @@ export function StaffDetailLayout({ children }: { children?: React.ReactNode }) 
     );
   }
 
+  const profile = getProfileDetails(staff.id);
   const isSelf = staff.id === CURRENT_ADMIN_ID;
   const showAvailability = staff.role === "Clinician" || staff.role === "Nurse";
 
@@ -61,7 +62,23 @@ export function StaffDetailLayout({ children }: { children?: React.ReactNode }) 
                 <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border ${rolePillClass(staff.role)}`}>{staff.role}</span>
                 <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border ${statusPillClass(staff.status)}`}>{staff.status}</span>
               </div>
-              <div className="text-sm text-gray-400 font-medium mt-1">{staff.id}</div>
+              {/* Quick facts: the fields Admin looks up most — visible on
+                  first paint, no scrolling to the Profile Details card below.
+                  Employee ID appears here and ONLY here on the page. */}
+              <div className="text-[13px] text-gray-500 font-medium mt-1 flex flex-wrap items-center gap-x-1.5">
+                {[
+                  staff.specialisation,
+                  profile.contractType,
+                  `Joined ${staff.joined}`,
+                  staff.id,
+                  staff.phone,
+                ].filter(Boolean).map((fact, i, arr) => (
+                  <React.Fragment key={i}>
+                    <span>{fact}</span>
+                    {i < arr.length - 1 && <span className="text-gray-300">·</span>}
+                  </React.Fragment>
+                ))}
+              </div>
             </div>
           </div>
 

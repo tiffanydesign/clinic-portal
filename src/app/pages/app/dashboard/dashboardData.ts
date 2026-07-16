@@ -134,6 +134,15 @@ const NO_FORMS_ISSUE = [
   { name: "Data Privacy Notice", status: "Signed" as FormStatus },
 ];
 
+// Invariant: no single doctorId, nurse, or room may have two appointments
+// whose [startMin, startMin+durationMin) ranges overlap — every calendar
+// surface (Admin/Reception's room & clinician grid, the Nurse/Clinician
+// dashboards' own single-column timelines) assumes a resource is never in
+// two places at once. During the 09:30–12:00 peak, three doctors are each
+// mid-session at once, which genuinely needs three nurses to cover without
+// a clash — hence three nurses (Berna Koç, Aylin Demir, Selin Yılmaz) rather
+// than two. When adding or reshuffling an appointment, re-check this per
+// doctorId/nurse/room before assuming a slot is free.
 export const APPTS: Appt[] = [
   {
     id: "A-01",
@@ -159,7 +168,7 @@ export const APPTS: Appt[] = [
     id: "A-03",
     patient: P("PH-2026-0063"),
     type: "Sample Collection", isVideo: false, startMin: 510, durationMin: 75, timeLabel: "08:30 – 09:45",
-    doctorId: "EMP-004", doctor: "Dr. Emre Yalçın", nurse: "Berna Koç", room: "Lab 1",
+    doctorId: "EMP-004", doctor: "Dr. Emre Yalçın", nurse: "Selin Yılmaz", room: "Lab 1",
     status: "Completed", consent: "Signed", payment: "Paid", amount: "₺900", balance: "₺0",
     checkInTime: "08:10", currentStep: 11, forms: NO_FORMS_ISSUE,
     prep: { sample: "Collected", scan: "Completed" }, previousVisit: "20 Apr 2026",
@@ -168,7 +177,7 @@ export const APPTS: Appt[] = [
     id: "A-04",
     patient: P("PH-2026-0051"),
     type: "Body Scan", isVideo: false, startMin: 570, durationMin: 90, timeLabel: "09:30 – 11:00",
-    doctorId: "EMP-003", doctor: "Dr. Ebru Reis", nurse: "Aylin Demir", room: "Scan B",
+    doctorId: "EMP-003", doctor: "Dr. Ebru Reis", nurse: "Berna Koç", room: "Scan B",
     status: "Arrived", consent: "Pending", payment: "Paid", amount: "₺4,800", balance: "₺0",
     arrivedTime: "08:58", waitMinutes: 16, currentStep: 0,
     forms: [
@@ -182,7 +191,7 @@ export const APPTS: Appt[] = [
     id: "A-05",
     patient: P("PH-2026-0038"),
     type: "Consultation (in-person)", isVideo: false, startMin: 585, durationMin: 60, timeLabel: "09:45 – 10:45",
-    doctorId: "EMP-004", doctor: "Dr. Emre Yalçın", nurse: "Berna Koç", room: "Room 1",
+    doctorId: "EMP-004", doctor: "Dr. Emre Yalçın", nurse: "Selin Yılmaz", room: "Room 1",
     status: "Arrived", consent: "Signed", payment: "Unpaid", amount: "₺2,400", balance: "₺2,400",
     arrivedTime: "08:55", waitMinutes: 19, currentStep: 2, forms: NO_FORMS_ISSUE,
     prep: { sample: "Pending", scan: "Completed" }, previousVisit: "12 Apr 2026",
@@ -196,10 +205,17 @@ export const APPTS: Appt[] = [
     arrivedTime: "09:05", waitMinutes: 9, currentStep: 2, forms: NO_FORMS_ISSUE,
     prep: { sample: "Collected", scan: "Completed" }, previousVisit: "30 Jun 2026", isWalkIn: true,
   },
+  // Video consultations (A-07, A-11, A-13) run ~60 min each, same as any
+  // other appointment type, and obey the same per-doctorId non-overlap
+  // invariant above — a video slot is still real time on that doctor's
+  // calendar, just without a physical room. Dr. Reis's (EMP-003) Blocked
+  // Time entry in availabilityStore.ts (BT-2, today 14:00–15:00) sits
+  // deliberately in her one real gap between these and her 15:00 in-person
+  // appointment — moving any of these three times must re-check that gap.
   {
     id: "A-07",
     patient: P("PH-2026-0044"),
-    type: "Consultation (video)", isVideo: true, startMin: 720, durationMin: 30, timeLabel: "12:00 – 12:30",
+    type: "Consultation (video)", isVideo: true, startMin: 720, durationMin: 60, timeLabel: "12:00 – 13:00",
     doctorId: "EMP-003", doctor: "Dr. Ebru Reis", room: "Video",
     // Booked, not "Checked In": her slot is hours away from the demo clock
     // (09:14) — a "Checked In" status here would mean she checked in before
@@ -221,7 +237,7 @@ export const APPTS: Appt[] = [
     id: "A-09",
     patient: P("PH-2026-0071"),
     type: "Sample Collection", isVideo: false, startMin: 645, durationMin: 75, timeLabel: "10:45 – 12:00",
-    doctorId: "EMP-004", doctor: "Dr. Emre Yalçın", nurse: "Berna Koç", room: "Lab 2",
+    doctorId: "EMP-004", doctor: "Dr. Emre Yalçın", nurse: "Selin Yılmaz", room: "Lab 2",
     status: "Checked In", consent: "Signed", payment: "Paid", amount: "₺900", balance: "₺0",
     // Check-in must fall on or before the demo clock (09:14) for "Checked
     // In" to be a fact that's already happened, regardless of how early
@@ -244,7 +260,7 @@ export const APPTS: Appt[] = [
   {
     id: "A-11",
     patient: P("PH-2026-0055"),
-    type: "Consultation (video)", isVideo: true, startMin: 720, durationMin: 30, timeLabel: "12:00 – 12:30",
+    type: "Consultation (video)", isVideo: true, startMin: 720, durationMin: 60, timeLabel: "12:00 – 13:00",
     doctorId: "EMP-004", doctor: "Dr. Emre Yalçın", room: "Video",
     status: "Booked", consent: "Signed", payment: "Paid", amount: "₺2,000", balance: "₺0",
     currentStep: 0, forms: NO_FORMS_ISSUE,
@@ -254,7 +270,7 @@ export const APPTS: Appt[] = [
     id: "A-12",
     patient: P("PH-2026-0105"),
     type: "Body Scan", isVideo: false, startMin: 720, durationMin: 90, timeLabel: "12:00 – 13:30",
-    doctorId: "EMP-005", doctor: "Dr. Kaan Öztürk", nurse: "Aylin Demir", room: "Scan B",
+    doctorId: "EMP-005", doctor: "Dr. Kaan Öztürk", nurse: "Berna Koç", room: "Scan B",
     status: "Booked", consent: "Pending", payment: "Unpaid", amount: "₺4,800", balance: "₺4,800",
     currentStep: 0,
     forms: [
@@ -266,7 +282,7 @@ export const APPTS: Appt[] = [
   {
     id: "A-13",
     patient: P("PH-2026-0042"),
-    type: "Follow-up", isVideo: true, startMin: 750, durationMin: 20, timeLabel: "12:30 – 12:50",
+    type: "Follow-up", isVideo: true, startMin: 780, durationMin: 60, timeLabel: "13:00 – 14:00",
     doctorId: "EMP-003", doctor: "Dr. Ebru Reis", room: "Video",
     status: "Booked", consent: "Signed", payment: "Paid", amount: "₺1,500", balance: "₺0",
     currentStep: 0, forms: NO_FORMS_ISSUE,
@@ -287,7 +303,7 @@ export const APPTS: Appt[] = [
     id: "A-15",
     patient: P("PH-2026-0101"),
     type: "Consultation (in-person)", isVideo: false, startMin: 900, durationMin: 45, timeLabel: "15:00 – 15:45",
-    doctorId: "EMP-003", doctor: "Dr. Ebru Reis", nurse: "Aylin Demir", room: "Room 2",
+    doctorId: "EMP-003", doctor: "Dr. Ebru Reis", nurse: "Berna Koç", room: "Room 2",
     // Neither gate cleared yet — exercises the Front Desk Queue's
     // both-red state, with Take Payment as her next step (payment-first).
     status: "Arrived", consent: "Pending", payment: "Unpaid", amount: "₺3,200", balance: "₺3,200",
@@ -311,7 +327,7 @@ export const APPTS: Appt[] = [
     id: "A-17",
     patient: P("PH-2026-0103"),
     type: "Consultation (in-person)", isVideo: false, startMin: 780, durationMin: 60, timeLabel: "13:00 – 14:00",
-    doctorId: "EMP-004", doctor: "Dr. Emre Yalçın", nurse: "Berna Koç", room: "Room 1",
+    doctorId: "EMP-004", doctor: "Dr. Emre Yalçın", nurse: "Aylin Demir", room: "Room 1",
     status: "Booked", consent: "Signed", payment: "Paid", amount: "₺2,400", balance: "₺0",
     currentStep: 0, forms: NO_FORMS_ISSUE,
     prep: { sample: "Pending", scan: "Completed" }, previousVisit: "22 Mar 2026",
@@ -426,7 +442,7 @@ export function blockHeightPx(durationMin: number, gapMin?: number, floorPx = 30
   const pxPerMin = HOUR_PX / 60;
   const natural = durationMin * pxPerMin;
   const ceiling = gapMin != null ? gapMin * pxPerMin : Infinity;
-  return Math.max(natural, Math.min(floorPx, ceiling)) - 2;
+  return Math.min(Math.max(natural, floorPx), ceiling) - 2;
 }
 
 // Minutes until the next item starts in the same column, for `blockHeightPx`.

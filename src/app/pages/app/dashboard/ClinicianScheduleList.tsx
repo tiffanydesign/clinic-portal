@@ -24,7 +24,7 @@ function StatusCell({ appt, isActive, hasActiveSession, onJoin }: {
 }) {
   if (isActive) {
     return (
-      <span className="text-xs font-bold text-orange-700 whitespace-nowrap">
+      <span className="text-[11px] font-bold text-orange-700 truncate block">
         In Clinic · <JourneyProgressChip appt={appt} className="!text-orange-700" />
       </span>
     );
@@ -66,18 +66,29 @@ function ScheduleRow({ appt, isActive, hasActiveSession, onOpen, onJoin }: {
   return (
     <div
       onClick={() => onOpen(appt.id)}
-      className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${isActive ? "bg-orange-50/60 hover:bg-orange-50" : "hover:bg-gray-50"}`}
+      className={`px-4 py-3 cursor-pointer transition-colors ${isActive ? "bg-orange-50/60 hover:bg-orange-50" : "hover:bg-gray-50"}`}
     >
-      <span className="text-xs font-bold text-gray-500 w-11 shrink-0 tabular-nums">{appt.timeLabel.slice(0, 5)}</span>
-      <span className={`w-2 h-2 rounded-full shrink-0 ${apptStatusDotClass(appt.status)}`} />
-      <div className={`min-w-0 flex-1 ${settled ? "opacity-60" : ""}`}>
-        <div className={`text-sm font-bold text-gray-800 truncate ${appt.status === "Completed" ? "line-through" : ""}`}>{appt.patient.name}</div>
-        <div className="text-xs text-gray-400 flex items-center gap-1 truncate">
-          {appt.isVideo ? <Video className="w-3 h-3 shrink-0" /> : <MapPin className="w-3 h-3 shrink-0" />}
-          {typeLabel(appt)}
+      <div className="flex items-center gap-3">
+        <span className="text-xs font-bold text-gray-500 w-11 shrink-0 tabular-nums">{appt.timeLabel.slice(0, 5)}</span>
+        <span className={`w-2 h-2 rounded-full shrink-0 ${apptStatusDotClass(appt.status)}`} />
+        <div className={`min-w-0 flex-1 ${settled ? "opacity-60" : ""}`}>
+          <div className={`text-[13px] font-bold text-gray-800 truncate ${appt.status === "Completed" ? "line-through" : ""}`}>{appt.patient.name}</div>
+          <div className="text-xs text-gray-400 flex items-center gap-1 truncate">
+            {appt.isVideo ? <Video className="w-3 h-3 shrink-0" /> : <MapPin className="w-3 h-3 shrink-0" />}
+            {typeLabel(appt)}
+          </div>
         </div>
+        {/* Non-active statuses are compact (pill / Join button) so they sit
+            fine at the row's end. The active-session chip's text length
+            varies with the journey's station name, so it gets its own line
+            below instead of fighting the name for the same row's width. */}
+        {!isActive && <StatusCell appt={appt} isActive={isActive} hasActiveSession={hasActiveSession} onJoin={onJoin} />}
       </div>
-      <StatusCell appt={appt} isActive={isActive} hasActiveSession={hasActiveSession} onJoin={onJoin} />
+      {isActive && (
+        <div className="pl-[76px] mt-1">
+          <StatusCell appt={appt} isActive={isActive} hasActiveSession={hasActiveSession} onJoin={onJoin} />
+        </div>
+      )}
     </div>
   );
 }
@@ -96,18 +107,19 @@ function NowDivider() {
 // appointment. Reads faster than a pixel timeline once there's no
 // lane-packing to visually parse, and it's the natural place for the
 // mutual-exclusion Join button per video row.
-function ScheduleListView({ appts, activeApptId, hasActiveSession, onOpen, onJoin }: {
+function ScheduleListView({ appts, activeApptId, hasActiveSession, onOpen, onJoin, scrollable }: {
   appts: Appt[];
   activeApptId?: string;
   hasActiveSession: boolean;
   onOpen: (id: string) => void;
   onJoin: (id: string) => void;
+  scrollable: boolean;
 }) {
   const sorted = [...appts].sort((a, b) => a.startMin - b.startMin);
   const nowDividerIndex = sorted.findIndex((a) => a.startMin > NOW_MINUTES);
 
   return (
-    <div className="flex-1 overflow-y-auto divide-y divide-gray-100">
+    <div className={`divide-y divide-gray-100 ${scrollable ? "flex-1 overflow-y-auto" : ""}`}>
       {sorted.map((appt, i) => (
         <React.Fragment key={appt.id}>
           {i === nowDividerIndex && <NowDivider />}
@@ -155,10 +167,11 @@ function CalendarBlock({ appt, gapMin, isActive, onOpen }: { appt: Appt; gapMin?
 // (that component is Admin/Reception's clinic-wide room/clinician grid);
 // with exactly one column there's nothing to lane-pack or group, so a
 // lighter dedicated view keeps this file self-contained.
-function ScheduleCalendarView({ appts, activeApptId, onOpen }: {
+function ScheduleCalendarView({ appts, activeApptId, onOpen, scrollable }: {
   appts: Appt[];
   activeApptId?: string;
   onOpen: (id: string) => void;
+  scrollable: boolean;
 }) {
   const hours = Array.from({ length: DAY_END_HOUR - DAY_START_HOUR + 1 }, (_, i) => DAY_START_HOUR + i);
   const gridHeight = (DAY_END_HOUR - DAY_START_HOUR) * HOUR_PX;
@@ -166,7 +179,7 @@ function ScheduleCalendarView({ appts, activeApptId, onOpen }: {
   const sorted = [...appts].sort((a, b) => a.startMin - b.startMin);
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className={scrollable ? "flex-1 overflow-y-auto" : ""}>
       <div className="flex" style={{ height: gridHeight }}>
         <div className="w-14 shrink-0 relative border-r border-gray-200 bg-gray-50/30">
           {hours.map((h, i) => i % 2 === 1 && (
@@ -222,37 +235,47 @@ function ViewToggle({ view, onChange }: { view: ScheduleView; onChange: (v: Sche
 // CalendarWidget for this role only. Defaults to the row-based list (time ·
 // status · patient · type reads faster than a pixel timeline day to day),
 // with a toggle to a single-column calendar view for whoever wants the
-// at-a-glance shape of the day instead.
-export function ClinicianScheduleList({ appts, activeApptId, hasActiveSession, onOpen, onJoin }: {
+// at-a-glance shape of the day instead. The whole header is the "open in
+// Calendar" affordance (no separate text-link button) — clicking anywhere
+// on the title row navigates through, same destination as before.
+// `scrollable` (default true, matching the Clinician Dashboard's own fixed-
+// height row) lets the Nurse Dashboard opt into showing the entire day
+// inline with no nested scrollbar, since its page itself is the only
+// scroll surface.
+export function ClinicianScheduleList({ appts, activeApptId, hasActiveSession, onOpen, onJoin, scrollable = true }: {
   appts: Appt[];
   activeApptId?: string;
   hasActiveSession: boolean;
   onOpen: (id: string) => void;
   onJoin: (id: string) => void;
+  scrollable?: boolean;
 }) {
   const navigate = useNavigate();
   const [view, setView] = useState<ScheduleView>("list");
 
   return (
-    <div className="border border-gray-200 rounded-xl shadow-sm bg-white flex flex-col flex-1 min-h-0">
-      <div className="border-b border-gray-200 bg-gray-50/70 px-4 py-2.5 flex items-start justify-between shrink-0 gap-3">
-        <h3 className="font-bold text-gray-800 text-sm shrink-0 py-1">
+    <div className={`border border-gray-200 rounded-xl shadow-sm bg-white flex flex-col ${scrollable ? "flex-1 min-h-0" : "shrink-0"}`}>
+      <div
+        onClick={() => navigate("/calendar/schedule")}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") navigate("/calendar/schedule"); }}
+        className="border-b border-gray-200 bg-gray-50/70 px-4 py-2.5 flex items-start justify-between shrink-0 gap-3 cursor-pointer hover:bg-gray-100/70 transition-colors"
+      >
+        <h3 className="font-bold text-gray-800 text-sm shrink-0 py-1 flex items-center gap-1">
           Today's Schedule <span className="text-gray-400 font-medium ml-1">{TODAY_SHORT}</span>
+          <ArrowRight className="w-3.5 h-3.5 text-gray-400 ml-0.5" />
         </h3>
-        <div className="flex flex-col items-end gap-1.5 shrink-0">
-          <button
-            onClick={() => navigate("/calendar/schedule")}
-            className="text-xs font-bold text-slate-600 hover:text-slate-800 flex items-center gap-1 transition-colors"
-          >
-            Open Calendar <ArrowRight className="w-3.5 h-3.5" />
-          </button>
+        {/* ViewToggle's own buttons stopPropagation so switching list/calendar
+            never triggers the header's navigate. */}
+        <div onClick={(e) => e.stopPropagation()} className="shrink-0">
           <ViewToggle view={view} onChange={setView} />
         </div>
       </div>
       {view === "list" ? (
-        <ScheduleListView appts={appts} activeApptId={activeApptId} hasActiveSession={hasActiveSession} onOpen={onOpen} onJoin={onJoin} />
+        <ScheduleListView appts={appts} activeApptId={activeApptId} hasActiveSession={hasActiveSession} onOpen={onOpen} onJoin={onJoin} scrollable={scrollable} />
       ) : (
-        <ScheduleCalendarView appts={appts} activeApptId={activeApptId} onOpen={onOpen} />
+        <ScheduleCalendarView appts={appts} activeApptId={activeApptId} onOpen={onOpen} scrollable={scrollable} />
       )}
     </div>
   );

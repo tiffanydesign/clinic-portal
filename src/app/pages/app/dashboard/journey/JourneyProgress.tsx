@@ -88,7 +88,10 @@ export function JourneyProgressStrip({ steps, current, isDone, caption, onOpen, 
 
       <div className="flex items-center gap-2 mt-1.5">
         <div className="flex-1 h-1 bg-gray-100 rounded-full overflow-hidden">
-          <div className="h-full bg-slate-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
+          {/* Same status colors as the text above it: emerald once done,
+              blue while a step is actively in progress — not a fixed gray
+              regardless of where the journey actually stands. */}
+          <div className={`h-full rounded-full transition-all ${isDone ? "bg-emerald-500" : "bg-blue-600"}`} style={{ width: `${pct}%` }} />
         </div>
         <span className="text-[11px] font-bold text-gray-400 shrink-0">{x} of {steps.length}</span>
       </div>

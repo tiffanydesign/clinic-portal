@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { UserPlus, CalendarPlus, ChevronDown, ChevronUp } from "lucide-react";
-import { toast } from "sonner";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { TODAY_LABEL, TODAY_SHORT, ROLE_GREETING } from "./dashboardData";
 import { AppointmentDrawer } from "./AppointmentDrawer";
 import { CalendarWidget } from "./CalendarWidget";
@@ -34,19 +33,6 @@ function ScheduleToggleButton({ collapsed, onToggle, invisible }: { collapsed: b
   );
 }
 
-function QuickActionButton({ label, icon, primary, onClick }: { label: string; icon: React.ReactNode; primary?: boolean; onClick: () => void }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-2.5 rounded text-sm font-bold transition-colors min-h-[44px] ${
-        primary ? "bg-slate-600 text-white hover:bg-slate-700" : "border border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
-      }`}
-    >
-      {icon} {label}
-    </button>
-  );
-}
-
 // Reads/writes the shared appointmentsStore rather than local overrides, so
 // a check-in here and a nurse checkout on the Nurse dashboard actually agree
 // with each other. Zone 2 (Today's Schedule) scrolls internally; Zone 3
@@ -60,8 +46,7 @@ export function ReceptionDashboardBody() {
   const [tab, setTab] = useState<QueueGroup>("needs-action");
   // Called unconditionally like Admin's DashboardPage — Reception now uses
   // the exact same KpiBar cards/config (KPI_CONFIG.Reception), just with its
-  // controls row kept separate from the greeting row since that row is
-  // already busy with the Register Patient / New Booking actions.
+  // controls row kept separate from the greeting row.
   const kpi = useKpiBar();
 
   const appt = useMemo(() => appts.find((a) => a.id === apptId), [appts, apptId]);
@@ -69,15 +54,10 @@ export function ReceptionDashboardBody() {
   return (
     <div className="h-full flex flex-col overflow-y-auto overflow-x-hidden bg-gray-50">
       {/* Header */}
-      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-4 flex items-center justify-between gap-4">
+      <div className="shrink-0 border-b border-gray-200 bg-white px-6 py-4">
         <div className="min-w-0">
           <span className="text-xl font-semibold text-gray-800">Good morning, {ROLE_GREETING.Reception}</span>
           <span className="text-sm text-gray-400 ml-2">· {TODAY_LABEL} · Istanbul Clinic</span>
-        </div>
-
-        <div className="flex items-center gap-2.5 shrink-0">
-          <QuickActionButton primary label="Register Patient" icon={<UserPlus className="w-4 h-4" />} onClick={() => navigate("/patients/new")} />
-          <QuickActionButton label="New Booking" icon={<CalendarPlus className="w-4 h-4" />} onClick={() => toast("New booking (demo)")} />
         </div>
       </div>
 

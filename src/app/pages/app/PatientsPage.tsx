@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { Search, ChevronDown, Download, Plus, MoreHorizontal, FileText, Phone, Mail, UserPlus, X, Filter, Check, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { useAppContext, Role } from "../../context/AppContext";
@@ -8,19 +8,28 @@ import { MOCK_PATIENTS, Patient } from "./patientsData";
 import { primaryApptForPatient } from "./dashboard/dashboardData";
 import { useAppointments } from "./dashboard/appointmentsStore";
 import { JourneyProgressChip } from "./dashboard/journey/JourneyProgress";
+import { MOCK_STAFF } from "./staff/staffData";
 
 export type { Patient };
 export { MOCK_PATIENTS };
+
+const CLINICIAN_NAME_OPTIONS = ["Assigned Clinician: All", ...MOCK_STAFF.filter((s) => s.role === "Clinician").map((s) => s.name)];
+const NURSE_NAME_OPTIONS = ["Assigned Nurse: All", ...MOCK_STAFF.filter((s) => s.role === "Nurse").map((s) => s.name)];
 
 export function PatientsPage() {
   const { role } = useAppContext();
   const navigate = useNavigate();
   const appts = useAppointments();
+  const [searchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [showNewPatientModal, setShowNewPatientModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState("Status: All");
-  const [clinicianFilter, setClinicianFilter] = useState("Assigned Clinician: All");
+  // Deep-link support (see the Staff Overview page's stat tiles): ?clinician=
+  // or ?nurse= (by display name — see patientsData.ts's Patient.clinician/
+  // .nurse fields) pre-selects that person in the matching filter dropdown.
+  const [clinicianFilter, setClinicianFilter] = useState(searchParams.get("clinician") ?? "Assigned Clinician: All");
+  const [nurseFilter, setNurseFilter] = useState(searchParams.get("nurse") ?? "Assigned Nurse: All");
   const [groupFilter, setGroupFilter] = useState("Group: All");
   const [consentFilter, setConsentFilter] = useState("Consent: All");
   const [paymentFilter, setPaymentFilter] = useState("Payment: All");
@@ -33,7 +42,11 @@ export function PatientsPage() {
   let patients = MOCK_PATIENTS;
   if (role === 'Clinician') patients = patients.filter(p => p.clinician === "Dr. Ebru Reis");
   if (role === 'Nurse') patients = patients.filter(p => p.nurse === "Berna Koç" && p.nextAppt?.includes("3 Jul"));
-  
+  if (role === 'Admin') {
+    if (clinicianFilter !== "Assigned Clinician: All") patients = patients.filter(p => p.clinician === clinicianFilter);
+    if (nurseFilter !== "Assigned Nurse: All") patients = patients.filter(p => p.nurse === nurseFilter);
+  }
+
   if (search) {
     patients = patients.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || p.patientId.toLowerCase().includes(search.toLowerCase()));
   }
@@ -93,7 +106,8 @@ export function PatientsPage() {
           <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, ID, email..." className="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded text-sm outline-none focus:border-slate-500 bg-white shadow-sm" />
         </div>
         <FilterSelect value={statusFilter} onChange={setStatusFilter} options={["Status: All", "Active", "Inactive", "New", "Pending Onboarding"]} />
-        <FilterSelect value={clinicianFilter} onChange={setClinicianFilter} options={["Assigned Clinician: All", "Dr. Ebru Reis", "Dr. Emre Yalçın"]} />
+        <FilterSelect value={clinicianFilter} onChange={setClinicianFilter} options={CLINICIAN_NAME_OPTIONS} />
+        <FilterSelect value={nurseFilter} onChange={setNurseFilter} options={NURSE_NAME_OPTIONS} />
         <FilterSelect value={groupFilter} onChange={setGroupFilter} options={["Group: All", "VIP", "Corporate", "Insurance", "Walk-in"]} />
       </div>
     );

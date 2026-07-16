@@ -1,11 +1,62 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
-import { Lock, X, Check, Settings2 } from "lucide-react";
+import {
+  Lock, X, Check, Settings2, CalendarClock, FileClock, UserCheck, Gauge, ScanLine, UserX,
+  UserPlus, Clock, Users, BellRing, Activity, TestTube, FileSignature, DoorOpen,
+  FileSearch, FileCheck2, Video, CalendarPlus,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useAppContext } from "../../../context/AppContext";
 import { KPI_CONFIG, Kpi, metricKindLabel } from "./kpiData";
 import { Sparkline, DeltaLine, AnimatedNumber, sentimentFor } from "./DashboardShared";
 import { TimeRange, useKpiRange, setKpiRange, RANGE_LABEL, RANGE_PILL } from "./kpiRangeStore";
+
+// A small semantic icon+color per KPI — not a status/trend indicator (the
+// sparkline/delta already own that), just "what kind of thing is this
+// number" at a glance, so the bar reads faster than label text alone. Colors
+// are the app's existing 5-color semantic set (emerald/amber/blue/red), never
+// a new palette. Anything not listed here (a KPI added later) falls back to
+// a neutral slate icon rather than breaking.
+const KPI_ICON: Record<string, { icon: React.ComponentType<{ className?: string }>; tone: "emerald" | "amber" | "blue" | "red" }> = {
+  "appts-today": { icon: CalendarClock, tone: "blue" },
+  "results-pending": { icon: FileClock, tone: "amber" },
+  "checked-in-now": { icon: UserCheck, tone: "emerald" },
+  "utilisation": { icon: Gauge, tone: "blue" },
+  "scans-today": { icon: ScanLine, tone: "blue" },
+  "no-show-rate": { icon: UserX, tone: "red" },
+  "new-registrations": { icon: UserPlus, tone: "emerald" },
+  "average-wait": { icon: Clock, tone: "amber" },
+  "my-patients-today": { icon: Users, tone: "blue" },
+  "awaiting-me": { icon: BellRing, tone: "amber" },
+  "in-journey-now": { icon: Activity, tone: "blue" },
+  "samples-to-collect": { icon: TestTube, tone: "amber" },
+  "consents-pending": { icon: FileSignature, tone: "amber" },
+  "rooms-in-use": { icon: DoorOpen, tone: "blue" },
+  "results-to-review": { icon: FileSearch, tone: "amber" },
+  "awaiting-sign-off": { icon: FileCheck2, tone: "amber" },
+  "my-appointments": { icon: CalendarClock, tone: "blue" },
+  "video-calls-today": { icon: Video, tone: "blue" },
+  "patients-triaged": { icon: UserCheck, tone: "emerald" },
+  "follow-ups-to-book": { icon: CalendarPlus, tone: "amber" },
+};
+
+const TONE_CLASS: Record<"emerald" | "amber" | "blue" | "red", string> = {
+  emerald: "bg-emerald-50 text-emerald-600",
+  amber: "bg-amber-50 text-amber-600",
+  blue: "bg-blue-50 text-blue-600",
+  red: "bg-red-50 text-red-600",
+};
+
+function KpiIcon({ id }: { id: string }) {
+  const entry = KPI_ICON[id];
+  const Icon = entry?.icon ?? Activity;
+  const toneClass = TONE_CLASS[entry?.tone ?? "blue"];
+  return (
+    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${toneClass}`}>
+      <Icon className="w-4 h-4" />
+    </div>
+  );
+}
 
 function RangeSwitcher({ range }: { range: TimeRange }) {
   const options: TimeRange[] = ["today", "7d", "30d"];
@@ -51,6 +102,8 @@ function Card({
       onClick={clickable ? () => onOpen(kpi.route) : undefined}
       className={`text-left border border-gray-300 rounded bg-white px-4 py-2.5 min-h-[88px] flex items-center gap-3 relative transition-all ${clickable ? "hover:border-slate-400 hover:shadow-sm cursor-pointer" : "cursor-default"}`}
     >
+      <KpiIcon id={kpi.id} />
+
       {/* Left region: label over the headline number. The badge/lock live in
           the right column instead of sharing this row — at a true 4-up
           layout there isn't width for "Results Pending Review" *and* a
