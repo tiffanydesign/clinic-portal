@@ -36,6 +36,7 @@ function LayerRow({ label, count, color, checked, onToggle, striped }: {
 export function ScheduleLeftRail({
   role, selectedDate, today, onSelectDate, hasApptsOn,
   search, onSearch, layers, onToggleLayer, counts,
+  possessive = true, showAvailabilityToggle = true,
 }: {
   role: ScheduleRole;
   selectedDate: Date;
@@ -47,6 +48,12 @@ export function ScheduleLeftRail({
   layers: LayerState;
   onToggleLayer: (key: LayerKey) => void;
   counts: { mine: number; video: number; types: Record<TypeBucket, number> };
+  // Staff Management views someone else's schedule read-only — "My
+  // appointments" / "My availability" wording (and the availability layer
+  // itself, which has no real per-staff data behind it yet) only make sense
+  // when the viewer is looking at their own Calendar.
+  possessive?: boolean;
+  showAvailabilityToggle?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-5 p-4 h-full overflow-y-auto">
@@ -59,7 +66,7 @@ export function ScheduleLeftRail({
           type="text"
           value={search}
           onChange={(e) => onSearch(e.target.value)}
-          placeholder="Search my patients…"
+          placeholder={possessive ? "Search my patients…" : "Search patients…"}
           className="w-full pl-9 pr-9 py-2 border border-gray-300 rounded-lg text-sm text-gray-800 bg-white outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
         />
         {search && (
@@ -72,11 +79,13 @@ export function ScheduleLeftRail({
       {/* layers */}
       <div>
         <h4 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider px-2 mb-1">Layers</h4>
-        <LayerRow label="My appointments" count={counts.mine} color="bg-slate-600" checked={layers.mine} onToggle={() => onToggleLayer("mine")} />
+        <LayerRow label={possessive ? "My appointments" : "Appointments"} count={counts.mine} color="bg-slate-600" checked={layers.mine} onToggle={() => onToggleLayer("mine")} />
         {role === "Clinician" && (
           <>
             <LayerRow label="Video consultations" count={counts.video} color="bg-cyan-500" checked={layers.video} onToggle={() => onToggleLayer("video")} />
-            <LayerRow label="My availability" color="bg-gray-400" checked={layers.availability} onToggle={() => onToggleLayer("availability")} striped />
+            {showAvailabilityToggle && (
+              <LayerRow label={possessive ? "My availability" : "Availability"} color="bg-gray-400" checked={layers.availability} onToggle={() => onToggleLayer("availability")} striped />
+            )}
           </>
         )}
       </div>

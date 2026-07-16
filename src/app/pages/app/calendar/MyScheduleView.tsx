@@ -10,8 +10,9 @@ import { addDays, addMonths, endOfWeek, format, isSameDay, startOfMonth, subMont
 import { ChevronLeft, ChevronRight, PanelLeftOpen, X, FileText, PanelRightOpen } from "lucide-react";
 import { ANCHOR_DATE, NOW_MINUTES, Appt } from "./scheduleData";
 import {
-  ScheduleRole, buildMyWeek, apptsForDate, layerCounts, defaultLayers, LayerState, weekStartOf, WeekDay, apptVisible,
+  ScheduleRole, ScheduleTarget, buildMyWeek, apptsForDate, layerCounts, defaultLayers, LayerState, weekStartOf, WeekDay, apptVisible,
 } from "./myScheduleData";
+import { DAYS, WeekSchedule } from "../availability/availabilityData";
 import { ScheduleLeftRail, LayerKey } from "./ScheduleLeftRail";
 import { MiniCalendar } from "./MiniCalendar";
 import { MyScheduleGrid } from "./MyScheduleGrid";
@@ -20,6 +21,15 @@ import { useAvailabilityStore } from "../availability/availabilityStore";
 
 const TODAY = ANCHOR_DATE;
 type ScheduleView = "day" | "week" | "month";
+
+// Used when viewing someone else's schedule (Staff Management): the
+// availability store only ever models the signed-in self, so a different
+// staff member gets a fully "open" schedule (no non-working shading, no
+// blocked time, no leave wash) rather than showing the wrong person's data.
+const NEUTRAL_SCHEDULE: WeekSchedule = DAYS.reduce((acc, day) => {
+  acc[day] = { active: true, slots: [{ start: "12:00am", end: "11:59pm" }] };
+  return acc;
+}, {} as WeekSchedule);
 
 function useWideScreen(threshold = 1100) {
   const [wide, setWide] = useState(typeof window !== "undefined" ? window.innerWidth >= threshold : true);
@@ -31,10 +41,27 @@ function useWideScreen(threshold = 1100) {
   return wide;
 }
 
-export function MyScheduleView({ role, onOpenAppt }: { role: ScheduleRole; onOpenAppt: (id: string) => void }) {
+export function MyScheduleView({
+  role,
+  onOpenAppt,
+  target,
+  possessive = true,
+  availabilityAvailable = true,
+}: {
+  role: ScheduleRole;
+  onOpenAppt: (id: string) => void;
+  // Staff Management passes the specific staff member being viewed; the
+  // Calendar's own "My Schedule" surface omits it and gets the signed-in self.
+  target?: ScheduleTarget;
+  possessive?: boolean;
+  availabilityAvailable?: boolean;
+}) {
   const navigate = useNavigate();
   const wide = useWideScreen();
-  const { savedSchedule, blockedTime, leaves } = useAvailabilityStore();
+  const store = useAvailabilityStore();
+  const savedSchedule = availabilityAvailable ? store.savedSchedule : NEUTRAL_SCHEDULE;
+  const blockedTime = availabilityAvailable ? store.blockedTime : [];
+  const leaves = availabilityAvailable ? store.leaves : [];
 
   const viewOptions: readonly ScheduleView[] = role === "Nurse" ? (["day", "week", "month"] as const) : (["day", "week"] as const);
   const [view, setView] = useState<ScheduleView>("day");
@@ -46,7 +73,7 @@ export function MyScheduleView({ role, onOpenAppt }: { role: ScheduleRole; onOpe
   const [quick, setQuick] = useState<Appt | null>(null);
 
   const weekStart = weekStartOf(selectedDate);
-  const weekDaysAll = useMemo(() => buildMyWeek(role, weekStart), [role, weekStart]);
+  const weekDaysAll = useMemo(() => buildMyWeek(role, weekStart, target), [role, weekStart, target]);
   const gridDays: WeekDay[] = useMemo(() => {
     if (view === "week") return weekDaysAll;
     const day = weekDaysAll.find((d) => isSameDay(d.date, selectedDate)) ?? { date: selectedDate, isToday: isSameDay(selectedDate, TODAY), appts: [] };
@@ -55,8 +82,8 @@ export function MyScheduleView({ role, onOpenAppt }: { role: ScheduleRole; onOpe
 
   const counts = useMemo(() => layerCounts(weekDaysAll), [weekDaysAll]);
   const totalVisible = gridDays.flatMap((d) => d.appts).filter((a) => apptVisible(a, layers)).length;
-  const hasApptsOn = (d: Date) => apptsForDate(role, d).length > 0;
-  const countFor = (d: Date) => apptsForDate(role, d).length;
+  const hasApptsOn = (d: Date) => apptsForDate(role, d, target).length > 0;
+  const countFor = (d: Date) => apptsForDate(role, d, target).length;
 
   const page = (dir: 1 | -1) => {
     if (view === "month") { setSelectedDate((d) => (dir === 1 ? addMonths(d, 1) : subMonths(d, 1))); return; }
@@ -103,6 +130,8 @@ export function MyScheduleView({ role, onOpenAppt }: { role: ScheduleRole; onOpe
       layers={layers}
       onToggleLayer={toggleLayer}
       counts={counts}
+      possessive={possessive}
+      showAvailabilityToggle={availabilityAvailable}
     />
   );
 

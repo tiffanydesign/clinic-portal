@@ -14,6 +14,13 @@ import { LeaveItem } from "../availability/availabilityData";
 
 export type ScheduleRole = "Nurse" | "Clinician";
 
+// Lets a caller ask for a specific staff member's schedule instead of the
+// signed-in self (see Staff Management's Availability tab, which shows a
+// read-only schedule for whichever staff member is being viewed). Omitting
+// the target keeps the original self-only behavior used by the Calendar's
+// own "My Schedule" surface.
+export type ScheduleTarget = { doctorId: string } | { nurseName: string };
+
 export const DAY_START = 7 * 60; // 07:00 top of grid
 export const DAY_END = 20 * 60; // 20:00 bottom
 export const SCROLL_TO = 8 * 60; // default scroll position
@@ -21,9 +28,13 @@ export const SCROLL_TO = 8 * 60; // default scroll position
 export const weekStartOf = (d: Date) => startOfWeek(d, { weekStartsOn: 1 });
 
 // --- role-scoped "my appointments" ---
-export function myAppts(role: ScheduleRole): Appt[] {
-  if (role === "Clinician") return APPTS.filter((a) => a.doctorId === CLINICIAN_SELF_ID);
-  return APPTS.filter((a) => a.nurse === NURSE_SELF_NAME);
+export function myAppts(role: ScheduleRole, target?: ScheduleTarget): Appt[] {
+  if (role === "Clinician") {
+    const doctorId = target && "doctorId" in target ? target.doctorId : CLINICIAN_SELF_ID;
+    return APPTS.filter((a) => a.doctorId === doctorId);
+  }
+  const nurseName = target && "nurseName" in target ? target.nurseName : NURSE_SELF_NAME;
+  return APPTS.filter((a) => a.nurse === nurseName);
 }
 
 // Fabricate a fuller week from the single modelled day, the same demo device
@@ -63,8 +74,8 @@ export function deoverlapSequential(appts: Appt[]): Appt[] {
 
 export type WeekDay = { date: Date; isToday: boolean; appts: Appt[] };
 
-export function buildMyWeek(role: ScheduleRole, weekStart: Date): WeekDay[] {
-  const base = myAppts(role);
+export function buildMyWeek(role: ScheduleRole, weekStart: Date, target?: ScheduleTarget): WeekDay[] {
+  const base = myAppts(role, target);
   const isAnchorWeek = isSameDay(weekStart, weekStartOf(ANCHOR_DATE));
   return Array.from({ length: 7 }, (_, i) => {
     const date = addDays(weekStart, i);
@@ -79,8 +90,8 @@ export function buildMyWeek(role: ScheduleRole, weekStart: Date): WeekDay[] {
   });
 }
 
-export function apptsForDate(role: ScheduleRole, date: Date): Appt[] {
-  return buildMyWeek(role, weekStartOf(date)).find((d) => isSameDay(d.date, date))?.appts ?? [];
+export function apptsForDate(role: ScheduleRole, date: Date, target?: ScheduleTarget): Appt[] {
+  return buildMyWeek(role, weekStartOf(date), target).find((d) => isSameDay(d.date, date))?.appts ?? [];
 }
 
 // --- day layout ---
