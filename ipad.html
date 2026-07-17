@@ -164,6 +164,51 @@
   @media (prefers-reduced-motion: reduce) {
     #controls button, #controls a { transition: none; }
   }
+
+  /* ---- offline / file:// fallback message ---- */
+  #offline-msg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    background: radial-gradient(120% 90% at 50% 0%, var(--backdrop) 0%, var(--backdrop-deep) 85%);
+    color: var(--ink);
+    z-index: 2;
+  }
+  #offline-msg .om-card {
+    max-width: 620px;
+    text-align: left;
+    background: oklch(0.22 0.012 260 / 0.9);
+    border: 1px solid oklch(1 0 0 / 0.1);
+    border-radius: 20px;
+    padding: 40px 44px;
+    box-shadow: 0 30px 70px -30px oklch(0 0 0 / 0.7);
+  }
+  #offline-msg .om-title { font-size: 26px; font-weight: 700; margin-bottom: 18px; }
+  #offline-msg .om-body { font-size: 16px; line-height: 1.7; color: var(--muted); margin-bottom: 14px; }
+  #offline-msg .om-steps { font-size: 15px; line-height: 1.9; color: var(--muted); margin: 0 0 24px 20px; }
+  #offline-msg code {
+    font-family: "SF Mono", ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: 0.9em;
+    background: oklch(1 0 0 / 0.08);
+    padding: 2px 7px;
+    border-radius: 6px;
+    color: var(--ink);
+  }
+  #offline-msg .om-link {
+    display: inline-block;
+    padding: 12px 22px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: oklch(0.16 0.02 250);
+    font-weight: 600;
+    font-size: 15px;
+    text-decoration: none;
+    transition: filter 160ms;
+  }
+  #offline-msg .om-link:hover { filter: brightness(1.08); }
 </style>
 </head>
 <body>
@@ -175,6 +220,24 @@
       <span class="camera"></span>
       <div class="screen">
         <iframe id="app" title="Phenome Portal prototype"></iframe>
+        <div id="offline-msg" hidden>
+          <div class="om-card">
+            <div class="om-title">无法从本地文件直接打开</div>
+            <p class="om-body">
+              这是一个需要本地服务器运行的交互原型（SPA），直接双击
+              <code>ipad.html</code> 用 <code>file://</code> 打开时应用无法加载。
+            </p>
+            <p class="om-body">请用以下任一方式打开：</p>
+            <ol class="om-steps">
+              <li>双击项目里的 <code>打开iPad原型.cmd</code>（会自动启动本地服务并打开此页面）；</li>
+              <li>或在项目目录运行 <code>npm run dev</code>，再访问 <code>http://localhost:5173/ipad.html</code>；</li>
+              <li>或直接打开已部署的在线版本 ↓</li>
+            </ol>
+            <a class="om-link" href="https://tiffanydesign.github.io/clinic-portal/ipad.html" target="_blank" rel="noopener">
+              打开在线版本 (GitHub Pages)
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -203,8 +266,18 @@
   /* Base path: "/" locally, "/clinic-portal/" on GitHub Pages */
   const BASE = location.pathname.replace(/ipad\.html$/, "");
   const routeUrl = (route) => BASE.replace(/\/$/, "") + route;
-  frame.src = routeUrl("/login");
-  document.getElementById("fullscreen").href = routeUrl("/login");
+
+  /* file:// can't run the SPA (no server / no SPA fallback) — show guidance. */
+  const IS_FILE = location.protocol === "file:";
+  if (IS_FILE) {
+    frame.hidden = true;
+    document.getElementById("offline-msg").hidden = false;
+    document.getElementById("fullscreen").href =
+      "https://tiffanydesign.github.io/clinic-portal/login";
+  } else {
+    frame.src = routeUrl("/login");
+    document.getElementById("fullscreen").href = routeUrl("/login");
+  }
 
   const DEVICE_W = stage.offsetWidth;
   const DEVICE_H = stage.offsetHeight;
