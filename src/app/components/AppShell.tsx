@@ -62,6 +62,7 @@ const NAV_ITEMS = {
     { label: "Dashboard", path: "/dashboard" },
     { label: "Calendar", path: "/calendar", children: [
       { label: "Schedule", path: "/calendar/schedule" },
+      { label: "My Availability", path: "/calendar/my-availability" },
       { label: "Availability", path: "/calendar/availability" }
     ]},
     { label: "Patients", path: "/patients" },

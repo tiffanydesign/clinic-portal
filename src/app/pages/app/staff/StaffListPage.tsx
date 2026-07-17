@@ -94,7 +94,7 @@ export function StaffListPage() {
   );
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 overflow-hidden">
+    <div className="flex flex-col min-h-full bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-8 py-5 flex justify-between items-center shrink-0">
         <div>
@@ -204,9 +204,9 @@ export function StaffListPage() {
       </div>
 
       {/* Body */}
-      <div className="flex-1 overflow-hidden px-8 py-5 pb-8 flex flex-col min-h-0">
-        <div className="flex-1 bg-white border border-gray-300 rounded-xl overflow-hidden flex flex-col shadow-sm">
-            <div className="flex-1 overflow-auto relative">
+      <div className="px-8 py-5 pb-8 flex flex-col">
+        <div className="bg-white border border-gray-300 rounded-xl overflow-hidden flex flex-col shadow-sm">
+            <div className="relative">
               <table className="w-full text-left border-collapse text-sm whitespace-nowrap">
                 <thead className="bg-gray-50 sticky top-0 z-30 shadow-[0_1px_0_#e5e7eb]">
                   <tr>

@@ -86,7 +86,7 @@ export function ReceptionDashboardBody() {
             dashboard), so at this narrower shared-row width its 7 columns
             want to be wider than the space available. Y-axis is left open so
             the calendar's full-day height is never clipped. */}
-        <div className="flex-1 min-w-0 flex flex-col overflow-x-hidden">
+        <div className="flex-1 min-w-0 flex flex-col overflow-x-clip">
           <ScheduleToggleButton collapsed={scheduleCollapsed} onToggle={() => setScheduleCollapsed((v) => !v)} />
           {scheduleCollapsed ? (
             <div className="h-12 border border-gray-200 rounded-xl shadow-sm bg-white px-4 flex items-center gap-1 text-sm font-bold text-gray-800 shrink-0">

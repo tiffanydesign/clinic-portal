@@ -71,7 +71,7 @@ export function DashboardPage() {
             </div>
             <div className="w-[420px] shrink-0"><NeedsYourActionCard /></div>
           </div>
-          <div className="h-[320px]"><AdminPanels /></div>
+          <div><AdminPanels /></div>
           <ActivityFeed defaultCollapsed />
         </div>
       )}

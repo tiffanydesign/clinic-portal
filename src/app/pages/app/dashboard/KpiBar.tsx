@@ -100,48 +100,49 @@ function Card({
   return (
     <button
       onClick={clickable ? () => onOpen(kpi.route) : undefined}
-      className={`text-left border border-gray-300 rounded bg-white px-4 py-2.5 min-h-[88px] flex items-center gap-3 relative transition-all ${clickable ? "hover:border-slate-400 hover:shadow-sm cursor-pointer" : "cursor-default"}`}
+      className={`text-left border border-gray-300 rounded bg-white px-4 py-2.5 min-h-[88px] flex flex-col gap-1.5 relative transition-all ${clickable ? "hover:border-slate-400 hover:shadow-sm cursor-pointer" : "cursor-default"}`}
     >
-      <KpiIcon id={kpi.id} />
+      {/* Top row: icon + label/number on the left, badge + sparkline on the
+          right. The delta caption is NOT packed in here — at a true 4-up
+          layout (≈254px cards) a long caption like "vs previous 30 days"
+          collides with the 28px headline number. It gets its own full-width
+          row below instead. */}
+      <div className="flex items-center gap-3">
+        <KpiIcon id={kpi.id} />
 
-      {/* Left region: label over the headline number. The badge/lock live in
-          the right column instead of sharing this row — at a true 4-up
-          layout there isn't width for "Results Pending Review" *and* a
-          pill *and* a lock icon on one line without either truncating the
-          label (data, not decoration — never truncated) or wrapping it
-          awkwardly around a badge stub. */}
-      <div className="flex-1 min-w-0 flex flex-col justify-between gap-1 self-stretch">
-        <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider leading-tight">{label}</span>
-        <div className="text-[28px] font-semibold text-gray-800 leading-none">
-          <AnimatedNumber value={rv.value} />
+        <div className="flex-1 min-w-0 flex flex-col gap-1">
+          <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider leading-tight">{label}</span>
+          <div className="text-[28px] font-semibold text-gray-800 leading-none">
+            <AnimatedNumber value={rv.value} />
+          </div>
         </div>
-      </div>
 
-      {/* Right region: badge/lock, then sparkline, then delta — same
-          information as before, just stacked so the left column's label
-          gets the full column width to itself. */}
-      <div className="flex flex-col items-end justify-between gap-1.5 shrink-0 self-stretch">
-        <div className="flex items-center gap-1.5">
-          <span
-            className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider shrink-0 ${
-              isLive ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-600"
-            }`}
-          >
-            {isLive && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
-            {pillText}
-          </span>
-          {locked && (
-            <span className="relative group/lock shrink-0">
-              <Lock className="w-3.5 h-3.5 text-gray-400" />
-              <span className="absolute right-0 top-full mt-1 w-44 bg-gray-800 text-white text-[10px] font-medium normal-case tracking-normal px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover/lock:opacity-100 transition-opacity pointer-events-none z-20">
-                Default metric — set by your clinic
-              </span>
+        <div className="flex flex-col items-end gap-1.5 shrink-0">
+          <div className="flex items-center gap-1.5">
+            <span
+              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider shrink-0 ${
+                isLive ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-600"
+              }`}
+            >
+              {isLive && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
+              {pillText}
             </span>
-          )}
+            {locked && (
+              <span className="relative group/lock shrink-0">
+                <Lock className="w-3.5 h-3.5 text-gray-400" />
+                <span className="absolute right-0 top-full mt-1 w-44 bg-gray-800 text-white text-[10px] font-medium normal-case tracking-normal px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover/lock:opacity-100 transition-opacity pointer-events-none z-20">
+                  Default metric — set by your clinic
+                </span>
+              </span>
+            )}
+          </div>
+          <Sparkline data={rv.spark} trend={rv.trend} inverse={inverse} sentiment={rv.informational ? "neutral" : undefined} width={72} height={28} />
         </div>
-        <Sparkline data={rv.spark} trend={rv.trend} inverse={inverse} sentiment={rv.informational ? "neutral" : undefined} width={72} height={28} />
-        <DeltaLine text={rv.deltaText} trend={rv.trend} inverse={inverse} informational={rv.informational} />
       </div>
+
+      {/* Delta caption — full card width, so a long "vs previous 30 days"
+          never overlaps the headline number. */}
+      <DeltaLine text={rv.deltaText} trend={rv.trend} inverse={inverse} informational={rv.informational} />
     </button>
   );
 }

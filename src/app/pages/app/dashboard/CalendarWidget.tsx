@@ -124,7 +124,7 @@ export function CalendarWidget() {
 
       {/* Progress summary + room/clinician toggle */}
       <div className="px-4 py-2 bg-white flex items-center justify-between gap-3 shrink-0">
-        <div className="flex items-center gap-2 text-xs overflow-x-auto">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] min-w-0">
           <span className="font-bold text-gray-700 whitespace-nowrap">{summary.total} appointments</span>
           <span className="text-gray-300">·</span>
           <span className="font-semibold text-gray-500 whitespace-nowrap">{summary.completed} completed</span>

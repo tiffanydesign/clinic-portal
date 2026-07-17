@@ -241,14 +241,15 @@ export function PatientsPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 overflow-hidden">
+    <div className="flex flex-col min-h-full bg-gray-50">
       <Header />
       <Toolbar />
       <KPICards />
 
-      {/* Table Area */}
-      <div className="flex-1 overflow-hidden px-8 pb-8 flex flex-col min-h-0 relative">
-        <div className="flex-1 bg-white border border-gray-300 rounded-xl overflow-hidden flex flex-col shadow-sm relative">
+      {/* Table Area — grows with content; the page (AppShell) is the only
+          scroll surface, so the card never grows its own inner scrollbar. */}
+      <div className="px-8 pb-8 flex flex-col relative">
+        <div className="bg-white border border-gray-300 rounded-xl overflow-hidden flex flex-col shadow-sm relative">
           
           {/* Bulk Actions Bar (Admin only) */}
           {selectedIds.size > 0 && role === 'Admin' && (
@@ -264,8 +265,8 @@ export function PatientsPage() {
             </div>
           )}
 
-          <div className="flex-1 overflow-auto relative">
-            <table className="w-full text-left border-collapse text-sm whitespace-nowrap">
+          <div className="relative">
+            <table className="w-full text-left border-collapse text-sm [&_th]:!px-3 [&_td]:!px-3">
               <thead className="bg-gray-50 sticky top-0 z-30 shadow-[0_1px_0_#e5e7eb]">
                 <tr>
                   {role === 'Admin' && <th className="p-4 w-[40px] border-b border-gray-200 sticky left-0 z-40 bg-gray-50 shadow-[1px_0_0_#e5e7eb]"><input type="checkbox" onChange={toggleSelectAll} checked={selectedIds.size === patients.length && patients.length > 0} className="rounded text-slate-600 focus:ring-slate-500" /></th>}

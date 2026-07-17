@@ -31,8 +31,8 @@ const STATUS_OPTIONS = [
 function DeviceTable({ views, onOpen }: { views: DeviceView[]; onOpen: (v: DeviceView) => void }) {
   return (
     <div className="border border-gray-300 rounded-xl overflow-hidden shadow-sm">
-      <div className="overflow-x-auto">
-        <table className="w-full text-left min-w-[860px]">
+      <div>
+        <table className="w-full text-left [&_th]:!px-2 [&_td]:!px-2">
           <thead className="bg-gray-50">
             <tr className="text-xs font-bold text-gray-500 uppercase tracking-wider">
               <th className="px-4 py-3 border-b border-gray-200">Device</th>

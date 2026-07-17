@@ -33,8 +33,8 @@ export function AdminPanels() {
   const waitColor = (m: number) => (m > 30 ? "text-red-600" : m > 15 ? "text-orange-600" : "text-gray-800");
 
   return (
-    <div className="flex gap-4 h-full min-h-0">
-      <Section title="Results Queue" className="flex-1 min-w-0 h-full" action={<button onClick={() => nav("/patients")} className="text-xs font-bold text-slate-600 hover:underline">View all patients →</button>}>
+    <div className="flex gap-4 items-stretch">
+      <Section title="Results Queue" className="flex-1 min-w-0" action={<button onClick={() => nav("/patients")} className="text-xs font-bold text-slate-600 hover:underline">View all patients →</button>}>
         <div className="divide-y divide-gray-100">
           {results.map((r) => (
             <button key={r.patient} onClick={() => nav("/patients/P-001/results")} className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 text-left gap-2">
@@ -52,7 +52,7 @@ export function AdminPanels() {
         </div>
       </Section>
 
-      <Section title={<>Waiting Room <LiveDot /></>} className="flex-1 min-w-0 h-full">
+      <Section title={<>Waiting Room <LiveDot /></>} className="flex-1 min-w-0">
         <div className="divide-y divide-gray-100">
           {waiting.map((w) => (
             <div key={w.patient} className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50">

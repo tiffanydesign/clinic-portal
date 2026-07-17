@@ -46,7 +46,7 @@ export function BillingPage() {
   const totalBalance = MOCK_DATA.reduce((sum, r) => sum + r.balance, 0);
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 overflow-hidden">
+    <div className="flex flex-col min-h-full bg-gray-50">
       
       {/* Top Header Row */}
       <div className="bg-white border-b border-gray-200 px-8 py-5 flex justify-between items-center shrink-0">
@@ -149,12 +149,12 @@ export function BillingPage() {
       </div>
 
       {/* Main Layout */}
-      <div className="flex-1 flex overflow-hidden border-t border-gray-200">
-        
+      <div className="flex items-stretch border-t border-gray-200">
+
         {/* Left Table (Flex remaining width) */}
         <div className="flex-1 border-r border-gray-200 bg-white flex flex-col min-w-0">
-          <div className="flex-1 overflow-auto relative">
-            <table className="w-full text-left border-collapse text-sm whitespace-nowrap">
+          <div className="relative">
+            <table className="w-full text-left border-collapse text-sm [&_th]:!px-2.5 [&_td]:!px-2.5">
               <thead className="bg-gray-50 sticky top-0 z-20 shadow-[0_1px_0_#e5e7eb]">
                 <tr>
                   <th className="p-4 font-bold text-gray-600 border-b border-gray-200 sticky left-0 z-30 bg-gray-50 w-[200px] shadow-[1px_0_0_#e5e7eb] cursor-pointer hover:bg-gray-100">Patient</th>
