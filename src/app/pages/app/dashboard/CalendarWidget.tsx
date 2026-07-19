@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
-import { Video, ArrowRight } from "lucide-react";
+import { Video, ArrowRight, Plus } from "lucide-react";
 import { useSchedulableRooms, roomName, CLINICIANS } from "../calendar/scheduleData";
 import {
   APPTS, Appt, DAY_START_HOUR, DAY_END_HOUR, HOUR_PX,
@@ -84,7 +84,7 @@ function ViewModeToggle({ mode, onChange }: { mode: ViewMode; onChange: (m: View
   );
 }
 
-export function CalendarWidget() {
+export function CalendarWidget({ onAdd }: { onAdd?: () => void } = {}) {
   const navigate = useNavigate();
   const activeRooms = useSchedulableRooms();
   const [mode, setMode] = useState<ViewMode>("room");
@@ -111,9 +111,21 @@ export function CalendarWidget() {
     <div className="border border-gray-200 rounded-xl shadow-md bg-white flex flex-col h-full min-h-0">
       {/* Header */}
       <div className="h-12 border-b border-gray-200 bg-gray-50/70 px-4 flex items-center justify-between shrink-0 gap-3">
-        <h3 className="font-bold text-gray-800 text-sm shrink-0">
-          Today's Schedule <span className="text-gray-400 font-medium ml-1">{TODAY_SHORT}</span>
-        </h3>
+        <div className="flex items-center gap-2 min-w-0 shrink-0">
+          <h3 className="font-bold text-gray-800 text-sm">
+            Today's Schedule <span className="text-gray-400 font-medium ml-1">{TODAY_SHORT}</span>
+          </h3>
+          {onAdd && (
+            <button
+              onClick={onAdd}
+              title="New booking"
+              aria-label="New booking"
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-600 hover:bg-slate-50 hover:border-slate-400 hover:text-slate-700 transition-colors shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          )}
+        </div>
         <button
           onClick={() => navigate("/calendar/schedule")}
           className="text-xs font-bold text-slate-600 hover:text-slate-800 flex items-center gap-1 transition-colors shrink-0"

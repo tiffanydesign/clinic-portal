@@ -59,7 +59,7 @@ export type Patient = {
   group: Group;
   dob: string;
   age: number;
-  sex: "Female" | "Male";
+  sex: "Female" | "Male" | "Other";
   phone: string;
   email: string;
   // A clinically material safety flag (allergy, contraindication, ...) —
@@ -122,7 +122,7 @@ function P(patientId: string): Patient {
     group: p.group,
     dob: p.dob,
     age: p.age,
-    sex: p.sex === "M" ? "Male" : "Female",
+    sex: p.sex === "M" ? "Male" : p.sex === "F" ? "Female" : "Other",
     phone: p.phone,
     email: p.email,
     alert: p.alert,

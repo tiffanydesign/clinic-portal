@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams } from "react-router";
 import {
   Download, Settings, Search, Star, Flag, MessageSquare, AlertCircle, X,
-  ChevronDown, ChevronUp, ExternalLink, RefreshCw,
+  ChevronDown, ChevronUp, ExternalLink, RefreshCw, Users, TrendingUp, TrendingDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -25,6 +25,42 @@ function GoogleG({ className }: { className?: string }) {
       <path fill="#FBBC05" d="M5.31 14.32A7.2 7.2 0 0 1 4.93 12c0-.8.14-1.58.38-2.32V6.59H1.3A11.98 11.98 0 0 0 0 12c0 1.93.46 3.76 1.3 5.41l4.01-3.09Z" />
       <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.6 4.6 1.8l3.44-3.44C17.95 1.19 15.24 0 12 0 7.3 0 3.26 2.7 1.3 6.59l4.01 3.09C6.25 6.85 8.89 4.75 12 4.75Z" />
     </svg>
+  );
+}
+
+/** Delta chip: green up / red down, paired with an arrow icon (never color alone). */
+function StatDelta({ value }: { value: string }) {
+  const down = value.trim().startsWith("↓");
+  return (
+    <span className={`inline-flex items-center gap-0.5 text-[11px] font-bold shrink-0 ${down ? "text-red-600" : "text-emerald-600"}`}>
+      {down ? <TrendingDown className="w-3 h-3" /> : <TrendingUp className="w-3 h-3" />}
+      {value.replace(/^[↑↓]\s*/, "")}
+    </span>
+  );
+}
+
+/**
+ * One segment of the compact KPI strip: a semantic icon tile + label + metric.
+ * `emphasis` slightly warms the tile for the one metric that demands action
+ * (Open Issues), so a standing Admin triages "what needs me" in one glance.
+ */
+function StatSegment({ tile, icon, label, value, valueAffix, delta, sub, grow = "flex-1" }: {
+  tile: string; icon: React.ReactNode; label: string; value: React.ReactNode;
+  valueAffix?: React.ReactNode; delta?: string; sub?: React.ReactNode; grow?: string;
+}) {
+  return (
+    <div className={`flex items-center gap-2.5 px-4 py-3 min-w-0 ${grow}`}>
+      <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${tile}`}>{icon}</div>
+      <div className="min-w-0">
+        <div className="text-[10.5px] font-bold text-gray-500 uppercase tracking-wide leading-none mb-1.5 whitespace-nowrap">{label}</div>
+        <div className="flex items-baseline gap-1.5 leading-none">
+          <span className="text-xl font-bold text-gray-900 tabular-nums">{value}</span>
+          {valueAffix}
+          {delta && <StatDelta value={delta} />}
+        </div>
+        {sub && <div className="text-[10.5px] text-gray-500 font-medium mt-1.5 truncate leading-none">{sub}</div>}
+      </div>
+    </div>
   );
 }
 
@@ -500,39 +536,61 @@ export function FeedbackAdminPage() {
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="px-8 py-5 shrink-0 grid grid-cols-5 gap-6">
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Total Feedback</div>
-          <div className="text-3xl font-bold text-gray-800">47</div>
-          <div className="flex items-center text-sm text-gray-500 mt-1 font-medium">
-            <span className="text-green-600 font-bold mr-1">↑ 12</span> vs last month
-          </div>
-        </div>
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Avg. Rating</div>
-          <div className="text-3xl font-bold text-gray-800 flex items-center">4.3 <Star className="w-6 h-6 text-amber-400 fill-current ml-2" /></div>
-          <div className="flex items-center text-sm text-gray-500 mt-1 font-medium">
-            <span className="text-green-600 font-bold mr-1">↑ 0.2</span> vs last month
-          </div>
-        </div>
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 px-3 py-1 bg-red-100 text-red-700 text-[10px] font-bold rounded-bl-lg">1 OVERDUE</div>
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Open Issues</div>
-          <div className="text-3xl font-bold text-gray-800">5</div>
-          <div className="text-sm text-gray-500 mt-1 font-medium">3 new · 2 in review</div>
-        </div>
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Staff Feedback</div>
-          <div className="text-3xl font-bold text-gray-800">9</div>
-          <div className="text-[11px] text-gray-500 mt-1.5 font-medium leading-tight">4 suggestions · 3 system issues · 2 incidents</div>
-        </div>
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-            <GoogleG className="w-3.5 h-3.5" /> Google Rating
-          </div>
-          <div className="text-3xl font-bold text-gray-800 flex items-center">{googleAvg.toFixed(1)} <Star className="w-6 h-6 text-amber-400 fill-current ml-2" /></div>
-          <div className="text-sm text-gray-500 mt-1 font-medium">{googleItems.length} Google reviews</div>
+      {/* KPI strip — one compact divided surface instead of five tall cards,
+          reclaiming vertical space for the list. Each metric carries a semantic
+          icon tile; only the actionable one (Open Issues / overdue) shows alarm
+          color, so triage happens in a single glance. */}
+      <div className="px-8 py-3 shrink-0">
+        <div className="flex items-stretch flex-wrap bg-white border border-gray-200 rounded-xl shadow-sm divide-x divide-gray-200 overflow-hidden">
+          <StatSegment
+            tile="bg-slate-100"
+            icon={<MessageSquare className="w-[18px] h-[18px] text-slate-500" />}
+            label="Total Feedback"
+            value="47"
+            grow="flex-[1.1]"
+            delta="↑ 12"
+            sub="vs last month"
+          />
+          <StatSegment
+            tile="bg-amber-50"
+            icon={<Star className="w-[18px] h-[18px] text-amber-500 fill-current" />}
+            label="Avg. Rating"
+            value="4.3"
+            grow="flex-[0.9]"
+            valueAffix={<span className="text-[11px] font-bold text-gray-400">/5</span>}
+            delta="↑ 0.2"
+          />
+          <StatSegment
+            tile="bg-orange-50"
+            icon={<AlertCircle className="w-[18px] h-[18px] text-orange-600" />}
+            label="Open Issues"
+            value="5"
+            grow="flex-[1.5]"
+            sub={
+              <span className="inline-flex items-center gap-1.5">
+                <span className="inline-flex items-center gap-1 px-1.5 py-px rounded bg-red-50 text-red-700 font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-500" />1 overdue
+                </span>
+                <span className="text-gray-400">·</span> 3 new · 2 review
+              </span>
+            }
+          />
+          <StatSegment
+            tile="bg-purple-50"
+            icon={<Users className="w-[18px] h-[18px] text-purple-600" />}
+            label="Staff Feedback"
+            value="9"
+            grow="flex-[1.65]"
+            sub="4 suggestions · 3 issues · 2 incidents"
+          />
+          <StatSegment
+            tile="bg-[#e8f0fe]"
+            icon={<GoogleG className="w-[18px] h-[18px]" />}
+            label="Google Rating"
+            value={googleAvg.toFixed(1)}
+            valueAffix={<Star className="w-4 h-4 text-amber-500 fill-current self-center" />}
+            sub={`${googleItems.length} Google reviews`}
+          />
         </div>
       </div>
 

@@ -24,7 +24,7 @@ import {
   StaffListPage, StaffDetailLayout, StaffOverviewTab, StaffAvailabilityTab, StaffPermissionsTab, StaffWorkloadTab,
   ConsentFormPage, ClinicSettingsHubPage, RoomsPage, DevicesPage, BillingPage, FeedbackAdminPage,
   NotificationsPage, ApprovalRouter, ApprovalDetailSkeleton, ProfilePage, SiteMap,
-  NewPatientSkeleton, CalendarLayout, CalendarScheduleSkeleton, AvailabilityList, AvailabilityEdit, AvailabilityPage,
+  CalendarLayout, CalendarScheduleSkeleton, AvailabilityList, AvailabilityEdit, AvailabilityPage,
   TimesheetPage, SchedulePage
 } from "./pages/app/AppPages";
 
@@ -115,7 +115,6 @@ export default function App() {
           <Route path="/calendar/my-availability" element={<AppShellLayout><CalendarLayout><AvailabilityList /></CalendarLayout></AppShellLayout>} />
           <Route path="/calendar/my-availability/:id" element={<AppShellLayout><CalendarLayout><AvailabilityEdit /></CalendarLayout></AppShellLayout>} />
           <Route path="/patients" element={<AppShellLayout><PatientsPage /></AppShellLayout>} />
-          <Route path="/patients/new" element={<AppShellLayout><NewPatientSkeleton /></AppShellLayout>} />
           <Route path="/patients/:patientId" element={<AppShellLayout><PatientRecordRedirect /></AppShellLayout>} />
           <Route path="/patients/:patientId/overview" element={<AppShellLayout><PatientRecordLayout><PatientOverviewTab /></PatientRecordLayout></AppShellLayout>} />
           <Route path="/patients/:patientId/results" element={<AppShellLayout><PatientRecordLayout><PatientResultsTab /></PatientRecordLayout></AppShellLayout>} />

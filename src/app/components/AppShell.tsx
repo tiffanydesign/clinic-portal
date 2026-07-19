@@ -7,6 +7,7 @@ import {
   MessageSquare, Clock, ClipboardList, User, PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
+import epLogo from "../../assets/EPlogo.png";
 import { SubmitFeedbackModal } from "./SubmitFeedbackModal";
 import { GlobalSearch } from "./GlobalSearch";
 import { GlobalSearchOverlay } from "./GlobalSearchOverlay";
@@ -169,17 +170,35 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen w-screen min-w-[1024px] bg-white text-gray-800 font-sans overflow-hidden">
       <div className={`${sidebarCollapsed ? "w-16" : "w-60"} bg-white border-r border-gray-300 flex flex-col shrink-0 transition-[width] duration-200 ease-out`}>
-        {/* Brand + collapse toggle */}
+        {/* Brand + collapse toggle. Collapsed: the logo mark doubles as the
+            expand affordance, so a 64px rail isn't split between mark + button. */}
         <div className={`h-16 flex items-center border-b border-gray-300 shrink-0 ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-4"}`}>
-          {!sidebarCollapsed && <span className="font-bold text-lg text-gray-800 tracking-tight truncate pl-2">Phenome Portal</span>}
-          <button
-            onClick={toggleSidebar}
-            title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="w-11 h-11 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
-          >
-            {sidebarCollapsed ? <PanelLeftOpen className="w-5 h-5" /> : <PanelLeftClose className="w-5 h-5" />}
-          </button>
+          {sidebarCollapsed ? (
+            <button
+              onClick={toggleSidebar}
+              title="Expand sidebar"
+              aria-label="Expand sidebar"
+              className="group p-1.5 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center"
+            >
+              <img src={epLogo} alt="Phenome" className="h-7 w-auto group-hover:hidden" />
+              <PanelLeftOpen className="w-5 h-5 text-gray-400 hidden group-hover:block" />
+            </button>
+          ) : (
+            <>
+              <span className="flex items-center gap-2 min-w-0">
+                <img src={epLogo} alt="Phenome" className="h-6 w-auto shrink-0" />
+                <span className="font-bold text-sm text-gray-800 tracking-tight truncate">Phenome Portal</span>
+              </span>
+              <button
+                onClick={toggleSidebar}
+                title="Collapse sidebar"
+                aria-label="Collapse sidebar"
+                className="w-11 h-11 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
+              >
+                <PanelLeftClose className="w-5 h-5" />
+              </button>
+            </>
+          )}
         </div>
 
         {/* Search — inline field expanded, icon-to-overlay collapsed */}

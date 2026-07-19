@@ -16,7 +16,7 @@
 //     7d/30d). The label and inverse-ness can differ per range.
 
 import type { Role } from "../../../context/AppContext";
-import type { TimeRange } from "./kpiRangeStore";
+import type { StatConfig, StatKind, RangeValue, TimeRange } from "../../../components/stat";
 import { APPTS } from "./dashboardData";
 import { getSchedulableRoomsSnapshot } from "../clinic-settings/roomsStore";
 import { clinicUtilisationPct } from "../clinic-settings/roomAvailability";
@@ -26,26 +26,18 @@ import { clinicUtilisationPct } from "../clinic-settings/roomAvailability";
 // different numbers for "how busy is the clinic".
 const TODAY_UTILISATION_PCT = clinicUtilisationPct(getSchedulableRoomsSnapshot(), APPTS);
 
-export type Trend = "up" | "down" | "flat";
-export type MetricKind = "period" | "live" | "hybrid";
+// Shape now comes from the unified Stat family (components/stat) — this
+// module stays pure data. `variant` is deliberately omitted: the tier is a
+// render-site concern (KpiBar renders every catalog entry as T1 `card`), so
+// the catalog never encodes presentation.
+export type { Trend, RangeValue } from "../../../components/stat";
 
-export type RangeValue = {
-  value: string;
-  deltaText: string;
-  trend: Trend;
-  spark: number[]; // Today: 7 daily points · 7d: 8 weekly points · 30d: 6 monthly points
-  informational?: boolean; // true => comparison line is a plain gray reference figure, no arrow
-  label?: string; // overrides the KPI's base label for this range (hybrid)
-  inverse?: boolean; // overrides the KPI-level `inverse` for this specific range (hybrid)
-};
+/** The three range-driven semantics; `count` never appears in this catalog. */
+export type MetricKind = Extract<StatKind, "period" | "live" | "hybrid">;
 
-export type Kpi = {
-  id: string;
-  label: string; // base (Today) label
+export type Kpi = Omit<StatConfig, "variant" | "kind"> & {
   kind: MetricKind;
-  inverse?: boolean; // "lower is better" — flips the up/down -> good/bad color mapping
   desc: string;
-  route?: string;
   byRange: Record<TimeRange, RangeValue>;
 };
 

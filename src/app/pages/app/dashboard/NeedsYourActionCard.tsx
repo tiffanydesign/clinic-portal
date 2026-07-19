@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 import { Plane, RefreshCcw } from "lucide-react";
 import { Section } from "./DashboardShared";
+import { Stat } from "../../../components/stat";
 import { useAvailabilityStore, getPendingRequests } from "../availability/availabilityStore";
 import { needsYourActionItems, ActionItem, ActionItemKind } from "./needsYourActionData";
 
@@ -31,6 +32,22 @@ function ActionRow({ item, onOpen }: { item: ActionItem; onOpen: () => void }) {
   );
 }
 
+// Category filter chip — the button owns the label and active styling, the
+// Stat family's T4 `pill` owns the count.
+function FilterChip({ label, count, active, activeText, onClick }: {
+  label: string; count: number; active: boolean; activeText: string; onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all inline-flex items-center gap-1.5 ${active ? `bg-white ${activeText} shadow-sm` : "text-gray-500 hover:text-gray-700"}`}
+    >
+      {label}
+      <Stat stat={{ id: `nya-${label}`, label, kind: "count", variant: "pill", value: String(count) }} />
+    </button>
+  );
+}
+
 export function NeedsYourActionCard() {
   const nav = useNavigate();
   const store = useAvailabilityStore();
@@ -52,31 +69,23 @@ export function NeedsYourActionCard() {
       title={
         <>
           Needs Your Action
-          {allItems.length > 0 && <span className="ml-2 px-1.5 py-0.5 bg-red-100 text-red-700 text-[10px] font-bold rounded-full">{allItems.length}</span>}
+          {allItems.length > 0 && (
+            <span className="ml-2">
+              <Stat
+                stat={{ id: "nya-total", label: "items need your action", kind: "count", variant: "pill", value: String(allItems.length) }}
+                tone="red"
+              />
+            </span>
+          )}
         </>
       }
       className="h-full"
-      action={
+      subHeader={
         allItems.length > 0 ? (
           <div className="inline-flex items-center gap-0.5 bg-gray-100 p-0.5 rounded-lg border border-gray-200">
-            <button
-              onClick={() => setKindFilter("All")}
-              className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all ${kindFilter === "All" ? "bg-white text-slate-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
-            >
-              All ({allItems.length})
-            </button>
-            <button
-              onClick={() => setKindFilter("Leave")}
-              className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all ${kindFilter === "Leave" ? "bg-white text-amber-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
-            >
-              Leave ({leaveCount})
-            </button>
-            <button
-              onClick={() => setKindFilter("Refund")}
-              className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all ${kindFilter === "Refund" ? "bg-white text-purple-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
-            >
-              Refunds ({refundCount})
-            </button>
+            <FilterChip label="All" count={allItems.length} active={kindFilter === "All"} activeText="text-slate-700" onClick={() => setKindFilter("All")} />
+            <FilterChip label="Leave" count={leaveCount} active={kindFilter === "Leave"} activeText="text-amber-700" onClick={() => setKindFilter("Leave")} />
+            <FilterChip label="Refunds" count={refundCount} active={kindFilter === "Refund"} activeText="text-purple-700" onClick={() => setKindFilter("Refund")} />
           </div>
         ) : undefined
       }

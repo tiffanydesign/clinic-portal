@@ -3,8 +3,11 @@
 // survives navigating away and back within the same browser tab/session,
 // but resets on a fresh session — matching "记住选择，仅限本次会话".
 import { useSyncExternalStore } from "react";
+import type { TimeRange } from "../../../components/stat";
 
-export type TimeRange = "today" | "7d" | "30d";
+// Canonical shape lives with the Stat family (components/stat/types.ts);
+// re-exported here so existing `from "./kpiRangeStore"` imports keep working.
+export type { TimeRange };
 
 const STORAGE_KEY = "phenome_kpi_range";
 const VALID: TimeRange[] = ["today", "7d", "30d"];

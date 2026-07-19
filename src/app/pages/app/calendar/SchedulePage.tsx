@@ -14,6 +14,10 @@ import {
   APPTS, Appt, ApptOverride, TimeBlock, CLINICIANS, useSchedulableRooms, CLINICIAN_SELF_ID,
   NURSE_SELF_NAME, ANCHOR_DATE, applyOverride, buildWeek, minToClock,
 } from "./scheduleData";
+import { EmptySlotPopover, type EmptySlotTarget } from "./EmptySlotPopover";
+import { useAppointments, addAppointment } from "../dashboard/appointmentsStore";
+import { useAvailabilityStore } from "../availability/availabilityStore";
+import { DAYS, timeToMinutes } from "../availability/availabilityData";
 
 type ModalState =
   | { kind: "none" }
@@ -64,16 +68,19 @@ export function SchedulePage() {
   const goToday = () => setSelectedDate(ANCHOR_DATE);
 
   const [overrides, setOverrides] = useState<Record<string, ApptOverride>>({});
-  const [created, setCreated] = useState<Appt[]>([]);
+  const storeAppts = useAppointments();
   const [blocks, setBlocks] = useState<TimeBlock[]>([]);
   const [modal, setModal] = useState<ModalState>({ kind: "none" });
 
   const setOverride = (id: string, ov: ApptOverride) => setOverrides((p) => ({ ...p, [id]: { ...p[id], ...ov } }));
 
-  // effective appointment set (base + created, with overrides applied)
+  // Effective appointment set, with overrides applied. Sourced from the shared
+  // appointmentsStore rather than the static APPTS array so a booking created
+  // here (or by Reception) renders immediately and reaches the Front Desk
+  // Queue, which reads the same store.
   const allEffective = useMemo(
-    () => [...APPTS, ...created].map((a) => applyOverride(a, overrides[a.id])),
-    [created, overrides]
+    () => storeAppts.map((a) => applyOverride(a, overrides[a.id])),
+    [storeAppts, overrides]
   );
 
   // role scoping
@@ -119,6 +126,9 @@ export function SchedulePage() {
     return blocks.map((b) => ({ block: b, colKey: b.doctorId })).filter((p) => keys.has(p.colKey));
   }, [blocks, columns]);
 
+  const [slotTarget, setSlotTarget] = useState<EmptySlotTarget | null>(null);
+  const availability = useAvailabilityStore();
+
   // role capabilities
   const editable = role === "Admin" || role === "Reception" || role === "Clinician";
   const allowReassign = role === "Admin";
@@ -127,10 +137,51 @@ export function SchedulePage() {
   // interactions
   const openAppt = (a: Appt) => navigate(`${BASE}/appointment/${a.id}`);
 
-  const onEmptyClick = (colKey: string, startMin: number) => {
+  // Empty slot -> lightweight confirm popover -> booking modal (prefilled).
+  // The grid only ever mounts for Admin/Reception (Nurse/Clinician return
+  // MyScheduleView above), so there's no unprivileged path in here.
+  const onEmptyClick = (colKey: string, startMin: number, at: { x: number; y: number }) => {
     if (!isAnchorDay) return; // no booking against a date the mock data doesn't model
-    if (role === "Clinician") { setModal({ kind: "block" }); return; }
-    const defaults = byRoom ? { room: colKey, startMin } : { doctorId: colKey, startMin };
+    const colLabel = byRoom
+      ? (activeRooms.find((r) => r.id === colKey)?.name ?? colKey)
+      : (CLINICIANS.find((c) => c.id === colKey)?.name ?? colKey);
+    setSlotTarget({
+      colKey, startMin, x: at.x, y: at.y, colLabel, byRoom,
+      outsideHours: isOutsideWorkingHours(colKey, startMin),
+    });
+  };
+
+  // Soft signal only — booking outside hours stays allowed, same as everywhere
+  // else in the app.
+  //
+  // Checked against the real availability source (availabilityStore: the
+  // clinician's saved weekly hours + their Blocked Time), NOT the grid's own
+  // 08:00–19:00 render window — DayGrid clamps every click into that window,
+  // so a bounds check there could never fire.
+  //
+  // availabilityStore only models the signed-in clinician (Dr. Ebru Reis), and
+  // a room column has no clinician behind it at all, so everything else is
+  // reported as available rather than guessed at.
+  const isOutsideWorkingHours = (colKey: string, startMin: number): boolean => {
+    if (byRoom || colKey !== CLINICIAN_SELF_ID) return false;
+
+    const dateStr = format(selectedDate, "d MMM yyyy");
+    const onBlockedTime = availability.blockedTime.some(
+      (b) => b.date === dateStr && startMin >= b.startMin && startMin < b.startMin + b.durationMin
+    );
+    if (onBlockedTime) return true;
+
+    const day = availability.savedSchedule[DAYS[selectedDate.getDay()]];
+    if (!day?.active) return true;
+    return !day.slots.some((s) => startMin >= timeToMinutes(s.start) && startMin < timeToMinutes(s.end));
+  };
+
+  const confirmSlot = () => {
+    if (!slotTarget) return;
+    const defaults = slotTarget.byRoom
+      ? { room: slotTarget.colKey, startMin: slotTarget.startMin }
+      : { doctorId: slotTarget.colKey, startMin: slotTarget.startMin };
+    setSlotTarget(null);
     setModal({ kind: "new", defaults });
   };
 
@@ -191,7 +242,9 @@ export function SchedulePage() {
   const dateLabel = view === "week"
     ? `${format(weekStart, "d MMM")} – ${format(weekEnd, "d MMM yyyy")}`
     : format(selectedDate, "EEE, d MMM yyyy");
-  const effView: View = role === "Reception" || role === "Nurse" ? "day" : view;
+  // Nurse/Clinician already returned above (MyScheduleView), so only Admin and
+  // Reception reach this point — Reception is day-only, Admin keeps its choice.
+  const effView: View = role === "Reception" ? "day" : view;
   const isList = (role === "Admin" || role === "Reception") && mode === "list";
 
   return (
@@ -226,9 +279,11 @@ export function SchedulePage() {
         {isList ? (
           <ListView appts={scoped} onRowClick={openAppt} selectedDate={selectedDate} />
         ) : effView === "week" ? (
+          // Clinician returned above (MyScheduleView), so this grid is only
+          // ever Admin's — buildWeek is never self-scoped here.
           <WeekGrid
             weekStart={weekStart}
-            weekAppts={isAnchorWeek ? buildWeek(role === "Clinician" ? CLINICIAN_SELF_ID : null) : []}
+            weekAppts={isAnchorWeek ? buildWeek(null) : []}
             onApptClick={openAppt}
           />
         ) : (
@@ -255,7 +310,16 @@ export function SchedulePage() {
 
       {/* Modals */}
       {modal.kind === "new" && (
-        <NewAppointmentModal onClose={() => setModal({ kind: "none" })} currentAppts={allEffective} defaults={modal.defaults} onCreate={(a) => setCreated((p) => [...p, a])} />
+        <NewAppointmentModal onClose={() => setModal({ kind: "none" })} currentAppts={allEffective} defaults={modal.defaults} onCreate={addAppointment} />
+      )}
+
+      {slotTarget && (
+        <EmptySlotPopover
+          target={slotTarget}
+          date={selectedDate}
+          onCancel={() => setSlotTarget(null)}
+          onConfirm={confirmSlot}
+        />
       )}
       {modal.kind === "block" && (
         <BlockTimeModal onClose={() => setModal({ kind: "none" })} doctorId={CLINICIAN_SELF_ID} onCreate={(b) => setBlocks((p) => [...p, b])} />

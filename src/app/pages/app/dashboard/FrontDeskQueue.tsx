@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { CreditCard, MapPin, CheckCircle2, XCircle, Clock, Stethoscope, LogIn } from "lucide-react";
+import { CreditCard, MapPin, CheckCircle2, XCircle, Clock, Stethoscope, LogIn, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Appt } from "./dashboardData";
 import { JourneyProgressChip } from "./journey/JourneyProgress";
 import { StartTransactionModal } from "../../../components/StartTransactionModal";
+import { Stat } from "../../../components/stat";
 import {
   QueueGroup, GROUP_LABEL, groupQueue, primaryActionFor,
   consentOk, paymentOk, isLate, isReadOnlyInClinic,
@@ -271,13 +272,16 @@ function QueueList({ group, appts, unpaidOnly, selectedId, onOpen, onMarkArrived
   );
 }
 
+// Queue-group count rides in the Stat family's T4 `pill` tier — the tab
+// supplies the visible label, the pill supplies the number.
 function QueueTab({ label, count, active, onClick }: { label: string; count: number; active: boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className={`flex-1 px-2.5 py-1.5 text-[11px] font-bold rounded-md transition-all whitespace-nowrap text-center ${active ? "bg-white text-slate-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+      className={`flex-1 px-2.5 py-1.5 text-[11px] font-bold rounded-md transition-all whitespace-nowrap text-center inline-flex items-center justify-center gap-1.5 ${active ? "bg-white text-slate-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
     >
-      {label} ({count})
+      {label}
+      <Stat stat={{ id: `queue-${label}`, label, kind: "count", variant: "pill", value: String(count) }} />
     </button>
   );
 }
@@ -292,12 +296,13 @@ function QueueTab({ label, count, active, onClick }: { label: string; count: num
 // the tab auto-switches there and the just-arrived row is selected (blue
 // ring + scrolled into view), landing the front desk on their next step
 // without hunting for the patient again.
-export function FrontDeskQueue({ appts, tab, onTabChange, unpaidOnly = false, onOpen }: {
+export function FrontDeskQueue({ appts, tab, onTabChange, unpaidOnly = false, onOpen, onAdd }: {
   appts: Appt[];
   tab: QueueGroup;
   onTabChange: (g: QueueGroup) => void;
   unpaidOnly?: boolean;
   onOpen: (id: string) => void;
+  onAdd?: () => void;
 }) {
   const grouped = groupQueue(appts);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -318,8 +323,18 @@ export function FrontDeskQueue({ appts, tab, onTabChange, unpaidOnly = false, on
   return (
     <div className="h-full border border-gray-200 rounded-xl bg-white shadow-sm flex flex-col">
       <div className="border-b border-gray-200 shrink-0">
-        <div className="h-11 px-4 flex items-center">
+        <div className="h-11 px-4 flex items-center gap-2">
           <h3 className="font-bold text-gray-800 text-sm">Front Desk Queue</h3>
+          {onAdd && (
+            <button
+              onClick={onAdd}
+              title="Register patient"
+              aria-label="Register patient"
+              className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-600 hover:bg-slate-50 hover:border-slate-400 hover:text-slate-700 transition-colors shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          )}
         </div>
         <div className="px-3 pb-3">
           <div className="flex bg-gray-100 p-0.5 rounded-lg border border-gray-200">

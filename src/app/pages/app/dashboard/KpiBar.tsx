@@ -5,11 +5,12 @@ import {
   UserPlus, Clock, Users, BellRing, Activity, TestTube, FileSignature, DoorOpen,
   FileSearch, FileCheck2, Video, CalendarPlus,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAppContext } from "../../../context/AppContext";
 import { KPI_CONFIG, Kpi, metricKindLabel } from "./kpiData";
-import { Sparkline, DeltaLine, AnimatedNumber, sentimentFor } from "./DashboardShared";
-import { TimeRange, useKpiRange, setKpiRange, RANGE_LABEL, RANGE_PILL } from "./kpiRangeStore";
+import { Stat, type StatIconTone } from "../../../components/stat";
+import { TimeRange, useKpiRange, setKpiRange, RANGE_LABEL } from "./kpiRangeStore";
 
 // A small semantic icon+color per KPI — not a status/trend indicator (the
 // sparkline/delta already own that), just "what kind of thing is this
@@ -17,7 +18,7 @@ import { TimeRange, useKpiRange, setKpiRange, RANGE_LABEL, RANGE_PILL } from "./
 // are the app's existing 5-color semantic set (emerald/amber/blue/red), never
 // a new palette. Anything not listed here (a KPI added later) falls back to
 // a neutral slate icon rather than breaking.
-const KPI_ICON: Record<string, { icon: React.ComponentType<{ className?: string }>; tone: "emerald" | "amber" | "blue" | "red" }> = {
+const KPI_ICON: Record<string, { icon: LucideIcon; tone: StatIconTone }> = {
   "appts-today": { icon: CalendarClock, tone: "blue" },
   "results-pending": { icon: FileClock, tone: "amber" },
   "checked-in-now": { icon: UserCheck, tone: "emerald" },
@@ -40,24 +41,6 @@ const KPI_ICON: Record<string, { icon: React.ComponentType<{ className?: string 
   "follow-ups-to-book": { icon: CalendarPlus, tone: "amber" },
 };
 
-const TONE_CLASS: Record<"emerald" | "amber" | "blue" | "red", string> = {
-  emerald: "bg-emerald-50 text-emerald-600",
-  amber: "bg-amber-50 text-amber-600",
-  blue: "bg-blue-50 text-blue-600",
-  red: "bg-red-50 text-red-600",
-};
-
-function KpiIcon({ id }: { id: string }) {
-  const entry = KPI_ICON[id];
-  const Icon = entry?.icon ?? Activity;
-  const toneClass = TONE_CLASS[entry?.tone ?? "blue"];
-  return (
-    <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${toneClass}`}>
-      <Icon className="w-4 h-4" />
-    </div>
-  );
-}
-
 function RangeSwitcher({ range }: { range: TimeRange }) {
   const options: TimeRange[] = ["today", "7d", "30d"];
   return (
@@ -77,73 +60,28 @@ function RangeSwitcher({ range }: { range: TimeRange }) {
   );
 }
 
-function Card({
-  kpi,
-  locked,
-  range,
-  onOpen,
-}: {
+// Every catalog entry renders as the Stat family's T1 `card` tier — the
+// catalog itself is variant-agnostic data (see kpiData.ts), so the tier is
+// chosen here, at the render site.
+function KpiCard({ kpi, locked, range, onOpen }: {
   kpi: Kpi;
   locked: boolean;
   range: TimeRange;
   onOpen: (route?: string) => void;
 }) {
-  const rv = kpi.byRange[range];
-  const label = rv.label ?? kpi.label;
-  const isLive = kpi.kind === "live";
-  const pillText = isLive ? "LIVE" : RANGE_PILL[range];
-  const inverse = rv.inverse ?? kpi.inverse ?? false;
-  // Today's cards are a live glance at right-now counts, not a drill-down
-  // entry point — only 7d/30d have a real filtered list behind them.
-  const clickable = range !== "today";
-
+  const entry = KPI_ICON[kpi.id];
   return (
-    <button
-      onClick={clickable ? () => onOpen(kpi.route) : undefined}
-      className={`text-left border border-gray-300 rounded bg-white px-4 py-2.5 min-h-[88px] flex flex-col gap-1.5 relative transition-all ${clickable ? "hover:border-slate-400 hover:shadow-sm cursor-pointer" : "cursor-default"}`}
-    >
-      {/* Top row: icon + label/number on the left, badge + sparkline on the
-          right. The delta caption is NOT packed in here — at a true 4-up
-          layout (≈254px cards) a long caption like "vs previous 30 days"
-          collides with the 28px headline number. It gets its own full-width
-          row below instead. */}
-      <div className="flex items-center gap-3">
-        <KpiIcon id={kpi.id} />
-
-        <div className="flex-1 min-w-0 flex flex-col gap-1">
-          <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider leading-tight">{label}</span>
-          <div className="text-[28px] font-semibold text-gray-800 leading-none">
-            <AnimatedNumber value={rv.value} />
-          </div>
-        </div>
-
-        <div className="flex flex-col items-end gap-1.5 shrink-0">
-          <div className="flex items-center gap-1.5">
-            <span
-              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider shrink-0 ${
-                isLive ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-600"
-              }`}
-            >
-              {isLive && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
-              {pillText}
-            </span>
-            {locked && (
-              <span className="relative group/lock shrink-0">
-                <Lock className="w-3.5 h-3.5 text-gray-400" />
-                <span className="absolute right-0 top-full mt-1 w-44 bg-gray-800 text-white text-[10px] font-medium normal-case tracking-normal px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover/lock:opacity-100 transition-opacity pointer-events-none z-20">
-                  Default metric — set by your clinic
-                </span>
-              </span>
-            )}
-          </div>
-          <Sparkline data={rv.spark} trend={rv.trend} inverse={inverse} sentiment={rv.informational ? "neutral" : undefined} width={72} height={28} />
-        </div>
-      </div>
-
-      {/* Delta caption — full card width, so a long "vs previous 30 days"
-          never overlaps the headline number. */}
-      <DeltaLine text={rv.deltaText} trend={rv.trend} inverse={inverse} informational={rv.informational} />
-    </button>
+    <Stat
+      stat={{ ...kpi, variant: "card" }}
+      range={range}
+      locked={locked}
+      // Today's cards are a live glance at right-now counts, not a drill-down
+      // entry point — only 7d/30d have a real filtered list behind them.
+      clickable={range !== "today"}
+      icon={entry?.icon ?? Activity}
+      iconTone={entry?.tone ?? "blue"}
+      onOpen={onOpen}
+    />
   );
 }
 
@@ -204,10 +142,10 @@ export function KpiCards({ kpi }: { kpi: KpiBarState }) {
       <div className="@container">
         <div className="grid grid-cols-2 @[760px]:grid-cols-4 gap-4">
           {kpi.config.locked.map((k) => (
-            <Card key={k.id} kpi={k} locked range={kpi.range} onOpen={kpi.openRoute} />
+            <KpiCard key={k.id} kpi={k} locked range={kpi.range} onOpen={kpi.openRoute} />
           ))}
           {kpi.configurableCards.map((k) => (
-            <Card key={k.id} kpi={k} locked={false} range={kpi.range} onOpen={kpi.openRoute} />
+            <KpiCard key={k.id} kpi={k} locked={false} range={kpi.range} onOpen={kpi.openRoute} />
           ))}
         </div>
       </div>

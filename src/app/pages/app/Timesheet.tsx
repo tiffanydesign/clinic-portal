@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
-import { ChevronDown, Download, Calendar as CalendarIcon, Users, Search, X, Check, ArrowRight } from "lucide-react";
+import {
+  ChevronDown, Download, Calendar as CalendarIcon, Users, Search, X,
+  CalendarClock, Timer, UserCheck, Zap, Clock, Repeat, Moon, Plane, type LucideIcon,
+} from "lucide-react";
+import { Stat, StatStripGroup, type StatIconTone } from "../../components/stat";
 import { toast } from "sonner";
 import { useAppContext } from "../../context/AppContext";
 import { Link } from "react-router";
@@ -111,9 +115,25 @@ const ALL_STAFF: StaffMember[] = [
   }
 ];
 
+// Icon + colour per schedule-type, so the daily table reads at a glance.
+const SCHEDULE_TYPE_META: Record<DailyRecord["type"], { icon: LucideIcon; cls: string }> = {
+  Regular: { icon: Clock, cls: "bg-blue-50 text-blue-700 border-blue-200" },
+  Override: { icon: Repeat, cls: "bg-purple-50 text-purple-700 border-purple-200" },
+  "Day Off": { icon: Moon, cls: "bg-gray-100 text-gray-500 border-gray-300" },
+  "On Leave": { icon: Plane, cls: "bg-red-50 text-red-700 border-red-200" },
+};
+
+// Role → pill classes, shared by the picker and the table's staff column.
+const ROLE_PILL: Record<Role, string> = {
+  Clinician: "bg-blue-50 text-blue-700 border-blue-200",
+  Nurse: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  Receptionist: "bg-purple-50 text-purple-700 border-purple-200",
+};
+
 export function TimesheetPage() {
   const [view, setView] = useState<'Daily' | 'Weekly'>('Daily');
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  // Default to viewing all staff — no "select staff first" empty state.
+  const [selectedIds, setSelectedIds] = useState<string[]>(ALL_STAFF.map(s => s.id));
   const [pickerOpen, setPickerOpen] = useState(false);
   const [search, setSearch] = useState("");
   
@@ -185,14 +205,26 @@ export function TimesheetPage() {
   const variance = totalActual - totalScheduled;
   const attendanceRate = totalDaysScheduled > 0 ? Math.round(((totalDaysScheduled - totalDaysLeave) / totalDaysScheduled) * 100) : 0;
 
+  // Overview strip: state-driven icon tone so the bar signals at a glance.
+  // Tone always rides alongside the suffix text, never carrying meaning alone.
+  const varianceText = variance < 0 ? `${Math.abs(variance)}h under scheduled` : variance > 0 ? `${variance}h over scheduled` : "on track with schedule";
+  const recordedTone: StatIconTone = variance < 0 ? "red" : variance > 0 ? "amber" : "emerald";
+  const attendanceTone: StatIconTone = attendanceRate >= 100 ? "emerald" : attendanceRate >= 80 ? "amber" : "red";
+  const staffCount = selectedStaff.length;
+
   return (
     <div className="flex flex-col h-full bg-gray-50">
       
       {/* Top Header Row */}
       <div className="bg-white border-b border-gray-200 px-8 py-5 flex justify-between items-center shrink-0">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Timesheet</h1>
-          <p className="text-sm text-gray-500 mt-1">Staff working hours and attendance records</p>
+        <div className="flex items-center gap-3.5">
+          <span className="w-11 h-11 rounded-xl bg-slate-800 text-white flex items-center justify-center shrink-0">
+            <Clock className="w-5 h-5" />
+          </span>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800 leading-tight">Timesheet</h1>
+            <p className="text-sm text-gray-500 mt-0.5">Staff working hours and attendance records</p>
+          </div>
         </div>
 
         <div className="relative" ref={exportRef}>
@@ -224,7 +256,7 @@ export function TimesheetPage() {
               className="w-[400px] min-h-[38px] border border-gray-300 bg-white rounded shadow-sm flex items-center px-2 cursor-text transition-colors hover:border-gray-400"
             >
               {selectedStaff.length === 0 ? (
-                <span className="text-sm text-gray-400 pl-2">Select staff...</span>
+                <span className="text-sm text-gray-400 pl-2">All staff · none selected</span>
               ) : (
                 <div className="flex flex-wrap gap-1.5 py-1.5 w-[360px] max-h-24 overflow-y-auto">
                   {selectedStaff.map(s => (
@@ -278,7 +310,7 @@ export function TimesheetPage() {
                               <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 mr-3">{s.avatar}</div>
                               <span className="text-sm font-medium text-gray-800">{s.name}</span>
                             </div>
-                            <span className="px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold rounded">Clinician</span>
+                            <span className={`px-2 py-0.5 border text-[10px] font-bold rounded ${ROLE_PILL.Clinician}`}>Clinician</span>
                           </div>
                         );
                       })}
@@ -300,7 +332,7 @@ export function TimesheetPage() {
                               <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 mr-3">{s.avatar}</div>
                               <span className="text-sm font-medium text-gray-800">{s.name}</span>
                             </div>
-                            <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold rounded">Nurse</span>
+                            <span className={`px-2 py-0.5 border text-[10px] font-bold rounded ${ROLE_PILL.Nurse}`}>Nurse</span>
                           </div>
                         );
                       })}
@@ -322,7 +354,7 @@ export function TimesheetPage() {
                               <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 mr-3">{s.avatar}</div>
                               <span className="text-sm font-medium text-gray-800">{s.name}</span>
                             </div>
-                            <span className="px-2 py-0.5 bg-purple-50 text-purple-700 border border-purple-200 text-[10px] font-bold rounded">Receptionist</span>
+                            <span className={`px-2 py-0.5 border text-[10px] font-bold rounded ${ROLE_PILL.Receptionist}`}>Receptionist</span>
                           </div>
                         );
                       })}
@@ -390,43 +422,52 @@ export function TimesheetPage() {
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="px-8 py-6 shrink-0 grid grid-cols-4 gap-6">
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Total Scheduled</div>
-          <div className="text-3xl font-bold text-gray-800">{totalScheduled}h</div>
-          <div className="text-sm text-gray-500 mt-1 font-medium">across {selectedStaff.length} staff</div>
+      {/* Overview — Stat family T3 `strip`. Every figure below is computed in
+          the aggregation block above from the existing ALL_STAFF records; the
+          Stat components never derive a value themselves. */}
+      {selectedStaff.length > 0 && (
+        <div className="px-8 py-4 shrink-0">
+          <StatStripGroup>
+            <Stat
+              stat={{ id: "scheduled", label: "Scheduled", kind: "count", variant: "strip",
+                      value: `${totalScheduled}h`, suffix: `across ${staffCount} staff` }}
+              icon={CalendarClock}
+              iconTone="slate"
+            />
+            <Stat
+              stat={{ id: "recorded", label: "Recorded", kind: "count", variant: "strip",
+                      value: `${totalActual}h`, suffix: varianceText }}
+              icon={Timer}
+              iconTone={recordedTone}
+            />
+            <Stat
+              stat={{ id: "attendance", label: "Attendance", kind: "count", variant: "strip",
+                      value: `${attendanceRate}%`,
+                      suffix: totalDaysLeave > 0 ? `${totalDaysLeave} day${totalDaysLeave === 1 ? "" : "s"} on leave` : "no leave taken" }}
+              icon={UserCheck}
+              iconTone={attendanceTone}
+            />
+            <Stat
+              stat={{ id: "overtime", label: "Overtime", kind: "count", variant: "strip",
+                      value: `${totalOvertime}h`, suffix: `${totalAppointments} appointments` }}
+              icon={Zap}
+              iconTone={totalOvertime > 0 ? "amber" : "slate"}
+            />
+          </StatStripGroup>
         </div>
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Total Recorded</div>
-          <div className="text-3xl font-bold text-gray-800">{totalActual}h</div>
-          <div className={`text-sm font-bold mt-1 ${variance < 0 ? 'text-red-500' : variance > 0 ? 'text-orange-500' : 'text-green-500'}`}>
-            {variance < 0 ? `${Math.abs(variance)}h under` : variance > 0 ? `${variance}h over` : 'On track'}
-          </div>
-        </div>
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Attendance Rate</div>
-          <div className="text-3xl font-bold text-gray-800">{attendanceRate}%</div>
-          <div className="text-sm text-gray-500 mt-1 font-medium">{totalDaysLeave} days on leave</div>
-        </div>
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Overtime</div>
-          <div className="text-3xl font-bold text-gray-800">{totalOvertime}h</div>
-          <div className="text-sm text-gray-500 mt-1 font-medium">across {selectedStaff.length} staff</div>
-        </div>
-      </div>
+      )}
 
       {/* Data Table Area */}
       <div className="flex-1 overflow-hidden px-8 pb-8 flex flex-col min-h-0 relative">
         {selectedStaff.length === 0 ? (
-          <div className="flex-1 bg-white border border-gray-300 rounded-xl flex flex-col items-center justify-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-              <CalendarIcon className="w-8 h-8 text-gray-400" />
+          <div className="flex-1 bg-white border border-gray-200 rounded-xl flex flex-col items-center justify-center py-16">
+            <div className="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+              <Users className="w-7 h-7 text-slate-400" />
             </div>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">Select staff to view timesheet</h2>
-            <p className="text-gray-500 mb-6 text-sm">Choose one or more team members using the picker above</p>
-            <button onClick={() => handleSelectGroup('All')} className="px-6 py-2 bg-slate-600 text-white text-sm font-bold rounded-lg hover:bg-slate-700 transition-colors shadow-sm">
-              View All Staff
+            <h2 className="text-base font-bold text-gray-800 mb-1">No staff selected</h2>
+            <p className="text-gray-500 mb-5 text-sm">Add team members with the picker above, or view everyone.</p>
+            <button onClick={() => handleSelectGroup('All')} className="inline-flex items-center gap-2 px-5 py-2 bg-slate-700 text-white text-sm font-bold rounded-lg hover:bg-slate-800 transition-colors shadow-sm">
+              <Users className="w-4 h-4" /> View All Staff
             </button>
           </div>
         ) : (
@@ -484,17 +525,14 @@ export function TimesheetPage() {
                           <td className={`p-4 border-r border-gray-200 sticky left-0 z-10 shadow-[1px_0_0_#e5e7eb] group-hover:bg-slate-50 transition-colors ${isFirst ? 'bg-white' : bgClass}`}>
                             {isFirst && (
                               <div className="flex items-center">
-                                <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-white shrink-0 mr-3">
+                                <div className="w-8 h-8 rounded-full bg-slate-500 flex items-center justify-center text-xs font-bold text-white shrink-0 mr-3">
                                   {staff.avatar}
                                 </div>
                                 <div className="min-w-0">
                                   <Link to={`/staff/${staff.id}`} className="text-sm font-bold text-gray-800 truncate hover:underline hover:text-slate-600 block">
                                     {staff.name}
                                   </Link>
-                                  <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded mt-0.5 inline-block
-                                    ${staff.role === 'Clinician' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 
-                                      staff.role === 'Nurse' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 
-                                      'bg-purple-50 text-purple-700 border border-purple-200'}`}>
+                                  <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded border mt-0.5 inline-block ${ROLE_PILL[staff.role]}`}>
                                     {staff.role}
                                   </span>
                                 </div>
@@ -503,13 +541,15 @@ export function TimesheetPage() {
                           </td>
                           <td className="p-4 font-medium text-gray-700">{rec.date}</td>
                           <td className="p-4">
-                            <span className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded border
-                              ${rec.type === 'Regular' ? 'bg-blue-50 text-blue-700 border-blue-200' : 
-                                rec.type === 'Override' ? 'bg-purple-50 text-purple-700 border-purple-200' : 
-                                rec.type === 'On Leave' ? 'bg-red-100 text-red-800 border-red-300' : 
-                                'bg-gray-200 text-gray-600 border-gray-300'}`}>
-                              {rec.type}
-                            </span>
+                            {(() => {
+                              const meta = SCHEDULE_TYPE_META[rec.type];
+                              const TypeIcon = meta.icon;
+                              return (
+                                <span className={`inline-flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded border ${meta.cls}`}>
+                                  <TypeIcon className="w-3 h-3" /> {rec.type}
+                                </span>
+                              );
+                            })()}
                           </td>
                           <td className="p-4 text-gray-600">{rec.scheduled}</td>
                           <td className="p-4 text-right text-gray-600">{rec.scheduledHours > 0 ? `${rec.scheduledHours}h` : '—'}</td>
@@ -540,7 +580,7 @@ export function TimesheetPage() {
                       <tr key={staff.id} className="hover:bg-slate-50 transition-colors bg-white group">
                         <td className="p-4 border-r border-gray-200 sticky left-0 z-10 bg-white group-hover:bg-slate-50 transition-colors shadow-[1px_0_0_#e5e7eb]">
                           <div className="flex items-center">
-                            <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-white shrink-0 mr-3">
+                            <div className="w-8 h-8 rounded-full bg-slate-500 flex items-center justify-center text-xs font-bold text-white shrink-0 mr-3">
                               {staff.avatar}
                             </div>
                             <div className="min-w-0">

@@ -6,6 +6,7 @@ import {
   CURRENT_ADMIN_ID, statusPillClass,
 } from "./staffData";
 import { logAudit, AUDIT_ACTOR } from "../clinic-settings/auditStore";
+import { Stat } from "../../../components/stat";
 
 function InfoRow({ label, value, amber = false }: { label: string; value: React.ReactNode; amber?: boolean }) {
   return (
@@ -35,23 +36,15 @@ function SectionCard({
 
 // A stat tile is only a button when it has somewhere real to go — a dashed-out
 // "—" for a non-clinical role stays inert rather than pretending to drill down.
+// Thin adapter over the Stat family's T2 `tile` tier — keeps this file's call
+// sites readable while every pixel comes from the shared component.
 function StatTile({
-  label, value, amber, onClick,
+  id, label, value, amber, onClick,
 }: {
-  label: string; value: React.ReactNode; amber?: boolean; onClick?: () => void;
+  id: string; label: string; value: React.ReactNode; amber?: boolean; onClick?: () => void;
 }) {
-  const Tag = onClick ? "button" : "div";
   return (
-    <Tag
-      onClick={onClick}
-      className={`min-h-[44px] text-left bg-white border border-gray-300 rounded-xl px-5 py-4 shadow-sm transition-colors ${onClick ? "hover:border-slate-400 hover:shadow-md cursor-pointer" : ""}`}
-    >
-      <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-1.5">{label}</div>
-      <div className={`text-2xl font-semibold ${amber ? "text-amber-600" : "text-gray-800"} flex items-center gap-2`}>
-        {value}
-        {amber && <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />}
-      </div>
-    </Tag>
+    <Stat stat={{ id, label, kind: "count", variant: "tile", value: String(value), alert: amber, onClick }} />
   );
 }
 
@@ -136,13 +129,14 @@ export function StaffOverviewTab() {
           person, and is anything backing up". Results Awaiting is the only
           number on this whole page allowed to turn amber. */}
       <div className="grid grid-cols-4 gap-4">
-        <StatTile label="Assigned Patients" value={isClinical ? staff.patients : "—"} onClick={isClinical ? goPatients : undefined} />
-        <StatTile label="Active Journeys" value={isClinical ? (snapshot?.activeJourneys ?? 0) : "—"} onClick={isClinical ? goPatients : undefined} />
-        <StatTile label="Upcoming 7 Days" value={isClinical ? (snapshot?.upcoming7Days ?? 0) : "—"} onClick={isClinical ? goSchedule : undefined} />
+        <StatTile id="assigned-patients" label="Assigned Patients" value={isClinical ? staff.patients : "—"} onClick={isClinical ? goPatients : undefined} />
+        <StatTile id="active-journeys" label="Active Journeys" value={isClinical ? (snapshot?.activeJourneys ?? 0) : "—"} onClick={isClinical ? goPatients : undefined} />
+        <StatTile id="upcoming-7-days" label="Upcoming 7 Days" value={isClinical ? (snapshot?.upcoming7Days ?? 0) : "—"} onClick={isClinical ? goSchedule : undefined} />
         {isNurse ? (
-          <StatTile label="Steps Completed Today" value={snapshot?.stepsCompletedToday ?? 0} />
+          <StatTile id="steps-completed-today" label="Steps Completed Today" value={snapshot?.stepsCompletedToday ?? 0} />
         ) : (
           <StatTile
+            id="results-awaiting"
             label="Results Awaiting"
             value={isClinician ? (snapshot?.resultsAwaiting ?? 0) : "—"}
             amber={isClinician && (snapshot?.resultsAwaiting ?? 0) > 0}

@@ -1,10 +1,18 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
-import { Search, ChevronDown, Download, Plus, MoreHorizontal, FileText, Phone, Mail, UserPlus, X, Filter, Check, ArrowRight } from "lucide-react";
+import {
+  Search, ChevronDown, Download, Plus, MoreHorizontal, FileText, Phone, Mail, UserPlus, X, Filter, Check, ArrowRight,
+  Users, UserCheck, UserX, Clock, CalendarCheck, CalendarClock, FlaskConical, Activity, type LucideIcon,
+} from "lucide-react";
+import { Stat, StatStripGroup, type StatIconTone } from "../../components/stat";
 import { toast } from "sonner";
 import { useAppContext, Role } from "../../context/AppContext";
 import { FilterSelect } from "../../components/FilterSelect";
-import { MOCK_PATIENTS, Patient } from "./patientsData";
+import { MOCK_PATIENTS, Patient, ageSexLabel } from "./patientsData";
+import { usePatients } from "./patientsStore";
+import { RegisterPatientModal } from "./patients/RegisterPatientModal";
+import { NewAppointmentModal } from "./calendar/CreateModals";
+import { addAppointment } from "./dashboard/appointmentsStore";
 import { primaryApptForPatient } from "./dashboard/dashboardData";
 import { useAppointments } from "./dashboard/appointmentsStore";
 import { JourneyProgressChip } from "./dashboard/journey/JourneyProgress";
@@ -16,6 +24,36 @@ export { MOCK_PATIENTS };
 const CLINICIAN_NAME_OPTIONS = ["Assigned Clinician: All", ...MOCK_STAFF.filter((s) => s.role === "Clinician").map((s) => s.name)];
 const NURSE_NAME_OPTIONS = ["Assigned Nurse: All", ...MOCK_STAFF.filter((s) => s.role === "Nurse").map((s) => s.name)];
 
+// Per-role summary rendered through the Stat family's T3 `strip` tier. These
+// are `count` semantics — a roster snapshot with no period switcher behind it
+// — so per the family's discipline they may never become T1 cards.
+type StripItem = {
+  id: string;
+  value: string;
+  label: string;
+  sub: string;
+  icon: LucideIcon;
+  tone: StatIconTone;
+  alert?: boolean;
+};
+
+function KpiStrip({ items }: { items: StripItem[] }) {
+  return (
+    <div className="px-8 py-4 shrink-0">
+      <StatStripGroup>
+        {items.map((s) => (
+          <Stat
+            key={s.id}
+            stat={{ id: s.id, label: s.label, kind: "count", variant: "strip", value: s.value, suffix: s.sub, alert: s.alert }}
+            icon={s.icon}
+            iconTone={s.tone}
+          />
+        ))}
+      </StatStripGroup>
+    </div>
+  );
+}
+
 export function PatientsPage() {
   const { role } = useAppContext();
   const navigate = useNavigate();
@@ -23,7 +61,15 @@ export function PatientsPage() {
   const [searchParams] = useSearchParams();
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const allPatients = usePatients();
   const [showNewPatientModal, setShowNewPatientModal] = useState(false);
+  // Seeds the register form from the search box ("Register '{term}' as new patient").
+  const [registerPrefill, setRegisterPrefill] = useState("");
+  // Set when the operator picks "Book first appointment" on the success step —
+  // closes registration and hands the new patient straight to the booking flow.
+  const [bookFor, setBookFor] = useState<Patient | null>(null);
+
+  const openRegister = (prefill = "") => { setRegisterPrefill(prefill); setShowNewPatientModal(true); };
   const [statusFilter, setStatusFilter] = useState("Status: All");
   // Deep-link support (see the Staff Overview page's stat tiles): ?clinician=
   // or ?nurse= (by display name — see patientsData.ts's Patient.clinician/
@@ -38,8 +84,10 @@ export function PatientsPage() {
   const [nextApptFilter, setNextApptFilter] = useState("Next Appt: All");
   const [journeyFilter, setJourneyFilter] = useState("Journey Status: All");
 
-  // Filters based on Role
-  let patients = MOCK_PATIENTS;
+  // Filters based on Role. Reads the live registry (not the static
+  // MOCK_PATIENTS array) so a patient registered a second ago is immediately
+  // searchable here.
+  let patients: Patient[] = allPatients;
   if (role === 'Clinician') patients = patients.filter(p => p.clinician === "Dr. Ebru Reis");
   if (role === 'Nurse') patients = patients.filter(p => p.nurse === "Berna Koç" && p.nextAppt?.includes("3 Jul"));
   if (role === 'Admin') {
@@ -85,12 +133,13 @@ export function PatientsPage() {
               <Download className="w-4 h-4 mr-2 text-gray-500" /> Export
             </button>
           )}
+          {/* Admin + Reception only — Nurse/Clinician never see a register entry. */}
           {(role === 'Admin' || role === 'Reception') && (
-            <button 
-              onClick={() => setShowNewPatientModal(true)}
-              className="flex items-center px-4 py-2 bg-slate-600 text-white rounded-lg text-sm font-bold hover:bg-slate-700 transition-colors shadow-sm"
+            <button
+              onClick={() => openRegister()}
+              className="flex items-center min-h-11 px-4 py-2 bg-slate-600 text-white rounded-lg text-sm font-bold hover:bg-slate-700 transition-colors shadow-sm"
             >
-              <Plus className="w-4 h-4 mr-2" /> {role === 'Admin' ? 'New Patient' : 'Register New Patient'}
+              <UserPlus className="w-4 h-4 mr-2" /> Register Patient
             </button>
           )}
         </div>
@@ -157,85 +206,29 @@ export function PatientsPage() {
   };
 
   const KPICards = () => {
-    if (role === 'Admin') return (
-      <div className="px-8 py-5 shrink-0 grid grid-cols-4 gap-6">
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Total Patients</div>
-          <div className="text-3xl font-bold text-gray-800">247</div>
-          <div className="text-sm text-gray-500 mt-1 font-medium">12 new this month</div>
-        </div>
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Active Patients</div>
-          <div className="text-3xl font-bold text-gray-800">189</div>
-          <div className="text-sm text-gray-500 mt-1 font-medium">76% of total</div>
-        </div>
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Unassigned</div>
-          <div className="text-3xl font-bold text-gray-800">3</div>
-          <div className="text-sm text-orange-600 mt-1 font-bold">no clinician assigned</div>
-        </div>
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Pending Onboarding</div>
-          <div className="text-3xl font-bold text-gray-800">8</div>
-          <div className="text-sm text-gray-500 mt-1 font-medium">registered but no first visit</div>
-        </div>
-      </div>
-    );
+    if (role === 'Admin') return <KpiStrip items={[
+      { id: "total-patients", value: "247", label: "Total Patients", sub: "12 new this month", icon: Users, tone: "slate" },
+      { id: "active-patients", value: "189", label: "Active Patients", sub: "76% of total", icon: UserCheck, tone: "emerald" },
+      { id: "unassigned", value: "3", label: "Unassigned", sub: "no clinician assigned", icon: UserX, tone: "amber", alert: true },
+      { id: "pending-onboarding", value: "8", label: "Pending Onboarding", sub: "registered but no first visit", icon: Clock, tone: "blue" },
+    ]} />;
 
-    if (role === 'Reception') return (
-      <div className="px-8 py-5 shrink-0 grid grid-cols-3 gap-6">
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Today's Appointments</div>
-          <div className="text-3xl font-bold text-gray-800">14</div>
-          <div className="text-sm text-gray-500 mt-1 font-medium">6 checked in · 3 waiting · 5 upcoming</div>
-        </div>
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Awaiting Check-in</div>
-          <div className="text-3xl font-bold text-gray-800">3</div>
-          <div className="text-sm text-gray-500 mt-1 font-medium">consent or payment pending</div>
-        </div>
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">New Registrations Today</div>
-          <div className="text-3xl font-bold text-gray-800">2</div>
-          <div className="text-sm text-gray-500 mt-1 font-medium">registered today</div>
-        </div>
-      </div>
-    );
+    if (role === 'Reception') return <KpiStrip items={[
+      { id: "todays-appointments", value: "14", label: "Today's Appointments", sub: "6 checked in · 3 waiting · 5 upcoming", icon: CalendarCheck, tone: "blue" },
+      { id: "awaiting-check-in", value: "3", label: "Awaiting Check-in", sub: "consent or payment pending", icon: Clock, tone: "amber" },
+      { id: "new-registrations", value: "2", label: "New Registrations Today", sub: "registered today", icon: UserPlus, tone: "emerald" },
+    ]} />;
 
-    if (role === 'Clinician') return (
-      <div className="px-8 py-5 shrink-0 grid grid-cols-3 gap-6">
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">My Patients</div>
-          <div className="text-3xl font-bold text-gray-800">{patients.length}</div>
-          <div className="text-sm text-gray-500 mt-1 font-medium">assigned to you</div>
-        </div>
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Results to Review</div>
-          <div className="text-3xl font-bold text-gray-800">5</div>
-          <div className="text-sm text-red-600 mt-1 font-bold">2 urgent</div>
-        </div>
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Follow-ups Due</div>
-          <div className="text-3xl font-bold text-gray-800">3</div>
-          <div className="text-sm text-gray-500 mt-1 font-medium">within next 7 days</div>
-        </div>
-      </div>
-    );
+    if (role === 'Clinician') return <KpiStrip items={[
+      { id: "my-patients", value: String(patients.length), label: "My Patients", sub: "assigned to you", icon: Users, tone: "slate" },
+      { id: "results-to-review", value: "5", label: "Results to Review", sub: "2 urgent", icon: FlaskConical, tone: "red", alert: true },
+      { id: "follow-ups-due", value: "3", label: "Follow-ups Due", sub: "within next 7 days", icon: CalendarClock, tone: "blue" },
+    ]} />;
 
-    if (role === 'Nurse') return (
-      <div className="px-8 py-5 shrink-0 grid grid-cols-2 gap-6">
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">My Patients Today</div>
-          <div className="text-3xl font-bold text-gray-800">{patients.length}</div>
-          <div className="text-sm text-gray-500 mt-1 font-medium">assigned to you today</div>
-        </div>
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Active Journeys</div>
-          <div className="text-3xl font-bold text-gray-800">4</div>
-          <div className="text-sm text-gray-500 mt-1 font-medium">2 awaiting you</div>
-        </div>
-      </div>
-    );
+    if (role === 'Nurse') return <KpiStrip items={[
+      { id: "my-patients-today", value: String(patients.length), label: "My Patients Today", sub: "assigned to you today", icon: Users, tone: "slate" },
+      { id: "active-journeys", value: "4", label: "Active Journeys", sub: "2 awaiting you", icon: Activity, tone: "emerald" },
+    ]} />;
 
     return null;
   };
@@ -326,8 +319,26 @@ export function PatientsPage() {
                 {patients.length === 0 ? (
                   <tr>
                     <td colSpan={10} className="p-16 text-center text-gray-500">
-                      <div className="text-lg font-bold mb-2">No patients match your criteria</div>
-                      <p>Try adjusting your filters or search terms.</p>
+                      {/* A search that finds nobody is the walk-in signal: offer to
+                          register the typed name straight away. Filter-only misses
+                          keep the plain message — there's no name to seed. */}
+                      {search && (role === 'Admin' || role === 'Reception') ? (
+                        <>
+                          <div className="text-lg font-bold mb-2 text-gray-700">No patients found</div>
+                          <p className="mb-5">Nobody matches “{search}”.</p>
+                          <button
+                            onClick={() => openRegister(search)}
+                            className="inline-flex items-center gap-2 min-h-11 px-4 py-2 border border-gray-300 rounded-lg text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 hover:border-slate-400 transition-colors shadow-sm"
+                          >
+                            <UserPlus className="w-4 h-4 text-gray-500" /> Register “{search}” as new patient
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <div className="text-lg font-bold mb-2">No patients match your criteria</div>
+                          <p>Try adjusting your filters or search terms.</p>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ) : patients.map(p => {
@@ -371,7 +382,7 @@ export function PatientsPage() {
                             <div className="font-medium text-gray-800">{p.phone}</div>
                             <div className="text-[10px] text-gray-500">{p.email}</div>
                           </td>
-                          <td className="p-4 text-gray-600 font-medium">{p.age} · {p.sex}</td>
+                          <td className="p-4 text-gray-600 font-medium">{ageSexLabel(p)}</td>
                           <td className="p-4">
                             <span className={`px-2 py-0.5 text-[10px] font-bold rounded 
                               ${p.group === 'VIP' ? 'bg-amber-100 text-amber-800' : 
@@ -462,7 +473,7 @@ export function PatientsPage() {
                       {/* --- Clinician Cols --- */}
                       {role === 'Clinician' && (
                         <>
-                          <td className="p-4 text-gray-600 font-medium">{p.age} · {p.sex}</td>
+                          <td className="p-4 text-gray-600 font-medium">{ageSexLabel(p)}</td>
                           <td className="p-4 text-center" onClick={e => e.stopPropagation()}>
                             {p.flag === 'Urgent' && <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center cursor-pointer"><div className="w-2.5 h-2.5 bg-red-600 rounded-full" /></div>}
                             {p.flag === 'Follow-up' && <div className="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center cursor-pointer"><div className="w-2.5 h-2.5 bg-orange-500 rounded-full" /></div>}
@@ -534,65 +545,25 @@ export function PatientsPage() {
         </div>
       </div>
 
-      {/* New Patient Modal */}
+      {/* Register Patient — the shared 2-step form (patients/RegisterPatientModal),
+          same component the Reception dashboard and the booking flow use. */}
       {showNewPatientModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
-            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 shrink-0">
-              <h2 className="text-lg font-bold text-gray-800">Register New Patient</h2>
-              <button onClick={() => setShowNewPatientModal(false)} className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            
-            <div className="p-6 space-y-6 overflow-y-auto">
-              <div className="flex items-center justify-center space-x-4 mb-2">
-                <div className="flex items-center text-blue-700 font-bold text-sm"><div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center mr-2">1</div> Personal</div>
-                <div className="w-12 h-px bg-gray-200"></div>
-                <div className="flex items-center text-gray-400 font-bold text-sm"><div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center mr-2">2</div> Contact</div>
-                <div className="w-12 h-px bg-gray-200"></div>
-                <div className="flex items-center text-gray-400 font-bold text-sm"><div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center mr-2">3</div> Clinic</div>
-              </div>
+        <RegisterPatientModal
+          prefillName={registerPrefill}
+          onClose={() => { setShowNewPatientModal(false); setRegisterPrefill(""); }}
+          onBookFirst={(p) => setBookFor(p)}
+        />
+      )}
 
-              <div className="grid grid-cols-12 gap-4">
-                <div className="col-span-3">
-                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Title</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-slate-500 bg-white">
-                    <option>Mr</option><option>Mrs</option><option>Ms</option><option>Dr</option>
-                  </select>
-                </div>
-                <div className="col-span-4">
-                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">First Name <span className="text-red-500">*</span></label>
-                  <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-slate-500" />
-                </div>
-                <div className="col-span-5">
-                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Last Name <span className="text-red-500">*</span></label>
-                  <input type="text" className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-slate-500" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Date of Birth <span className="text-red-500">*</span></label>
-                  <input type="date" className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-slate-500" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Sex <span className="text-red-500">*</span></label>
-                  <select defaultValue="" className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-slate-500 bg-white">
-                    <option value="" disabled>Select sex...</option>
-                    <option>Male</option><option>Female</option><option>Other</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end shrink-0">
-              <button onClick={() => { toast.success("Patient registered (Demo)."); setShowNewPatientModal(false); }} className="px-6 py-2 bg-slate-600 hover:bg-slate-700 text-white rounded text-sm font-bold transition-colors shadow-sm flex items-center">
-                Next Step <ArrowRight className="w-4 h-4 ml-2" />
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Walk-in closure: "Book first appointment" hands the just-registered
+          patient straight to the existing booking flow, already selected. */}
+      {bookFor && (
+        <NewAppointmentModal
+          onClose={() => setBookFor(null)}
+          onCreate={(a) => { addAppointment(a); setBookFor(null); }}
+          currentAppts={appts}
+          defaults={{ patientName: bookFor.name }}
+        />
       )}
     </div>
   );

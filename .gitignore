@@ -23,3 +23,6 @@ Thumbs.db
 
 # Playwright artifacts
 .playwright-mcp/
+
+# impeccable design-tool local cache
+.impeccable/

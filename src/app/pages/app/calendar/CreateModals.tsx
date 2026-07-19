@@ -5,6 +5,10 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { FilterSelect } from "../../../components/FilterSelect";
 import { ClinicianAvailabilitySelect } from "./ClinicianAvailabilitySelect";
+import { usePatients, toApptPatient } from "../patientsStore";
+import { RegisterPatientModal } from "../patients/RegisterPatientModal";
+import { DiscardDialog } from "../../../components/DiscardDialog";
+import type { Patient as ApptPatient } from "../dashboard/dashboardData";
 import {
   APPTS, Appt, CLINICIANS, NURSES, useSchedulableRooms, NEW_APPT_TYPES, DURATION_DEFAULTS,
   TimeBlock, clockToMin, fmtRange, minToClock,
@@ -50,8 +54,14 @@ const TIME_OPTIONS: string[] = (() => {
   return out;
 })();
 
-// unique patients from the mock set for the search picker
-const PATIENTS = Array.from(new Map(APPTS.map((a) => [a.patient.name, a.patient])).values());
+// Patient picker source. Previously derived from APPTS — i.e. only patients who
+// already had an appointment — so a freshly registered patient could never be
+// booked. Now projected off the live registry (patientsStore), which is what
+// makes "register mid-booking, come back, patient is selected" possible.
+function useBookablePatients(): ApptPatient[] {
+  const registry = usePatients();
+  return useMemo(() => registry.map(toApptPatient), [registry]);
+}
 
 // The room a slot needs, driven entirely by appointment type — video visits
 // need no physical room at all. Feeds both the auto-assignment and the
@@ -76,16 +86,33 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
   onClose: () => void;
   onCreate: (a: Appt) => void;
   currentAppts: Appt[];
-  defaults?: { doctorId?: string; room?: string; startMin?: number };
+  defaults?: { doctorId?: string; room?: string; startMin?: number; patientName?: string };
 }) {
-  const navigate = useNavigate();
   const rooms = useSchedulableRooms();
-  const [patientName, setPatientName] = useState("");
+  const PATIENTS = useBookablePatients();
+  // Mid-booking registration runs as a modal-over-modal: this component stays
+  // mounted underneath, so every field already filled here survives.
+  const [registerOpen, setRegisterOpen] = useState(false);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const [patientName, setPatientName] = useState(defaults?.patientName ?? "");
   const [type, setType] = useState(NEW_APPT_TYPES[0]);
   const [manualDate, setManualDate] = useState(DATE_OPTIONS[0].value);
   const [manualTime, setManualTime] = useState<string | null>(defaults?.startMin != null ? minToClock(defaults.startMin) : null);
   const [manualDoctorId, setManualDoctorId] = useState<string | null>(defaults?.doctorId ?? null);
   const [notes, setNotes] = useState("");
+
+  // Unsaved-changes guard: compare live state against what this modal opened
+  // with, so a prefilled slot/patient isn't itself counted as an edit — only
+  // work the operator would actually lose.
+  const dirty =
+    patientName.trim() !== (defaults?.patientName ?? "").trim() ||
+    notes.trim() !== "" ||
+    type !== NEW_APPT_TYPES[0] ||
+    manualDate !== DATE_OPTIONS[0].value ||
+    manualTime !== (defaults?.startMin != null ? minToClock(defaults.startMin) : null) ||
+    manualDoctorId !== (defaults?.doctorId ?? null);
+
+  const requestClose = () => { if (dirty) setConfirmDiscard(true); else onClose(); };
 
   const patient = PATIENTS.find((p) => p.name === patientName);
   const duration = DURATION_DEFAULTS[type] ?? 30;
@@ -171,10 +198,10 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
   return (
     <ModalShell
       title="New Appointment"
-      onClose={onClose}
+      onClose={requestClose}
       footer={
         <>
-          <button onClick={onClose} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100">Cancel</button>
+          <button onClick={requestClose} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100">Cancel</button>
           <button onClick={create} disabled={!canCreate} className={`px-6 py-2 rounded text-sm font-bold text-white ${canCreate ? "bg-slate-600 hover:bg-slate-700" : "bg-gray-300 cursor-not-allowed"}`}>Create Appointment</button>
         </>
       }
@@ -183,7 +210,15 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
         <Field label="Patient" required>
           <input list="patient-list" value={patientName} onChange={(e) => setPatientName(e.target.value)} placeholder="Search name or ID…" className={inputCls} />
           <datalist id="patient-list">{PATIENTS.map((p) => <option key={p.name} value={p.name} />)}</datalist>
-          <button onClick={() => navigate("/patients/new")} className="mt-1.5 text-xs font-bold text-slate-600 hover:underline flex items-center gap-1"><UserPlus className="w-3.5 h-3.5" /> Register new patient</button>
+          {/* Opens over this modal (never navigates away) so the booking context
+              and every filled field survive; on success the new patient is
+              selected here automatically. */}
+          <button
+            onClick={() => setRegisterOpen(true)}
+            className="mt-1.5 min-h-11 text-xs font-bold text-slate-600 hover:underline flex items-center gap-1"
+          >
+            <UserPlus className="w-3.5 h-3.5" /> Register new patient
+          </button>
         </Field>
 
         <Field label="Appointment Type" required>
@@ -245,6 +280,28 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
           </div>
         )}
       </div>
+
+      {/* Modal-over-modal (z-[60] > this shell's z-50). Cancelling just closes
+          it and drops the operator back here with the patient field still
+          empty and everything else intact. */}
+      {registerOpen && (
+        <RegisterPatientModal
+          mode="embedded"
+          prefillName={patientName}
+          onClose={() => setRegisterOpen(false)}
+          onRegistered={(p) => setPatientName(p.name)}
+        />
+      )}
+
+      {confirmDiscard && (
+        <DiscardDialog
+          title="Discard this booking?"
+          message="The details you've entered will be lost."
+          confirmLabel="Discard booking"
+          onKeepEditing={() => setConfirmDiscard(false)}
+          onDiscard={() => { setConfirmDiscard(false); onClose(); }}
+        />
+      )}
     </ModalShell>
   );
 }

@@ -37,6 +37,13 @@ export type Patient = {
   alert?: string;
 };
 
+// "34 · F" for a complete record; degrades gracefully when age/DOB were left
+// blank at registration (name + email are the only required fields), so a
+// minimal walk-in record reads "F" or "—" rather than a misleading "0 · F".
+export function ageSexLabel(p: Pick<Patient, "age" | "sex">): string {
+  return p.age > 0 ? `${p.age} · ${p.sex}` : (p.sex || "—");
+}
+
 export const MOCK_PATIENTS: Patient[] = [
   { id: "1", name: "Ece Yıldırım", patientId: "PH-2026-0042", avatar: "EY", dob: "12 Mar 1992", age: 34, sex: "F", phone: "+90 532 111 2233", email: "ece@example.com", group: "VIP", clinician: "Dr. Ebru Reis", nurse: "Berna Koç", status: "Active", lastVisit: "1 Jul", nextAppt: "3 Jul · Scan", consent: "Signed", payment: "Paid", checkIn: "Checked In", journeyStep: "Scan step", flag: "Watch", reviewStatus: "Results Pending", notesCount: 12, alert: "Penicillin allergy" },
   { id: "2", name: "Aslı Kutlu", patientId: "PH-2026-0038", avatar: "AK", dob: "14 May 1998", age: 28, sex: "F", phone: "+90 542 222 3344", email: "asli@example.com", group: "Corporate", clinician: "Dr. Emre Yalçın", nurse: "Aylin Demir", status: "Active", lastVisit: "28 Jun", nextAppt: "3 Jul · Consult", consent: "Signed", payment: "Unpaid", checkIn: "Waiting", journeyStep: null, flag: "Urgent", reviewStatus: "Awaiting Sign-off", notesCount: 5 },

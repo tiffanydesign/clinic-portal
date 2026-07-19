@@ -1,0 +1,37 @@
+{
+  // Type-checking only — Vite/esbuild owns the actual build (see vite.config.ts),
+  // so this config never emits. Run `npx tsc --noEmit` to check types.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "types": ["vite/client"],
+
+    "noEmit": true,
+    "skipLibCheck": true,
+    "allowJs": false,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true,
+
+    "strict": true,
+
+    // Mirrors vite.config.ts's resolve.alias. TS7 removed `baseUrl`; paths
+    // now resolve relative to this file.
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src"],
+  // src/imports/pasted_text holds the original design briefs, not source. Three
+  // of them were saved with a .tsx extension but are prose (their siblings
+  // patients-page.md / phenome-portal-wireframe.md are the same content, saved
+  // correctly as .md). Nothing imports them; they'd otherwise emit ~107 parse
+  // errors and make this check useless. Renaming them to .md would let this
+  // exclude go away.
+  "exclude": ["node_modules", "dist", "src/imports/pasted_text"]
+}

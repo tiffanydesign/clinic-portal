@@ -7,6 +7,7 @@
 import { useSyncExternalStore } from "react";
 import { APPTS, Appt, minToClock, NOW_MINUTES } from "./dashboardData";
 import { RESULTS_CONSULTATION_INDEX } from "./journey/journeyTemplates";
+import { logAudit, AUDIT_ACTOR } from "../clinic-settings/auditStore";
 
 let appts: Appt[] = APPTS.map((a) => structuredClone(a));
 const listeners = new Set<() => void>();
@@ -32,6 +33,26 @@ export function useAppointments(): Appt[] {
 
 export function getAppointment(id: string): Appt | undefined {
   return appts.find((a) => a.id === id);
+}
+
+/**
+ * Adds a newly booked appointment to the shared store.
+ *
+ * Every booking entry point routes through here rather than each page holding
+ * its own `created` array — that local-state pattern was why a booking made on
+ * the Schedule page never showed up in Reception's Front Desk Queue, which
+ * reads this store.
+ */
+export function addAppointment(a: Appt) {
+  appts = [...appts, a];
+  emit();
+  logAudit({
+    actor: AUDIT_ACTOR,
+    entityType: "appointment",
+    entityId: a.id,
+    action: "Created appointment",
+    detail: `${a.patient.name} · ${a.type} · ${a.timeLabel}`,
+  });
 }
 
 export function markArrived(id: string) {

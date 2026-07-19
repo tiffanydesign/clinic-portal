@@ -1,6 +1,11 @@
 import React, { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { Search, Plus, Upload, UserPlus, ChevronDown, ChevronRight, ArrowUpDown } from "lucide-react";
+import {
+  Search, Plus, Upload, UserPlus, ChevronDown, ChevronRight, ArrowUpDown,
+  Users, Stethoscope, HeartPulse, Headset, ShieldCheck, UserCheck, Moon, Plane,
+  type LucideIcon,
+} from "lucide-react";
+import { Stat, StatStripGroup, type StatIconTone } from "../../../components/stat";
 import {
   MOCK_STAFF, ROLE_GROUP_ORDER, ROLE_GROUP_LABEL, Staff, StaffRole,
   rolePillClass, statusPillClass, workloadColor,
@@ -13,6 +18,15 @@ import { FilterSelect } from "../../../components/FilterSelect";
 type SortKey = "name" | "patients" | "workload" | "joined";
 
 const ROLE_OPTIONS: StaffRole[] = ["Admin", "Clinician", "Nurse", "Receptionist"];
+
+// Semantic icon + tone per role for the roster summary strip. Tones come from
+// the Stat family's shared 5-colour set, never a bespoke palette.
+const ROLE_META: Record<StaffRole, { icon: LucideIcon; tone: StatIconTone }> = {
+  Clinician: { icon: Stethoscope, tone: "blue" },
+  Nurse: { icon: HeartPulse, tone: "emerald" },
+  Receptionist: { icon: Headset, tone: "amber" },
+  Admin: { icon: ShieldCheck, tone: "slate" },
+};
 
 export function StaffListPage() {
   const navigate = useNavigate();
@@ -62,6 +76,11 @@ export function StaffListPage() {
     .map((role) => ({ role, members: filtered.filter((s) => s.role === role).sort(sorter) }))
     .filter((g) => g.members.length > 0);
 
+  // Roster summary counts — derived from data, not hardcoded.
+  const onDuty = allStaff.filter((s) => s.today === "On Duty").length;
+  const offToday = allStaff.filter((s) => s.today === "Off" && s.status !== "On Leave").length;
+  const onLeave = allStaff.filter((s) => s.today === "On Leave" || s.status === "On Leave").length;
+
   const toggleSort = (key: SortKey) => {
     if (sortKey === key) setSortAsc(!sortAsc);
     else { setSortKey(key); setSortAsc(true); }
@@ -80,6 +99,19 @@ export function StaffListPage() {
   };
 
   const roleFilterLabel = roleFilter.size === 0 ? "All Roles" : [...roleFilter].join(", ");
+
+  // Roster strip actions — each segment drives the existing filter state
+  // rather than deep-linking, so the table below reacts in place.
+  const showOnlyRole = (role: StaffRole) => {
+    const only = roleFilter.size === 1 && roleFilter.has(role);
+    setRoleFilter(only ? new Set() : new Set([role]));
+    setTodayFilter("All");
+  };
+
+  const clearRosterFilters = () => {
+    setRoleFilter(new Set());
+    setTodayFilter("All");
+  };
 
   const SortableTh = ({ label, k, className = "" }: { label: string; k: SortKey; className?: string }) => (
     <th
@@ -127,24 +159,56 @@ export function StaffListPage() {
         </div>
       </div>
 
-      {/* Stat cards */}
-      <div className="px-8 py-5 shrink-0 grid grid-cols-2 gap-6">
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Total Staff</div>
-          <div className="text-3xl font-bold text-gray-800">{allStaff.length}</div>
-          <div className="text-sm text-gray-500 mt-1 font-medium">
-            {ROLE_GROUP_ORDER.map((role) => {
-              const count = allStaff.filter((s) => s.role === role).length;
-              const label = ROLE_GROUP_LABEL[role].toLowerCase();
-              return `${count} ${count === 1 ? label.replace(/s$/, "") : label}`;
-            }).join(" · ")}
-          </div>
-        </div>
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">On Duty Today</div>
-          <div className="text-3xl font-bold text-emerald-600">9</div>
-          <div className="text-sm text-gray-500 mt-1 font-medium">3 off today</div>
-        </div>
+      {/* Roster summary — Stat family T3 `strip`. Clicking a segment drives the
+          existing role / availability filters rather than navigating away. */}
+      <div className="px-8 py-4 shrink-0">
+        <StatStripGroup>
+          <Stat
+            stat={{ id: "total-staff", label: "Total Staff", kind: "count", variant: "strip",
+                    value: String(allStaff.length), onClick: clearRosterFilters }}
+            icon={Users}
+            iconTone="slate"
+            active={roleFilter.size === 0 && todayFilter === "All"}
+          />
+          {ROLE_GROUP_ORDER.map((role) => {
+            const count = allStaff.filter((s) => s.role === role).length;
+            if (count === 0) return null;
+            const label = count === 1 ? ROLE_GROUP_LABEL[role].replace(/s$/, "") : ROLE_GROUP_LABEL[role];
+            return (
+              <Stat
+                key={role}
+                stat={{ id: `role-${role}`, label, kind: "count", variant: "strip",
+                        value: String(count), onClick: () => showOnlyRole(role) }}
+                icon={ROLE_META[role].icon}
+                iconTone={ROLE_META[role].tone}
+                active={roleFilter.size === 1 && roleFilter.has(role)}
+              />
+            );
+          })}
+          <Stat
+            stat={{ id: "on-duty", label: "On Duty", kind: "count", variant: "strip",
+                    value: String(onDuty), onClick: () => setTodayFilter("On Duty") }}
+            icon={UserCheck}
+            iconTone="emerald"
+            active={todayFilter === "On Duty"}
+          />
+          <Stat
+            stat={{ id: "off-today", label: "Off", kind: "count", variant: "strip",
+                    value: String(offToday), onClick: () => setTodayFilter("Off Today") }}
+            icon={Moon}
+            iconTone="slate"
+            active={todayFilter === "Off Today"}
+          />
+          {onLeave > 0 && (
+            <Stat
+              stat={{ id: "on-leave", label: "On Leave", kind: "count", variant: "strip",
+                      value: String(onLeave), onClick: () => setTodayFilter("On Leave") }}
+              icon={Plane}
+              iconTone="amber"
+              active={todayFilter === "On Leave"}
+            />
+          )}
+        </StatStripGroup>
       </div>
 
       {/* Toolbar */}

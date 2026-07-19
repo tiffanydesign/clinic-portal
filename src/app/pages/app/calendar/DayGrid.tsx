@@ -25,7 +25,8 @@ export function DayGrid({
   allowReassign?: boolean;
   allowResize?: boolean;
   onApptClick: (appt: Appt, overlay?: boolean) => void;
-  onEmptyClick?: (colKey: string, startMin: number) => void;
+  /** `at` carries the click position so the caller can anchor a popover to it. */
+  onEmptyClick?: (colKey: string, startMin: number, at: { x: number; y: number }) => void;
   onDragEnd?: (appt: Appt, newColKey: string, newStartMin: number) => void;
   onResizeEnd?: (appt: Appt, newDuration: number) => void;
   showNow?: boolean;
@@ -107,7 +108,7 @@ export function DayGrid({
   const colBackgroundClick = (e: React.MouseEvent, colKey: string) => {
     if (!editable || !onEmptyClick) return;
     const startMin = pointerToMin(e.clientY);
-    onEmptyClick(colKey, Math.min(MAX_MIN - 30, startMin));
+    onEmptyClick(colKey, Math.min(MAX_MIN - 30, startMin), { x: e.clientX, y: e.clientY });
   };
 
   return (

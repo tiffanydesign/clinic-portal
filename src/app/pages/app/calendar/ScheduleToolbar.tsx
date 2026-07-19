@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, CalendarDays, Plus, Check, Info, SlidersHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays, CalendarPlus, Plus, Check, Info, SlidersHorizontal } from "lucide-react";
 import { addDays, addMonths, format, isSameDay, startOfMonth, startOfWeek, subMonths } from "date-fns";
 import type { Role } from "../../../context/AppContext";
 import { CLINICIANS, useSchedulableRooms, APPT_TYPES, ANCHOR_DATE } from "./scheduleData";
@@ -191,10 +191,16 @@ export function ScheduleToolbar({
   return (
     <div className="relative z-30 shrink-0 border-b border-gray-200 bg-white/95 backdrop-blur-sm shadow-[0_1px_0_rgba(0,0,0,0.04)]">
       {/* row 1 */}
-      <div className="px-6 py-3.5 flex items-center justify-between gap-3 flex-wrap">
-        <div className="flex items-center gap-2">
+      <div className="px-6 py-3.5 flex items-center justify-between gap-4">
+        {/* Left: date navigation + the view-control cluster. The cluster is
+            LEFT-ANCHORED and ordered primary → contextual, so the primary
+            Mode toggle (Calendar/List) never moves; only the trailing
+            contextual controls (Day/Week, grouping) appear or disappear when
+            the mode/view changes. This kills the old justify-between reflow
+            where remaining toggles jumped to new positions on every switch. */}
+        <div className="flex items-center gap-3 min-w-0">
           {/* unified date navigator — one bordered cluster instead of four loose buttons */}
-          <div className="flex items-stretch bg-white border border-gray-300 rounded-lg shadow-sm overflow-hidden">
+          <div className="flex items-stretch bg-white border border-gray-300 rounded-lg shadow-sm overflow-hidden shrink-0">
             <button onClick={onPrev} className="px-2 text-gray-500 hover:bg-gray-100 border-r border-gray-200"><ChevronLeft className="w-4 h-4" /></button>
             <span className="text-sm font-bold text-gray-800 min-w-[150px] flex items-center justify-center px-2 tabular-nums">{dateLabel}</span>
             <button onClick={onNext} className="px-2 text-gray-500 hover:bg-gray-100 border-l border-gray-200"><ChevronRight className="w-4 h-4" /></button>
@@ -203,23 +209,36 @@ export function ScheduleToolbar({
           <button
             onClick={onToday}
             disabled={isToday}
-            className={`px-3 py-2 border rounded-lg text-xs font-bold shadow-sm transition-colors ${
+            className={`px-3 py-2 border rounded-lg text-xs font-bold shadow-sm transition-colors shrink-0 ${
               isToday ? "border-gray-200 text-gray-300 bg-gray-50 cursor-not-allowed" : "border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
             }`}
           >
             Today
           </button>
+
+          {/* view-control cluster */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* primary axis — stable anchor, always present for roles that have it */}
+            {hasListToggle && (
+              <Segmented value={mode} options={[{ v: "calendar", label: "Calendar" }, { v: "list", label: "List" }]} onChange={setMode} />
+            )}
+            {/* contextual sub-options of Calendar mode — trail the primary toggle,
+                separated by a divider that reads "primary | contextual" */}
+            {!isList && hasWeek && (
+              <>
+                {hasListToggle && <span className="h-6 w-px bg-gray-200 mx-0.5" aria-hidden />}
+                {hasWeek && (
+                  <Segmented value={view} options={[{ v: "day", label: "Day" }, { v: "week", label: "Week" }]} onChange={setView} />
+                )}
+                {role === "Admin" && view === "day" && (
+                  <Segmented value={grouping} options={[{ v: "staff", label: "By Staff" }, { v: "room", label: "By Room" }]} onChange={setGrouping} />
+                )}
+              </>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          {!isList && hasWeek && <Segmented value={view} options={[{ v: "day", label: "Day" }, { v: "week", label: "Week" }]} onChange={setView} />}
-          {hasListToggle && <Segmented value={mode} options={[{ v: "calendar", label: "Calendar" }, { v: "list", label: "List" }]} onChange={setMode} />}
-        </div>
-
-        <div className="flex items-center gap-2">
-          {role === "Admin" && !isList && view === "day" && (
-            <Segmented value={grouping} options={[{ v: "staff", label: "By Staff" }, { v: "room", label: "By Room" }]} onChange={setGrouping} />
-          )}
+        <div className="flex items-center gap-2 shrink-0">
           {role === "Clinician" && !isList && (
             <label className="flex items-center gap-2 text-xs font-medium text-gray-600 cursor-pointer select-none mr-1">
               <button onClick={() => setOverlay(!overlay)} className={`w-9 h-5 rounded-full relative transition-colors ${overlay ? "bg-slate-600" : "bg-gray-300"}`}>
@@ -229,16 +248,17 @@ export function ScheduleToolbar({
             </label>
           )}
           <LegendPopover />
+          {/* Admin + Reception only — Nurse/Clinician get no booking entry anywhere. */}
           {(role === "Admin" || role === "Reception") && (
             <button
               onClick={onNew}
               disabled={disableCreate}
               title={disableCreate ? "Only the demo day (Fri, 3 Jul 2026) has bookable data" : undefined}
-              className={`px-3.5 py-2 text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-colors ${
+              className={`min-h-11 px-3.5 py-2 text-xs font-bold rounded-lg shadow-sm flex items-center gap-1.5 transition-colors ${
                 disableCreate ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-slate-700 text-white hover:bg-slate-800"
               }`}
             >
-              <Plus className="w-3.5 h-3.5" /> New Appointment
+              <CalendarPlus className="w-3.5 h-3.5" /> New Booking
             </button>
           )}
           {role === "Clinician" && (

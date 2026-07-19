@@ -88,7 +88,6 @@ export { DevicesPage } from "./clinic-settings/DevicesPage";
 export { ProfilePage } from "./ProfilePage";
 
 // Generic Skeletons
-export const NewPatientSkeleton = () => <SkeletonPage title="New Patient"><PlaceholderBlock label="Patient Intake Form" className="h-96" /></SkeletonPage>;
 export { BillingPage } from "./BillingPage";
 export { FeedbackAdminPage } from "./FeedbackAdminPage";
 export { TimesheetPage } from "./Timesheet";
@@ -120,7 +119,6 @@ export function SiteMap() {
       { path: "/calendar", label: "Calendar" },
       { path: "/calendar/appointment/A-101", label: "Calendar > Appt Drawer" },
       { path: "/patients", label: "Patients List" },
-      { path: "/patients/new", label: "New Patient Form" },
       { path: "/billing", label: "Billing" },
       { path: "/notifications", label: "Notifications" },
       { path: "/profile", label: "Profile" },

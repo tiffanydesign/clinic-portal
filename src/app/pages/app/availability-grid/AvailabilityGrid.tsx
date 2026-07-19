@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Plane, Pencil } from "lucide-react";
 import { FloatingPopover } from "../../../components/glass/FloatingPopover";
+import { Stat } from "../../../components/stat";
 import type { GridCell, GridDay, GridRow } from "./types";
 
 const HEADER_COL_W = 232;
@@ -173,9 +174,20 @@ export function AvailabilityGrid({
                 ))}
                 {hasUtil && (
                   <div className="shrink-0 border-l border-b border-gray-100 flex flex-col items-center justify-center gap-1 px-2" style={{ width: UTIL_COL_W }}>
-                    <span className={`text-xs tabular-nums ${(row.utilPct ?? 0) > 85 || (row.utilPct ?? 0) < 30 ? "font-bold text-gray-700" : "font-semibold text-gray-500"}`}>
-                      {row.utilPct ?? 0}%
-                    </span>
+                    {/* Row-end utilisation rides in the Stat family's T4 `pill`
+                        tier. Amber marks an out-of-band room (over-booked >85%
+                        or under-used <30%) — the same threshold the plain-text
+                        bold used to signal. */}
+                    <Stat
+                      stat={{
+                        id: `util-${row.id}`,
+                        label: "utilisation",
+                        kind: "count",
+                        variant: "pill",
+                        value: `${row.utilPct ?? 0}%`,
+                      }}
+                      tone={(row.utilPct ?? 0) > 85 || (row.utilPct ?? 0) < 30 ? "amber" : "neutral"}
+                    />
                     <div className="w-12 h-1 rounded-full bg-gray-200 overflow-hidden">
                       <div className="h-full bg-slate-400" style={{ width: `${Math.min(100, row.utilPct ?? 0)}%` }} />
                     </div>

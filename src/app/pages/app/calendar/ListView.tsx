@@ -100,7 +100,10 @@ export function ListView({ appts, onRowClick, selectedDate }: { appts: Appt[]; o
                 <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{a.nurse ?? "—"}</td>
                 <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{roomName(a.room)}</td>
                 <td className="px-4 py-3"><StatusPill status={a.status} type={statusPillType(a.status)} /></td>
-                <td className="px-4 py-3"><StatusPill status={a.payment} type={a.payment === "Paid" ? "success" : a.payment === "Partial" ? "warning" : "error"} /></td>
+                {/* "Partial" is deliberately not its own PaymentStatus any more
+                    (see dashboardData.ts) — any non-zero balance is Unpaid — so
+                    Paid/Unpaid is the whole union here. */}
+                <td className="px-4 py-3"><StatusPill status={a.payment} type={a.payment === "Paid" ? "success" : "error"} /></td>
                 <td className="px-4 py-3"><StatusPill status={a.consent} type={a.consent === "Signed" ? "success" : a.consent === "Pending" ? "warning" : "error"} /></td>
               </tr>
             ))}

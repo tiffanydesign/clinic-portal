@@ -2,10 +2,12 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import {
   Calendar, FlaskConical, ShieldCheck, CreditCard, Settings,
-  ChevronDown, MoreHorizontal, X, BellOff,
+  ChevronDown, MoreHorizontal, X, BellOff, Bell, CheckCheck, CheckCircle2,
+  type LucideIcon,
 } from "lucide-react";
 import { format, isSameDay, isWithinInterval, startOfDay, endOfDay, subDays } from "date-fns";
 import { useAppContext } from "../../context/AppContext";
+import { Stat } from "../../components/stat";
 import { RangeDatePicker } from "../../components/RangeDatePicker";
 import { Skeleton } from "../../components/ui/skeleton";
 import { NotificationItem, NotificationKind, KIND_LABEL, notificationDate, MOCK_TODAY } from "./notificationsData";
@@ -14,20 +16,23 @@ import { useReadIds, markRead, markAllRead, markUnread } from "./notificationsSt
 
 const KIND_FILTERS: ("All" | NotificationKind)[] = ["All", "appointment", "result", "approval", "payment", "system"];
 
-const KIND_ICON_BG: Record<NotificationKind, string> = {
-  appointment: "bg-gray-100",
-  result: "bg-blue-50",
-  approval: "bg-amber-50",
-  payment: "bg-emerald-50",
-  system: "bg-gray-100",
+// One source of truth for a category's visual identity — the icon, its colour,
+// the soft chip behind it, the inline category tag, and the tab count badge.
+// Each kind gets a distinct hue so the feed and nav are scannable at a glance;
+// "system" stays neutral slate as it's low-signal noise.
+type KindStyle = {
+  icon: LucideIcon;
+  iconColor: string;
+  chipBg: string;
+  tag: string;
 };
 
-const KIND_ICON: Record<NotificationKind, React.ReactNode> = {
-  appointment: <Calendar className="w-4 h-4 text-gray-500" />,
-  result: <FlaskConical className="w-4 h-4 text-blue-500" />,
-  approval: <ShieldCheck className="w-4 h-4 text-amber-600" />,
-  payment: <CreditCard className="w-4 h-4 text-emerald-600" />,
-  system: <Settings className="w-4 h-4 text-gray-500" />,
+const KIND_STYLE: Record<NotificationKind, KindStyle> = {
+  appointment: { icon: Calendar, iconColor: "text-violet-600", chipBg: "bg-violet-50", tag: "bg-violet-50 text-violet-700" },
+  result: { icon: FlaskConical, iconColor: "text-blue-600", chipBg: "bg-blue-50", tag: "bg-blue-50 text-blue-700" },
+  approval: { icon: ShieldCheck, iconColor: "text-amber-600", chipBg: "bg-amber-50", tag: "bg-amber-50 text-amber-700" },
+  payment: { icon: CreditCard, iconColor: "text-emerald-600", chipBg: "bg-emerald-50", tag: "bg-emerald-50 text-emerald-700" },
+  system: { icon: Settings, iconColor: "text-slate-500", chipBg: "bg-slate-100", tag: "bg-slate-100 text-slate-600" },
 };
 
 type PresetKey = "Today" | "Last 7 days" | "Last 30 days" | "All time" | "Custom range";
@@ -52,7 +57,17 @@ function dayLabel(d: Date): string {
 // --- L2: Scope tabs — underline style, role-scoped (a kind with zero items
 // for this role never renders a tab for it) ---
 
-function ScopeTab({ label, unread, active, onClick }: { label: string; unread: number; active: boolean; onClick: () => void }) {
+// The count rides in the Stat family's T4 `pill` tier. It stays tone-neutral:
+// category identity is already carried by the tab's coloured icon, and an
+// amber/red count here would falsely read as an alarm.
+function ScopeTab({ label, icon: Icon, iconColor, unread, active, onClick }: {
+  label: string;
+  icon: LucideIcon;
+  iconColor: string;
+  unread: number;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
       onClick={onClick}
@@ -60,9 +75,12 @@ function ScopeTab({ label, unread, active, onClick }: { label: string; unread: n
         active ? "text-gray-900 border-gray-900" : "text-gray-500 border-transparent hover:text-gray-700"
       }`}
     >
+      <Icon className={`w-4 h-4 ${active ? iconColor : "text-gray-400"}`} />
       {label}
       {unread > 0 && (
-        <span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full text-xs font-medium">{unread}</span>
+        <Stat
+          stat={{ id: `scope-${label}`, label: `${label} unread`, kind: "count", variant: "pill", value: String(unread) }}
+        />
       )}
     </button>
   );
@@ -165,10 +183,11 @@ function DateFilterControl({
 
 // --- L4: Feed ---
 
-function DayHeader({ label }: { label: string }) {
+function DayHeader({ label, count }: { label: string; count: number }) {
   return (
-    <div className="sticky top-0 z-10 bg-white py-2 text-xs font-semibold uppercase tracking-wider text-gray-500">
-      {label}
+    <div className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm py-2 flex items-center gap-2">
+      <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">{label}</span>
+      <span className="text-xs font-medium text-gray-300">{count}</span>
     </div>
   );
 }
@@ -182,29 +201,33 @@ function FeedRow({ item, unread, menuOpen, onOpen, onToggleMenu, onMarkRead, onM
   onMarkRead: () => void;
   onMarkUnread: () => void;
 }) {
+  const style = KIND_STYLE[item.kind];
+  const Icon = style.icon;
   return (
     <div
       role="button"
       tabIndex={0}
       onClick={onOpen}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(); } }}
-      className={`w-full flex items-center gap-4 pl-1 pr-1 py-3 min-h-14 border-b border-gray-100 cursor-pointer transition-colors hover:bg-gray-50 ${unread ? "bg-blue-50/30" : "bg-transparent"}`}
+      className={`group relative w-full flex items-center gap-3.5 pl-4 pr-1 py-3 min-h-14 border-b border-gray-100 cursor-pointer transition-colors hover:bg-gray-50 ${unread ? "bg-blue-50/40" : "bg-transparent"}`}
     >
-      <span className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${KIND_ICON_BG[item.kind]}`}>
-        {KIND_ICON[item.kind]}
+      {/* Unread accent — canonical blue spine, distinct from category colour */}
+      {unread && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-blue-500" aria-hidden />}
+      <span className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ring-1 ring-black/[0.03] ${style.chipBg}`}>
+        <Icon className={`w-4 h-4 ${style.iconColor}`} />
       </span>
       <span className="flex-1 min-w-0">
-        <span className={`text-sm block ${unread ? "font-medium text-gray-900" : "font-normal text-gray-700"}`}>{item.text}</span>
-        <span className="text-xs text-gray-500 mt-1 block">{item.time} · {KIND_LABEL[item.kind]}</span>
-      </span>
-      <span className="w-2.5 shrink-0 flex justify-center">
-        {unread && <span className="h-2.5 w-2.5 rounded-full bg-blue-500" aria-hidden />}
+        <span className={`text-sm block leading-snug ${unread ? "font-semibold text-gray-900" : "font-normal text-gray-700"}`}>{item.text}</span>
+        <span className="flex items-center gap-2 mt-1.5">
+          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${style.tag}`}>{KIND_LABEL[item.kind]}</span>
+          <span className="text-xs text-gray-400 tabular-nums">{item.time}</span>
+        </span>
       </span>
       <div className="relative shrink-0">
         <button
           onClick={(e) => { e.stopPropagation(); onToggleMenu(); }}
           aria-label="More actions"
-          className="w-11 h-11 flex items-center justify-center rounded-full hover:bg-gray-200/70 text-gray-400"
+          className={`w-11 h-11 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-200/70 transition-opacity ${menuOpen ? "opacity-100" : "opacity-0 group-hover:opacity-100 focus:opacity-100"}`}
         >
           <MoreHorizontal className="w-4 h-4" />
         </button>
@@ -235,11 +258,18 @@ function SkeletonRow() {
   );
 }
 
-function EmptyState({ title, subtitle, action }: { title: string; subtitle?: string; action?: React.ReactNode }) {
+function EmptyState({ title, subtitle, action, tone = "neutral" }: {
+  title: string;
+  subtitle?: string;
+  action?: React.ReactNode;
+  tone?: "neutral" | "positive";
+}) {
+  const positive = tone === "positive";
+  const Icon = positive ? CheckCircle2 : BellOff;
   return (
     <div className="flex flex-col items-center justify-center py-20 text-center">
-      <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-        <BellOff className="w-5 h-5 text-gray-400" />
+      <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${positive ? "bg-emerald-50" : "bg-gray-100"}`}>
+        <Icon className={`w-5 h-5 ${positive ? "text-emerald-500" : "text-gray-400"}`} />
       </div>
       <div className="text-sm font-medium text-gray-700">{title}</div>
       {subtitle && <div className="text-xs text-gray-500 mt-1">{subtitle}</div>}
@@ -336,19 +366,38 @@ export function NotificationsPage() {
     <div className="h-full overflow-y-auto bg-white">
       <div className="px-8 pt-8">
         {/* L1 — Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Notifications</h1>
-            <p className="text-sm text-gray-500 mt-1">
-              {unreadCount > 0 ? `${unreadCount} unread` : "You're all caught up"}
-            </p>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5 min-w-0">
+            <span className="relative w-11 h-11 rounded-xl bg-gray-900 text-white flex items-center justify-center shrink-0">
+              <Bell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 flex items-center justify-center rounded-full bg-blue-500 text-white text-[11px] font-bold ring-2 ring-white tabular-nums">
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
+            </span>
+            <div className="min-w-0">
+              <h1 className="text-2xl font-semibold text-gray-900 leading-tight">Notifications</h1>
+              <div className="mt-1">
+                {unreadCount > 0 ? (
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 text-blue-700 px-2.5 py-0.5 text-xs font-semibold">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                    {unreadCount} unread
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 text-sm text-emerald-600 font-medium">
+                    <CheckCircle2 className="w-4 h-4" /> You're all caught up
+                  </span>
+                )}
+              </div>
+            </div>
           </div>
           {unreadCount > 0 && (
             <button
               onClick={() => markAllRead(allItems.map((n) => n.id))}
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
+              className="inline-flex items-center gap-2 h-9 px-3.5 rounded-lg text-sm font-medium text-gray-600 border border-gray-200 bg-white hover:bg-gray-50 hover:text-gray-900 transition-colors shrink-0"
             >
-              Mark all as read
+              <CheckCheck className="w-4 h-4" /> Mark all as read
             </button>
           )}
         </div>
@@ -360,6 +409,8 @@ export function NotificationsPage() {
               <ScopeTab
                 key={k}
                 label={k === "All" ? "All" : KIND_LABEL[k]}
+                icon={k === "All" ? Bell : KIND_STYLE[k].icon}
+                iconColor={k === "All" ? "text-gray-700" : KIND_STYLE[k].iconColor}
                 unread={kindCounts[k].unread}
                 active={kindFilter === k}
                 onClick={() => setKindFilter(k)}
@@ -388,7 +439,7 @@ export function NotificationsPage() {
         {loading ? (
           <div>{Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)}</div>
         ) : allItems.length === 0 ? (
-          <EmptyState title="You're all caught up" />
+          <EmptyState tone="positive" title="You're all caught up" subtitle="New notifications will appear here." />
         ) : filtered.length === 0 ? (
           <EmptyState
             title={unreadOnly ? "No unread notifications in this period" : "No notifications match these filters"}
@@ -399,7 +450,7 @@ export function NotificationsPage() {
           <div>
             {grouped.map((group) => (
               <div key={group.label}>
-                <DayHeader label={group.label} />
+                <DayHeader label={group.label} count={group.items.length} />
                 {group.items.map((item) => {
                   const unread = !readIds.has(item.id);
                   return (
