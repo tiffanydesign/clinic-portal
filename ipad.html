@@ -272,7 +272,22 @@
 
   /* Base path: "/" locally, "/clinic-portal/" on GitHub Pages */
   const BASE = location.pathname.replace(/ipad\.html$/, "");
-  const routeUrl = (route) => BASE.replace(/\/$/, "") + route;
+  const baseNoSlash = BASE.replace(/\/$/, "");
+  const routeUrl = (route) => baseNoSlash + route;
+
+  /* Route the prototype CLIENT-SIDE via the History API instead of pointing
+     the iframe's document at each route URL. On GitHub Pages a full-document
+     load of e.g. /clinic-portal/login has no matching file, so the server
+     returns 404 (the SPA 404.html fallback still boots, but the browser logs
+     "Failed to load resource: 404"). Driving react-router with pushState +
+     popstate keeps the iframe on the real index.html (HTTP 200) and navigates
+     in-app, so nothing 404s. Same-origin, so this works locally and deployed. */
+  function go(route) {
+    const w = frame.contentWindow;
+    if (!w) return;
+    w.history.pushState({}, "", routeUrl(route));
+    w.dispatchEvent(new w.PopStateEvent("popstate"));
+  }
 
   /* file:// can't run the SPA (no server / no SPA fallback) — show guidance. */
   const IS_FILE = location.protocol === "file:";
@@ -282,7 +297,11 @@
     document.getElementById("fullscreen").href =
       "https://tiffanydesign.github.io/clinic-portal/login";
   } else {
-    frame.src = routeUrl("/login");
+    /* Load the real index.html (200), then switch to /login in-app. The double
+       call covers the tick between the iframe's load event and react-router
+       attaching its popstate listener. */
+    frame.addEventListener("load", () => { go("/login"); requestAnimationFrame(() => go("/login")); }, { once: true });
+    frame.src = BASE || "/";
     document.getElementById("fullscreen").href = routeUrl("/login");
   }
 
@@ -308,11 +327,20 @@
     const btn = e.target.closest("button");
     if (!btn) return;
     if (btn.id === "reload") {
-      frame.contentWindow.location.reload();
+      /* location.reload() would re-request the current client route (e.g.
+         /clinic-portal/login) and 404; instead reload the real index.html and
+         restore the current route in-app. */
+      let current = "/login";
+      try {
+        const p = frame.contentWindow.location.pathname;
+        current = (baseNoSlash && p.startsWith(baseNoSlash) ? p.slice(baseNoSlash.length) : p) || "/";
+      } catch (_) {}
+      frame.addEventListener("load", () => go(current), { once: true });
+      frame.src = BASE || "/";
       return;
     }
     const route = btn.dataset.route;
-    if (route) frame.contentWindow.location.href = routeUrl(route);
+    if (route) go(route);
   });
 
   /* highlight the tab matching the iframe's current section */
