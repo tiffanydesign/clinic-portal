@@ -167,6 +167,12 @@
   }
 
   /* ---- offline / file:// fallback message ---- */
+  /* The `hidden` attribute must win over the id/element `display` rules below,
+     otherwise the fallback overlay (and the empty iframe) stay visible even on
+     http/https where the prototype loads fine. Attribute+id specificity (1,1,0)
+     beats the plain id/element rules (1,0,0 / 0,1,1). */
+  #offline-msg[hidden] { display: none; }
+  .screen iframe[hidden] { display: none; }
   #offline-msg {
     position: absolute;
     inset: 0;
