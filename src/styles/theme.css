@@ -156,6 +156,176 @@
   --ease-frosted-out: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* ====================================================================
+   FROZEN COMPACT TOKENS — iPad-first (Design Token Freeze, Step 1)
+   --------------------------------------------------------------------
+   Single source of truth for the portal migration. Additive only:
+   nothing above is renamed. The existing Phenome v2 semantic colors
+   (--status-*, --ink-*, --surface-page, --divider, --shadow-*) are the
+   base; the aliases below give them the names the mapping table uses.
+
+   USAGE LAW (enforced by scripts/check-tokens.sh):
+   1. No hardcoded hex / rgb() in component code — use a token.
+   2. No arbitrary Tailwind values: text-[Npx], p-[Npx], gap-[Npx]...
+   3. Component-internal padding MUST NOT exceed --space-4 (16px).
+      --space-6 (24px) and larger belong to the PAGE LAYOUT layer only
+      (gaps between sections, page gutters) — never inside a card/control.
+   4. Visual control height may be 38px, but every tappable element's
+      real hit area MUST be >= 44x44px. Use .touch-extend (defined below).
+   ==================================================================== */
+:root {
+  /* --- 1. SPACING (compact 8pt subset; 5 steps) --------------------- */
+  --space-1: 4px;   /* micro: label<->input, icon<->text */
+  --space-2: 8px;   /* default gap inside a component */
+  --space-3: 12px;  /* card inner padding, gap between form fields */
+  --space-4: 16px;  /* gap between cards, MAX component-internal padding */
+  --space-6: 24px;  /* PAGE LEVEL ONLY: section gaps, page gutters */
+
+  /* --- 2. TYPOGRAPHY (6 tiers + 2 KPI; compact line-heights) --------
+     Each token is the tier's font-size; line-height + weight are applied
+     by the matching helper class (see @layer components below) so a tier
+     is used as one class, e.g. class="text-body". */
+  --text-page-title: 22px;  /* page title (former H1/H2)  — 1.25 / 600 */
+  --text-section:    15px;  /* card / section heading     — 1.3  / 600 */
+  --text-body:       14px;  /* body copy, form values     — 1.4  / 400 */
+  --text-data:       13px;  /* table rows, list subrows   — 1.35 / 400 */
+  --text-label:      12px;  /* form labels, minor caption — 1.2  / 500 */
+  --text-overline:   11px;  /* uppercase group heads, KPI title — 1.2 / 600, ls .06em */
+
+  /* KPI numerals — folded in from KPI_CARD_SPEC (tabular-nums, 600) */
+  --kpi-value-lg: 28px;     /* regular KPI card value */
+  --kpi-value-sm: 20px;     /* compact KPI strip value */
+
+  /* --- 3. COLORS (converged; aliases over existing v2 ramp) ---------
+     Semantic status (already defined above, listed for reference):
+       --status-success --status-warning --status-danger
+       --status-info    --status-special    (one colour = one meaning) */
+  --text-primary:   var(--ink-900);          /* #10214B — headings, values */
+  --text-secondary: var(--ink-600);          /* #4A5578 — body, secondary  */
+  /* NOT --ink-400 (#8B93AD): that measures 3.05:1 on white / 2.83:1 on the
+     page bg — it fails the 4.5:1 body minimum. Darkened to clear both
+     (5.31:1 / 4.91:1). --ink-400 stays untouched for non-text use. (D-10) */
+  --text-muted:     #646B80;                 /* captions, hints, IDs       */
+
+  /* Status INK variants — text only.
+     --status-* are mid-tone SIGNAL colours: correct for fills, dots, icons and
+     solid buttons, but as text on a pale tint they measure 1.4–3.4:1 and fail
+     WCAG. Each ink below clears 4.5:1 on white, on /10 and on /15 tints.
+     Rule: bg/border/dot -> --status-*, text -> --status-*-ink.
+     (KPI_CARD_SPEC already called for this: "amber 用深档 #B45309 级".) */
+  --status-success-ink: #177245;  /* 5.95 white · 5.27 on /15 */
+  --status-warning-ink: #8F4E05;  /* 6.44 white · 5.82 on /15 · 6.0 on /10 — deepened from #A15C07 (borderline 4.3-4.8 once tints composite over off-white rows) */
+  --status-danger-ink:  #B91C1C;  /* 6.47 white · 5.28 on /15 */
+  --status-info-ink:    #12658F;  /* 6.39 white · 5.42 on /15 */
+  --status-special-ink: #8B1FA0;  /* 7.50 white · 6.07 on /15 */
+  --surface-page:   #F4F6FB;                 /* (re-stated; matches v2) page bg */
+  --surface-card:   #FFFFFF;                 /* card / panel surface */
+  /* --divider (rgba(32,58,133,.08)) already defined above — default borders. */
+  /* D-7: neutral fill + strong-border slots the 3 base surfaces couldn't cover. */
+  --surface-hover:  #EEF1F8;                 /* hover / chip fill (was bg-gray-100/slate-100) */
+  --surface-sunken: #E7EBF3;                 /* track / well / disabled (was bg-gray-200) */
+  --border-strong:  rgba(32, 58, 133, 0.16); /* emphasised border (was border-gray-400/slate-400) */
+
+  /* --- 4. RADIUS (2 tiers; rounded-full stays for pills/avatars) ----
+     NOTE: distinct from Tailwind's inlined `rounded-sm/md` utilities
+     (which resolve to 6px/8px via --radius). Use these via
+     rounded-[var(--radius-sm)] or in CSS; migration will map classes. */
+  --radius-sm: 8px;   /* inputs, buttons, chips */
+  --radius-md: 12px;  /* cards, modals, drawers */
+
+  /* --- 5. CONTROL HEIGHTS + TOUCH (iPad hard constraints) ----------- */
+  --control-h:      38px;   /* input / select / button visual height */
+  --control-h-sm:   32px;   /* dense inline control (inside tables) */
+  --row-h:          48px;   /* actionable list row */
+  --row-h-dense:    40px;   /* read-only list row */
+  --touch-target:   44px;   /* minimum hit area — NON-NEGOTIABLE */
+
+  /* --- ELEVATION (2 states) ----------------------------------------- */
+  --shadow-none: none;                              /* default for cards */
+  --shadow-raised: 0 2px 8px rgba(16, 33, 75, .08); /* popovers & pressed only */
+}
+
+/* Token → Tailwind utility bridge. Makes the frozen tokens usable as plain
+   classes during migration: text-ink / bg-surface / border-divider /
+   text-danger / bg-danger/10 / rounded-card / rounded-control. All NEW
+   namespaces — nothing above is renamed. */
+@theme inline {
+  /* text */
+  --color-ink: var(--text-primary);          /* text-ink        */
+  --color-ink-soft: var(--text-secondary);   /* text-ink-soft   */
+  --color-ink-muted: var(--text-muted);      /* text-ink-muted  */
+  /* surfaces */
+  --color-surface: var(--surface-card);      /* bg-surface      */
+  --color-surface-page: var(--surface-page); /* bg-surface-page */
+  --color-surface-hover: var(--surface-hover);   /* bg-surface-hover  (D-7) */
+  --color-surface-sunken: var(--surface-sunken); /* bg-surface-sunken (D-7) */
+  /* lines */
+  --color-divider: var(--divider);           /* border-divider  */
+  --color-border-strong: var(--border-strong); /* border-border-strong (D-7) */
+  /* status — one colour, one meaning.
+     bg-/border-/dot use the signal colour; TEXT uses the -ink variant
+     (text-success-ink …) so it clears 4.5:1 on tints. */
+  --color-success: var(--status-success);
+  --color-warning: var(--status-warning);
+  --color-danger: var(--status-danger);
+  --color-info: var(--status-info);
+  --color-special: var(--status-special);
+  --color-success-ink: var(--status-success-ink);
+  --color-warning-ink: var(--status-warning-ink);
+  --color-danger-ink: var(--status-danger-ink);
+  --color-info-ink: var(--status-info-ink);
+  --color-special-ink: var(--status-special-ink);
+  /* brand (D-5): auth ramp unifies onto the existing phenome-blue scale */
+  --color-brand-ink: var(--phenome-blue-900); /* #0A1E57 dark navy */
+  /* radius (2-tier) */
+  --radius-control: var(--radius-sm);        /* rounded-control (8px)  */
+  --radius-card: var(--radius-md);           /* rounded-card    (12px) */
+}
+
+@layer components {
+  /* Typography helper classes — the migration targets. Placed in the
+     components layer so Tailwind utilities can still override when needed. */
+  .text-page-title { font-size: var(--text-page-title); line-height: 1.25; font-weight: 600; }
+  .text-section    { font-size: var(--text-section);    line-height: 1.3;  font-weight: 600; }
+  .text-body       { font-size: var(--text-body);       line-height: 1.4;  font-weight: 400; }
+  .text-data       { font-size: var(--text-data);       line-height: 1.35; font-weight: 400; }
+  .text-label      { font-size: var(--text-label);      line-height: 1.2;  font-weight: 500; }
+  .text-overline   {
+    font-size: var(--text-overline); line-height: 1.2; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .kpi-value-lg { font-size: var(--kpi-value-lg); line-height: 1.1; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .kpi-value-sm { font-size: var(--kpi-value-sm); line-height: 1.1; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* Primary action button (D-5/D-7): the one brand-gradient affordance.
+     Replaces ad-hoc bg-slate-600/700 primary buttons. Keep it rare — one
+     primary per view. */
+  .btn-primary {
+    background-image: var(--gradient-brand);
+    color: #fff;
+    border: none;
+  }
+  .btn-primary:hover { filter: brightness(1.05); }
+  .btn-primary:active { filter: brightness(0.97); }
+
+  /* Hit-area extender: keep a control's visual box small (e.g. 32/38px)
+     while guaranteeing a >=44x44px tap target. Center a transparent
+     pseudo over the control; clicks on it still resolve to the control.
+     Apply to the tappable element:  class="... touch-extend"           */
+  .touch-extend { position: relative; }
+  .touch-extend::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-width: var(--touch-target);
+    min-height: var(--touch-target);
+    width: 100%;
+    height: 100%;
+  }
+}
+
 .frosted-ambient {
   background:
     radial-gradient(1200px 800px at 85% -10%, rgba(48, 176, 205, 0.10), transparent 60%),

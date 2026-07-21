@@ -6,7 +6,9 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "audit:tokens": "node scripts/audit-tokens.mjs",
+    "check:tokens": "bash scripts/check-tokens.sh"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
