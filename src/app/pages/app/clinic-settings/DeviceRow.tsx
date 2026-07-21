@@ -24,27 +24,27 @@ export function DeviceRow({ view, onOpen }: { view: DeviceView; onOpen: (v: Devi
   };
 
   return (
-    <tr className={`transition-colors cursor-pointer ${view.retired ? "bg-gray-50/40 hover:bg-gray-50" : "hover:bg-gray-50/60"}`} onClick={() => onOpen(view)}>
+    <tr className={`transition-colors cursor-pointer ${view.retired ? "bg-surface-page/40 hover:bg-surface-page" : "hover:bg-surface-page/60"}`} onClick={() => onOpen(view)}>
       <td className="px-4 py-3.5">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
-            <Icon className="w-4 h-4 text-slate-600" />
+          <div className="w-8 h-8 rounded-card bg-surface-hover flex items-center justify-center shrink-0">
+            <Icon className="w-4 h-4 text-ink-soft" />
           </div>
           <div className="min-w-0">
-            <div className={`text-sm font-bold truncate ${view.retired ? "text-gray-500" : "text-gray-800"}`}>{view.label}</div>
-            {view.retired && <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wide">Retired</div>}
+            <div className={`text-sm font-bold truncate ${view.retired ? "text-ink-muted" : "text-ink"}`}>{view.label}</div>
+            {view.retired && <div className="text-label font-bold text-ink-muted uppercase tracking-wide">Retired</div>}
           </div>
         </div>
       </td>
-      <td className="px-4 py-3.5 text-sm text-gray-600 whitespace-nowrap">{view.model}</td>
-      <td className="px-4 py-3.5 text-sm text-gray-500 font-mono tracking-wide whitespace-nowrap">{view.shortCode}</td>
-      <td className="px-4 py-3.5 text-sm text-gray-600 whitespace-nowrap">{view.type}</td>
+      <td className="px-4 py-3.5 text-sm text-ink-soft whitespace-nowrap">{view.model}</td>
+      <td className="px-4 py-3.5 text-sm text-ink-muted font-mono tracking-wide whitespace-nowrap">{view.shortCode}</td>
+      <td className="px-4 py-3.5 text-sm text-ink-soft whitespace-nowrap">{view.type}</td>
       <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
         <select
           value={roomValue}
           disabled={view.retired}
           onChange={(e) => reassign(e.target.value)}
-          className="max-w-[160px] px-2.5 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-700 bg-white outline-none focus:border-slate-500 disabled:bg-gray-50 disabled:text-gray-400"
+          className="max-w-[160px] px-2.5 py-1.5 border border-divider rounded-card text-sm text-ink-soft bg-surface outline-none focus:border-border-strong disabled:bg-surface-page disabled:text-ink-muted"
         >
           <option value="">Unassigned</option>
           {rooms.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
@@ -55,7 +55,7 @@ export function DeviceRow({ view, onOpen }: { view: DeviceView; onOpen: (v: Devi
           <span className={`w-1.5 h-1.5 rounded-full ${meta.dot}`} /> {meta.label}
         </span>
       </td>
-      <td className="px-4 py-3.5 text-sm text-gray-500 whitespace-nowrap">{view.lastSeen}</td>
+      <td className="px-4 py-3.5 text-sm text-ink-muted whitespace-nowrap">{view.lastSeen}</td>
       <td className="px-3 py-3.5 text-right" onClick={(e) => e.stopPropagation()}>
         <OverflowMenu
           ariaLabel={`Actions for ${view.label}`}

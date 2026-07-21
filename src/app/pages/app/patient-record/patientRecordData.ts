@@ -291,10 +291,10 @@ export function getPatientRecord(idParam: string | undefined): PatientRecord {
 
 export function statusPillClass(status: PatientRecord["status"]): string {
   switch (status) {
-    case "Active": return "bg-emerald-50 text-emerald-700 border-emerald-200";
-    case "Inactive": return "bg-gray-50 text-gray-500 border-gray-200";
-    case "New": return "bg-blue-50 text-blue-700 border-blue-200";
-    case "Pending Onboarding": return "bg-orange-50 text-orange-700 border-orange-200";
+    case "Active": return "bg-success/10 text-success-ink border-success/30";
+    case "Inactive": return "bg-surface-page text-ink-muted border-divider";
+    case "New": return "bg-info/10 text-info-ink border-info/30";
+    case "Pending Onboarding": return "bg-warning/10 text-warning-ink border-warning/30";
   }
 }
 

@@ -56,11 +56,11 @@ function ApptBlock({ appt, gapMin, secondary }: { appt: Appt; gapMin?: number; s
     >
       <div className="flex items-center gap-1.5 min-w-0">
         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${apptStatusDotClass(appt.status)}`} />
-        {appt.isVideo && <Video className="w-3 h-3 text-slate-500 shrink-0" />}
-        <span className="text-[11px] font-bold text-gray-800 truncate">{appt.patient.name}</span>
+        {appt.isVideo && <Video className="w-3 h-3 text-ink-muted shrink-0" />}
+        <span className="text-label font-bold text-ink truncate">{appt.patient.name}</span>
       </div>
       {showDetail && (
-        <div className="text-[10px] text-gray-500 truncate mt-0.5 pl-3">
+        <div className="text-label text-ink-muted truncate mt-0.5 pl-3">
           {appt.type.replace(" (in-person)", "").replace(" (video)", "")} · {secondary}
         </div>
       )}
@@ -70,12 +70,12 @@ function ApptBlock({ appt, gapMin, secondary }: { appt: Appt; gapMin?: number; s
 
 function ViewModeToggle({ mode, onChange }: { mode: ViewMode; onChange: (m: ViewMode) => void }) {
   return (
-    <div className="inline-flex bg-gray-100 p-0.5 rounded-lg border border-gray-200 shrink-0">
+    <div className="inline-flex bg-surface-hover p-0.5 rounded-card border border-divider shrink-0">
       {(["room", "clinician"] as const).map((m) => (
         <button
           key={m}
           onClick={() => onChange(m)}
-          className={`px-2.5 py-1 text-[11px] font-bold rounded-md transition-all ${mode === m ? "bg-white text-slate-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+          className={`px-2.5 py-1 text-label font-bold rounded-control transition-all ${mode === m ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted hover:text-ink-soft"}`}
         >
           {m === "room" ? "By Room" : "By Clinician"}
         </button>
@@ -108,19 +108,19 @@ export function CalendarWidget({ onAdd }: { onAdd?: () => void } = {}) {
   };
 
   return (
-    <div className="border border-gray-200 rounded-xl shadow-md bg-white flex flex-col h-full min-h-0">
+    <div className="border border-divider rounded-card shadow-md bg-surface flex flex-col h-full min-h-0">
       {/* Header */}
-      <div className="h-12 border-b border-gray-200 bg-gray-50/70 px-4 flex items-center justify-between shrink-0 gap-3">
+      <div className="h-12 border-b border-divider bg-surface-page/70 px-4 flex items-center justify-between shrink-0 gap-3">
         <div className="flex items-center gap-2 min-w-0 shrink-0">
-          <h3 className="font-bold text-gray-800 text-sm">
-            Today's Schedule <span className="text-gray-400 font-medium ml-1">{TODAY_SHORT}</span>
+          <h3 className="font-bold text-ink text-sm">
+            Today's Schedule <span className="text-ink-muted font-medium ml-1">{TODAY_SHORT}</span>
           </h3>
           {onAdd && (
             <button
               onClick={onAdd}
               title="New booking"
               aria-label="New booking"
-              className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-600 hover:bg-slate-50 hover:border-slate-400 hover:text-slate-700 transition-colors shrink-0"
+              className="w-8 h-8 flex items-center justify-center rounded-card border border-divider text-ink-soft hover:bg-surface-page hover:border-border-strong hover:text-ink-soft transition-colors shrink-0"
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -128,31 +128,31 @@ export function CalendarWidget({ onAdd }: { onAdd?: () => void } = {}) {
         </div>
         <button
           onClick={() => navigate("/calendar/schedule")}
-          className="text-xs font-bold text-slate-600 hover:text-slate-800 flex items-center gap-1 transition-colors shrink-0"
+          className="text-xs font-bold text-ink-soft hover:text-ink flex items-center gap-1 transition-colors shrink-0"
         >
           Open Calendar <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
 
       {/* Progress summary + room/clinician toggle */}
-      <div className="px-4 py-2 bg-white flex items-center justify-between gap-3 shrink-0">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] min-w-0">
-          <span className="font-bold text-gray-700 whitespace-nowrap">{summary.total} appointments</span>
-          <span className="text-gray-300">·</span>
-          <span className="font-semibold text-gray-500 whitespace-nowrap">{summary.completed} completed</span>
-          <span className="text-gray-300">·</span>
-          <span className="font-semibold text-amber-600 whitespace-nowrap">{summary.inProgress} in progress</span>
-          <span className="text-gray-300">·</span>
-          <span className="font-semibold text-blue-600 whitespace-nowrap">{summary.upcoming} upcoming</span>
-          <span className="text-gray-300">·</span>
-          <span className="font-semibold text-red-600 whitespace-nowrap">{summary.noShow} no-show</span>
+      <div className="px-4 py-2 bg-surface flex items-center justify-between gap-3 shrink-0">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-label min-w-0">
+          <span className="font-bold text-ink-soft whitespace-nowrap">{summary.total} appointments</span>
+          <span className="text-ink-muted">·</span>
+          <span className="font-semibold text-ink-muted whitespace-nowrap">{summary.completed} completed</span>
+          <span className="text-ink-muted">·</span>
+          <span className="font-semibold text-warning-ink whitespace-nowrap">{summary.inProgress} in progress</span>
+          <span className="text-ink-muted">·</span>
+          <span className="font-semibold text-info-ink whitespace-nowrap">{summary.upcoming} upcoming</span>
+          <span className="text-ink-muted">·</span>
+          <span className="font-semibold text-danger-ink whitespace-nowrap">{summary.noShow} no-show</span>
         </div>
         <ViewModeToggle mode={mode} onChange={setMode} />
       </div>
       {/* A soft tint of each status color, in the same left-to-right order as
           the counts above, replaces a plain gray rule — ties the divider
           back to what it's separating without shouting. */}
-      <div className="h-[3px] shrink-0 bg-gradient-to-r from-gray-200 via-amber-200 via-30% via-blue-200 via-70% to-red-200" />
+      <div className="h-[3px] shrink-0 bg-gradient-to-r from-surface-sunken via-warning via-30% via-info via-70% to-danger" />
 
       {/* Full timeline, no internal scroll — the whole 08:00-19:00 day
           always renders in full; the page itself is the only scroll
@@ -162,12 +162,12 @@ export function CalendarWidget({ onAdd }: { onAdd?: () => void } = {}) {
           but is harmless to leave since it degrades to normal flow. */}
       <div className="flex-1">
         {columns.length > 1 && (
-          <div className="sticky top-0 z-30 flex border-b border-gray-200 bg-gradient-to-b from-gray-50 to-gray-50/50 pl-14">
+          <div className="sticky top-0 z-30 flex border-b border-divider bg-gradient-to-b from-surface-page to-surface-page/50 pl-14">
             {columns.map((c) => (
-              <div key={c.key} className="flex-1 px-1.5 py-2 text-center border-l border-gray-200 min-w-0">
-                <div className="text-xs font-bold text-gray-700 truncate">{c.label}</div>
-                {c.sub && <div className="text-[9px] text-gray-400 truncate mt-0.5">{c.sub}</div>}
-                <span className="inline-block mt-1 px-1.5 py-0.5 rounded-full bg-gray-100 text-[9px] font-bold text-gray-500 tabular-nums">
+              <div key={c.key} className="flex-1 px-1.5 py-2 text-center border-l border-divider min-w-0">
+                <div className="text-xs font-bold text-ink-soft truncate">{c.label}</div>
+                {c.sub && <div className="text-label text-ink-muted truncate mt-0.5">{c.sub}</div>}
+                <span className="inline-block mt-1 px-1.5 py-0.5 rounded-full bg-surface-hover text-label font-bold text-ink-muted tabular-nums">
                   {c.appts.length}
                 </span>
               </div>
@@ -176,16 +176,16 @@ export function CalendarWidget({ onAdd }: { onAdd?: () => void } = {}) {
         )}
         <div className="flex" style={{ height: gridHeight }}>
           {/* Hour gutter */}
-          <div className="w-14 shrink-0 relative border-r border-gray-200 bg-gray-50/30">
+          <div className="w-14 shrink-0 relative border-r border-divider bg-surface-page/30">
             {hours.map((h, i) => i % 2 === 1 && (
-              <div key={`band-${h}`} className="absolute left-0 right-0 bg-gray-100/50" style={{ top: (i - 1) * HOUR_PX, height: HOUR_PX }} />
+              <div key={`band-${h}`} className="absolute left-0 right-0 bg-surface-hover/50" style={{ top: (i - 1) * HOUR_PX, height: HOUR_PX }} />
             ))}
             {hours.map((h, i) => (
-              <div key={h} className="absolute left-0 right-0 text-[10px] font-semibold text-gray-500 text-right pr-2 tabular-nums" style={{ top: i * HOUR_PX - 6 }}>
+              <div key={h} className="absolute left-0 right-0 text-label font-semibold text-ink-muted text-right pr-2 tabular-nums" style={{ top: i * HOUR_PX - 6 }}>
                 {i === 0 ? "" : `${String(h).padStart(2, "0")}:00`}
               </div>
             ))}
-            <span className="absolute right-1.5 z-20 text-[9px] font-bold text-white bg-red-500 rounded px-1 py-[1px] shadow-sm tabular-nums" style={{ top: nowTop - 7 }}>
+            <span className="absolute right-1.5 z-20 text-label font-bold text-white bg-danger-ink rounded-control px-1 py-[1px] shadow-sm tabular-nums" style={{ top: nowTop - 7 }}>
               {minToClock(NOW_MINUTES)}
             </span>
           </div>
@@ -194,17 +194,17 @@ export function CalendarWidget({ onAdd }: { onAdd?: () => void } = {}) {
           <div className="flex-1 relative">
             {/* alternating hour bands */}
             {hours.map((h, i) => i % 2 === 1 && (
-              <div key={`band-${h}`} className="absolute left-0 right-0 bg-gray-50/60 pointer-events-none" style={{ top: (i - 1) * HOUR_PX, height: HOUR_PX }} />
+              <div key={`band-${h}`} className="absolute left-0 right-0 bg-surface-page/60 pointer-events-none" style={{ top: (i - 1) * HOUR_PX, height: HOUR_PX }} />
             ))}
             {/* Hour gridlines */}
             {hours.map((h, i) => (
-              <div key={h} className="absolute left-0 right-0 border-t border-gray-200" style={{ top: i * HOUR_PX }} />
+              <div key={h} className="absolute left-0 right-0 border-t border-divider" style={{ top: i * HOUR_PX }} />
             ))}
 
             {/* Now line */}
             <div className="absolute left-0 right-0 z-20 pointer-events-none" style={{ top: nowTop }}>
-              <div className="relative border-t-2 border-red-500 shadow-[0_0_6px_rgba(239,68,68,0.35)]">
-                <span className="absolute -left-[4px] -top-[5px] w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white" />
+              <div className="relative border-t-2 border-danger shadow-[0_0_6px_rgba(239,68,68,0.35)]">
+                <span className="absolute -left-[4px] -top-[5px] w-2.5 h-2.5 rounded-full bg-danger-ink ring-2 ring-white" />
               </div>
             </div>
 
@@ -213,7 +213,7 @@ export function CalendarWidget({ onAdd }: { onAdd?: () => void } = {}) {
               {columns.map((c) => {
                 const sorted = [...c.appts].sort((a, b) => a.startMin - b.startMin);
                 return (
-                  <div key={c.key} className="flex-1 relative border-l border-gray-200">
+                  <div key={c.key} className="flex-1 relative border-l border-divider">
                     {sorted.map((appt) => (
                       <ApptBlock
                         key={appt.id}

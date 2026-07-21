@@ -143,7 +143,7 @@ export default function App() {
           <Route path="/approval" element={<AppShellLayout><ApprovalRouter /></AppShellLayout>} />
           <Route path="/approval/REQ-1" element={<AppShellLayout><ApprovalDetailSkeleton /></AppShellLayout>} />
           <Route path="/profile" element={<AppShellLayout><ProfilePage /></AppShellLayout>} />
-          <Route path="*" element={<AppShellLayout><div className="p-8"><h1 className="text-2xl font-bold mb-4">404 - Not Found</h1><Link to="/site-map" className="text-slate-600 hover:underline">Go to Site Map</Link></div></AppShellLayout>} />
+          <Route path="*" element={<AppShellLayout><div className="p-4"><h1 className="text-2xl font-bold mb-4">404 - Not Found</h1><Link to="/site-map" className="text-ink-soft hover:underline">Go to Site Map</Link></div></AppShellLayout>} />
         </Routes>
       </BrowserRouter>
     </AppProvider>

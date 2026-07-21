@@ -37,25 +37,25 @@ export function PeopleDayPopover({
   return (
     <div className="fixed inset-0 z-50" onClick={(e) => { e.stopPropagation(); onClose(); }}>
       <div
-        className="absolute bg-white border border-gray-200 rounded-lg shadow-xl w-[320px] text-gray-800 -translate-x-1/2"
+        className="absolute bg-surface border border-divider rounded-card shadow-xl w-[320px] text-ink -translate-x-1/2"
         style={{
           left: Math.min(Math.max(x, 170), window.innerWidth - 170),
           top: Math.min(y + 8, window.innerHeight - 340),
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-4 border-b border-gray-100 bg-gray-50 rounded-t-lg">
-          <div className="font-bold text-sm text-gray-800 mb-1">{staff.name} · {dayLabel}</div>
-          <span className="text-[11px] font-medium text-gray-400">{staff.role}</span>
+        <div className="p-4 border-b border-divider bg-surface-page rounded-t-lg">
+          <div className="font-bold text-sm text-ink mb-1">{staff.name} · {dayLabel}</div>
+          <span className="text-label font-medium text-ink-muted">{staff.role}</span>
         </div>
 
         <div className="max-h-80 overflow-y-auto rounded-b-lg">
-          <div className="p-4 border-b border-gray-100">
-            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Scheduled Availability</h4>
+          <div className="p-4 border-b border-divider">
+            <h4 className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-3">Scheduled Availability</h4>
             <div className="space-y-2">
               {availabilityWindows(day.blocks).map((w, idx) => (
-                <div key={idx} className="flex items-center text-sm font-semibold text-gray-800">
-                  <div className="w-2 h-2 rounded-full mr-2 bg-emerald-500" />
+                <div key={idx} className="flex items-center text-sm font-semibold text-ink">
+                  <div className="w-2 h-2 rounded-full mr-2 bg-success" />
                   {w.start} – {w.end}
                 </div>
               ))}
@@ -63,19 +63,19 @@ export function PeopleDayPopover({
           </div>
 
           <div className="p-4">
-            <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Booked Appointments</h4>
+            <h4 className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-3">Booked Appointments</h4>
             <div className="space-y-2">
               {(!day.appointments || day.appointments.length === 0) ? (
-                <div className="text-sm text-gray-500 italic">No appointments booked</div>
+                <div className="text-sm text-ink-muted italic">No appointments booked</div>
               ) : (
                 day.appointments.map((appt, idx) => {
                   const isOwnPatient = staff.name.includes("Ebru");
                   const showNames = currentUserRole === "Admin" || currentUserRole === "Reception" || (currentUserRole === "Clinician" && isOwnPatient);
                   return (
-                    <div key={idx} className="flex items-center text-sm text-gray-700">
-                      <div className="w-2 h-2 rounded-full bg-gray-500 mr-2 shrink-0" />
+                    <div key={idx} className="flex items-center text-sm text-ink-soft">
+                      <div className="w-2 h-2 rounded-full bg-ink-muted mr-2 shrink-0" />
                       <span className="font-medium mr-2">{appt.start} – {appt.end}</span>
-                      <span className="text-gray-500 truncate">· {showNames ? appt.patient : "Patient"}</span>
+                      <span className="text-ink-muted truncate">· {showNames ? appt.patient : "Patient"}</span>
                     </div>
                   );
                 })

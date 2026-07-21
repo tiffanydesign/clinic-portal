@@ -22,16 +22,16 @@ import { DiscardDialog } from "../../../components/DiscardDialog";
 type Mode = "standalone" | "embedded";
 type Step = 1 | 2 | "done";
 
-const inputCls = "w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-slate-500";
-const labelCls = "block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2";
+const inputCls = "w-full px-3 py-2 border border-divider rounded-control text-sm outline-none focus:border-border-strong";
+const labelCls = "block text-xs font-bold text-ink-soft uppercase tracking-wider mb-2";
 
 function StepDots({ step }: { step: 1 | 2 }) {
   const dot = (n: 1 | 2, label: string) => {
     const active = step === n;
     const done = step > n;
     return (
-      <div className={`flex items-center font-bold text-sm ${active || done ? "text-blue-700" : "text-gray-400"}`}>
-        <div className={`w-6 h-6 rounded-full flex items-center justify-center mr-2 ${active || done ? "bg-blue-100" : "bg-gray-100"}`}>
+      <div className={`flex items-center font-bold text-sm ${active || done ? "text-info-ink" : "text-ink-muted"}`}>
+        <div className={`w-6 h-6 rounded-full flex items-center justify-center mr-2 ${active || done ? "bg-info/15" : "bg-surface-hover"}`}>
           {done ? <CheckCircle2 className="w-3.5 h-3.5" /> : n}
         </div>
         {label}
@@ -41,7 +41,7 @@ function StepDots({ step }: { step: 1 | 2 }) {
   return (
     <div className="flex items-center justify-center gap-4 mb-2">
       {dot(1, "Personal")}
-      <div className="w-12 h-px bg-gray-200" />
+      <div className="w-12 h-px bg-surface-sunken" />
       {dot(2, "Contact")}
     </div>
   );
@@ -151,28 +151,28 @@ export function RegisterPatientModal({
   if (step === "done" && created) {
     return (
       <Shell onClose={onClose} title="Patient registered">
-        <div className="p-8 text-center">
-          <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-3">
-            <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+        <div className="p-4 text-center">
+          <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-3">
+            <CheckCircle2 className="w-6 h-6 text-success-ink" />
           </div>
-          <div className="text-base font-bold text-gray-900">{created.name}</div>
-          <div className="text-xs text-gray-500 mt-0.5">{created.patientId} · {created.phone || created.email}</div>
-          <p className="text-sm text-gray-500 mt-3">Registered and searchable in the patient list.</p>
+          <div className="text-base font-bold text-ink">{created.name}</div>
+          <div className="text-xs text-ink-muted mt-0.5">{created.patientId} · {created.phone || created.email}</div>
+          <p className="text-sm text-ink-muted mt-3">Registered and searchable in the patient list.</p>
         </div>
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between gap-3">
+        <div className="px-6 py-4 bg-surface-page border-t border-divider flex justify-between gap-3">
           <button
             onClick={() => { navigate(`/patients/${created.patientId}`); onClose(); }}
-            className="min-h-11 px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100 transition-colors"
+            className="min-h-11 px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover transition-colors"
           >
             View patient record
           </button>
           <div className="flex gap-3">
-            <button onClick={onClose} className="min-h-11 px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-800 transition-colors">
+            <button onClick={onClose} className="min-h-11 px-4 py-2 text-sm font-bold text-ink-muted hover:text-ink transition-colors">
               Done
             </button>
             <button
               onClick={() => { onBookFirst?.(created); onClose(); }}
-              className="min-h-11 px-5 py-2 rounded text-sm font-bold text-white bg-slate-600 hover:bg-slate-700 transition-colors shadow-sm inline-flex items-center gap-2"
+              className="min-h-11 px-5 py-2 rounded-control text-sm font-bold text-white bg-ink hover:bg-surface-sunken transition-colors shadow-sm inline-flex items-center gap-2"
             >
               <CalendarPlus className="w-4 h-4" /> Book first appointment
             </button>
@@ -187,30 +187,30 @@ export function RegisterPatientModal({
     return (
       <Shell onClose={requestClose} title="Possible duplicate">
         <div className="p-6">
-          <div className="flex gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
-            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="flex gap-3 rounded-card border border-warning/30 bg-warning/10 p-4">
+            <AlertTriangle className="w-5 h-5 text-warning-ink shrink-0 mt-0.5" />
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-amber-800">
+              <p className="text-sm font-semibold text-warning-ink">
                 A patient with this {duplicate.email.trim().toLowerCase() === email.trim().toLowerCase() ? "email address" : "phone number"} already exists: {duplicate.name} ({duplicate.patientId})
               </p>
-              <p className="text-xs text-amber-700/80 mt-1">{duplicate.phone} · {duplicate.email || "no email on file"}</p>
+              <p className="text-xs text-warning-ink/80 mt-1">{duplicate.phone} · {duplicate.email || "no email on file"}</p>
             </div>
           </div>
         </div>
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between gap-3">
-          <button onClick={() => setDuplicate(null)} className="min-h-11 px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-800">
+        <div className="px-6 py-4 bg-surface-page border-t border-divider flex justify-between gap-3">
+          <button onClick={() => setDuplicate(null)} className="min-h-11 px-4 py-2 text-sm font-bold text-ink-muted hover:text-ink">
             Back
           </button>
           <div className="flex gap-3">
             <button
               onClick={() => { const d = duplicate; setDuplicate(null); commit(d); }}
-              className="min-h-11 px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100 transition-colors"
+              className="min-h-11 px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover transition-colors"
             >
               Register anyway
             </button>
             <button
               onClick={useExisting}
-              className="min-h-11 px-5 py-2 rounded text-sm font-bold text-white bg-slate-600 hover:bg-slate-700 transition-colors shadow-sm"
+              className="min-h-11 px-5 py-2 rounded-control text-sm font-bold text-white bg-ink hover:bg-surface-sunken transition-colors shadow-sm"
             >
               Use existing patient
             </button>
@@ -231,19 +231,19 @@ export function RegisterPatientModal({
             <div className="grid grid-cols-12 gap-4">
               <div className="col-span-3">
                 <label className={labelCls}>Title</label>
-                <select value={title} onChange={(e) => setTitle(e.target.value)} className={`${inputCls} bg-white`}>
+                <select value={title} onChange={(e) => setTitle(e.target.value)} className={`${inputCls} bg-surface`}>
                   <option>Mr</option><option>Mrs</option><option>Ms</option><option>Dr</option>
                 </select>
               </div>
               <div className="col-span-4">
-                <label className={labelCls}>First Name <span className="text-red-500">*</span></label>
+                <label className={labelCls}>First Name <span className="text-danger-ink">*</span></label>
                 <input autoFocus value={firstName} onChange={(e) => setFirstName(e.target.value)} className={inputCls} />
-                {errors.firstName && <p className="text-[11px] text-red-600 font-medium mt-1">{errors.firstName}</p>}
+                {errors.firstName && <p className="text-label text-danger-ink font-medium mt-1">{errors.firstName}</p>}
               </div>
               <div className="col-span-5">
-                <label className={labelCls}>Last Name <span className="text-red-500">*</span></label>
+                <label className={labelCls}>Last Name <span className="text-danger-ink">*</span></label>
                 <input value={lastName} onChange={(e) => setLastName(e.target.value)} className={inputCls} />
-                {errors.lastName && <p className="text-[11px] text-red-600 font-medium mt-1">{errors.lastName}</p>}
+                {errors.lastName && <p className="text-label text-danger-ink font-medium mt-1">{errors.lastName}</p>}
               </div>
             </div>
 
@@ -254,7 +254,7 @@ export function RegisterPatientModal({
               </div>
               <div>
                 <label className={labelCls}>Sex</label>
-                <select value={sex} onChange={(e) => setSex(e.target.value as Patient["sex"])} className={`${inputCls} bg-white`}>
+                <select value={sex} onChange={(e) => setSex(e.target.value as Patient["sex"])} className={`${inputCls} bg-surface`}>
                   <option value="">Select sex…</option>
                   <option value="M">Male</option>
                   <option value="F">Female</option>
@@ -266,14 +266,14 @@ export function RegisterPatientModal({
         ) : (
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={labelCls}>Email <span className="text-red-500">*</span></label>
+              <label className={labelCls}>Email <span className="text-danger-ink">*</span></label>
               <input
                 autoFocus type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@example.com" className={inputCls}
               />
               {errors.email
-                ? <p className="text-[11px] text-red-600 font-medium mt-1">{errors.email}</p>
-                : <p className="text-[11px] text-gray-400 mt-1">Checked against existing patients.</p>}
+                ? <p className="text-label text-danger-ink font-medium mt-1">{errors.email}</p>
+                : <p className="text-label text-ink-muted mt-1">Checked against existing patients.</p>}
             </div>
             <div>
               <label className={labelCls}>Mobile Phone</label>
@@ -286,9 +286,9 @@ export function RegisterPatientModal({
         )}
       </div>
 
-      <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between gap-3">
+      <div className="px-6 py-4 bg-surface-page border-t border-divider flex justify-between gap-3">
         {step === 2 ? (
-          <button onClick={() => setStep(1)} className="min-h-11 px-4 py-2 text-sm font-bold text-gray-500 hover:text-gray-800 inline-flex items-center gap-1.5">
+          <button onClick={() => setStep(1)} className="min-h-11 px-4 py-2 text-sm font-bold text-ink-muted hover:text-ink inline-flex items-center gap-1.5">
             <ArrowLeft className="w-4 h-4" /> Back
           </button>
         ) : <span />}
@@ -296,8 +296,8 @@ export function RegisterPatientModal({
           <button
             onClick={goStep2}
             disabled={!step1Valid}
-            className={`min-h-11 px-5 py-2 rounded text-sm font-bold transition-colors shadow-sm inline-flex items-center gap-2 ${
-              step1Valid ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-gray-200 text-gray-400 cursor-not-allowed"
+            className={`min-h-11 px-5 py-2 rounded-control text-sm font-bold transition-colors shadow-sm inline-flex items-center gap-2 ${
+              step1Valid ? "bg-ink hover:bg-surface-sunken text-white" : "bg-surface-sunken text-ink-muted cursor-not-allowed"
             }`}
           >
             Next Step <ArrowRight className="w-4 h-4" />
@@ -306,8 +306,8 @@ export function RegisterPatientModal({
           <button
             onClick={submit}
             disabled={!step2Valid}
-            className={`min-h-11 px-5 py-2 rounded text-sm font-bold transition-colors shadow-sm inline-flex items-center gap-2 ${
-              step2Valid ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-gray-200 text-gray-400 cursor-not-allowed"
+            className={`min-h-11 px-5 py-2 rounded-control text-sm font-bold transition-colors shadow-sm inline-flex items-center gap-2 ${
+              step2Valid ? "bg-ink hover:bg-surface-sunken text-white" : "bg-surface-sunken text-ink-muted cursor-not-allowed"
             }`}
           >
             <UserPlus className="w-4 h-4" /> Register Patient
@@ -333,11 +333,11 @@ export function RegisterPatientModal({
 // already-filled fields.
 function Shell({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[60] p-6">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 max-h-[85vh]">
-        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 shrink-0">
-          <h2 className="text-lg font-bold text-gray-800">{title}</h2>
-          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors">
+    <div className="fixed inset-0 bg-surface-sunken/40 backdrop-blur-sm flex items-center justify-center z-[60] p-6">
+      <div className="bg-surface rounded-card shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 max-h-[85vh]">
+        <div className="px-6 py-4 border-b border-divider flex justify-between items-center bg-surface-page shrink-0">
+          <h2 className="text-lg font-bold text-ink">{title}</h2>
+          <button onClick={onClose} className="p-1.5 text-ink-muted hover:text-ink-soft hover:bg-surface-sunken rounded-full transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>

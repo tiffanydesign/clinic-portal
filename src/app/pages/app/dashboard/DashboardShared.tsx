@@ -22,13 +22,13 @@ export function Section({
   bodyClassName?: string;
 }) {
   return (
-    <div className={`border border-gray-300 rounded bg-white flex flex-col ${className}`}>
-      <div className="h-12 border-b border-gray-200 px-4 flex items-center justify-between shrink-0">
-        <h3 className="font-bold text-gray-800 text-sm flex items-center">{title}</h3>
+    <div className={`border border-divider rounded-control bg-surface flex flex-col ${className}`}>
+      <div className="h-12 border-b border-divider px-4 flex items-center justify-between shrink-0">
+        <h3 className="font-bold text-ink text-sm flex items-center">{title}</h3>
         {action}
       </div>
       {subHeader && (
-        <div className="px-4 py-2 border-b border-gray-200 bg-gray-50/60 shrink-0">{subHeader}</div>
+        <div className="px-4 py-2 border-b border-divider bg-surface-page/60 shrink-0">{subHeader}</div>
       )}
       <div className={`flex-1 overflow-y-auto ${bodyClassName}`}>{children}</div>
     </div>
@@ -37,8 +37,8 @@ export function Section({
 
 export function LiveDot() {
   return (
-    <span className="inline-flex items-center ml-2 text-[10px] font-bold text-emerald-600 uppercase tracking-wider">
-      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse" />
+    <span className="inline-flex items-center ml-2 text-label font-bold text-success-ink uppercase tracking-wider">
+      <span className="w-1.5 h-1.5 rounded-full bg-success mr-1.5 animate-pulse" />
       Live
     </span>
   );
@@ -51,12 +51,12 @@ export function StatusPill({
   status: string;
   type?: "default" | "success" | "warning" | "error";
 }) {
-  let style = "bg-gray-100 border-gray-200 text-gray-600";
-  if (type === "success") style = "bg-emerald-50 border-emerald-200 text-emerald-700";
-  if (type === "warning") style = "bg-orange-50 border-orange-200 text-orange-700";
-  if (type === "error") style = "bg-red-50 border-red-200 text-red-700";
+  let style = "bg-surface-hover border-divider text-ink-soft";
+  if (type === "success") style = "bg-success/10 border-success/30 text-success-ink";
+  if (type === "warning") style = "bg-warning/10 border-warning/30 text-warning-ink";
+  if (type === "error") style = "bg-danger/10 border-danger/30 text-danger-ink";
   return (
-    <span className={`px-2 py-0.5 border rounded text-[10px] font-bold uppercase tracking-wider whitespace-nowrap ${style}`}>
+    <span className={`px-2 py-0.5 border rounded-control text-overline whitespace-nowrap ${style}`}>
       {status}
     </span>
   );

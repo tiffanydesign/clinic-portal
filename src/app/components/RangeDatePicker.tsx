@@ -90,10 +90,10 @@ export function RangeDatePicker({ initialStart, initialEnd, initialPreset, onApp
 
     return (
       <div className="w-64">
-        <div className="font-bold text-gray-800 mb-4 text-center">{format(monthDate, "MMMM yyyy")}</div>
+        <div className="font-bold text-ink mb-4 text-center">{format(monthDate, "MMMM yyyy")}</div>
         <div className="grid grid-cols-7 mb-2">
           {["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"].map(d => (
-            <div key={d} className="text-center text-[10px] font-bold text-gray-400">{d}</div>
+            <div key={d} className="text-center text-label font-bold text-ink-muted">{d}</div>
           ))}
         </div>
         <div className="grid grid-cols-7 gap-y-1">
@@ -114,12 +114,12 @@ export function RangeDatePicker({ initialStart, initialEnd, initialPreset, onApp
             }
 
             let bgClass = "bg-transparent";
-            let textClass = isCurrentMonth ? "text-gray-700" : "text-gray-300";
+            let textClass = isCurrentMonth ? "text-ink-soft" : "text-ink-muted";
             let roundedClass = "";
 
             if (isStart || isEnd) {
               textClass = "text-white font-bold";
-              bgClass = "bg-slate-700";
+              bgClass = "bg-surface-sunken";
               roundedClass = "rounded-full";
               // Add range background extension
               if (inRange && tempStart && (tempEnd || hoverDate) && !isRangeStartEndSame) {
@@ -129,7 +129,7 @@ export function RangeDatePicker({ initialStart, initialEnd, initialPreset, onApp
                 if (isEnd && day.getDay() === 0) roundedClass = "rounded-full";
               }
             } else if (inRange) {
-              bgClass = "bg-slate-100";
+              bgClass = "bg-surface-hover";
               if (day.getDay() === 0) roundedClass = "rounded-l-full rounded-r-none";
               if (day.getDay() === 6) roundedClass = "rounded-r-full rounded-l-none";
             }
@@ -142,10 +142,10 @@ export function RangeDatePicker({ initialStart, initialEnd, initialPreset, onApp
                 onMouseEnter={() => setHoverDate(day)}
               >
                 {/* Ensure the text is always centered within a circle when not range */}
-                <div className={`w-8 h-8 flex items-center justify-center ${isStart || isEnd ? 'bg-slate-700 rounded-full z-10' : ''} ${textClass}`}>
+                <div className={`w-8 h-8 flex items-center justify-center ${isStart || isEnd ? 'bg-surface-sunken rounded-full z-10' : ''} ${textClass}`}>
                   {day.getDate()}
                 </div>
-                {isToday && !isStart && !isEnd && <div className="absolute bottom-1 w-1 h-1 bg-slate-600 rounded-full"></div>}
+                {isToday && !isStart && !isEnd && <div className="absolute bottom-1 w-1 h-1 bg-surface-sunken rounded-full"></div>}
               </div>
             );
           })}
@@ -155,44 +155,44 @@ export function RangeDatePicker({ initialStart, initialEnd, initialPreset, onApp
   };
 
   return (
-    <div className="absolute top-full left-1/2 -translate-x-[40%] mt-2 bg-white border border-gray-200 shadow-[0_4px_24px_rgba(0,0,0,0.08)] rounded-xl z-30 flex overflow-hidden w-[800px]" onClick={e => e.stopPropagation()}>
+    <div className="absolute top-full left-1/2 -translate-x-[40%] mt-2 bg-surface border border-divider shadow-[0_4px_24px_rgba(0,0,0,0.08)] rounded-card z-30 flex overflow-hidden w-[800px]" onClick={e => e.stopPropagation()}>
       {/* Left: Calendars */}
-      <div className="flex p-6 border-r border-gray-100 relative">
-        <button onClick={handlePrevMonth} className="absolute left-6 top-6 p-1 hover:bg-gray-100 rounded text-gray-500"><ChevronLeft className="w-5 h-5" /></button>
+      <div className="flex p-6 border-r border-divider relative">
+        <button onClick={handlePrevMonth} className="absolute left-6 top-6 p-1 hover:bg-surface-hover rounded-control text-ink-muted"><ChevronLeft className="w-5 h-5" /></button>
         {renderMonth(viewMonthLeft)}
         <div className="w-6"></div>
         {renderMonth(viewMonthRight)}
-        <button onClick={handleNextMonth} className="absolute right-6 top-6 p-1 hover:bg-gray-100 rounded text-gray-500"><ChevronRight className="w-5 h-5" /></button>
+        <button onClick={handleNextMonth} className="absolute right-6 top-6 p-1 hover:bg-surface-hover rounded-control text-ink-muted"><ChevronRight className="w-5 h-5" /></button>
       </div>
 
       {/* Right: Presets */}
-      <div className="w-52 bg-gray-50 p-4 flex flex-col space-y-1 relative shrink-0">
+      <div className="w-52 bg-surface-page p-4 flex flex-col space-y-1 relative shrink-0">
         {PRESETS.map(p => (
           <button 
             key={p.label}
             onClick={() => handlePresetClick(p)}
-            className={`text-left px-3 py-2 text-sm rounded font-medium transition-colors border-l-[3px]
-              ${activePreset === p.label ? 'bg-white border-blue-500 text-blue-700 shadow-sm' : 'border-transparent text-gray-600 hover:bg-gray-200'}`}
+            className={`text-left px-3 py-2 text-sm rounded-control font-medium transition-colors border-l-[3px]
+              ${activePreset === p.label ? 'bg-surface border-info text-info-ink shadow-sm' : 'border-transparent text-ink-soft hover:bg-surface-sunken'}`}
           >
             {p.label}
           </button>
         ))}
         
-        <div className="border-t border-gray-200 my-2"></div>
+        <div className="border-t border-divider my-2"></div>
         
         <button 
-          className={`text-left px-3 py-2 text-sm rounded font-medium border-l-[3px] cursor-default
-            ${activePreset === "Custom Range" ? 'bg-white border-blue-500 text-blue-700 shadow-sm' : 'border-transparent text-gray-600'}`}
+          className={`text-left px-3 py-2 text-sm rounded-control font-medium border-l-[3px] cursor-default
+            ${activePreset === "Custom Range" ? 'bg-surface border-info text-info-ink shadow-sm' : 'border-transparent text-ink-soft'}`}
         >
           Custom Range
         </button>
         
         <div className="mt-auto pt-4 flex space-x-2">
-          <button onClick={onCancel} className="flex-1 py-1.5 bg-transparent rounded text-sm font-bold text-gray-500 hover:text-gray-800 transition-colors">Cancel</button>
+          <button onClick={onCancel} className="flex-1 py-1.5 bg-transparent rounded-control text-sm font-bold text-ink-muted hover:text-ink transition-colors">Cancel</button>
           <button 
             onClick={() => { if(tempStart && tempEnd) onApply(tempStart, tempEnd, activePreset); }} 
             disabled={!tempStart || !tempEnd}
-            className={`flex-1 py-1.5 rounded text-sm font-bold transition-colors ${tempStart && tempEnd ? 'bg-slate-700 text-white hover:bg-slate-800' : 'bg-gray-200 text-gray-400 cursor-not-allowed'}`}
+            className={`flex-1 py-1.5 rounded-control text-sm font-bold transition-colors ${tempStart && tempEnd ? 'bg-ink text-white hover:bg-ink' : 'bg-surface-sunken text-ink-muted cursor-not-allowed'}`}
           >
             Apply
           </button>

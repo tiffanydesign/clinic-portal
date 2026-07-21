@@ -11,10 +11,10 @@ function Toggle({ checked, onChange, disabled }: { checked: boolean; onChange?: 
       disabled={disabled}
       onClick={() => onChange?.(!checked)}
       className={`w-9 h-5 rounded-full relative transition-colors shrink-0 ${
-        checked ? "bg-slate-600" : "bg-gray-300"
+        checked ? "bg-surface-sunken" : "bg-surface-sunken"
       } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
     >
-      <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-[3px] transition-all ${checked ? "left-[19px]" : "left-[3px]"}`} />
+      <div className={`w-3.5 h-3.5 bg-surface rounded-full absolute top-[3px] transition-all ${checked ? "left-[19px]" : "left-[3px]"}`} />
     </button>
   );
 }
@@ -35,18 +35,18 @@ function SectionCard({
   isDragging: boolean;
 }) {
   return (
-    <div className={`border rounded-lg p-3 bg-white transition-shadow ${isDragging ? "border-slate-400 shadow-md" : "border-gray-200"}`}>
+    <div className={`border rounded-card p-3 bg-surface transition-shadow ${isDragging ? "border-border-strong shadow-md" : "border-divider"}`}>
       <div className="flex items-start gap-2 mb-2">
-        <span {...dragHandlers} className="mt-2 cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 shrink-0" title="Drag to reorder">
+        <span {...dragHandlers} className="mt-2 cursor-grab active:cursor-grabbing text-ink-muted hover:text-ink-muted shrink-0" title="Drag to reorder">
           <GripVertical className="w-4 h-4" />
         </span>
         <input
           value={section.title}
           onChange={(e) => onUpdate({ title: e.target.value })}
           placeholder={`Section ${index + 1} title`}
-          className="flex-1 min-w-0 px-2.5 py-1.5 border border-gray-300 rounded text-sm font-bold text-gray-800 outline-none focus:border-slate-500"
+          className="flex-1 min-w-0 px-2.5 py-1.5 border border-divider rounded-control text-sm font-bold text-ink outline-none focus:border-border-strong"
         />
-        <button onClick={onRemove} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors shrink-0" title="Delete section">
+        <button onClick={onRemove} className="p-1.5 text-ink-muted hover:text-danger-ink hover:bg-danger/10 rounded-control transition-colors shrink-0" title="Delete section">
           <Trash2 className="w-4 h-4" />
         </button>
       </div>
@@ -55,7 +55,7 @@ function SectionCard({
         <RichTextEditor value={section.bodyHtml} onChange={(html) => onUpdate({ bodyHtml: html })} placeholder="Section text patients will read..." minHeight={70} />
         <div className="flex items-center gap-2 mt-2">
           <Toggle checked={section.required} onChange={(v) => onUpdate({ required: v })} />
-          <span className="text-xs font-medium text-gray-600">{section.required ? "Required" : "Optional"} — patients must check this box to sign</span>
+          <span className="text-xs font-medium text-ink-soft">{section.required ? "Required" : "Optional"} — patients must check this box to sign</span>
         </div>
       </div>
     </div>
@@ -97,23 +97,23 @@ export function ConsentFormEditor({
   return (
     <div className="max-w-2xl space-y-6">
       <div>
-        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Form Title</label>
+        <label className="block text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Form Title</label>
         <input
           value={draft.title}
           onChange={(e) => onChange({ ...draft, title: e.target.value })}
-          className="w-full px-3 py-2 border border-gray-300 rounded text-sm font-bold text-gray-800 outline-none focus:border-slate-500"
+          className="w-full px-3 py-2 border border-divider rounded-control text-sm font-bold text-ink outline-none focus:border-border-strong"
         />
       </div>
 
       <div>
-        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Introduction</label>
+        <label className="block text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Introduction</label>
         <RichTextEditor value={draft.introductionHtml} onChange={(html) => onChange({ ...draft, introductionHtml: html })} placeholder="Introductory text shown before the consent sections..." />
       </div>
 
       <div>
         <div className="flex items-center justify-between mb-2">
-          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Consent Sections</label>
-          <span className="text-xs text-gray-400">{draft.sections.length} section{draft.sections.length === 1 ? "" : "s"}</span>
+          <label className="block text-xs font-bold text-ink-muted uppercase tracking-wider">Consent Sections</label>
+          <span className="text-xs text-ink-muted">{draft.sections.length} section{draft.sections.length === 1 ? "" : "s"}</span>
         </div>
         <div className="space-y-3">
           {draft.sections.map((section, i) => (
@@ -142,42 +142,42 @@ export function ConsentFormEditor({
         </div>
         <button
           onClick={addSection}
-          className="flex items-center gap-1.5 mt-3 px-3 py-2 text-xs font-bold text-slate-600 border border-dashed border-slate-300 rounded hover:bg-slate-50 transition-colors"
+          className="flex items-center gap-1.5 mt-3 px-3 py-2 text-xs font-bold text-ink-soft border border-dashed border-divider rounded-control hover:bg-surface-page transition-colors"
         >
           <Plus className="w-3.5 h-3.5" /> Add Section
         </button>
       </div>
 
       <div>
-        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Signature Block</label>
-        <div className="border border-gray-200 rounded-lg divide-y divide-gray-100">
+        <label className="block text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Signature Block</label>
+        <div className="border border-divider rounded-card divide-y divide-divider">
           <div className="flex items-center justify-between px-3 py-2.5">
-            <span className="text-sm text-gray-700">Full Name</span>
+            <span className="text-sm text-ink-soft">Full Name</span>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-400">Always required</span>
+              <span className="text-xs text-ink-muted">Always required</span>
               <Toggle checked disabled />
             </div>
           </div>
           <div className="flex items-center justify-between px-3 py-2.5">
-            <span className="text-sm text-gray-700">Date</span>
+            <span className="text-sm text-ink-soft">Date</span>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-400">Auto-filled</span>
+              <span className="text-xs text-ink-muted">Auto-filled</span>
               <Toggle checked disabled />
             </div>
           </div>
           <div className="flex items-center justify-between px-3 py-2.5">
-            <span className="text-sm text-gray-700">Signature</span>
+            <span className="text-sm text-ink-soft">Signature</span>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-400">Always required</span>
+              <span className="text-xs text-ink-muted">Always required</span>
               <Toggle checked disabled />
             </div>
           </div>
           <div className="flex items-center justify-between px-3 py-2.5">
-            <span className="text-sm text-gray-700">ID Number</span>
+            <span className="text-sm text-ink-soft">ID Number</span>
             <Toggle checked={draft.signatureBlock.idNumber} onChange={(v) => onChange({ ...draft, signatureBlock: { ...draft.signatureBlock, idNumber: v } })} />
           </div>
           <div className="flex items-center justify-between px-3 py-2.5">
-            <span className="text-sm text-gray-700">Witness Signature</span>
+            <span className="text-sm text-ink-soft">Witness Signature</span>
             <Toggle
               checked={draft.signatureBlock.witnessSignature}
               onChange={(v) => onChange({ ...draft, signatureBlock: { ...draft.signatureBlock, witnessSignature: v } })}
@@ -187,7 +187,7 @@ export function ConsentFormEditor({
       </div>
 
       <div>
-        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Footer</label>
+        <label className="block text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Footer</label>
         <RichTextEditor value={draft.footerHtml} onChange={(html) => onChange({ ...draft, footerHtml: html })} placeholder="Clinic information, legal notices..." minHeight={60} />
       </div>
     </div>

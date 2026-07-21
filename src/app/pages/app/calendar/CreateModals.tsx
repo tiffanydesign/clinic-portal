@@ -20,17 +20,17 @@ export function ModalShell({ title, subtitle, onClose, children, footer, width =
   title: string; subtitle?: string; onClose: () => void; children: React.ReactNode; footer: React.ReactNode; width?: string;
 }) {
   return (
-    <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm flex items-center justify-center z-50 p-6" onClick={onClose}>
-      <div className={`bg-white rounded-xl shadow-2xl border border-gray-200 w-full ${width} max-h-[88vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95`} onClick={(e) => e.stopPropagation()}>
-        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-start bg-gray-50 shrink-0">
+    <div className="fixed inset-0 bg-surface-sunken/30 backdrop-blur-sm flex items-center justify-center z-50 p-6" onClick={onClose}>
+      <div className={`bg-surface rounded-card shadow-2xl border border-divider w-full ${width} max-h-[88vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95`} onClick={(e) => e.stopPropagation()}>
+        <div className="px-6 py-4 border-b border-divider flex justify-between items-start bg-surface-page shrink-0">
           <div>
-            <h2 className="text-lg font-bold text-gray-800">{title}</h2>
-            {subtitle && <p className="text-sm text-gray-500 mt-0.5">{subtitle}</p>}
+            <h2 className="text-lg font-bold text-ink">{title}</h2>
+            {subtitle && <p className="text-sm text-ink-muted mt-0.5">{subtitle}</p>}
           </div>
-          <button onClick={onClose} className="p-2 text-gray-500 hover:bg-gray-200 rounded-full transition-colors"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="p-2 text-ink-muted hover:bg-surface-sunken rounded-full transition-colors"><X className="w-5 h-5" /></button>
         </div>
         <div className="flex-1 overflow-y-auto p-6">{children}</div>
-        <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3 bg-gray-50 shrink-0">{footer}</div>
+        <div className="px-6 py-4 border-t border-divider flex justify-end gap-3 bg-surface-page shrink-0">{footer}</div>
       </div>
     </div>
   );
@@ -39,13 +39,13 @@ export function ModalShell({ title, subtitle, onClose, children, footer, width =
 export function Field({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) {
   return (
     <div>
-      <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">{label}{required && <span className="text-red-500"> *</span>}</label>
+      <label className="block text-xs font-bold text-ink-soft uppercase tracking-wider mb-1.5">{label}{required && <span className="text-danger-ink"> *</span>}</label>
       {children}
     </div>
   );
 }
 
-const inputCls = "w-full px-3 py-2 border border-gray-300 rounded text-sm text-gray-800 bg-white outline-none focus:border-slate-500";
+const inputCls = "w-full px-3 py-2 border border-divider rounded-control text-sm text-ink bg-surface outline-none focus:border-border-strong";
 
 // time options in 15-min steps across the working day
 const TIME_OPTIONS: string[] = (() => {
@@ -201,8 +201,8 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
       onClose={requestClose}
       footer={
         <>
-          <button onClick={requestClose} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100">Cancel</button>
-          <button onClick={create} disabled={!canCreate} className={`px-6 py-2 rounded text-sm font-bold text-white ${canCreate ? "bg-slate-600 hover:bg-slate-700" : "bg-gray-300 cursor-not-allowed"}`}>Create Appointment</button>
+          <button onClick={requestClose} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
+          <button onClick={create} disabled={!canCreate} className={`px-6 py-2 rounded-control text-sm font-bold text-white ${canCreate ? "bg-surface-sunken hover:bg-surface-sunken" : "bg-surface-sunken cursor-not-allowed"}`}>Create Appointment</button>
         </>
       }
     >
@@ -215,7 +215,7 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
               selected here automatically. */}
           <button
             onClick={() => setRegisterOpen(true)}
-            className="mt-1.5 min-h-11 text-xs font-bold text-slate-600 hover:underline flex items-center gap-1"
+            className="mt-1.5 min-h-11 text-xs font-bold text-ink-soft hover:underline flex items-center gap-1"
           >
             <UserPlus className="w-3.5 h-3.5" /> Register new patient
           </button>
@@ -259,15 +259,15 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
 
         <div className="grid grid-cols-2 gap-3">
           <Field label="Nurse">
-            <div className={`${inputCls} bg-gray-50 text-gray-700 flex items-center justify-between`}>
+            <div className={`${inputCls} bg-surface-page text-ink-soft flex items-center justify-between`}>
               <span>{nurse || "—"}</span>
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider shrink-0 ml-2">Auto</span>
+              <span className="text-label font-bold text-ink-muted uppercase tracking-wider shrink-0 ml-2">Auto</span>
             </div>
           </Field>
           <Field label="Room">
-            <div className={`${inputCls} bg-gray-50 text-gray-700 flex items-center justify-between`}>
+            <div className={`${inputCls} bg-surface-page text-ink-soft flex items-center justify-between`}>
               <span>{roomKind === null ? "Video call" : (rooms.find((r) => r.id === room)?.name ?? "—")}</span>
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider shrink-0 ml-2">Auto</span>
+              <span className="text-label font-bold text-ink-muted uppercase tracking-wider shrink-0 ml-2">Auto</span>
             </div>
           </Field>
         </div>
@@ -275,7 +275,7 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
         <Field label="Notes"><textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className={inputCls} placeholder="Optional…" /></Field>
 
         {availableTimeOptions.length === 0 && (
-          <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium rounded px-3 py-2">
+          <div className="flex items-center gap-2 bg-warning/10 border border-warning/30 text-warning-ink text-xs font-medium rounded-control px-3 py-2">
             <AlertTriangle className="w-4 h-4 shrink-0" /> No available time slots on this date for this appointment type — try another date.
           </div>
         )}
@@ -332,20 +332,20 @@ export function BlockTimeModal({ onClose, onCreate, doctorId }: { onClose: () =>
       onClose={onClose}
       footer={
         <>
-          <button onClick={onClose} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100">Cancel</button>
-          <button onClick={submit} disabled={!valid} className={`px-6 py-2 rounded text-sm font-bold text-white ${valid ? "bg-slate-600 hover:bg-slate-700" : "bg-gray-300 cursor-not-allowed"}`}>Block Time</button>
+          <button onClick={onClose} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
+          <button onClick={submit} disabled={!valid} className={`px-6 py-2 rounded-control text-sm font-bold text-white ${valid ? "bg-surface-sunken hover:bg-surface-sunken" : "bg-surface-sunken cursor-not-allowed"}`}>Block Time</button>
         </>
       }
     >
       <div className="space-y-4">
-        <Field label="Date"><input value="3 Jul 2026" readOnly className={`${inputCls} bg-gray-50`} /></Field>
+        <Field label="Date"><input value="3 Jul 2026" readOnly className={`${inputCls} bg-surface-page`} /></Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Start Time"><FilterSelect value={start} onChange={setStart} options={TIME_OPTIONS} className="w-full" /></Field>
           <Field label="End Time"><FilterSelect value={end} onChange={setEnd} options={TIME_OPTIONS} className="w-full" /></Field>
         </div>
         <Field label="Reason"><FilterSelect value={reason} onChange={setReason} options={BLOCK_REASONS} className="w-full" /></Field>
         <Field label="Note"><textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className={inputCls} placeholder="Optional…" /></Field>
-        {!valid && <p className="text-xs text-red-600 font-medium">End time must be after start time.</p>}
+        {!valid && <p className="text-xs text-danger-ink font-medium">End time must be after start time.</p>}
       </div>
     </ModalShell>
   );

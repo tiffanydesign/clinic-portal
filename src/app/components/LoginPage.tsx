@@ -22,12 +22,12 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex h-screen w-screen min-w-[1024px] overflow-hidden bg-slate-50 font-sans">
+    <div className="flex h-screen w-screen min-w-[1024px] overflow-hidden bg-surface-page font-sans">
       {/* Left Brand Panel (approx 55%) */}
-      <div className="w-[55%] relative flex flex-col justify-between p-12 bg-gradient-to-br from-[#0B1528] via-[#122A50] to-[#1E4E8C] text-white overflow-hidden shrink-0">
+      <div className="w-[55%] relative flex flex-col justify-between p-4 bg-gradient-to-br from-ink via-[var(--phenome-blue-900)] to-[var(--phenome-blue-500)] text-white overflow-hidden shrink-0">
         {/* Decorative background elements */}
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-white/5 blur-3xl pointer-events-none"></div>
-        <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] rounded-full bg-[#00B4D8]/10 blur-3xl pointer-events-none"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-surface/5 blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] rounded-full bg-info/10 blur-3xl pointer-events-none"></div>
 
         {/* Top Header */}
         <div className="flex items-center space-x-3 z-10">
@@ -38,50 +38,50 @@ export function LoginPage() {
         {/* Center Content */}
         <div className="max-w-xl z-10 mt-[-10vh]">
           <h1 className="text-6xl font-bold mb-6 tracking-tight leading-tight">Phenome Portal</h1>
-          <p className="text-xl text-blue-100/80 leading-relaxed font-light mb-2">
+          <p className="text-xl text-white/80 leading-relaxed font-light mb-2">
             Your clinic operations, in one place.
           </p>
-          <p className="text-lg text-blue-100/60 leading-relaxed font-light">
+          <p className="text-lg text-white/70 leading-relaxed font-light">
             Secure access for authorised clinical staff.
           </p>
         </div>
 
         {/* Footer */}
-        <div className="z-10 text-sm text-blue-200/50">
+        <div className="z-10 text-sm text-white/50">
           © 2026 Phenome Longevity · Authorised clinical staff only
         </div>
       </div>
 
       {/* Right Sign-in Panel (approx 45%) */}
-      <div className="w-[45%] flex items-center justify-center bg-[#F4F7F9] p-12 shrink-0">
-        <div className="w-full max-w-[440px] bg-white/80 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl p-10 border border-white">
+      <div className="w-[45%] flex items-center justify-center bg-surface-page p-4 shrink-0">
+        <div className="w-full max-w-[440px] bg-surface/80 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-card p-4 border border-white">
           
           <div className="flex justify-center mb-6">
-            <LogoMark className="w-12 h-12 text-[#0B1528]" />
+            <LogoMark className="w-12 h-12 text-ink" />
           </div>
 
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-[#0B1528] tracking-tight mb-2">Welcome back</h2>
-            <p className="text-slate-500 text-sm">Sign in to your clinic portal</p>
+            <h2 className="text-2xl font-bold text-ink tracking-tight mb-2">Welcome back</h2>
+            <p className="text-ink-muted text-sm">Sign in to your clinic portal</p>
           </div>
 
           <form onSubmit={handleSignIn} className="space-y-5">
             {/* Email Field */}
             <div className="space-y-1.5">
-              <label className="block text-sm font-semibold text-slate-700">Email</label>
+              <label className="block text-sm font-semibold text-ink-soft">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@clinic.com"
                 required
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#00B4D8]/50 focus:border-[#00B4D8] transition-all shadow-sm"
+                className="w-full px-4 py-3 rounded-card border border-divider bg-surface text-ink placeholder-ink-muted focus:outline-none focus:ring-2 focus:ring-info/50 focus:border-info transition-all shadow-sm"
               />
             </div>
 
             {/* Password Field */}
             <div className="space-y-1.5">
-              <label className="block text-sm font-semibold text-slate-700">Password</label>
+              <label className="block text-sm font-semibold text-ink-soft">Password</label>
               <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -89,12 +89,12 @@ export function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="w-full px-4 py-3 pr-16 rounded-xl border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#00B4D8]/50 focus:border-[#00B4D8] transition-all shadow-sm"
+                  className="w-full px-4 py-3 pr-16 rounded-card border border-divider bg-surface text-ink placeholder-ink-muted focus:outline-none focus:ring-2 focus:ring-info/50 focus:border-info transition-all shadow-sm"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-500 hover:text-slate-700 focus:outline-none"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-ink-muted hover:text-ink-soft focus:outline-none"
                 >
                   {showPassword ? "Hide" : "Show"}
                 </button>
@@ -103,7 +103,7 @@ export function LoginPage() {
 
             {/* Forgot Password Link */}
             <div className="flex justify-end pt-1">
-              <Link to="/forgot-password" className="text-sm font-semibold text-[#0077B6] hover:text-[#0B1528] transition-colors">
+              <Link to="/forgot-password" className="text-sm font-semibold text-brand-ink hover:text-ink transition-colors">
                 Forgot Password?
               </Link>
             </div>
@@ -112,7 +112,7 @@ export function LoginPage() {
             <div className="pt-2">
               <button
                 type="submit"
-                className="w-full py-3.5 px-4 rounded-xl text-white font-bold text-[15px] bg-gradient-to-r from-[#00B4D8] to-[#0077B6] hover:from-[#0096B4] hover:to-[#005B8C] shadow-md shadow-[#0077B6]/20 transition-all transform active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0077B6]"
+                className="w-full py-3.5 px-4 rounded-card text-white font-bold text-section btn-primary shadow-md transition-all transform active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-info"
               >
                 Sign In
               </button>
@@ -121,7 +121,7 @@ export function LoginPage() {
 
           {/* Helper Text */}
           <div className="mt-8 text-center px-4">
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-ink-muted leading-relaxed">
               Authorised clinical staff only.<br/>
               Trouble signing in? Contact your clinic administrator.
             </p>

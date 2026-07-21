@@ -50,25 +50,25 @@ export function TwoFactorPage() {
 
   return (
     <AuthLayout>
-      <div className="bg-white/80 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl p-10 border border-white relative">
-        <Link to="/login" className="absolute top-8 left-8 text-slate-400 hover:text-slate-700 transition-colors">
+      <div className="bg-surface/80 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-card p-4 border border-white relative">
+        <Link to="/login" className="absolute top-8 left-8 text-ink-muted hover:text-ink-soft transition-colors">
           <ArrowLeft className="w-5 h-5" />
         </Link>
 
         <div className="flex justify-center mb-6 mt-4">
-          <LogoMark className="w-12 h-12 text-[#0B1528]" />
+          <LogoMark className="w-12 h-12 text-ink" />
         </div>
 
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold text-[#0B1528] tracking-tight mb-2">Two-Factor Authentication</h2>
-          <p className="text-slate-500 text-sm">
-            A verification code has been sent to <span className="text-[#0077B6] cursor-default">a****z@example.com</span>
+          <h2 className="text-2xl font-bold text-ink tracking-tight mb-2">Two-Factor Authentication</h2>
+          <p className="text-ink-muted text-sm">
+            A verification code has been sent to <span className="text-brand-ink cursor-default">a****z@example.com</span>
           </p>
         </div>
 
         <form onSubmit={handleVerify} className="space-y-6">
           {error && (
-            <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm font-medium border border-red-100 text-center">
+            <div className="p-3 rounded-card bg-danger/10 text-danger-ink text-sm font-medium border border-danger/30 text-center">
               {error}
             </div>
           )}
@@ -78,7 +78,7 @@ export function TwoFactorPage() {
           <div className="pt-4">
             <button
               type="submit"
-              className="w-full py-3.5 px-4 rounded-xl text-white font-bold text-[15px] bg-gradient-to-r from-[#00B4D8] to-[#0077B6] hover:from-[#0096B4] hover:to-[#005B8C] shadow-md shadow-[#0077B6]/20 transition-all transform active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0077B6]"
+              className="w-full py-3.5 px-4 rounded-card text-white font-bold text-section btn-primary shadow-md transition-all transform active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-info"
             >
               Verify
             </button>
@@ -87,18 +87,18 @@ export function TwoFactorPage() {
 
         <div className="mt-8 text-center">
           {countdown > 0 ? (
-            <p className="text-sm text-slate-500">Resend code in {countdown}s</p>
+            <p className="text-sm text-ink-muted">Resend code in {countdown}s</p>
           ) : (
             <button 
               onClick={() => { setCountdown(30); setCode(["","","","","",""]); setError(""); }}
-              className="text-sm font-semibold text-[#0077B6] hover:text-[#0B1528] transition-colors"
+              className="text-sm font-semibold text-brand-ink hover:text-ink transition-colors"
             >
               Resend code
             </button>
           )}
         </div>
         
-        <div className="mt-8 pt-4 border-t border-slate-100 text-center text-xs text-slate-400">
+        <div className="mt-8 pt-4 border-t border-divider text-center text-xs text-ink-muted">
           Demo Note: the mock code is 123456 — anything else shows the error state.
         </div>
       </div>

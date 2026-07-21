@@ -32,7 +32,7 @@ function GoogleG({ className }: { className?: string }) {
 function StatDelta({ value }: { value: string }) {
   const down = value.trim().startsWith("↓");
   return (
-    <span className={`inline-flex items-center gap-0.5 text-[11px] font-bold shrink-0 ${down ? "text-red-600" : "text-emerald-600"}`}>
+    <span className={`inline-flex items-center gap-0.5 text-overline shrink-0 ${down ? "text-danger-ink" : "text-success-ink"}`}>
       {down ? <TrendingDown className="w-3 h-3" /> : <TrendingUp className="w-3 h-3" />}
       {value.replace(/^[↑↓]\s*/, "")}
     </span>
@@ -50,15 +50,15 @@ function StatSegment({ tile, icon, label, value, valueAffix, delta, sub, grow = 
 }) {
   return (
     <div className={`flex items-center gap-2.5 px-4 py-3 min-w-0 ${grow}`}>
-      <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${tile}`}>{icon}</div>
+      <div className={`w-9 h-9 rounded-card flex items-center justify-center shrink-0 ${tile}`}>{icon}</div>
       <div className="min-w-0">
-        <div className="text-[10.5px] font-bold text-gray-500 uppercase tracking-wide leading-none mb-1.5 whitespace-nowrap">{label}</div>
+        <div className="text-overline text-ink-muted uppercase tracking-wide leading-none mb-1.5 whitespace-nowrap">{label}</div>
         <div className="flex items-baseline gap-1.5 leading-none">
-          <span className="text-xl font-bold text-gray-900 tabular-nums">{value}</span>
+          <span className="text-xl font-bold text-ink tabular-nums">{value}</span>
           {valueAffix}
           {delta && <StatDelta value={delta} />}
         </div>
-        {sub && <div className="text-[10.5px] text-gray-500 font-medium mt-1.5 truncate leading-none">{sub}</div>}
+        {sub && <div className="text-overline text-ink-muted font-medium mt-1.5 truncate leading-none">{sub}</div>}
       </div>
     </div>
   );
@@ -76,14 +76,14 @@ function FeedbackCard({ item, compact, isSelected, onClick }: {
     return (
       <div
         onClick={onClick}
-        className={`bg-white border rounded-lg pl-3 pr-3 py-2.5 relative cursor-pointer shadow-sm transition-all flex items-center gap-3
-          ${isSelected ? "border-slate-500 ring-1 ring-slate-500" : "border-gray-200 hover:border-gray-300"}`}
+        className={`bg-surface border rounded-card pl-3 pr-3 py-2.5 relative cursor-pointer shadow-sm transition-all flex items-center gap-3
+          ${isSelected ? "border-border-strong ring-1 ring-info" : "border-divider hover:border-divider"}`}
       >
         <div className={`w-2 h-2 rounded-full shrink-0 ${sourceColor}`} />
-        <span className="flex-1 min-w-0 truncate text-sm font-bold text-gray-800">{item.title}</span>
-        {item.flagged && <Flag className="w-3 h-3 text-orange-500 fill-current shrink-0" />}
-        <span className={`px-2 py-0.5 border text-[9px] font-bold uppercase tracking-wider rounded-full shrink-0 ${statusStyle}`}>{item.status}</span>
-        <span className="text-[10px] text-gray-400 font-medium shrink-0 w-16 text-right">{item.timeAgo}</span>
+        <span className="flex-1 min-w-0 truncate text-sm font-bold text-ink">{item.title}</span>
+        {item.flagged && <Flag className="w-3 h-3 text-warning-ink fill-current shrink-0" />}
+        <span className={`px-2 py-0.5 border text-overline rounded-full shrink-0 ${statusStyle}`}>{item.status}</span>
+        <span className="text-overline text-ink-muted font-medium shrink-0 w-16 text-right">{item.timeAgo}</span>
       </div>
     );
   }
@@ -91,36 +91,36 @@ function FeedbackCard({ item, compact, isSelected, onClick }: {
   return (
     <div
       onClick={onClick}
-      className={`bg-white border rounded-lg pl-4 pr-4 py-3 relative cursor-pointer shadow-sm transition-all flex items-center gap-4
-        ${isSelected ? "border-slate-500 ring-1 ring-slate-500" : "border-gray-200 hover:border-gray-300"}`}
+      className={`bg-surface border rounded-card pl-4 pr-4 py-3 relative cursor-pointer shadow-sm transition-all flex items-center gap-4
+        ${isSelected ? "border-border-strong ring-1 ring-info" : "border-divider hover:border-divider"}`}
     >
       <div className={`absolute left-0 top-0 bottom-0 w-1 rounded-l-lg ${sourceColor}`} />
-      {item.status === "New" && <div className="absolute top-1/2 -translate-y-1/2 left-3 w-2 h-2 rounded-full bg-blue-600 shadow-[0_0_0_2px_white]" />}
+      {item.status === "New" && <div className="absolute top-1/2 -translate-y-1/2 left-3 w-2 h-2 rounded-full bg-info shadow-[0_0_0_2px_var(--surface-card)]" />}
 
       <div className="w-28 shrink-0 pl-3 flex items-center gap-1.5">
         {isGoogle && <GoogleG className="w-3.5 h-3.5 shrink-0" />}
-        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-600 truncate">{item.source}</span>
+        <span className="text-overline text-ink-soft truncate">{item.source}</span>
       </div>
 
       {!isGoogle && (
-        <span className={`px-2 py-0.5 border text-[10px] font-bold rounded shrink-0 ${TYPE_COLORS[item.type]}`}>{item.type}</span>
+        <span className={`px-2 py-0.5 border text-overline rounded-control shrink-0 ${TYPE_COLORS[item.type]}`}>{item.type}</span>
       )}
 
-      <h3 className="flex-1 min-w-0 text-sm font-bold text-gray-800 truncate">{item.title}</h3>
+      <h3 className="flex-1 min-w-0 text-sm font-bold text-ink truncate">{item.title}</h3>
 
       {item.rating && (
-        <div className="flex text-amber-400 shrink-0">
-          {[1, 2, 3, 4, 5].map((s) => <Star key={s} className={`w-3.5 h-3.5 ${s <= item.rating! ? "fill-current" : "text-gray-200"}`} />)}
+        <div className="flex text-warning-ink shrink-0">
+          {[1, 2, 3, 4, 5].map((s) => <Star key={s} className={`w-3.5 h-3.5 ${s <= item.rating! ? "fill-current" : "text-ink-muted"}`} />)}
         </div>
       )}
 
       {item.urgency === "High" && (
-        <span title="High urgency" className="flex items-center text-red-600 shrink-0"><AlertCircle className="w-3.5 h-3.5" /></span>
+        <span title="High urgency" className="flex items-center text-danger-ink shrink-0"><AlertCircle className="w-3.5 h-3.5" /></span>
       )}
-      {overdue && <span title="Overdue (48h+)" className="text-[9px] font-bold text-red-600 uppercase shrink-0">Overdue</span>}
-      {item.flagged && <Flag className="w-3.5 h-3.5 text-orange-500 fill-current shrink-0" />}
+      {overdue && <span title="Overdue (48h+)" className="text-overline text-danger-ink uppercase shrink-0">Overdue</span>}
+      {item.flagged && <Flag className="w-3.5 h-3.5 text-warning-ink fill-current shrink-0" />}
 
-      <div className="w-52 shrink-0 text-[11px] text-gray-500 truncate font-medium">
+      <div className="w-52 shrink-0 text-overline text-ink-muted truncate font-medium">
         {item.source === "Patient" ? (
           <>Patient: {item.patientName}{item.clinician && ` · ${item.clinician}`}</>
         ) : isGoogle ? (
@@ -130,8 +130,8 @@ function FeedbackCard({ item, compact, isSelected, onClick }: {
         )}
       </div>
 
-      <span className={`px-2.5 py-0.5 border text-[10px] font-bold uppercase tracking-wider rounded-full shrink-0 ${statusStyle}`}>{item.status}</span>
-      <span className="text-[10px] text-gray-400 font-medium shrink-0 w-20 text-right">{item.timeAgo}</span>
+      <span className={`px-2.5 py-0.5 border text-overline rounded-full shrink-0 ${statusStyle}`}>{item.status}</span>
+      <span className="text-overline text-ink-muted font-medium shrink-0 w-20 text-right">{item.timeAgo}</span>
     </div>
   );
 }
@@ -143,15 +143,15 @@ function ChangeHistoryTimeline({ entries }: { entries: ChangeHistoryEntry[] }) {
         <div key={idx} className="flex gap-3">
           <div className="flex flex-col items-center pt-0.5">
             {entry.kind === "flagged" ? (
-              <Flag className="w-3 h-3 text-red-500 fill-current shrink-0" />
+              <Flag className="w-3 h-3 text-danger-ink fill-current shrink-0" />
             ) : (
               <div className={`w-2 h-2 rounded-full shrink-0 ${HISTORY_DOT_COLORS[entry.kind]}`} />
             )}
-            {idx < entries.length - 1 && <div className="w-px flex-1 bg-gray-200 mt-1" />}
+            {idx < entries.length - 1 && <div className="w-px flex-1 bg-surface-sunken mt-1" />}
           </div>
           <div className="pb-3 min-w-0">
-            <div className="text-xs font-bold text-gray-700">{entry.label}</div>
-            <div className="text-[11px] text-gray-400 font-medium">
+            <div className="text-xs font-bold text-ink-soft">{entry.label}</div>
+            <div className="text-overline text-ink-muted font-medium">
               {entry.time}{entry.by && ` · by ${entry.by}`}
             </div>
           </div>
@@ -170,18 +170,18 @@ function FeedbackDrawer({ item, onClose, newNote, setNewNote, onAddNote, onUpdat
   const isGoogle = item.source === "Google Review";
 
   return (
-    <div className="fixed inset-y-0 right-0 w-[420px] bg-white border-l border-gray-300 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200 z-50">
-      <div className="px-5 py-4 border-b border-gray-200 flex items-start justify-between shrink-0 bg-gray-50">
+    <div className="fixed inset-y-0 right-0 w-[420px] bg-surface border-l border-divider shadow-2xl flex flex-col animate-in slide-in-from-right duration-200 z-50">
+      <div className="px-5 py-4 border-b border-divider flex items-start justify-between shrink-0 bg-surface-page">
         <div className="flex flex-wrap items-center gap-2 min-w-0">
-          <span className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
+          <span className="text-xs font-bold text-ink-muted uppercase tracking-wider flex items-center gap-1">
             {isGoogle && <GoogleG className="w-3.5 h-3.5" />} {item.source}
           </span>
-          {!isGoogle && <span className={`px-2 py-0.5 border text-[10px] font-bold rounded ${TYPE_COLORS[item.type]}`}>{item.type}</span>}
+          {!isGoogle && <span className={`px-2 py-0.5 border text-overline rounded-control ${TYPE_COLORS[item.type]}`}>{item.type}</span>}
           {item.urgency && (
-            <span className={`px-2 py-0.5 border text-[10px] font-bold uppercase tracking-wider rounded ${URGENCY_COLORS[item.urgency]}`}>{item.urgency} Urgency</span>
+            <span className={`px-2 py-0.5 border text-overline rounded-control ${URGENCY_COLORS[item.urgency]}`}>{item.urgency} Urgency</span>
           )}
         </div>
-        <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors shrink-0">
+        <button onClick={onClose} className="p-2 text-ink-muted hover:text-ink-soft hover:bg-surface-sunken rounded-full transition-colors shrink-0">
           <X className="w-5 h-5" />
         </button>
       </div>
@@ -189,8 +189,8 @@ function FeedbackDrawer({ item, onClose, newNote, setNewNote, onAddNote, onUpdat
       <div className="flex-1 overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-start mb-6 gap-3">
-            <h2 className="text-xl font-bold text-gray-800 flex-1 min-w-0">{item.title}</h2>
-            <span className="text-xs font-medium text-gray-400 shrink-0 mt-1">{item.timeAgo}</span>
+            <h2 className="text-xl font-bold text-ink flex-1 min-w-0">{item.title}</h2>
+            <span className="text-xs font-medium text-ink-muted shrink-0 mt-1">{item.timeAgo}</span>
           </div>
 
           {!isGoogle ? (
@@ -198,11 +198,11 @@ function FeedbackDrawer({ item, onClose, newNote, setNewNote, onAddNote, onUpdat
               <select
                 value={item.status}
                 onChange={(e) => onUpdateStatus(item.id, e.target.value as Status)}
-                className={`px-3 py-1 border text-xs font-bold uppercase tracking-wider rounded-lg outline-none cursor-pointer
-                  ${item.status === "New" ? "bg-blue-600 text-white border-blue-600" :
-                    item.status === "In Review" ? "bg-orange-100 text-orange-800 border-orange-300" :
-                    item.status === "Resolved" ? "bg-emerald-100 text-emerald-800 border-emerald-300" :
-                    "bg-gray-100 text-gray-600 border-gray-300"}`}
+                className={`px-3 py-1 border text-xs font-bold uppercase tracking-wider rounded-card outline-none cursor-pointer
+                  ${item.status === "New" ? "bg-info-ink text-white border-info-ink" :
+                    item.status === "In Review" ? "bg-warning/15 text-warning-ink border-warning/30" :
+                    item.status === "Resolved" ? "bg-success/15 text-success-ink border-success/30" :
+                    "bg-surface-hover text-ink-soft border-divider"}`}
               >
                 <option value="New">New</option>
                 <option value="In Review">In Review</option>
@@ -212,53 +212,53 @@ function FeedbackDrawer({ item, onClose, newNote, setNewNote, onAddNote, onUpdat
             </div>
           ) : (
             <div className="mb-6">
-              <span className={`px-3 py-1 border text-xs font-bold uppercase tracking-wider rounded-lg ${STATUS_PILLS[item.status]}`}>{item.status}</span>
+              <span className={`px-3 py-1 border text-xs font-bold uppercase tracking-wider rounded-card ${STATUS_PILLS[item.status]}`}>{item.status}</span>
             </div>
           )}
 
           {/* Submitter Card */}
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
+          <div className="bg-surface-page border border-divider rounded-card p-4 mb-6">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center">
                 {item.isAnonymous ? (
-                  <div className="w-10 h-10 rounded-full bg-gray-200 border border-gray-300 flex items-center justify-center text-sm font-bold text-gray-500 mr-3 shrink-0">?</div>
+                  <div className="w-10 h-10 rounded-full bg-surface-sunken border border-divider flex items-center justify-center text-sm font-bold text-ink-muted mr-3 shrink-0">?</div>
                 ) : (
-                  <div className={`w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center text-sm font-bold mr-3 shrink-0 ${isGoogle ? "bg-gray-100 text-gray-500" : "bg-white text-gray-600"}`}>
+                  <div className={`w-10 h-10 rounded-full border border-divider flex items-center justify-center text-sm font-bold mr-3 shrink-0 ${isGoogle ? "bg-surface-hover text-ink-muted" : "bg-surface text-ink-soft"}`}>
                     {item.authorName.split(" ").map((n) => n[0]).join("")}
                   </div>
                 )}
                 <div>
-                  <div className="font-bold text-gray-800 text-sm flex items-center">
+                  <div className="font-bold text-ink text-sm flex items-center">
                     {submitterDisplayName(item)}
                     {item.source !== "Patient" && !isGoogle && (
-                      <span className={`ml-2 px-1.5 py-0.5 text-[9px] font-bold rounded
-                        ${item.source === "Clinician" ? "bg-blue-50 text-blue-700 border border-blue-200" :
-                          item.source === "Nurse" ? "bg-emerald-50 text-emerald-700 border border-emerald-200" :
-                          "bg-purple-50 text-purple-700 border border-purple-200"}`}>
+                      <span className={`ml-2 px-1.5 py-0.5 text-overline rounded-control
+                        ${item.source === "Clinician" ? "bg-info/10 text-info-ink border border-info/30" :
+                          item.source === "Nurse" ? "bg-success/10 text-success-ink border border-success/30" :
+                          "bg-special/10 text-special-ink border border-special/30"}`}>
                         {item.authorRole}
                       </span>
                     )}
                   </div>
-                  {item.source === "Patient" && <div className="text-xs text-gray-500 mt-0.5">Patient Account</div>}
-                  {item.isAnonymous && <div className="text-xs text-gray-500 mt-0.5">Submitted anonymously</div>}
-                  {isGoogle && <div className="text-xs text-gray-500 mt-0.5">Google Review</div>}
+                  {item.source === "Patient" && <div className="text-xs text-ink-muted mt-0.5">Patient Account</div>}
+                  {item.isAnonymous && <div className="text-xs text-ink-muted mt-0.5">Submitted anonymously</div>}
+                  {isGoogle && <div className="text-xs text-ink-muted mt-0.5">Google Review</div>}
                 </div>
               </div>
               {!item.isAnonymous && !isGoogle && (
-                <button className="text-xs font-bold text-slate-600 hover:underline shrink-0">
+                <button className="text-xs font-bold text-ink-soft hover:underline shrink-0">
                   {item.source === "Patient" ? "View Patient Record" : "View Staff Profile"}
                 </button>
               )}
             </div>
             {item.source === "Patient" && (
-              <div className="pt-3 border-t border-gray-200 text-xs text-gray-600 space-y-1.5 font-medium">
-                <div>Visit: <span className="font-bold text-gray-800">{item.visitDate}</span></div>
-                {item.clinician && <div>Clinician: <span className="text-gray-800">{item.clinician}</span></div>}
-                {item.nurse && <div>Nurse: <span className="text-gray-800">{item.nurse}</span></div>}
+              <div className="pt-3 border-t border-divider text-xs text-ink-soft space-y-1.5 font-medium">
+                <div>Visit: <span className="font-bold text-ink">{item.visitDate}</span></div>
+                {item.clinician && <div>Clinician: <span className="text-ink">{item.clinician}</span></div>}
+                {item.nurse && <div>Nurse: <span className="text-ink">{item.nurse}</span></div>}
               </div>
             )}
             {isGoogle && (
-              <div className="pt-3 border-t border-gray-200 text-xs text-gray-500 font-medium">
+              <div className="pt-3 border-t border-divider text-xs text-ink-muted font-medium">
                 External reviewer · not linked to a patient record
               </div>
             )}
@@ -267,61 +267,61 @@ function FeedbackDrawer({ item, onClose, newNote, setNewNote, onAddNote, onUpdat
           {item.rating && (
             <div className="mb-6">
               <div className="flex items-center mb-2">
-                <div className="text-sm font-bold text-gray-700 mr-3">{isGoogle ? "Google Rating" : "Overall Rating"}</div>
-                <div className="flex text-amber-400">
-                  {[1, 2, 3, 4, 5].map((s) => <Star key={s} className={`w-4 h-4 ${s <= item.rating! ? "fill-current" : "text-gray-200"}`} />)}
+                <div className="text-sm font-bold text-ink-soft mr-3">{isGoogle ? "Google Rating" : "Overall Rating"}</div>
+                <div className="flex text-warning-ink">
+                  {[1, 2, 3, 4, 5].map((s) => <Star key={s} className={`w-4 h-4 ${s <= item.rating! ? "fill-current" : "text-ink-muted"}`} />)}
                 </div>
-                <span className="text-sm font-bold text-gray-800 ml-2">{item.rating}/5</span>
+                <span className="text-sm font-bold text-ink ml-2">{item.rating}/5</span>
               </div>
               {!isGoogle && (
-                <div className="bg-gray-50 p-3 rounded border border-gray-100 space-y-2">
+                <div className="bg-surface-page p-3 rounded-control border border-divider space-y-2">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="text-gray-600 font-medium">Facility Cleanliness</span>
-                    <div className="flex text-amber-400">{[1, 2, 3, 4, 5].map((s) => <Star key={s} className="w-3 h-3 fill-current" />)}</div>
+                    <span className="text-ink-soft font-medium">Facility Cleanliness</span>
+                    <div className="flex text-warning-ink">{[1, 2, 3, 4, 5].map((s) => <Star key={s} className="w-3 h-3 fill-current" />)}</div>
                   </div>
                   <div className="flex justify-between items-center text-xs">
-                    <span className="text-gray-600 font-medium">Wait Time</span>
-                    <div className="flex text-amber-400">{[1, 2, 3, 4, 5].map((s) => <Star key={s} className={`w-3 h-3 ${s <= 3 ? "fill-current" : "text-gray-200"}`} />)}</div>
+                    <span className="text-ink-soft font-medium">Wait Time</span>
+                    <div className="flex text-warning-ink">{[1, 2, 3, 4, 5].map((s) => <Star key={s} className={`w-3 h-3 ${s <= 3 ? "fill-current" : "text-ink-muted"}`} />)}</div>
                   </div>
                 </div>
               )}
             </div>
           )}
 
-          <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap mb-2">{item.body}</div>
-          {isGoogle && <div className="text-xs text-gray-400 mb-8">{item.timeAgo} on Google</div>}
+          <div className="text-sm text-ink-soft leading-relaxed whitespace-pre-wrap mb-2">{item.body}</div>
+          {isGoogle && <div className="text-xs text-ink-muted mb-8">{item.timeAgo} on Google</div>}
         </div>
 
         {/* Internal Notes */}
-        <div className="bg-slate-50 border-t border-b border-gray-200 p-6">
-          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Internal Notes</h3>
+        <div className="bg-surface-page border-t border-b border-divider p-6">
+          <h3 className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-4">Internal Notes</h3>
           {item.internalNotes && item.internalNotes.length > 0 ? (
             <div className="space-y-4 mb-4">
               {item.internalNotes.map((note, idx) => (
-                <div key={idx} className="bg-white border border-gray-200 rounded p-3 text-sm">
+                <div key={idx} className="bg-surface border border-divider rounded-control p-3 text-sm">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="font-bold text-gray-800 text-xs">{note.author}</span>
-                    <span className="text-[10px] font-medium text-gray-400">{note.time}</span>
+                    <span className="font-bold text-ink text-xs">{note.author}</span>
+                    <span className="text-overline font-medium text-ink-muted">{note.time}</span>
                   </div>
-                  <p className="text-gray-700 leading-relaxed">{note.text}</p>
+                  <p className="text-ink-soft leading-relaxed">{note.text}</p>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-sm text-gray-400 italic mb-4">No internal notes yet.</div>
+            <div className="text-sm text-ink-muted italic mb-4">No internal notes yet.</div>
           )}
           <div className="relative">
             <textarea
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
               placeholder="Add an internal note... (not visible to submitter)"
-              className="w-full px-3 py-2 pb-10 border border-gray-300 rounded-lg text-sm outline-none focus:border-slate-400 bg-white resize-none"
+              className="w-full px-3 py-2 pb-4 border border-divider rounded-card text-sm outline-none focus:border-border-strong bg-surface resize-none"
               rows={2}
             />
             <button
               onClick={onAddNote}
               disabled={!newNote.trim()}
-              className="absolute right-2 bottom-2 px-3 py-1 bg-slate-600 text-white text-xs font-bold rounded hover:bg-slate-700 disabled:opacity-50 transition-colors"
+              className="absolute right-2 bottom-2 px-3 py-1 bg-surface-sunken text-ink-soft text-xs font-bold rounded-control hover:bg-surface-sunken disabled:opacity-50 transition-colors"
             >
               Add Note
             </button>
@@ -331,19 +331,19 @@ function FeedbackDrawer({ item, onClose, newNote, setNewNote, onAddNote, onUpdat
         {/* Change History */}
         <div className="p-6">
           <button onClick={() => setHistoryOpen((o) => !o)} className="w-full flex items-center justify-between mb-4">
-            <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider">Change History</h3>
-            {historyOpen ? <ChevronUp className="w-4 h-4 text-gray-400" /> : <ChevronDown className="w-4 h-4 text-gray-400" />}
+            <h3 className="text-xs font-bold text-ink-muted uppercase tracking-wider">Change History</h3>
+            {historyOpen ? <ChevronUp className="w-4 h-4 text-ink-muted" /> : <ChevronDown className="w-4 h-4 text-ink-muted" />}
           </button>
           {historyOpen && <ChangeHistoryTimeline entries={item.changeHistory} />}
         </div>
       </div>
 
       {/* Action Bar */}
-      <div className="px-6 py-4 bg-white border-t border-gray-200 flex items-center justify-between shrink-0 gap-2">
+      <div className="px-6 py-4 bg-surface border-t border-divider flex items-center justify-between shrink-0 gap-2">
         <button
           onClick={() => onToggleFlag(item.id)}
-          className={`flex items-center px-4 py-2 text-sm font-bold rounded-lg transition-colors border shrink-0
-            ${item.flagged ? "bg-orange-50 text-orange-600 border-orange-200" : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"}`}
+          className={`flex items-center px-4 py-2 text-sm font-bold rounded-card transition-colors border shrink-0
+            ${item.flagged ? "bg-warning/10 text-warning-ink border-warning/30" : "bg-surface text-ink-soft border-divider hover:bg-surface-page"}`}
         >
           <Flag className={`w-4 h-4 mr-2 ${item.flagged ? "fill-current" : ""}`} />
           {item.flagged ? "Flagged" : "Flag"}
@@ -352,21 +352,21 @@ function FeedbackDrawer({ item, onClose, newNote, setNewNote, onAddNote, onUpdat
         {isGoogle ? (
           <div className="flex gap-2">
             {item.status !== "Addressed" && (
-              <button onClick={() => onMarkAddressed(item.id)} className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 transition-colors shadow-sm">
+              <button onClick={() => onMarkAddressed(item.id)} className="px-4 py-2 bg-success-ink text-white rounded-card text-sm font-bold hover:opacity-90 transition-colors shadow-sm">
                 Mark Addressed
               </button>
             )}
-            <a href={item.reviewUrl} target="_blank" rel="noreferrer" className="flex items-center px-4 py-2 border border-gray-300 bg-white text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-50 transition-colors">
+            <a href={item.reviewUrl} target="_blank" rel="noreferrer" className="flex items-center px-4 py-2 border border-divider bg-surface text-ink-soft rounded-card text-sm font-bold hover:bg-surface-page transition-colors">
               Reply on Google <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
             </a>
           </div>
         ) : (
           <div className="flex space-x-3">
-            <button onClick={() => onUpdateStatus(item.id, "Archived")} className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-bold hover:bg-gray-50 transition-colors">
+            <button onClick={() => onUpdateStatus(item.id, "Archived")} className="px-4 py-2 bg-surface border border-divider text-ink-soft rounded-card text-sm font-bold hover:bg-surface-page transition-colors">
               Archive
             </button>
             {["New", "In Review"].includes(item.status) && (
-              <button onClick={() => onUpdateStatus(item.id, "Resolved")} className="px-6 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 transition-colors shadow-sm">
+              <button onClick={() => onUpdateStatus(item.id, "Resolved")} className="px-6 py-2 bg-success-ink text-white rounded-card text-sm font-bold hover:opacity-90 transition-colors shadow-sm">
                 Mark as Resolved
               </button>
             )}
@@ -464,37 +464,37 @@ export function FeedbackAdminPage() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 overflow-hidden">
+    <div className="flex flex-col h-full bg-surface-page overflow-hidden">
 
       {/* Header & Toolbar */}
-      <div className="shrink-0 bg-white border-b border-gray-200">
-        <div className="flex justify-between items-center px-8 py-5 border-b border-gray-100">
+      <div className="shrink-0 bg-surface border-b border-divider">
+        <div className="flex justify-between items-center px-6 py-4 border-b border-divider">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Feedback</h1>
-            <p className="text-sm text-gray-500 mt-1">Patient and staff feedback records</p>
+            <h1 className="text-2xl font-bold text-ink">Feedback</h1>
+            <p className="text-sm text-ink-muted mt-1">Patient and staff feedback records</p>
           </div>
           <div className="flex items-center space-x-3">
-            <button onClick={handleExport} className="flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-bold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm">
-              <Download className="w-4 h-4 mr-2 text-gray-500" /> Export
+            <button onClick={handleExport} className="flex items-center px-4 py-2 border border-divider rounded-card text-sm font-bold text-ink-soft hover:bg-surface-page transition-colors shadow-sm">
+              <Download className="w-4 h-4 mr-2 text-ink-muted" /> Export
             </button>
-            <button className="p-2 border border-gray-300 rounded-lg text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors shadow-sm">
+            <button className="p-2 border border-divider rounded-card text-ink-muted hover:bg-surface-page hover:text-ink-soft transition-colors shadow-sm">
               <Settings className="w-5 h-5" />
             </button>
           </div>
         </div>
 
         {/* Google sync status strip */}
-        <div className="px-8 py-2 flex items-center justify-between bg-blue-50/40 border-b border-gray-100">
-          <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
+        <div className="px-6 py-2 flex items-center justify-between bg-info/5 border-b border-divider">
+          <div className="flex items-center gap-1.5 text-xs text-ink-muted font-medium">
             <GoogleG className="w-3.5 h-3.5" /> Google Reviews · Last synced 2 hours ago
           </div>
-          <button onClick={handleSyncNow} className="flex items-center gap-1 text-xs text-slate-600 font-bold hover:underline">
+          <button onClick={handleSyncNow} className="flex items-center gap-1 text-xs text-ink-soft font-bold hover:underline">
             <RefreshCw className="w-3 h-3" /> Sync now
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="px-8 flex items-center gap-1 border-b border-gray-100">
+        <div className="px-6 flex items-center gap-1 border-b border-divider">
           {TAB_KEYS.map((tab) => {
             const isActive = activeTab === tab;
             return (
@@ -502,36 +502,36 @@ export function FeedbackAdminPage() {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`relative px-4 py-3 text-sm font-bold border-b-2 transition-colors
-                  ${isActive ? "border-slate-600 text-slate-800" : "border-transparent text-gray-500 hover:text-gray-700"}`}
+                  ${isActive ? "border-border-strong text-ink" : "border-transparent text-ink-muted hover:text-ink-soft"}`}
               >
                 {tab}
-                <span className={`ml-1.5 text-xs font-bold ${isActive ? "text-slate-500" : "text-gray-400"}`}>({tabCounts[tab]})</span>
-                {tab === "New" && newOverdue && <span className="absolute top-2.5 right-1 w-1.5 h-1.5 rounded-full bg-red-500" />}
+                <span className={`ml-1.5 text-xs font-bold ${isActive ? "text-ink-muted" : "text-ink-muted"}`}>({tabCounts[tab]})</span>
+                {tab === "New" && newOverdue && <span className="absolute top-2.5 right-1 w-1.5 h-1.5 rounded-full bg-danger" />}
               </button>
             );
           })}
         </div>
 
         {/* Secondary filters */}
-        <div className="px-8 py-3 flex items-center space-x-4 bg-gray-50/50">
+        <div className="px-6 py-3 flex items-center space-x-4 bg-surface-page">
           <FilterSelect value={sourceFilter} onChange={setSourceFilter} options={SOURCE_OPTIONS} className="min-w-[140px]" />
           <FilterSelect value={typeFilter} onChange={setTypeFilter} options={TYPE_OPTIONS} className="min-w-[140px]" />
           <FilterSelect value={statusFilter} onChange={setStatusFilter} options={STATUS_OPTIONS} className="min-w-[120px]" />
-          <div className="px-3 py-1.5 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white shadow-sm cursor-pointer hover:border-gray-400">
+          <div className="px-3 py-1.5 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface shadow-sm cursor-pointer hover:border-border-strong">
             This Month
           </div>
           <div className="relative flex-1 max-w-md">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by patient name, staff name, or keyword..."
-              className="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded text-sm outline-none focus:border-slate-500 bg-white shadow-sm"
+              className="w-full pl-9 pr-3 py-1.5 border border-divider rounded-control text-sm outline-none focus:border-border-strong bg-surface shadow-sm"
             />
           </div>
-          <div className="flex items-center space-x-1 cursor-pointer hover:bg-gray-100 px-2 py-1 rounded">
-            {[1, 2, 3, 4, 5].map((s) => <Star key={s} className="w-4 h-4 text-gray-300" />)}
+          <div className="flex items-center space-x-1 cursor-pointer hover:bg-surface-hover px-2 py-1 rounded-control">
+            {[1, 2, 3, 4, 5].map((s) => <Star key={s} className="w-4 h-4 text-ink-muted" />)}
           </div>
         </div>
       </div>
@@ -540,11 +540,11 @@ export function FeedbackAdminPage() {
           reclaiming vertical space for the list. Each metric carries a semantic
           icon tile; only the actionable one (Open Issues / overdue) shows alarm
           color, so triage happens in a single glance. */}
-      <div className="px-8 py-3 shrink-0">
-        <div className="flex items-stretch flex-wrap bg-white border border-gray-200 rounded-xl shadow-sm divide-x divide-gray-200 overflow-hidden">
+      <div className="px-6 py-3 shrink-0">
+        <div className="flex items-stretch flex-wrap bg-surface border border-divider rounded-card shadow-sm divide-x divide-divider overflow-hidden">
           <StatSegment
-            tile="bg-slate-100"
-            icon={<MessageSquare className="w-[18px] h-[18px] text-slate-500" />}
+            tile="bg-surface-hover"
+            icon={<MessageSquare className="w-[18px] h-[18px] text-ink-muted" />}
             label="Total Feedback"
             value="47"
             grow="flex-[1.1]"
@@ -552,59 +552,59 @@ export function FeedbackAdminPage() {
             sub="vs last month"
           />
           <StatSegment
-            tile="bg-amber-50"
-            icon={<Star className="w-[18px] h-[18px] text-amber-500 fill-current" />}
+            tile="bg-warning/10"
+            icon={<Star className="w-[18px] h-[18px] text-warning-ink fill-current" />}
             label="Avg. Rating"
             value="4.3"
             grow="flex-[0.9]"
-            valueAffix={<span className="text-[11px] font-bold text-gray-400">/5</span>}
+            valueAffix={<span className="text-overline text-ink-muted">/5</span>}
             delta="↑ 0.2"
           />
           <StatSegment
-            tile="bg-orange-50"
-            icon={<AlertCircle className="w-[18px] h-[18px] text-orange-600" />}
+            tile="bg-warning/10"
+            icon={<AlertCircle className="w-[18px] h-[18px] text-warning-ink" />}
             label="Open Issues"
             value="5"
             grow="flex-[1.5]"
             sub={
               <span className="inline-flex items-center gap-1.5">
-                <span className="inline-flex items-center gap-1 px-1.5 py-px rounded bg-red-50 text-red-700 font-bold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-500" />1 overdue
+                <span className="inline-flex items-center gap-1 px-1.5 py-px rounded-control bg-danger/10 text-danger-ink font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-danger" />1 overdue
                 </span>
-                <span className="text-gray-400">·</span> 3 new · 2 review
+                <span className="text-ink-muted">·</span> 3 new · 2 review
               </span>
             }
           />
           <StatSegment
-            tile="bg-purple-50"
-            icon={<Users className="w-[18px] h-[18px] text-purple-600" />}
+            tile="bg-special/10"
+            icon={<Users className="w-[18px] h-[18px] text-special-ink" />}
             label="Staff Feedback"
             value="9"
             grow="flex-[1.65]"
             sub="4 suggestions · 3 issues · 2 incidents"
           />
           <StatSegment
-            tile="bg-[#e8f0fe]"
+            tile="bg-info/10"
             icon={<GoogleG className="w-[18px] h-[18px]" />}
             label="Google Rating"
             value={googleAvg.toFixed(1)}
-            valueAffix={<Star className="w-4 h-4 text-amber-500 fill-current self-center" />}
+            valueAffix={<Star className="w-4 h-4 text-warning-ink fill-current self-center" />}
             sub={`${googleItems.length} Google reviews`}
           />
         </div>
       </div>
 
       {/* Main Layout: full-width list + slide-in drawer */}
-      <div className="flex-1 relative overflow-hidden border-t border-gray-200">
+      <div className="flex-1 relative overflow-hidden border-t border-divider">
         <div
           className={`h-full flex flex-col transition-[margin-right] duration-300 ease-out ${selectedItem ? "mr-[420px]" : "mr-0"}`}
           onClick={(e) => { if (e.target === e.currentTarget) closeDrawer(); }}
         >
-          <div className="flex-1 overflow-y-auto p-4 bg-gray-50" onClick={(e) => { if (e.target === e.currentTarget) closeDrawer(); }}>
+          <div className="flex-1 overflow-y-auto p-4 bg-surface-page" onClick={(e) => { if (e.target === e.currentTarget) closeDrawer(); }}>
             {filtered.length === 0 ? (
-              <div className="h-full flex flex-col items-center justify-center text-gray-400 py-24">
-                <MessageSquare className="w-12 h-12 mb-4 text-gray-200" />
-                <div className="text-lg font-bold text-gray-600 mb-1">No feedback in this view</div>
+              <div className="h-full flex flex-col items-center justify-center text-ink-muted py-6">
+                <MessageSquare className="w-12 h-12 mb-4 text-ink-muted" />
+                <div className="text-lg font-bold text-ink-soft mb-1">No feedback in this view</div>
                 <div className="text-sm">Try a different tab or filter</div>
               </div>
             ) : (
@@ -621,7 +621,7 @@ export function FeedbackAdminPage() {
               </div>
             )}
           </div>
-          <div className="h-10 bg-white border-t border-gray-200 flex items-center justify-center text-xs font-bold text-gray-500 shrink-0">
+          <div className="h-10 bg-surface border-t border-divider flex items-center justify-center text-xs font-bold text-ink-muted shrink-0">
             Showing {filtered.length} of {feedbacks.length} records
           </div>
         </div>

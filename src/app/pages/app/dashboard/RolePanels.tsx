@@ -30,22 +30,22 @@ export function AdminPanels() {
     { patient: "Serkan Çetin", checkIn: "09:08", wait: 6, step: "Waiting for Consultation", nurse: "Aylin Demir" },
   ].sort((a, b) => b.wait - a.wait);
 
-  const waitColor = (m: number) => (m > 30 ? "text-red-600" : m > 15 ? "text-orange-600" : "text-gray-800");
+  const waitColor = (m: number) => (m > 30 ? "text-danger-ink" : m > 15 ? "text-warning-ink" : "text-ink");
 
   return (
     <div className="flex gap-4 items-stretch">
-      <Section title="Results Queue" className="flex-1 min-w-0" action={<button onClick={() => nav("/patients")} className="text-xs font-bold text-slate-600 hover:underline">View all patients →</button>}>
-        <div className="divide-y divide-gray-100">
+      <Section title="Results Queue" className="flex-1 min-w-0" action={<button onClick={() => nav("/patients")} className="text-xs font-bold text-ink-soft hover:underline">View all patients →</button>}>
+        <div className="divide-y divide-divider">
           {results.map((r) => (
-            <button key={r.patient} onClick={() => nav("/patients/P-001/results")} className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 text-left gap-2">
+            <button key={r.patient} onClick={() => nav("/patients/P-001/results")} className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-surface-page text-left gap-2">
               <span className="min-w-0">
-                <span className="text-sm font-medium text-gray-800 truncate block">{r.patient}</span>
-                <span className="text-xs text-gray-400 truncate block">{r.test} · {r.doctor.replace("Dr. ", "")}</span>
+                <span className="text-sm font-medium text-ink truncate block">{r.patient}</span>
+                <span className="text-xs text-ink-muted truncate block">{r.test} · {r.doctor.replace("Dr. ", "")}</span>
               </span>
               {r.days > 3 ? (
-                <span className="text-[10px] font-bold text-red-600 flex items-center gap-1 shrink-0"><AlertTriangle className="w-3 h-3" /> {r.days}d overdue</span>
+                <span className="text-label font-bold text-danger-ink flex items-center gap-1 shrink-0"><AlertTriangle className="w-3 h-3" /> {r.days}d overdue</span>
               ) : (
-                <span className="text-xs text-gray-400 shrink-0">{r.days}d</span>
+                <span className="text-xs text-ink-muted shrink-0">{r.days}d</span>
               )}
             </button>
           ))}
@@ -53,12 +53,12 @@ export function AdminPanels() {
       </Section>
 
       <Section title={<>Waiting Room <LiveDot /></>} className="flex-1 min-w-0">
-        <div className="divide-y divide-gray-100">
+        <div className="divide-y divide-divider">
           {waiting.map((w) => (
-            <div key={w.patient} className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50">
+            <div key={w.patient} className="flex items-center justify-between px-4 py-2.5 hover:bg-surface-page">
               <div className="min-w-0">
-                <div className="text-sm font-medium text-gray-800 truncate">{w.patient}</div>
-                <div className="text-xs text-gray-400 truncate">In {w.checkIn} · {w.step} · {w.nurse}</div>
+                <div className="text-sm font-medium text-ink truncate">{w.patient}</div>
+                <div className="text-xs text-ink-muted truncate">In {w.checkIn} · {w.step} · {w.nurse}</div>
               </div>
               <div className={`text-sm font-bold shrink-0 ${waitColor(w.wait)}`}>{w.wait}m</div>
             </div>

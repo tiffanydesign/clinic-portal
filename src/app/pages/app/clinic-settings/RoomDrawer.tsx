@@ -14,7 +14,7 @@ import { ActivitySection } from "./ActivitySection";
 const DEVICE_ICON: Record<string, LucideIcon> = { "Scan Device": ScanLine, TV: Tv, "Payment Terminal": CreditCard };
 
 function AssignedDevices({ devices, onOpen }: { devices: DeviceView[]; onOpen: (id: string) => void }) {
-  if (devices.length === 0) return <p className="text-sm text-gray-400">No devices assigned to this room.</p>;
+  if (devices.length === 0) return <p className="text-sm text-ink-muted">No devices assigned to this room.</p>;
   return (
     <div className="flex flex-wrap gap-2">
       {devices.map((d) => {
@@ -23,11 +23,11 @@ function AssignedDevices({ devices, onOpen }: { devices: DeviceView[]; onOpen: (
           <button
             key={d.id}
             onClick={() => onOpen(d.id)}
-            className="inline-flex items-center gap-1.5 pl-2 pr-2.5 py-1.5 rounded-lg border border-gray-200 bg-gray-50 hover:border-slate-400 hover:bg-white transition-colors text-sm font-semibold text-gray-700"
+            className="inline-flex items-center gap-1.5 pl-2 pr-2.5 py-1.5 rounded-card border border-divider bg-surface-page hover:border-border-strong hover:bg-surface transition-colors text-sm font-semibold text-ink-soft"
           >
-            <Icon className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+            <Icon className="w-3.5 h-3.5 text-ink-muted shrink-0" />
             {d.label}
-            <span className="text-xs font-mono text-gray-400">{d.shortCode}</span>
+            <span className="text-xs font-mono text-ink-muted">{d.shortCode}</span>
           </button>
         );
       })}
@@ -71,11 +71,11 @@ export function RoomDrawer({ room, onClose }: { room?: Room; onClose: () => void
       onClose={onClose}
       footer={
         <>
-          <button onClick={onClose} className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-bold text-gray-700 bg-white hover:bg-gray-100">Cancel</button>
+          <button onClick={onClose} className="px-4 py-2 border border-divider rounded-card text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
           <button
             onClick={save}
             disabled={!canSave}
-            className={`px-5 py-2 rounded-lg text-sm font-bold text-white transition-colors ${canSave ? "bg-slate-600 hover:bg-slate-700" : "bg-gray-300 cursor-not-allowed"}`}
+            className={`px-5 py-2 rounded-card text-sm font-bold text-white transition-colors ${canSave ? "bg-surface-sunken hover:bg-surface-sunken" : "bg-surface-sunken cursor-not-allowed"}`}
           >
             {isEdit ? "Save changes" : "Add room"}
           </button>
@@ -94,7 +94,7 @@ export function RoomDrawer({ room, onClose }: { room?: Room; onClose: () => void
           />
         </Field>
         <Field label="Type" required hint="Determines the calendar column group and which bookings can use it.">
-          <select value={type} onChange={(e) => setType(e.target.value as RoomType)} className={`${inputCls} bg-white`}>
+          <select value={type} onChange={(e) => setType(e.target.value as RoomType)} className={`${inputCls} bg-surface`}>
             {ROOM_TYPES.map((t) => <option key={t} value={t}>{t}</option>)}
           </select>
         </Field>
@@ -104,11 +104,11 @@ export function RoomDrawer({ room, onClose }: { room?: Room; onClose: () => void
 
         {isEdit && (
           <>
-            <div className="pt-2 border-t border-gray-100">
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Assigned devices</h3>
+            <div className="pt-2 border-t border-divider">
+              <h3 className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-3">Assigned devices</h3>
               <AssignedDevices devices={assigned} onOpen={openDevice} />
             </div>
-            <div className="pt-2 border-t border-gray-100">
+            <div className="pt-2 border-t border-divider">
               <ActivitySection entityId={room!.id} />
             </div>
           </>

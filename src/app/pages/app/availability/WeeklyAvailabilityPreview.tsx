@@ -19,9 +19,9 @@ function dayAbbrev(day: string): string {
 export function WeeklyAvailabilityPreview({ schedule }: { schedule: WeekSchedule }) {
   return (
     <div>
-      <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Weekly Preview</label>
-      <div className="bg-white border border-gray-200 rounded-lg p-3">
-        <div className="flex pl-9 mb-1.5 text-[9px] font-semibold text-gray-400">
+      <label className="block text-xs font-bold text-ink-soft uppercase tracking-wider mb-2">Weekly Preview</label>
+      <div className="bg-surface border border-divider rounded-card p-3">
+        <div className="flex pl-9 mb-1.5 text-label font-semibold text-ink-muted">
           <span className="flex-1">6am</span>
           <span className="flex-1 text-center">12pm</span>
           <span>9pm</span>
@@ -31,10 +31,10 @@ export function WeeklyAvailabilityPreview({ schedule }: { schedule: WeekSchedule
             const config = schedule[day];
             return (
               <div key={day} className="flex items-center gap-2">
-                <span className="w-7 shrink-0 text-[10px] font-bold text-gray-500">{dayAbbrev(day)}</span>
-                <div className="flex-1 h-4 bg-gray-100 rounded relative overflow-hidden">
+                <span className="w-7 shrink-0 text-label font-bold text-ink-muted">{dayAbbrev(day)}</span>
+                <div className="flex-1 h-4 bg-surface-hover rounded-control relative overflow-hidden">
                   {!config.active ? (
-                    <span className="absolute inset-0 flex items-center justify-center text-[8px] font-bold uppercase tracking-wider text-gray-400">Off</span>
+                    <span className="absolute inset-0 flex items-center justify-center text-overline text-ink-muted">Off</span>
                   ) : (
                     config.slots.map((slot, idx) => {
                       const s = Math.max(timeToMinutes(slot.start), PREVIEW_START_MIN);
@@ -45,7 +45,7 @@ export function WeeklyAvailabilityPreview({ schedule }: { schedule: WeekSchedule
                       return (
                         <div
                           key={idx}
-                          className="absolute top-0 bottom-0 bg-slate-500 rounded-sm"
+                          className="absolute top-0 bottom-0 bg-ink-muted rounded-control"
                           style={{ left: `${left}%`, width: `${width}%` }}
                           title={`${slot.start} – ${slot.end}`}
                         />

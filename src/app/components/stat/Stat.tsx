@@ -55,23 +55,23 @@ import { Sparkline, DeltaLine, AnimatedNumber } from "./trend";
 // =============================================================================
 
 const ICON_TONE_CLASS: Record<StatIconTone, string> = {
-  emerald: "bg-emerald-50 text-emerald-600",
-  amber: "bg-amber-50 text-amber-600",
-  blue: "bg-blue-50 text-blue-600",
-  red: "bg-red-50 text-red-600",
-  slate: "bg-slate-100 text-slate-500",
+  emerald: "bg-success/10 text-success-ink",
+  amber: "bg-warning/10 text-warning-ink",
+  blue: "bg-info/10 text-info-ink",
+  red: "bg-danger/10 text-danger-ink",
+  slate: "bg-surface-hover text-ink-muted",
 };
 
 const PILL_TONE_CLASS: Record<StatTone, string> = {
-  neutral: "bg-gray-100 text-gray-600",
-  amber: "bg-amber-100 text-amber-700",
-  red: "bg-red-100 text-red-700",
+  neutral: "bg-surface-hover text-ink-soft",
+  amber: "bg-warning/15 text-warning-ink",
+  red: "bg-danger/15 text-danger-ink",
 };
 
 const PILL_DOT_CLASS: Record<StatTone, string> = {
-  neutral: "bg-gray-400",
-  amber: "bg-amber-500",
-  red: "bg-red-500",
+  neutral: "bg-ink-muted",
+  amber: "bg-warning-ink",
+  red: "bg-danger-ink",
 };
 
 // Dev-only nudge when a call site breaks the semantics -> tier mapping.
@@ -133,20 +133,20 @@ function StatCard({ stat, range = "today", locked, clickable, icon, iconTone, on
   return (
     <button
       onClick={interactive ? () => onOpen?.(stat.route) : undefined}
-      className={`text-left border border-gray-300 rounded bg-white px-4 py-2.5 min-h-[88px] max-h-24 flex flex-col gap-1.5 relative transition-all ${
-        interactive ? "hover:border-slate-400 hover:shadow-sm cursor-pointer" : "cursor-default"
+      className={`text-left border border-divider rounded-control bg-surface px-4 py-2.5 min-h-[88px] max-h-24 flex flex-col gap-1.5 relative transition-all ${
+        interactive ? "hover:border-border-strong hover:shadow-sm cursor-pointer" : "cursor-default"
       }`}
     >
       <div className="flex items-center gap-3">
         {Icon && (
-          <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${ICON_TONE_CLASS[iconTone ?? "blue"]}`}>
+          <div className={`w-9 h-9 rounded-card flex items-center justify-center shrink-0 ${ICON_TONE_CLASS[iconTone ?? "blue"]}`}>
             <Icon className="w-4 h-4" />
           </div>
         )}
 
         <div className="flex-1 min-w-0 flex flex-col gap-1">
-          <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider leading-tight truncate">{label}</span>
-          <div className="text-[28px] font-semibold text-gray-800 leading-none">
+          <span className="text-overline leading-tight truncate">{label}</span>
+          <div className="kpi-value-lg font-semibold text-ink leading-none">
             <AnimatedNumber value={rv.value} />
           </div>
         </div>
@@ -154,17 +154,17 @@ function StatCard({ stat, range = "today", locked, clickable, icon, iconTone, on
         <div className="flex flex-col items-end gap-1.5 shrink-0">
           <div className="flex items-center gap-1.5">
             <span
-              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider shrink-0 ${
-                isLive ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-600"
+              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-control text-overline shrink-0 ${
+                isLive ? "bg-success/10 text-success-ink" : "bg-surface-hover text-ink-soft"
               }`}
             >
-              {isLive && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />}
+              {isLive && <span className="w-1.5 h-1.5 rounded-full bg-success" />}
               {pillText}
             </span>
             {locked && (
               <span className="relative group/lock shrink-0">
-                <Lock className="w-3.5 h-3.5 text-gray-400" />
-                <span className="absolute right-0 top-full mt-1 w-44 bg-gray-800 text-white text-[10px] font-medium normal-case tracking-normal px-2.5 py-1.5 rounded shadow-lg opacity-0 group-hover/lock:opacity-100 transition-opacity pointer-events-none z-20">
+                <Lock className="w-3.5 h-3.5 text-ink-muted" />
+                <span className="absolute right-0 top-full mt-1 w-44 bg-ink text-white text-label font-medium normal-case tracking-normal px-2.5 py-1.5 rounded-control shadow-lg opacity-0 group-hover/lock:opacity-100 transition-opacity pointer-events-none z-20">
                   Default metric — set by your clinic
                 </span>
               </span>
@@ -199,14 +199,14 @@ function StatTile({ stat }: StatProps) {
   return (
     <Tag
       onClick={onActivate}
-      className={`w-full min-h-[44px] max-h-[72px] text-left bg-white border border-gray-300 rounded-xl px-5 py-3 shadow-sm transition-colors ${
-        onActivate ? "hover:border-slate-400 hover:shadow-md cursor-pointer" : ""
+      className={`w-full min-h-[44px] max-h-[72px] text-left bg-surface border border-divider rounded-card px-5 py-3 shadow-sm transition-colors ${
+        onActivate ? "hover:border-border-strong hover:shadow-md cursor-pointer" : ""
       }`}
     >
-      <div className="text-[11px] font-bold text-gray-500 uppercase tracking-wider truncate">{stat.label}</div>
-      <div className={`text-2xl font-semibold leading-tight mt-1 flex items-center gap-2 ${stat.alert ? "text-amber-600" : "text-gray-800"}`}>
+      <div className="text-overline truncate">{stat.label}</div>
+      <div className={`text-2xl font-semibold leading-tight mt-1 flex items-center gap-2 ${stat.alert ? "text-warning-ink" : "text-ink"}`}>
         <span className="tabular-nums">{stat.value}</span>
-        {stat.alert && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" aria-hidden />}
+        {stat.alert && <span className="w-1.5 h-1.5 rounded-full bg-warning-ink shrink-0" aria-hidden />}
       </div>
     </Tag>
   );
@@ -218,7 +218,7 @@ function StatTile({ stat }: StatProps) {
  */
 export function StatStripGroup({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`flex items-stretch bg-white border border-gray-200 rounded-xl divide-x divide-gray-200 overflow-hidden shadow-sm shrink-0 ${className}`}>
+    <div className={`flex items-stretch bg-surface border border-divider rounded-card divide-x divide-divider overflow-hidden shadow-sm shrink-0 ${className}`}>
       {children}
     </div>
   );
@@ -237,21 +237,21 @@ function StatStripItem({ stat, icon, iconTone, active }: StatProps) {
     <Tag
       onClick={onActivate}
       className={`flex-1 min-w-0 min-h-[52px] max-h-14 flex items-center gap-2.5 text-left px-4 py-2 border-b-2 transition-colors ${
-        active ? "border-slate-700" : "border-transparent"
-      } ${onActivate ? "hover:bg-gray-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-inset" : ""}`}
+        active ? "border-ink" : "border-transparent"
+      } ${onActivate ? "hover:bg-surface-page cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-info focus-visible:ring-inset" : ""}`}
     >
       {Icon && (
-        <span className={`w-7 h-7 rounded-md flex items-center justify-center shrink-0 ${ICON_TONE_CLASS[iconTone ?? "slate"]}`}>
+        <span className={`w-7 h-7 rounded-control flex items-center justify-center shrink-0 ${ICON_TONE_CLASS[iconTone ?? "slate"]}`}>
           <Icon className="w-3.5 h-3.5" />
         </span>
       )}
       <span className="min-w-0 flex items-baseline gap-1.5">
-        <span className={`text-xl font-semibold tabular-nums leading-none shrink-0 ${stat.alert ? "text-amber-600" : "text-gray-800"}`}>
+        <span className={`text-xl font-semibold tabular-nums leading-none shrink-0 ${stat.alert ? "text-warning-ink" : "text-ink"}`}>
           {stat.value}
         </span>
-        <span className="text-xs font-medium text-gray-500 truncate">{stat.label}</span>
-        {stat.alert && <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0 self-center" aria-hidden />}
-        {stat.suffix && <span className="text-[11px] font-medium text-gray-400 truncate">{stat.suffix}</span>}
+        <span className="text-xs font-medium text-ink-muted truncate">{stat.label}</span>
+        {stat.alert && <span className="w-1.5 h-1.5 rounded-full bg-warning-ink shrink-0 self-center" aria-hidden />}
+        {stat.suffix && <span className="text-overline font-medium text-ink-muted truncate">{stat.suffix}</span>}
       </span>
     </Tag>
   );
@@ -264,7 +264,7 @@ function StatStripItem({ stat, icon, iconTone, active }: StatProps) {
 function StatPill({ stat, tone = "neutral", dot }: StatProps) {
   return (
     <span
-      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[11px] font-bold tabular-nums shrink-0 ${PILL_TONE_CLASS[tone]}`}
+      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-label font-bold tabular-nums shrink-0 ${PILL_TONE_CLASS[tone]}`}
     >
       {dot && <span className={`w-1.5 h-1.5 rounded-full ${PILL_DOT_CLASS[tone]}`} aria-hidden />}
       {stat.value}

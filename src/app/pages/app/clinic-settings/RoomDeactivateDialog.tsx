@@ -32,60 +32,60 @@ export function RoomDeactivateDialog({ room, onClose, onDone }: { room: Room; on
   const openBooking = (id: string) => { onClose(); navigate(`/calendar/schedule/appointment/${id}`); };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[60] p-6" onClick={onClose}>
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 motion-reduce:animate-none" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-surface-sunken/40 backdrop-blur-sm flex items-center justify-center z-[60] p-6" onClick={onClose}>
+      <div className="bg-surface rounded-card shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 motion-reduce:animate-none" onClick={(e) => e.stopPropagation()}>
         {blocked ? (
           <>
-            <div className="px-6 py-4 border-b border-gray-200 flex items-start gap-3 bg-red-50">
-              <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+            <div className="px-6 py-4 border-b border-divider flex items-start gap-3 bg-danger/10">
+              <AlertTriangle className="w-5 h-5 text-danger-ink shrink-0 mt-0.5" />
               <div>
-                <h2 className="text-base font-bold text-red-800">Can't deactivate {room.name} yet</h2>
-                <p className="text-xs text-red-700/80 mt-0.5">
+                <h2 className="text-base font-bold text-danger-ink">Can't deactivate {room.name} yet</h2>
+                <p className="text-xs text-danger-ink/80 mt-0.5">
                   {bookings.length} upcoming booking{bookings.length > 1 ? "s" : ""} still use{bookings.length > 1 ? "" : "s"} this room.
                 </p>
               </div>
             </div>
             <div className="p-6 space-y-3">
-              <div className="border border-gray-200 rounded-lg divide-y divide-gray-100 max-h-64 overflow-y-auto">
+              <div className="border border-divider rounded-card divide-y divide-divider max-h-64 overflow-y-auto">
                 {bookings.map((a) => (
                   <div key={a.id} className="px-3 py-2.5 flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <div className="text-sm font-bold text-gray-800 truncate">{a.patient.name}</div>
-                      <div className="text-xs text-gray-500 flex items-center gap-1.5 mt-0.5">
+                      <div className="text-sm font-bold text-ink truncate">{a.patient.name}</div>
+                      <div className="text-xs text-ink-muted flex items-center gap-1.5 mt-0.5">
                         <Clock className="w-3 h-3 shrink-0" /> {a.timeLabel} · {a.type}
                       </div>
                     </div>
                     <button
                       onClick={() => openBooking(a.id)}
-                      className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-slate-300 text-xs font-bold text-slate-700 bg-white hover:bg-slate-50 transition-colors"
+                      className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-card border border-divider text-xs font-bold text-ink-soft bg-surface hover:bg-surface-page transition-colors"
                     >
                       Reschedule <ArrowRight className="w-3 h-3" />
                     </button>
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-gray-500 leading-relaxed">
+              <p className="text-xs text-ink-muted leading-relaxed">
                 Reschedule or cancel each booking into another room, then deactivate.
               </p>
             </div>
-            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
-              <button onClick={onClose} className="px-5 py-2 rounded-lg text-sm font-bold text-white bg-slate-600 hover:bg-slate-700">Got it</button>
+            <div className="px-6 py-4 bg-surface-page border-t border-divider flex justify-end">
+              <button onClick={onClose} className="px-5 py-2 rounded-card text-sm font-bold text-white bg-ink hover:bg-surface-sunken">Got it</button>
             </div>
           </>
         ) : (
           <>
             <div className="p-6">
-              <h2 className="text-base font-bold text-gray-800 mb-1.5">Deactivate {room.name}?</h2>
-              <p className="text-sm text-gray-500 leading-relaxed">
+              <h2 className="text-base font-bold text-ink mb-1.5">Deactivate {room.name}?</h2>
+              <p className="text-sm text-ink-muted leading-relaxed">
                 It will disappear from the calendar columns and booking pickers. Existing history keeps showing it. You can reactivate it any time.
                 {assignedCount > 0 && (
                   <> {assignedCount} assigned device{assignedCount > 1 ? "s" : ""} will move to Unassigned.</>
                 )}
               </p>
             </div>
-            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
-              <button onClick={onClose} className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-bold text-gray-700 bg-white hover:bg-gray-100">Cancel</button>
-              <button onClick={confirm} className="px-5 py-2 rounded-lg text-sm font-bold text-white bg-slate-600 hover:bg-slate-700">Deactivate</button>
+            <div className="px-6 py-4 bg-surface-page border-t border-divider flex justify-end gap-3">
+              <button onClick={onClose} className="px-4 py-2 border border-divider rounded-card text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
+              <button onClick={confirm} className="px-5 py-2 rounded-card text-sm font-bold text-white bg-ink hover:bg-surface-sunken">Deactivate</button>
             </div>
           </>
         )}

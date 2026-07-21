@@ -46,14 +46,14 @@ export function DemoStateControl({ state, onChange }: { state: ResourceState; on
   ];
   return (
     <div className="flex items-center gap-1.5" title="Prototype control — preview each data state">
-      <span className="text-[10px] font-bold uppercase tracking-wider text-gray-300">Demo</span>
-      <div className="inline-flex bg-gray-100 rounded-lg p-0.5 border border-gray-200">
+      <span className="text-overline text-ink-muted">Demo</span>
+      <div className="inline-flex bg-surface-hover rounded-card p-0.5 border border-divider">
         {opts.map((o) => (
           <button
             key={o.v}
             onClick={() => onChange(o.v)}
-            className={`px-2 py-1 text-[11px] font-bold rounded-md transition-colors ${
-              state === o.v ? "bg-white text-slate-700 shadow-sm" : "text-gray-400 hover:text-gray-600"
+            className={`px-2 py-1 text-label font-bold rounded-control transition-colors ${
+              state === o.v ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted hover:text-ink-soft"
             }`}
           >
             {o.label}
@@ -67,16 +67,16 @@ export function DemoStateControl({ state, onChange }: { state: ResourceState; on
 // Skeleton list — a few shimmering rows sized like the real table.
 export function LoadingState() {
   return (
-    <div className="border border-gray-200 rounded-xl overflow-hidden" aria-busy="true" aria-label="Loading">
-      <div className="h-11 bg-gray-50 border-b border-gray-200" />
+    <div className="border border-divider rounded-card overflow-hidden" aria-busy="true" aria-label="Loading">
+      <div className="h-11 bg-surface-page border-b border-divider" />
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="flex items-center gap-4 px-4 h-16 border-b border-gray-100 last:border-b-0">
-          <div className="w-10 h-10 rounded-lg bg-gray-100 animate-pulse motion-reduce:animate-none shrink-0" />
+        <div key={i} className="flex items-center gap-4 px-4 h-16 border-b border-divider last:border-b-0">
+          <div className="w-10 h-10 rounded-card bg-surface-hover animate-pulse motion-reduce:animate-none shrink-0" />
           <div className="flex-1 space-y-2">
-            <div className="h-3.5 bg-gray-100 rounded animate-pulse motion-reduce:animate-none" style={{ width: `${40 + ((i * 13) % 30)}%` }} />
-            <div className="h-3 bg-gray-100/70 rounded animate-pulse motion-reduce:animate-none" style={{ width: `${25 + ((i * 7) % 20)}%` }} />
+            <div className="h-3.5 bg-surface-hover rounded-control animate-pulse motion-reduce:animate-none" style={{ width: `${40 + ((i * 13) % 30)}%` }} />
+            <div className="h-3 bg-surface-hover/70 rounded-control animate-pulse motion-reduce:animate-none" style={{ width: `${25 + ((i * 7) % 20)}%` }} />
           </div>
-          <div className="w-20 h-6 bg-gray-100 rounded-full animate-pulse motion-reduce:animate-none shrink-0" />
+          <div className="w-20 h-6 bg-surface-hover rounded-full animate-pulse motion-reduce:animate-none shrink-0" />
         </div>
       ))}
     </div>
@@ -85,13 +85,13 @@ export function LoadingState() {
 
 export function ErrorState({ entity, onRetry }: { entity: string; onRetry: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center text-center py-20">
-      <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mb-4">
-        <AlertCircle className="w-8 h-8 text-red-500" />
+    <div className="flex flex-col items-center justify-center text-center py-6">
+      <div className="w-16 h-16 rounded-full bg-danger/10 flex items-center justify-center mb-4">
+        <AlertCircle className="w-8 h-8 text-danger-ink" />
       </div>
-      <h2 className="text-lg font-bold text-gray-800 mb-1">Couldn't load {entity}</h2>
-      <p className="text-sm text-gray-500 max-w-sm mb-6">Something went wrong reaching the clinic's device service. Check your connection and try again.</p>
-      <button onClick={onRetry} className="flex items-center gap-2 px-6 py-3 bg-slate-600 text-white rounded-lg text-base font-bold hover:bg-slate-700 transition-colors shadow-sm">
+      <h2 className="text-lg font-bold text-ink mb-1">Couldn't load {entity}</h2>
+      <p className="text-sm text-ink-muted max-w-sm mb-6">Something went wrong reaching the clinic's device service. Check your connection and try again.</p>
+      <button onClick={onRetry} className="flex items-center gap-2 px-6 py-3 bg-ink text-white rounded-card text-base font-bold hover:bg-ink transition-colors shadow-sm">
         <RefreshCw className="w-4 h-4" /> Retry
       </button>
     </div>
@@ -100,12 +100,12 @@ export function ErrorState({ entity, onRetry }: { entity: string; onRetry: () =>
 
 export function EmptyState({ icon: Icon, title, body, cta }: { icon: LucideIcon; title: string; body: string; cta?: React.ReactNode }) {
   return (
-    <div className="flex flex-col items-center justify-center text-center py-20">
-      <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-        <Icon className="w-8 h-8 text-gray-400" />
+    <div className="flex flex-col items-center justify-center text-center py-6">
+      <div className="w-16 h-16 rounded-full bg-surface-hover flex items-center justify-center mb-4">
+        <Icon className="w-8 h-8 text-ink-muted" />
       </div>
-      <h2 className="text-lg font-bold text-gray-800 mb-1">{title}</h2>
-      <p className="text-sm text-gray-500 max-w-sm mb-6">{body}</p>
+      <h2 className="text-lg font-bold text-ink mb-1">{title}</h2>
+      <p className="text-sm text-ink-muted max-w-sm mb-6">{body}</p>
       {cta}
     </div>
   );

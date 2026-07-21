@@ -233,18 +233,18 @@ export type Decision = {
 
 export function overrideStatusPillClass(status: OverrideStatus | LeaveStatus): string {
   switch (status) {
-    case "Approved": return "bg-emerald-50 text-emerald-700 border-emerald-200";
-    case "Pending": return "bg-amber-50 text-amber-700 border-amber-200";
-    case "Rejected": return "bg-red-50 text-red-700 border-red-200";
-    default: return "bg-gray-50 text-gray-500 border-gray-200";
+    case "Approved": return "bg-success/10 text-success-ink border-success/30";
+    case "Pending": return "bg-warning/10 text-warning-ink border-warning/30";
+    case "Rejected": return "bg-danger/10 text-danger-ink border-danger/30";
+    default: return "bg-surface-page text-ink-muted border-divider";
   }
 }
 
 export function kindBadgeClass(kind: PendingKind): string {
   switch (kind) {
-    case "Schedule Change": return "bg-blue-50 text-blue-700 border-blue-200";
-    case "Date Override": return "bg-purple-50 text-purple-700 border-purple-200";
-    case "Leave": return "bg-orange-50 text-orange-700 border-orange-200";
+    case "Schedule Change": return "bg-info/10 text-info-ink border-info/30";
+    case "Date Override": return "bg-special/10 text-special-ink border-special/30";
+    case "Leave": return "bg-warning/10 text-warning-ink border-warning/30";
   }
 }
 

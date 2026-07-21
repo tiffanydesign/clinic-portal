@@ -119,10 +119,10 @@ export function typeBucket(t: ApptType): TypeBucket {
 
 // Fixed semantic tint per type layer's checkbox swatch.
 export const TYPE_LAYER_COLOR: Record<TypeBucket, string> = {
-  "Body Scan": "bg-violet-500",
-  Consultation: "bg-blue-500",
-  "Sample Collection": "bg-teal-500",
-  "Follow-up": "bg-amber-500",
+  "Body Scan": "bg-special",
+  Consultation: "bg-info",
+  "Sample Collection": "bg-success",
+  "Follow-up": "bg-warning",
 };
 
 export type LayerState = {

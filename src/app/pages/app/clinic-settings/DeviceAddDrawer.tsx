@@ -66,9 +66,9 @@ export function DeviceAddDrawer({ onClose }: { onClose: () => void }) {
       onClose={onClose}
       footer={
         <>
-          <button onClick={onClose} className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-bold text-gray-700 bg-white hover:bg-gray-100">Cancel</button>
+          <button onClick={onClose} className="px-4 py-2 border border-divider rounded-card text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
           <button onClick={save} disabled={!canSave}
-            className={`px-5 py-2 rounded-lg text-sm font-bold text-white transition-colors ${canSave ? "bg-slate-600 hover:bg-slate-700" : "bg-gray-300 cursor-not-allowed"}`}>
+            className={`px-5 py-2 rounded-card text-sm font-bold text-white transition-colors ${canSave ? "bg-surface-sunken hover:bg-surface-sunken" : "bg-surface-sunken cursor-not-allowed"}`}>
             Add device
           </button>
         </>
@@ -84,8 +84,8 @@ export function DeviceAddDrawer({ onClose }: { onClose: () => void }) {
                 <button
                   key={o.v}
                   onClick={() => setType(o.v)}
-                  className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-lg border text-xs font-bold transition-colors ${
-                    active ? "border-slate-500 bg-slate-50 text-slate-700 ring-1 ring-slate-500" : "border-gray-200 bg-white text-gray-500 hover:border-slate-300"
+                  className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-card border text-xs font-bold transition-colors ${
+                    active ? "border-border-strong bg-surface-page text-ink-soft ring-1 ring-info" : "border-divider bg-surface text-ink-muted hover:border-divider"
                   }`}
                 >
                   <Icon className="w-5 h-5" />
@@ -98,7 +98,7 @@ export function DeviceAddDrawer({ onClose }: { onClose: () => void }) {
 
         <Field label="Model" required>
           {isTerminal ? (
-            <select value={terminalModel} onChange={(e) => setTerminalModel(e.target.value)} className={`${inputCls} bg-white`}>
+            <select value={terminalModel} onChange={(e) => setTerminalModel(e.target.value)} className={`${inputCls} bg-surface`}>
               {TERMINAL_MODELS.map((m) => <option key={m}>{m}</option>)}
             </select>
           ) : (
@@ -128,7 +128,7 @@ export function DeviceAddDrawer({ onClose }: { onClose: () => void }) {
         )}
 
         <Field label="Assign to room" hint="Optional — leave as Unassigned for now.">
-          <select value={roomId} onChange={(e) => setRoomId(e.target.value)} className={`${inputCls} bg-white`}>
+          <select value={roomId} onChange={(e) => setRoomId(e.target.value)} className={`${inputCls} bg-surface`}>
             <option value="">Unassigned</option>
             {rooms.map((r) => <option key={r.id} value={r.id}>{r.name} · {r.type}</option>)}
           </select>

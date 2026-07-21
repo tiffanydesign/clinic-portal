@@ -25,10 +25,10 @@ const FEED: ActivityItem[] = [
 ];
 
 const KIND_ICON: Record<EventKind, React.ReactNode> = {
-  Appointments: <Calendar className="w-4 h-4 text-slate-500" />,
-  Patients: <User className="w-4 h-4 text-emerald-500" />,
-  Payments: <CreditCard className="w-4 h-4 text-blue-500" />,
-  System: <Settings className="w-4 h-4 text-gray-400" />,
+  Appointments: <Calendar className="w-4 h-4 text-ink-muted" />,
+  Patients: <User className="w-4 h-4 text-success-ink" />,
+  Payments: <CreditCard className="w-4 h-4 text-info-ink" />,
+  System: <Settings className="w-4 h-4 text-ink-muted" />,
 };
 
 const FILTERS: ("All Events" | EventKind)[] = ["All Events", "Appointments", "Patients", "Payments", "System"];
@@ -52,17 +52,17 @@ export function ActivityFeed({ defaultCollapsed = false, className }: { defaultC
         />
       }
     >
-      <div className="divide-y divide-gray-100">
+      <div className="divide-y divide-divider">
         {visibleItems.map((item, i) => (
           <div key={i} className="flex items-center gap-3 px-5 py-2.5">
-            <span className="text-xs font-bold text-gray-400 w-10 shrink-0 tabular-nums">{item.time}</span>
+            <span className="text-xs font-bold text-ink-muted w-10 shrink-0 tabular-nums">{item.time}</span>
             <span className="shrink-0">{KIND_ICON[item.kind]}</span>
-            <span className="text-sm text-gray-700 flex-1 min-w-0">{item.text}</span>
+            <span className="text-sm text-ink-soft flex-1 min-w-0">{item.text}</span>
           </div>
         ))}
       </div>
       {collapsed && items.length > 3 && (
-        <button onClick={() => setCollapsed(false)} className="w-full text-center py-2 text-xs font-bold text-slate-600 hover:underline border-t border-gray-100">
+        <button onClick={() => setCollapsed(false)} className="w-full text-center py-2 text-xs font-bold text-ink-soft hover:underline border-t border-divider">
           View all
         </button>
       )}

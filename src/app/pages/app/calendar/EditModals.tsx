@@ -7,7 +7,7 @@ import {
   clockToMin, minToClock, fmtRange,
 } from "./scheduleData";
 
-const inputCls = "w-full px-3 py-2 border border-gray-300 rounded text-sm text-gray-800 bg-white outline-none focus:border-slate-500";
+const inputCls = "w-full px-3 py-2 border border-divider rounded-control text-sm text-ink bg-surface outline-none focus:border-border-strong";
 
 const TIME_OPTIONS: string[] = (() => {
   const out: string[] = [];
@@ -29,8 +29,8 @@ export function EditAppointmentModal({ appt, onClose, onApply }: { appt: Appt; o
   return (
     <ModalShell title="Edit Appointment" subtitle={appt.patient.name} onClose={onClose} footer={
       <>
-        <button onClick={onClose} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100">Cancel</button>
-        <button onClick={apply} className="px-6 py-2 rounded text-sm font-bold text-white bg-slate-600 hover:bg-slate-700">Save Changes</button>
+        <button onClick={onClose} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
+        <button onClick={apply} className="px-6 py-2 rounded-control text-sm font-bold text-white bg-ink hover:bg-surface-sunken">Save Changes</button>
       </>
     }>
       <div className="space-y-4">
@@ -76,8 +76,8 @@ export function ReassignModal({ appt, onClose, onApply }: { appt: Appt; onClose:
   return (
     <ModalShell title="Reassign Staff" subtitle={appt.patient.name} onClose={onClose} footer={
       <>
-        <button onClick={onClose} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100">Cancel</button>
-        <button onClick={apply} className="px-6 py-2 rounded text-sm font-bold text-white bg-slate-600 hover:bg-slate-700">Reassign</button>
+        <button onClick={onClose} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
+        <button onClick={apply} className="px-6 py-2 rounded-control text-sm font-bold text-white bg-ink hover:bg-surface-sunken">Reassign</button>
       </>
     }>
       <div className="space-y-4">
@@ -99,12 +99,12 @@ export function RescheduleModal({ appt, onClose, onApply }: { appt: Appt; onClos
   return (
     <ModalShell title="Reschedule" subtitle={appt.patient.name} width="max-w-md" onClose={onClose} footer={
       <>
-        <button onClick={onClose} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100">Cancel</button>
-        <button onClick={apply} className="px-6 py-2 rounded text-sm font-bold text-white bg-slate-600 hover:bg-slate-700">Reschedule</button>
+        <button onClick={onClose} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
+        <button onClick={apply} className="px-6 py-2 rounded-control text-sm font-bold text-white bg-ink hover:bg-surface-sunken">Reschedule</button>
       </>
     }>
       <div className="space-y-4">
-        <Field label="Date"><input value="3 Jul 2026" readOnly className={`${inputCls} bg-gray-50`} /></Field>
+        <Field label="Date"><input value="3 Jul 2026" readOnly className={`${inputCls} bg-surface-page`} /></Field>
         <Field label="New Time">
           <FilterSelect
             value={time}
@@ -130,12 +130,12 @@ export function CancelModal({ appt, onClose, onConfirm }: { appt: Appt; onClose:
   return (
     <ModalShell title="Cancel Appointment" subtitle={appt.patient.name} width="max-w-md" onClose={onClose} footer={
       <>
-        <button onClick={onClose} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100">Keep Appointment</button>
-        <button onClick={confirm} className="px-6 py-2 rounded text-sm font-bold text-white bg-red-600 hover:bg-red-700">Cancel Appointment</button>
+        <button onClick={onClose} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Keep Appointment</button>
+        <button onClick={confirm} className="px-6 py-2 rounded-control text-sm font-bold text-white bg-danger-ink hover:bg-danger-ink">Cancel Appointment</button>
       </>
     }>
       <div className="space-y-4">
-        <p className="text-sm text-gray-600">This will cancel {appt.patient.name}&#39;s {appt.timeLabel} appointment. Select a reason:</p>
+        <p className="text-sm text-ink-soft">This will cancel {appt.patient.name}&#39;s {appt.timeLabel} appointment. Select a reason:</p>
         <Field label="Cancellation Reason"><select value={reason} onChange={(e) => setReason(e.target.value)} className={inputCls}>{CANCEL_REASONS.map((r) => <option key={r} value={r}>{r}</option>)}</select></Field>
       </div>
     </ModalShell>
@@ -149,11 +149,11 @@ export function ConfirmDialog({ title, message, confirmLabel, onClose, onConfirm
   return (
     <ModalShell title={title} width="max-w-sm" onClose={onClose} footer={
       <>
-        <button onClick={onClose} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100">Cancel</button>
-        <button onClick={() => { onConfirm(); onClose(); }} className="px-6 py-2 rounded text-sm font-bold text-white bg-slate-600 hover:bg-slate-700">{confirmLabel}</button>
+        <button onClick={onClose} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
+        <button onClick={() => { onConfirm(); onClose(); }} className="px-6 py-2 rounded-control text-sm font-bold text-white bg-ink hover:bg-surface-sunken">{confirmLabel}</button>
       </>
     }>
-      <p className="text-sm text-gray-600">{message}</p>
+      <p className="text-sm text-ink-soft">{message}</p>
     </ModalShell>
   );
 }

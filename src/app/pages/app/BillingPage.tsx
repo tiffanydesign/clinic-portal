@@ -11,13 +11,13 @@ const formatCurrency = (amount: number) => `₺${amount.toLocaleString()}`;
 export function BillingPage() {
   const { role } = useAppContext();
   const isAdmin = role === "Admin";
-  
+
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
   const [showDailySummary, setShowDailySummary] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("Status: All");
   const [methodFilter, setMethodFilter] = useState("Method: All");
-  
+
   const exportRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -46,13 +46,13 @@ export function BillingPage() {
   const totalBalance = MOCK_DATA.reduce((sum, r) => sum + r.balance, 0);
 
   return (
-    <div className="flex flex-col min-h-full bg-gray-50">
-      
+    <div className="flex flex-col min-h-full bg-surface-page">
+
       {/* Top Header Row */}
-      <div className="bg-white border-b border-gray-200 px-8 py-5 flex justify-between items-center shrink-0">
+      <div className="bg-surface border-b border-divider px-6 py-4 flex justify-between items-center shrink-0">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Billing</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-ink">Billing</h1>
+          <p className="text-sm text-ink-muted mt-1">
             {isAdmin ? "Payment oversight and reconciliation" : "Patient payments and transactions"}
           </p>
         </div>
@@ -60,16 +60,16 @@ export function BillingPage() {
         {isAdmin && (
           <div className="flex items-center space-x-3">
             <div className="relative" ref={exportRef}>
-              <button 
+              <button
                 onClick={() => setExportOpen(!exportOpen)}
-                className="flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm"
+                className="flex items-center px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover transition-colors shadow-sm"
               >
-                <Download className="w-4 h-4 mr-2 text-gray-500" /> Export <ChevronDown className="w-4 h-4 ml-2 text-gray-400" />
+                <Download className="w-4 h-4 mr-2 text-ink-muted" /> Export <ChevronDown className="w-4 h-4 ml-2 text-ink-muted" />
               </button>
               {exportOpen && (
-                <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-lg z-30 py-1 overflow-hidden">
-                  <button onClick={() => handleExport('Excel')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 font-medium">Export as Excel (.xlsx)</button>
-                  <button onClick={() => handleExport('CSV')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 font-medium">Export as CSV (.csv)</button>
+                <div className="absolute right-0 top-full mt-2 w-48 bg-surface border border-divider shadow-xl rounded-card z-30 py-1 overflow-hidden">
+                  <button onClick={() => handleExport('Excel')} className="w-full text-left px-4 py-2 text-sm text-ink-soft hover:bg-surface-hover font-medium">Export as Excel (.xlsx)</button>
+                  <button onClick={() => handleExport('CSV')} className="w-full text-left px-4 py-2 text-sm text-ink-soft hover:bg-surface-hover font-medium">Export as CSV (.csv)</button>
                 </div>
               )}
             </div>
@@ -78,12 +78,12 @@ export function BillingPage() {
       </div>
 
       {/* Toolbar Row */}
-      <div className="bg-white border-b border-gray-200 px-8 py-3 flex items-center justify-between shrink-0 space-x-4">
+      <div className="bg-surface border-b border-divider px-6 py-3 flex items-center justify-between shrink-0 space-x-4">
         <div className="relative w-[280px]">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input type="text" placeholder="Search ID or patient..." className="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded text-sm outline-none focus:border-slate-500 bg-white shadow-sm" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
+          <input type="text" placeholder="Search ID or patient..." className="w-full pl-9 pr-3 py-2 border border-divider rounded-control text-sm outline-none focus:border-info bg-surface shadow-sm" />
         </div>
-        
+
         <div className="flex items-center space-x-3 flex-1">
           <FilterSelect
             value={statusFilter}
@@ -97,51 +97,51 @@ export function BillingPage() {
             className="min-w-[140px]"
             options={["Method: All", "Card", "Voucher"]}
           />
-          
-          <div className="flex items-center px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 bg-white shadow-sm cursor-pointer hover:border-gray-400">
-            <CalendarIcon className="w-4 h-4 text-gray-400 mr-2" />
+
+          <div className="flex items-center px-3 py-2 border border-divider rounded-control text-sm text-ink-soft bg-surface shadow-sm cursor-pointer hover:border-border-strong">
+            <CalendarIcon className="w-4 h-4 text-ink-muted mr-2" />
             <span className="font-bold">1 Jul – 7 Jul 2026</span>
           </div>
         </div>
 
-        <div className="flex bg-gray-100 p-1 rounded-lg">
-          <button className="px-4 py-1 text-sm font-medium rounded text-gray-500 hover:text-gray-700">All</button>
-          <button className="px-4 py-1 text-sm font-bold rounded bg-white text-gray-800 shadow-sm">Today</button>
-          <button className="px-4 py-1 text-sm font-medium rounded text-gray-500 hover:text-gray-700">This Week</button>
+        <div className="flex bg-surface-hover p-1 rounded-control">
+          <button className="px-4 py-1 text-sm font-medium rounded-control text-ink-muted hover:text-ink-soft">All</button>
+          <button className="px-4 py-1 text-sm font-bold rounded-control bg-surface text-ink shadow-sm">Today</button>
+          <button className="px-4 py-1 text-sm font-medium rounded-control text-ink-muted hover:text-ink-soft">This Week</button>
         </div>
       </div>
 
       {/* KPI Cards */}
-      <div className="px-8 py-5 shrink-0 grid grid-cols-4 gap-6">
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Today's Collections</div>
-          <div className="text-3xl font-bold text-gray-800">₺12,400</div>
-          <div className="text-sm text-gray-500 mt-1 font-medium">8 payments received</div>
+      <div className="px-6 py-4 shrink-0 grid grid-cols-4 gap-6">
+        <div className="bg-surface border border-divider rounded-card p-4 shadow-sm">
+          <div className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Today's Collections</div>
+          <div className="text-3xl font-bold text-ink">₺12,400</div>
+          <div className="text-sm text-ink-muted mt-1 font-medium">8 payments received</div>
         </div>
-        <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-          <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Awaiting Payment</div>
-          <div className="text-3xl font-bold text-gray-800">3</div>
-          <div className="text-sm text-gray-500 mt-1 font-medium flex items-center justify-between">
+        <div className="bg-surface border border-divider rounded-card p-4 shadow-sm">
+          <div className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Awaiting Payment</div>
+          <div className="text-3xl font-bold text-ink">3</div>
+          <div className="text-sm text-ink-muted mt-1 font-medium flex items-center justify-between">
             ₺4,200 outstanding
-            <span className="text-xs text-red-600 font-bold ml-2 truncate">2 due before check-in</span>
+            <span className="text-xs text-danger-ink font-bold ml-2 truncate">2 due before check-in</span>
           </div>
         </div>
         {isAdmin && (
           <>
-            <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-              <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Monthly Revenue</div>
-              <div className="text-3xl font-bold text-gray-800">₺186,500</div>
+            <div className="bg-surface border border-divider rounded-card p-4 shadow-sm">
+              <div className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Monthly Revenue</div>
+              <div className="text-3xl font-bold text-ink">₺186,500</div>
               <div className="flex items-center justify-between mt-1">
-                <span className="text-sm text-gray-500 font-medium">Jul 2026</span>
-                <span className="text-xs text-green-600 font-bold">↑ 8% vs Jun</span>
+                <span className="text-sm text-ink-muted font-medium">Jul 2026</span>
+                <span className="text-xs text-success-ink font-bold">↑ 8% vs Jun</span>
               </div>
             </div>
-            <div className="bg-white border border-gray-300 rounded-xl p-5 shadow-sm">
-              <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Outstanding Balance</div>
-              <div className="text-3xl font-bold text-gray-800">₺24,800</div>
+            <div className="bg-surface border border-divider rounded-card p-4 shadow-sm">
+              <div className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Outstanding Balance</div>
+              <div className="text-3xl font-bold text-ink">₺24,800</div>
               <div className="flex items-center justify-between mt-1">
-                <span className="text-sm text-gray-500 font-medium">across 14 patients</span>
-                <span className="text-xs text-red-600 font-bold">3 overdue &gt; 30 days</span>
+                <span className="text-sm text-ink-muted font-medium">across 14 patients</span>
+                <span className="text-xs text-danger-ink font-bold">3 overdue &gt; 30 days</span>
               </div>
             </div>
           </>
@@ -149,76 +149,76 @@ export function BillingPage() {
       </div>
 
       {/* Main Layout */}
-      <div className="flex items-stretch border-t border-gray-200">
+      <div className="flex items-stretch border-t border-divider">
 
         {/* Left Table (Flex remaining width) */}
-        <div className="flex-1 border-r border-gray-200 bg-white flex flex-col min-w-0">
+        <div className="flex-1 border-r border-divider bg-surface flex flex-col min-w-0">
           <div className="relative">
-            <table className="w-full text-left border-collapse text-sm [&_th]:!px-2.5 [&_td]:!px-2.5">
-              <thead className="bg-gray-50 sticky top-0 z-20 shadow-[0_1px_0_#e5e7eb]">
+            <table className="w-full text-left border-collapse text-sm [&_th]:!px-3 [&_td]:!px-3">
+              <thead className="bg-surface-page sticky top-0 z-20 shadow-[0_1px_0_var(--border-strong)]">
                 <tr>
-                  <th className="p-4 font-bold text-gray-600 border-b border-gray-200 sticky left-0 z-30 bg-gray-50 w-[200px] shadow-[1px_0_0_#e5e7eb] cursor-pointer hover:bg-gray-100">Patient</th>
-                  <th className="p-4 font-bold text-gray-600 border-b border-gray-200 cursor-pointer hover:bg-gray-100 w-[140px]">Appointment</th>
-                  <th className="p-4 font-bold text-gray-600 border-b border-gray-200 cursor-pointer hover:bg-gray-100 w-[100px]">Clinician</th>
-                  <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-right cursor-pointer hover:bg-gray-100 w-[90px]">Amount</th>
-                  <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-right cursor-pointer hover:bg-gray-100 w-[90px]">Paid</th>
-                  <th className="p-4 font-bold text-gray-600 border-b border-gray-200 w-[80px]">Voucher</th>
-                  <th className="p-4 font-bold text-gray-600 border-b border-gray-200 w-[110px]">Payment Status</th>
-                  <th className="p-4 font-bold text-gray-600 border-b border-gray-200 w-[90px]">Method</th>
-                  <th className="p-4 font-bold text-gray-600 border-b border-gray-200 w-[100px]">Transaction</th>
-                  <th className="p-4 font-bold text-gray-600 border-b border-gray-200 w-[70px] text-center">Invoice</th>
-                  <th className="p-4 font-bold text-gray-600 border-b border-gray-200 cursor-pointer hover:bg-gray-100 w-[90px]">Date ▼</th>
-                  <th className="p-4 font-bold text-gray-600 border-b border-gray-200 w-[60px] text-center">Actions</th>
+                  <th className="p-4 font-bold text-ink-soft border-b border-divider sticky left-0 z-30 bg-surface-page w-[200px] shadow-[1px_0_0_var(--border-strong)] cursor-pointer hover:bg-surface-hover">Patient</th>
+                  <th className="p-4 font-bold text-ink-soft border-b border-divider cursor-pointer hover:bg-surface-hover w-[140px]">Appointment</th>
+                  <th className="p-4 font-bold text-ink-soft border-b border-divider cursor-pointer hover:bg-surface-hover w-[100px]">Clinician</th>
+                  <th className="p-4 font-bold text-ink-soft border-b border-divider text-right cursor-pointer hover:bg-surface-hover w-[90px]">Amount</th>
+                  <th className="p-4 font-bold text-ink-soft border-b border-divider text-right cursor-pointer hover:bg-surface-hover w-[90px]">Paid</th>
+                  <th className="p-4 font-bold text-ink-soft border-b border-divider w-[80px]">Voucher</th>
+                  <th className="p-4 font-bold text-ink-soft border-b border-divider w-[110px]">Payment Status</th>
+                  <th className="p-4 font-bold text-ink-soft border-b border-divider w-[90px]">Method</th>
+                  <th className="p-4 font-bold text-ink-soft border-b border-divider w-[100px]">Transaction</th>
+                  <th className="p-4 font-bold text-ink-soft border-b border-divider w-[70px] text-center">Invoice</th>
+                  <th className="p-4 font-bold text-ink-soft border-b border-divider cursor-pointer hover:bg-surface-hover w-[90px]">Date ▼</th>
+                  <th className="p-4 font-bold text-ink-soft border-b border-divider w-[60px] text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-divider">
                 {MOCK_DATA.map(rec => {
                   const isSelected = selectedRecordId === rec.id;
-                  
-                  let statusBg = "bg-gray-100 text-gray-700 border-gray-300";
-                  if (rec.status === 'Paid') statusBg = "bg-emerald-50 text-emerald-700 border-emerald-200";
-                  if (rec.status === 'Unpaid') statusBg = "bg-red-50 text-red-700 border-red-200";
-                  if (rec.status === 'Refunded') statusBg = "bg-purple-50 text-purple-700 border-purple-200";
 
-                  let rowBg = "bg-white hover:bg-slate-50";
-                  if (isSelected) rowBg = "bg-slate-50";
-                  else if (rec.isToday) rowBg = "bg-slate-50/50 hover:bg-slate-50";
+                  let statusBg = "bg-surface-hover text-ink-soft border-divider";
+                  if (rec.status === 'Paid') statusBg = "bg-success/10 text-success-ink border-success/30";
+                  if (rec.status === 'Unpaid') statusBg = "bg-danger/10 text-danger-ink border-danger/30";
+                  if (rec.status === 'Refunded') statusBg = "bg-special/10 text-special-ink border-special/30";
+
+                  let rowBg = "bg-surface hover:bg-surface-hover";
+                  if (isSelected) rowBg = "bg-surface-hover";
+                  else if (rec.isToday) rowBg = "bg-surface-page hover:bg-surface-hover";
 
                   return (
                     <tr key={rec.id} className={`group relative ${rowBg}`}>
-                      <td className={`p-4 border-r border-gray-200 sticky left-0 z-10 shadow-[1px_0_0_#e5e7eb] transition-colors ${isSelected ? 'bg-slate-50' : (rec.isToday ? 'bg-slate-50/50 group-hover:bg-slate-50' : 'bg-white group-hover:bg-slate-50')}`}>
+                      <td className={`p-4 border-r border-divider sticky left-0 z-10 shadow-[1px_0_0_var(--border-strong)] transition-colors ${isSelected ? 'bg-surface-hover' : (rec.isToday ? 'bg-surface-page group-hover:bg-surface-hover' : 'bg-surface group-hover:bg-surface-hover')}`}>
                         <div className="flex items-center">
-                          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-white shrink-0 mr-3">
+                          <div className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-xs font-bold text-ink-soft shrink-0 mr-3">
                             {rec.avatar}
                           </div>
-                          <Link to={`/patients/P-001`} onClick={e => e.stopPropagation()} className="text-sm font-bold text-gray-800 hover:underline hover:text-slate-600 block truncate">
+                          <Link to={`/patients/P-001`} onClick={e => e.stopPropagation()} className="text-sm font-bold text-ink hover:underline hover:text-ink-soft block truncate">
                             {rec.patientName}
                           </Link>
                         </div>
                       </td>
                       <td className="p-4">
-                        <div className="font-medium text-gray-800">{rec.apptType}</div>
-                        <div className="text-xs text-gray-500">{rec.apptDate}</div>
+                        <div className="font-medium text-ink">{rec.apptType}</div>
+                        <div className="text-xs text-ink-muted">{rec.apptDate}</div>
                       </td>
-                      <td className="p-4 text-gray-600">{rec.clinician}</td>
-                      <td className="p-4 text-right font-bold text-gray-800">{formatCurrency(rec.totalAmount)}</td>
-                      <td className="p-4 text-right font-bold text-emerald-600">{formatCurrency(rec.paidAmount)}</td>
+                      <td className="p-4 text-ink-soft">{rec.clinician}</td>
+                      <td className="p-4 text-right font-bold text-ink">{formatCurrency(rec.totalAmount)}</td>
+                      <td className="p-4 text-right font-bold text-success-ink">{formatCurrency(rec.paidAmount)}</td>
                       <td className="p-4">
                         {rec.voucher ? (
                           <div className="group/tooltip relative inline-block">
-                            <span className="text-xs font-bold text-blue-600 hover:underline cursor-help">{rec.voucher}</span>
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-gray-800 text-white text-xs p-3 rounded shadow-lg opacity-0 group-hover/tooltip:opacity-100 pointer-events-none z-50">
+                            <span className="text-xs font-bold text-info-ink hover:underline cursor-help">{rec.voucher}</span>
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-surface-sunken text-ink text-xs p-3 rounded-control shadow-lg opacity-0 group-hover/tooltip:opacity-100 pointer-events-none z-50">
                               Value: ₺5,000<br/>Remaining: ₺0<br/>Expires: 31 Dec 2026
                             </div>
                           </div>
                         ) : '—'}
                       </td>
                       <td className="p-4">
-                        <span className={`px-2.5 py-0.5 border text-[10px] font-bold uppercase tracking-wider rounded-full ${statusBg}`}>
+                        <span className={`px-3 py-1 border text-overline rounded-full ${statusBg}`}>
                           {rec.status}
                         </span>
                       </td>
-                      <td className="p-4 text-gray-600">
+                      <td className="p-4 text-ink-soft">
                         <div className="flex items-center text-xs font-medium">
                           {rec.method === 'Card' && <CreditCard className="w-3.5 h-3.5 mr-1" />}
                           {rec.method === 'Voucher' && <Ticket className="w-3.5 h-3.5 mr-1" />}
@@ -226,20 +226,20 @@ export function BillingPage() {
                         </div>
                       </td>
                       <td className="p-4">
-                        <span className="px-2 py-0.5 bg-gray-100 text-gray-600 border border-gray-200 text-[10px] font-bold rounded">
+                        <span className="px-2 py-1 bg-surface-hover text-ink-soft border border-divider text-label rounded-control">
                           {rec.transactionStatus}
                         </span>
                       </td>
                       <td className="p-4 text-center">
-                        {rec.invoiceStatus === 'Issued' && <span title="Issued" className="text-emerald-500">✅</span>}
-                        {rec.invoiceStatus === 'Pending' && <span title="Pending" className="text-orange-500">⏳</span>}
-                        {rec.invoiceStatus === 'Not required' && <span className="text-gray-300">—</span>}
+                        {rec.invoiceStatus === 'Issued' && <span title="Issued" className="text-success-ink">✅</span>}
+                        {rec.invoiceStatus === 'Pending' && <span title="Pending" className="text-warning-ink">⏳</span>}
+                        {rec.invoiceStatus === 'Not required' && <span className="text-ink-muted">—</span>}
                       </td>
-                      <td className="p-4 text-gray-600">{rec.fullDate}</td>
+                      <td className="p-4 text-ink-soft">{rec.fullDate}</td>
                       <td className="p-4 text-center">
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); setSelectedRecordId(rec.id); }} 
-                          className="p-1.5 text-gray-400 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors"
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setSelectedRecordId(rec.id); }}
+                          className="p-2 text-ink-muted hover:text-ink hover:bg-surface-sunken rounded-control transition-colors"
                         >
                           <MoreHorizontal className="w-4 h-4" />
                         </button>
@@ -248,154 +248,154 @@ export function BillingPage() {
                   );
                 })}
               </tbody>
-              <tfoot className="bg-gray-50 sticky bottom-0 z-20 shadow-[0_-1px_0_#e5e7eb]">
+              <tfoot className="bg-surface-page sticky bottom-0 z-20 shadow-[0_-1px_0_var(--border-strong)]">
                 <tr>
-                  <td className="p-4 font-bold text-gray-800 border-t border-gray-200 sticky left-0 z-30 bg-gray-50 shadow-[1px_0_0_#e5e7eb]">Totals</td>
-                  <td className="p-4 border-t border-gray-200"></td>
-                  <td className="p-4 border-t border-gray-200"></td>
-                  <td className="p-4 border-t border-gray-200 text-right font-bold text-gray-800">{formatCurrency(totalAmount)}</td>
-                  <td className="p-4 border-t border-gray-200 text-right font-bold text-emerald-600">{formatCurrency(totalPaid)}</td>
-                  <td className="p-4 border-t border-gray-200 font-bold text-red-600" colSpan={7}>
+                  <td className="p-4 font-bold text-ink border-t border-divider sticky left-0 z-30 bg-surface-page shadow-[1px_0_0_var(--border-strong)]">Totals</td>
+                  <td className="p-4 border-t border-divider"></td>
+                  <td className="p-4 border-t border-divider"></td>
+                  <td className="p-4 border-t border-divider text-right font-bold text-ink">{formatCurrency(totalAmount)}</td>
+                  <td className="p-4 border-t border-divider text-right font-bold text-success-ink">{formatCurrency(totalPaid)}</td>
+                  <td className="p-4 border-t border-divider font-bold text-danger-ink" colSpan={7}>
                     Balance: {formatCurrency(totalBalance)}
                   </td>
                 </tr>
               </tfoot>
             </table>
           </div>
-          
+
           {/* Footer / Pagination */}
-          <div className="h-12 border-t border-gray-200 bg-white flex items-center justify-between px-6 shrink-0">
-            <div className="text-xs text-gray-500 font-medium">Showing 1–8 of 89 records</div>
+          <div className="h-12 border-t border-divider bg-surface flex items-center justify-between px-6 shrink-0">
+            <div className="text-xs text-ink-muted font-medium">Showing 1–8 of 89 records</div>
             <div className="flex items-center space-x-1">
-              <button className="px-2 py-1 text-xs font-bold text-gray-400 hover:text-gray-700 border border-transparent hover:bg-gray-200 rounded transition-colors" disabled>Previous</button>
-              <button className="px-2 py-1 text-xs font-bold text-slate-600 border border-slate-300 bg-gray-50 rounded shadow-sm">1</button>
-              <button className="px-2 py-1 text-xs font-bold text-gray-600 hover:text-gray-800 border border-transparent hover:bg-gray-200 rounded transition-colors">Next</button>
+              <button className="px-2 py-1 text-xs font-bold text-ink-muted hover:text-ink-soft border border-transparent hover:bg-surface-sunken rounded-control transition-colors" disabled>Previous</button>
+              <button className="px-2 py-1 text-xs font-bold text-ink-soft border border-divider bg-surface-page rounded-control shadow-sm">1</button>
+              <button className="px-2 py-1 text-xs font-bold text-ink-soft hover:text-ink border border-transparent hover:bg-surface-sunken rounded-control transition-colors">Next</button>
             </div>
           </div>
         </div>
 
         {/* Right Detail Panel (approx 380px) */}
         {selectedRecord && (
-          <div className="w-[380px] bg-gray-50 flex flex-col overflow-hidden relative shrink-0 border-l border-gray-200">
+          <div className="w-[380px] bg-surface-page flex flex-col overflow-hidden relative shrink-0 border-l border-divider">
             <div className="flex-1 overflow-y-auto">
-              <div className="p-6 bg-white border-b border-gray-200">
+              <div className="p-4 bg-surface border-b border-divider">
                 {/* Top Meta */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-sm font-bold text-white shrink-0 mr-3">
+                    <div className="w-10 h-10 rounded-full bg-surface-sunken flex items-center justify-center text-sm font-bold text-ink-soft shrink-0 mr-3">
                       {selectedRecord.avatar}
                     </div>
                     <div>
-                      <div className="font-bold text-gray-800 text-sm mb-0.5">{selectedRecord.patientName}</div>
-                      <Link to={`/patients/P-001`} className="text-[10px] font-bold text-slate-600 hover:underline uppercase tracking-wider">
+                      <div className="font-bold text-ink text-sm mb-1">{selectedRecord.patientName}</div>
+                      <Link to={`/patients/P-001`} className="text-overline text-ink-soft hover:underline">
                         View Patient Record →
                       </Link>
                     </div>
                   </div>
-                  <button onClick={() => setSelectedRecordId(null)} className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors">
+                  <button onClick={() => setSelectedRecordId(null)} className="p-2 text-ink-muted hover:text-ink-soft hover:bg-surface-hover rounded-full transition-colors">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
 
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm">
-                  <div className="font-bold text-gray-800 mb-1">{selectedRecord.apptType}</div>
-                  <div className="text-gray-600 flex items-center">
-                    <CalendarIcon className="w-3.5 h-3.5 mr-1.5" /> {selectedRecord.fullDate}
-                    <span className="mx-2 text-gray-300">|</span>
+                <div className="bg-surface-page border border-divider rounded-card p-3 text-sm">
+                  <div className="font-bold text-ink mb-1">{selectedRecord.apptType}</div>
+                  <div className="text-ink-soft flex items-center">
+                    <CalendarIcon className="w-3.5 h-3.5 mr-2" /> {selectedRecord.fullDate}
+                    <span className="mx-2 text-ink-muted">|</span>
                     {selectedRecord.clinician}
                   </div>
                 </div>
               </div>
 
               {/* Line Items */}
-              <div className="p-6 border-b border-gray-200 bg-white">
-                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Line Items</h4>
+              <div className="p-4 border-b border-divider bg-surface">
+                <h4 className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-4">Line Items</h4>
                 <table className="w-full text-sm text-left">
                   <thead>
-                    <tr className="border-b border-gray-100 text-gray-500">
+                    <tr className="border-b border-divider text-ink-muted">
                       <th className="pb-2 font-medium">Item</th>
                       <th className="pb-2 font-medium text-center">Qty</th>
                       <th className="pb-2 font-medium text-right">Total</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
+                  <tbody className="divide-y divide-divider">
                     <tr>
-                      <td className="py-3 text-gray-800 font-medium">{selectedRecord.apptType}</td>
-                      <td className="py-3 text-center text-gray-600">1</td>
-                      <td className="py-3 text-right text-gray-800 font-medium">{formatCurrency(selectedRecord.totalAmount)}</td>
+                      <td className="py-3 text-ink font-medium">{selectedRecord.apptType}</td>
+                      <td className="py-3 text-center text-ink-soft">1</td>
+                      <td className="py-3 text-right text-ink font-medium">{formatCurrency(selectedRecord.totalAmount)}</td>
                     </tr>
                     {selectedRecord.voucher && (
                       <tr>
-                        <td className="py-3 text-gray-600">Voucher Discount ({selectedRecord.voucher})</td>
-                        <td className="py-3 text-center text-gray-600"></td>
-                        <td className="py-3 text-right text-emerald-600 font-medium">−₺5,000</td>
+                        <td className="py-3 text-ink-soft">Voucher Discount ({selectedRecord.voucher})</td>
+                        <td className="py-3 text-center text-ink-soft"></td>
+                        <td className="py-3 text-right text-success-ink font-medium">−₺5,000</td>
                       </tr>
                     )}
                     <tr>
-                      <td className="pt-3 font-bold text-gray-800">Total</td>
+                      <td className="pt-3 font-bold text-ink">Total</td>
                       <td className="pt-3"></td>
-                      <td className="pt-3 text-right font-bold text-gray-800">{formatCurrency(selectedRecord.totalAmount)}</td>
+                      <td className="pt-3 text-right font-bold text-ink">{formatCurrency(selectedRecord.totalAmount)}</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
 
               {/* Payment History */}
-              <div className="p-6">
-                <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Payment History</h4>
+              <div className="p-4">
+                <h4 className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-4">Payment History</h4>
                 <div className="space-y-4 relative">
-                  <div className="absolute left-2.5 top-2 bottom-2 w-px bg-gray-200"></div>
-                  
+                  <div className="absolute left-3 top-2 bottom-2 w-px bg-surface-sunken"></div>
+
                   {selectedRecord.paidAmount > 0 ? (
                     <div className="flex items-start relative z-10">
-                      <div className="w-5 h-5 rounded-full bg-emerald-100 border-2 border-white flex items-center justify-center shrink-0 mt-0.5 mr-3">
-                        <div className="w-2 h-2 bg-emerald-500 rounded-full"></div>
+                      <div className="w-5 h-5 rounded-full bg-success/15 border-2 border-white flex items-center justify-center shrink-0 mt-1 mr-3">
+                        <div className="w-2 h-2 bg-success rounded-full"></div>
                       </div>
-                      <div className="flex-1 bg-white border border-gray-200 rounded p-3 shadow-sm">
+                      <div className="flex-1 bg-surface border border-divider rounded-control p-3 shadow-sm">
                         <div className="flex justify-between items-start mb-1">
-                          <span className="font-bold text-gray-800 text-sm">{formatCurrency(selectedRecord.paidAmount)}</span>
-                          <span className="text-[10px] text-gray-400 font-medium">{selectedRecord.fullDate}, 09:15</span>
+                          <span className="font-bold text-ink text-sm">{formatCurrency(selectedRecord.paidAmount)}</span>
+                          <span className="text-label text-ink-muted font-medium">{selectedRecord.fullDate}, 09:15</span>
                         </div>
-                        <div className="text-xs text-gray-600 flex flex-wrap items-center gap-1.5">
+                        <div className="text-xs text-ink-soft flex flex-wrap items-center gap-2">
                           <span className="font-medium">{selectedRecord.method} payment</span>
-                          <span className="text-gray-300">·</span>
-                          <span className="text-emerald-600 font-medium">{selectedRecord.transactionStatus}</span>
+                          <span className="text-ink-muted">·</span>
+                          <span className="text-success-ink font-medium">{selectedRecord.transactionStatus}</span>
                         </div>
                       </div>
                     </div>
                   ) : (
                     <div className="flex items-start relative z-10">
-                      <div className="w-5 h-5 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center shrink-0 mt-0.5 mr-3"></div>
-                      <div className="text-sm text-gray-500 italic mt-0.5">No payments recorded yet.</div>
+                      <div className="w-5 h-5 rounded-full bg-surface-hover border-2 border-white flex items-center justify-center shrink-0 mt-1 mr-3"></div>
+                      <div className="text-sm text-ink-muted italic mt-1">No payments recorded yet.</div>
                     </div>
                   )}
 
                   {selectedRecord.transactionStatus === 'Refund Pending' && (
                     <div className="flex items-start relative z-10">
-                      <div className="w-5 h-5 rounded-full bg-purple-100 border-2 border-white flex items-center justify-center shrink-0 mt-0.5 mr-3">
-                        <RefreshCcw className="w-3 h-3 text-purple-600" />
+                      <div className="w-5 h-5 rounded-full bg-special/15 border-2 border-white flex items-center justify-center shrink-0 mt-1 mr-3">
+                        <RefreshCcw className="w-3 h-3 text-special-ink" />
                       </div>
-                      <div className="flex-1 bg-white border border-gray-200 rounded p-3 shadow-sm">
+                      <div className="flex-1 bg-surface border border-divider rounded-control p-3 shadow-sm">
                         <div className="flex justify-between items-start mb-1">
-                          <span className="font-bold text-gray-800 text-sm">Refund requested: {formatCurrency(selectedRecord.totalAmount)}</span>
-                          <span className="text-[10px] text-gray-400 font-medium">{selectedRecord.refundRequestedAt}</span>
+                          <span className="font-bold text-ink text-sm">Refund requested: {formatCurrency(selectedRecord.totalAmount)}</span>
+                          <span className="text-label text-ink-muted font-medium">{selectedRecord.refundRequestedAt}</span>
                         </div>
-                        <div className="text-xs text-purple-600 font-medium">Awaiting Admin decision</div>
+                        <div className="text-xs text-special-ink font-medium">Awaiting Admin decision</div>
                       </div>
                     </div>
                   )}
 
                   {selectedRecord.status === 'Refunded' && (
                     <div className="flex items-start relative z-10">
-                      <div className="w-5 h-5 rounded-full bg-purple-100 border-2 border-white flex items-center justify-center shrink-0 mt-0.5 mr-3">
-                        <RefreshCcw className="w-3 h-3 text-purple-600" />
+                      <div className="w-5 h-5 rounded-full bg-special/15 border-2 border-white flex items-center justify-center shrink-0 mt-1 mr-3">
+                        <RefreshCcw className="w-3 h-3 text-special-ink" />
                       </div>
-                      <div className="flex-1 bg-white border border-gray-200 rounded p-3 shadow-sm">
+                      <div className="flex-1 bg-surface border border-divider rounded-control p-3 shadow-sm">
                         <div className="flex justify-between items-start mb-1">
-                          <span className="font-bold text-gray-800 text-sm">Refund: {formatCurrency(selectedRecord.totalAmount)}</span>
-                          <span className="text-[10px] text-gray-400 font-medium">{selectedRecord.fullDate}, 14:20</span>
+                          <span className="font-bold text-ink text-sm">Refund: {formatCurrency(selectedRecord.totalAmount)}</span>
+                          <span className="text-label text-ink-muted font-medium">{selectedRecord.fullDate}, 14:20</span>
                         </div>
-                        <div className="text-xs text-purple-600 font-medium">Refund Completed</div>
+                        <div className="text-xs text-special-ink font-medium">Refund Completed</div>
                       </div>
                     </div>
                   )}
@@ -404,30 +404,30 @@ export function BillingPage() {
             </div>
 
             {/* Action Bar (Sticky Bottom) */}
-            <div className="p-6 bg-white border-t border-gray-200 shrink-0">
+            <div className="p-4 bg-surface border-t border-divider shrink-0">
               <div className="flex justify-between items-center mb-4">
                 {selectedRecord.balance > 0 ? (
-                  <div className="text-xl font-bold text-red-600">Balance: {formatCurrency(selectedRecord.balance)}</div>
+                  <div className="text-xl font-bold text-danger-ink">Balance: {formatCurrency(selectedRecord.balance)}</div>
                 ) : (
-                  <div className="text-xl font-bold text-emerald-600 flex items-center">Fully Paid <CheckCircle2 className="w-5 h-5 ml-1.5" /></div>
+                  <div className="text-xl font-bold text-success-ink flex items-center">Fully Paid <CheckCircle2 className="w-5 h-5 ml-1.5" /></div>
                 )}
               </div>
-              
+
               <div className="grid grid-cols-2 gap-2">
                 {isAdmin ? (
-                  <button onClick={() => handleAction('Issue Refund')} className="py-2.5 border border-purple-200 bg-purple-50 text-purple-700 text-xs font-bold rounded-lg hover:bg-purple-100 transition-colors shadow-sm">
+                  <button onClick={() => handleAction('Issue Refund')} className="py-3 border border-special/30 bg-special/10 text-special-ink text-xs font-bold rounded-control hover:bg-special/15 transition-colors shadow-sm">
                     Issue Refund
                   </button>
                 ) : (
                   <button
                     disabled
                     title="Only Admin can issue refunds"
-                    className="py-2.5 border border-gray-200 bg-gray-50 text-gray-400 text-xs font-bold rounded-lg cursor-not-allowed"
+                    className="py-3 border border-divider bg-surface-page text-ink-muted text-xs font-bold rounded-control cursor-not-allowed"
                   >
                     Issue Refund
                   </button>
                 )}
-                <button onClick={() => handleAction('Generate Invoice')} className="py-2.5 border border-gray-300 bg-white text-gray-700 text-xs font-bold rounded-lg hover:bg-gray-50 transition-colors shadow-sm">
+                <button onClick={() => handleAction('Generate Invoice')} className="py-3 border border-divider bg-surface text-ink-soft text-xs font-bold rounded-control hover:bg-surface-hover transition-colors shadow-sm">
                   Generate Invoice
                 </button>
               </div>

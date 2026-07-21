@@ -64,16 +64,16 @@ export function EmptySlotPopover({
       ref={ref}
       role="dialog"
       aria-label="New booking"
-      className="fixed z-50 w-[272px] bg-white border border-gray-200 rounded-xl shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-150"
+      className="fixed z-50 w-[272px] bg-surface border border-divider rounded-card shadow-2xl p-4 animate-in fade-in zoom-in-95 duration-150"
       style={{ left, top }}
     >
       <div className="flex items-start gap-2.5">
-        <span className="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+        <span className="w-8 h-8 rounded-card bg-surface-hover text-ink-soft flex items-center justify-center shrink-0">
           <CalendarPlus className="w-4 h-4" />
         </span>
         <div className="min-w-0">
-          <div className="text-sm font-bold text-gray-800 leading-tight">New booking</div>
-          <div className="text-xs text-gray-500 mt-1 leading-snug">
+          <div className="text-sm font-bold text-ink leading-tight">New booking</div>
+          <div className="text-xs text-ink-muted mt-1 leading-snug">
             {format(date, "EEE d MMM")}, {minToClock(target.startMin)}
             <br />
             {target.colLabel}
@@ -84,22 +84,22 @@ export function EmptySlotPopover({
       {/* Soft warning — never blocks. Same rule as the toolbar's create action:
           the clinic can knowingly book outside working hours. */}
       {target.outsideHours && (
-        <div className="mt-3 flex items-start gap-1.5 rounded-lg bg-amber-50 border border-amber-200 px-2.5 py-2">
-          <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-px" />
-          <span className="text-[11px] font-semibold text-amber-700 leading-snug">Outside working hours</span>
+        <div className="mt-3 flex items-start gap-1.5 rounded-card bg-warning/10 border border-warning/30 px-2.5 py-2">
+          <AlertTriangle className="w-3.5 h-3.5 text-warning-ink shrink-0 mt-px" />
+          <span className="text-label font-semibold text-warning-ink leading-snug">Outside working hours</span>
         </div>
       )}
 
       <div className="flex justify-end gap-2 mt-3">
         <button
           onClick={onCancel}
-          className="min-h-11 px-3 py-2 text-xs font-bold text-gray-500 hover:text-gray-800 transition-colors"
+          className="min-h-11 px-3 py-2 text-xs font-bold text-ink-muted hover:text-ink transition-colors"
         >
           Cancel
         </button>
         <button
           onClick={onConfirm}
-          className="min-h-11 px-3.5 py-2 rounded-lg text-xs font-bold text-white bg-slate-700 hover:bg-slate-800 transition-colors shadow-sm"
+          className="min-h-11 px-3.5 py-2 rounded-card text-xs font-bold text-white bg-ink hover:bg-surface-sunken transition-colors shadow-sm"
         >
           Create booking
         </button>

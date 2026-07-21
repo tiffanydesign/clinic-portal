@@ -51,19 +51,19 @@ function ImportConfirmModal({
   const excludedText = excludedParts.join(" and ");
 
   return (
-    <div className="fixed inset-0 z-[60] bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-6" onClick={onCancel}>
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[60] bg-surface-sunken/40 backdrop-blur-sm flex items-center justify-center p-6" onClick={onCancel}>
+      <div className="bg-surface rounded-card shadow-2xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
         <div className="p-6">
-          <h2 className="text-base font-bold text-gray-800 mb-1.5">Import {validCount} staff member{validCount === 1 ? "" : "s"}?</h2>
-          <p className="text-sm text-gray-500 leading-relaxed">
+          <h2 className="text-base font-bold text-ink mb-1.5">Import {validCount} staff member{validCount === 1 ? "" : "s"}?</h2>
+          <p className="text-sm text-ink-muted leading-relaxed">
             Only the {validCount} valid row{validCount === 1 ? "" : "s"} will be imported and sent invitations. The {excludedText} will be skipped.
           </p>
         </div>
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
-          <button onClick={onCancel} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100">
+        <div className="px-6 py-4 bg-surface-page border-t border-divider flex justify-end gap-3">
+          <button onClick={onCancel} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">
             Cancel
           </button>
-          <button onClick={onConfirm} className="px-5 py-2 rounded text-sm font-bold text-white bg-slate-600 hover:bg-slate-700 transition-colors">
+          <button onClick={onConfirm} className="px-5 py-2 rounded-control text-sm font-bold text-white bg-ink hover:bg-surface-sunken transition-colors">
             Import &amp; Send Invitations
           </button>
         </div>
@@ -179,11 +179,11 @@ export function ImportStaffModal({ onClose, onImported }: { onClose: () => void;
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-6">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
-        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 shrink-0">
-          <h2 className="text-lg font-bold text-gray-800">Import Staff Members</h2>
-          <button onClick={onClose} className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors">
+    <div className="fixed inset-0 bg-surface-sunken/40 backdrop-blur-sm flex items-center justify-center z-50 p-6">
+      <div className="bg-surface rounded-card shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
+        <div className="px-6 py-4 border-b border-divider flex justify-between items-center bg-surface-page shrink-0">
+          <h2 className="text-lg font-bold text-ink">Import Staff Members</h2>
+          <button onClick={onClose} className="p-1.5 text-ink-muted hover:text-ink-soft hover:bg-surface-sunken rounded-full transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -195,23 +195,23 @@ export function ImportStaffModal({ onClose, onImported }: { onClose: () => void;
               onDragLeave={() => setDragOver(false)}
               onDrop={(e) => { e.preventDefault(); simulateUpload(); }}
               onClick={simulateUpload}
-              className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${processing ? "border-gray-200 cursor-wait" : dragOver ? "border-slate-500 bg-slate-50 cursor-pointer" : "border-gray-300 hover:border-slate-400 cursor-pointer"}`}
+              className={`border-2 border-dashed rounded-card p-4 text-center transition-colors ${processing ? "border-divider cursor-wait" : dragOver ? "border-border-strong bg-surface-page cursor-pointer" : "border-divider hover:border-border-strong cursor-pointer"}`}
             >
               {processing ? (
                 <>
-                  <Loader2 className="w-8 h-8 text-slate-400 mx-auto mb-2 animate-spin" />
-                  <p className="text-sm font-bold text-gray-700">Processing {MOCK_FILE_NAME}...</p>
-                  <p className="text-xs text-gray-400 mt-1">Reading rows and checking for existing staff</p>
+                  <Loader2 className="w-8 h-8 text-ink-muted mx-auto mb-2 animate-spin" />
+                  <p className="text-sm font-bold text-ink-soft">Processing {MOCK_FILE_NAME}...</p>
+                  <p className="text-xs text-ink-muted mt-1">Reading rows and checking for existing staff</p>
                 </>
               ) : (
                 <>
-                  <UploadCloud className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm font-bold text-gray-700">Upload a CSV file</p>
-                  <p className="text-xs text-gray-400 mt-1">{fileName || "Drag and drop, or click to browse"}</p>
+                  <UploadCloud className="w-8 h-8 text-ink-muted mx-auto mb-2" />
+                  <p className="text-sm font-bold text-ink-soft">Upload a CSV file</p>
+                  <p className="text-xs text-ink-muted mt-1">{fileName || "Drag and drop, or click to browse"}</p>
                 </>
               )}
             </div>
-            <button onClick={downloadTemplate} className="flex items-center gap-1.5 text-sm font-semibold text-[#0077B6] hover:text-slate-800 transition-colors">
+            <button onClick={downloadTemplate} className="flex items-center gap-1.5 text-sm font-semibold text-brand-ink hover:text-ink transition-colors">
               <Download className="w-3.5 h-3.5" /> Download CSV template
             </button>
           </div>
@@ -219,33 +219,33 @@ export function ImportStaffModal({ onClose, onImported }: { onClose: () => void;
           {entries.length > 0 && (
             <div className="pt-2">
               <div className="flex items-center justify-between mb-2">
-                <div className="text-xs font-bold text-gray-500 uppercase tracking-wider">Preview</div>
-                <div className="text-xs font-medium text-gray-500">
+                <div className="text-xs font-bold text-ink-muted uppercase tracking-wider">Preview</div>
+                <div className="text-xs font-medium text-ink-muted">
                   {validEntries.length} valid · {skippedCount} skipped (already exist) · {errorCount} error{errorCount === 1 ? "" : "s"}
                 </div>
               </div>
-              <div className="border border-gray-200 rounded-lg divide-y divide-gray-100 max-h-64 overflow-y-auto">
+              <div className="border border-divider rounded-card divide-y divide-divider max-h-64 overflow-y-auto">
                 {entries.map((e) => (
                   <div key={e.key} className="flex items-center gap-3 px-3 py-2.5">
                     <div className="flex-1 min-w-0">
-                      <div className={`text-sm font-medium truncate ${e.status === "invalid" ? "text-red-600" : "text-gray-800"}`}>
+                      <div className={`text-sm font-medium truncate ${e.status === "invalid" ? "text-danger-ink" : "text-ink"}`}>
                         {e.firstName && e.lastName ? `${e.firstName} ${e.lastName} · ` : ""}{e.email}
                       </div>
-                      {e.status === "duplicate" && <div className="text-[11px] text-orange-600 font-semibold mt-0.5">Already exists</div>}
-                      {e.status === "invalid" && <div className="text-[11px] text-red-500 font-semibold mt-0.5">Invalid email format</div>}
+                      {e.status === "duplicate" && <div className="text-label text-warning-ink font-semibold mt-0.5">Already exists</div>}
+                      {e.status === "invalid" && <div className="text-label text-danger-ink font-semibold mt-0.5">Invalid email format</div>}
                     </div>
                     {e.status === "valid" && (
                       <select
                         value={e.role}
                         onChange={(ev) => updateRole(e.key, ev.target.value as StaffRole)}
-                        className="px-2 py-1 border border-gray-300 rounded text-xs bg-white outline-none focus:border-slate-500"
+                        className="px-2 py-1 border border-divider rounded-control text-xs bg-surface outline-none focus:border-border-strong"
                       >
                         {ROLE_OPTIONS.map((r) => (
                           <option key={r}>{r}</option>
                         ))}
                       </select>
                     )}
-                    <button onClick={() => removeEntry(e.key)} className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors shrink-0" title="Remove">
+                    <button onClick={() => removeEntry(e.key)} className="p-1.5 text-ink-muted hover:text-danger-ink hover:bg-danger/10 rounded-control transition-colors shrink-0" title="Remove">
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -255,18 +255,18 @@ export function ImportStaffModal({ onClose, onImported }: { onClose: () => void;
           )}
         </div>
 
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between shrink-0">
-          <div className="text-xs font-medium text-gray-500">
+        <div className="px-6 py-4 bg-surface-page border-t border-divider flex items-center justify-between shrink-0">
+          <div className="text-xs font-medium text-ink-muted">
             {entries.length > 0 && `${validEntries.length} valid · ${skippedCount} skipped · ${errorCount} error${errorCount === 1 ? "" : "s"}`}
           </div>
           <div className="flex gap-3">
-            <button onClick={onClose} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100">
+            <button onClick={onClose} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">
               Cancel
             </button>
             <button
               onClick={handleImportClick}
               disabled={validEntries.length === 0}
-              className={`px-6 py-2 rounded text-sm font-bold text-white transition-colors ${validEntries.length > 0 ? "bg-slate-600 hover:bg-slate-700" : "bg-gray-300 cursor-not-allowed"}`}
+              className={`px-6 py-2 rounded-control text-sm font-bold text-white transition-colors ${validEntries.length > 0 ? "bg-surface-sunken hover:bg-surface-sunken" : "bg-surface-sunken cursor-not-allowed"}`}
             >
               Import &amp; Send Invitations
             </button>

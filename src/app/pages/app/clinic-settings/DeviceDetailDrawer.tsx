@@ -17,8 +17,8 @@ const TYPE_ICON: Record<string, LucideIcon> = { "Scan Device": ScanLine, TV: Tv,
 function KV({ label, value, mono }: { label: string; value: React.ReactNode; mono?: boolean }) {
   return (
     <div className="flex justify-between gap-3 py-1.5">
-      <span className="text-sm text-gray-500 shrink-0">{label}</span>
-      <span className={`text-sm font-semibold text-gray-800 text-right ${mono ? "font-mono tracking-wide" : ""}`}>{value}</span>
+      <span className="text-sm text-ink-muted shrink-0">{label}</span>
+      <span className={`text-sm font-semibold text-ink text-right ${mono ? "font-mono tracking-wide" : ""}`}>{value}</span>
     </div>
   );
 }
@@ -34,21 +34,21 @@ function TerminalStripeBlock({ view }: { view: DeviceView }) {
   const needsAttention = view.status === "needs-attention";
   if (!needsAttention && pending.length === 0) return null;
   return (
-    <div className="rounded-lg border border-amber-200 bg-amber-50/60 p-4 space-y-3">
+    <div className="rounded-card border border-warning/30 bg-warning/10 p-4 space-y-3">
       <div className="flex items-center gap-2">
-        <AlertTriangle className="w-4 h-4 text-amber-600" />
-        <h3 className="text-xs font-bold text-amber-800 uppercase tracking-wider">Needs attention</h3>
+        <AlertTriangle className="w-4 h-4 text-warning-ink" />
+        <h3 className="text-xs font-bold text-warning-ink uppercase tracking-wider">Needs attention</h3>
       </div>
-      {needsAttention && <p className="text-xs text-amber-800/90">This reader is offline and has unresolved activity. Check its connection at the desk.</p>}
+      {needsAttention && <p className="text-xs text-warning-ink/90">This reader is offline and has unresolved activity. Check its connection at the desk.</p>}
       {pending.length > 0 && (
-        <div className="border border-amber-200 rounded-lg divide-y divide-amber-100 bg-white">
+        <div className="border border-warning/30 rounded-card divide-y divide-warning/30 bg-surface">
           {pending.map((tx, i) => (
             <div key={i} className="px-3 py-2 flex items-center justify-between gap-3">
               <div className="min-w-0">
-                <div className="text-sm font-bold text-gray-800 truncate">{tx.patient}</div>
-                <div className="text-xs text-gray-500">{tx.initiatedAt} · {tx.status}</div>
+                <div className="text-sm font-bold text-ink truncate">{tx.patient}</div>
+                <div className="text-xs text-ink-muted">{tx.initiatedAt} · {tx.status}</div>
               </div>
-              <div className="text-sm font-bold text-gray-800 shrink-0">{tx.amount}</div>
+              <div className="text-sm font-bold text-ink shrink-0">{tx.amount}</div>
             </div>
           ))}
         </div>
@@ -97,22 +97,22 @@ export function DeviceDetailDrawer({ view, onClose }: { view: DeviceView; onClos
       footer={
         view.retired ? (
           <button onClick={() => { restoreDevice(view.id); toast.success(`${view.label} restored.`); onClose(); }}
-            className="px-5 py-2 rounded-lg text-sm font-bold text-white bg-slate-600 hover:bg-slate-700 flex items-center gap-2">
+            className="px-5 py-2 rounded-card text-sm font-bold text-white bg-ink hover:bg-surface-sunken flex items-center gap-2">
             <RotateCcw className="w-4 h-4" /> Restore device
           </button>
         ) : (
           <div className="flex justify-between items-center w-full">
             {isTerminal ? (
-              <button onClick={() => setRemoveStage(true)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold text-red-600 border border-red-200 bg-white hover:bg-red-50 transition-colors">
+              <button onClick={() => setRemoveStage(true)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-card text-sm font-bold text-danger-ink border border-danger/30 bg-surface hover:bg-danger/10 transition-colors">
                 <Trash2 className="w-4 h-4" /> Remove terminal
               </button>
             ) : (
-              <button onClick={() => setConfirmRetire(true)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold text-red-600 border border-red-200 bg-white hover:bg-red-50 transition-colors">
+              <button onClick={() => setConfirmRetire(true)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-card text-sm font-bold text-danger-ink border border-danger/30 bg-surface hover:bg-danger/10 transition-colors">
                 <Archive className="w-4 h-4" /> Retire device
               </button>
             )}
             {dirty && (
-              <button onClick={saveEdits} className="px-5 py-2 rounded-lg text-sm font-bold text-white bg-slate-600 hover:bg-slate-700">Save changes</button>
+              <button onClick={saveEdits} className="px-5 py-2 rounded-card text-sm font-bold text-white bg-ink hover:bg-surface-sunken">Save changes</button>
             )}
           </div>
         )
@@ -120,19 +120,19 @@ export function DeviceDetailDrawer({ view, onClose }: { view: DeviceView; onClos
     >
       <div className="space-y-5">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
-            <Icon className="w-5 h-5 text-slate-600" />
+          <div className="w-11 h-11 rounded-card bg-surface-hover flex items-center justify-center shrink-0">
+            <Icon className="w-5 h-5 text-ink-soft" />
           </div>
           <div className="flex items-center gap-2 flex-wrap">
             <StatusPillFor view={view} />
             {view.retired && <Pill tone="gray">Retired</Pill>}
-            <span className="text-xs text-gray-400">Last seen {view.lastSeen}</span>
+            <span className="text-xs text-ink-muted">Last seen {view.lastSeen}</span>
           </div>
         </div>
 
         {!view.retired && (
           <Field label="Assigned room" hint="Change takes effect immediately.">
-            <select value={roomValue} onChange={(e) => reassign(e.target.value)} className={`${inputCls} bg-white`}>
+            <select value={roomValue} onChange={(e) => reassign(e.target.value)} className={`${inputCls} bg-surface`}>
               <option value="">Unassigned</option>
               {rooms.map((r) => <option key={r.id} value={r.id}>{r.name} · {r.type}</option>)}
             </select>
@@ -141,7 +141,7 @@ export function DeviceDetailDrawer({ view, onClose }: { view: DeviceView; onClos
 
         {isTerminal && <TerminalStripeBlock view={view} />}
 
-        <div className="rounded-lg border border-gray-200 divide-y divide-gray-100 px-4">
+        <div className="rounded-card border border-divider divide-y divide-divider px-4">
           <KV label="Model" value={view.model} />
           <KV label="Short code" value={view.shortCode} mono />
           <KV label="Type" value={view.type} />
@@ -156,7 +156,7 @@ export function DeviceDetailDrawer({ view, onClose }: { view: DeviceView; onClos
           <Field label="Notes"><textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Optional…" className={inputCls} /></Field>
         )}
 
-        <div className="pt-2 border-t border-gray-100">
+        <div className="pt-2 border-t border-divider">
           <ActivitySection entityId={view.id} />
         </div>
       </div>
@@ -179,11 +179,11 @@ export function DeviceDetailDrawer({ view, onClose }: { view: DeviceView; onClos
           body={
             pending.length > 0 ? (
               <div className="space-y-2">
-                <div className="border border-gray-200 rounded-lg divide-y divide-gray-100">
+                <div className="border border-divider rounded-card divide-y divide-divider">
                   {pending.map((tx, i) => (
                     <div key={i} className="px-3 py-2 flex items-center justify-between gap-3">
-                      <div className="min-w-0"><div className="text-sm font-bold text-gray-800 truncate">{tx.patient}</div><div className="text-xs text-gray-500">{tx.initiatedAt} · {tx.status}</div></div>
-                      <div className="text-sm font-bold text-gray-800 shrink-0">{tx.amount}</div>
+                      <div className="min-w-0"><div className="text-sm font-bold text-ink truncate">{tx.patient}</div><div className="text-xs text-ink-muted">{tx.initiatedAt} · {tx.status}</div></div>
+                      <div className="text-sm font-bold text-ink shrink-0">{tx.amount}</div>
                     </div>
                   ))}
                 </div>

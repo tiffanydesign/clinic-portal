@@ -9,9 +9,9 @@ const DURATIONS: LeaveDuration[] = ["Full Day", "Morning", "Afternoon"];
 
 function Segmented<T extends string>({ value, options, onChange }: { value: T; options: T[]; onChange: (v: T) => void }) {
   return (
-    <div className="inline-flex bg-gray-100 rounded p-0.5 border border-gray-200 w-full">
+    <div className="inline-flex bg-surface-hover rounded-control p-0.5 border border-divider w-full">
       {options.map((o) => (
-        <button key={o} onClick={() => onChange(o)} className={`flex-1 px-3 py-1.5 text-xs font-bold rounded transition-colors ${value === o ? "bg-white text-slate-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
+        <button key={o} onClick={() => onChange(o)} className={`flex-1 px-3 py-1.5 text-xs font-bold rounded-control transition-colors ${value === o ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted hover:text-ink-soft"}`}>
           {o === "Morning" ? "Morning (until 1pm)" : o === "Afternoon" ? "Afternoon (from 1pm)" : o}
         </button>
       ))}
@@ -42,17 +42,17 @@ export function LeaveRequestModal({ onClose, onSubmit, initialDate }: {
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-2xl border border-gray-200 w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95">
-        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 shrink-0">
-          <h2 className="text-lg font-bold text-gray-800">New Leave Request</h2>
-          <button onClick={onClose} className="p-2 text-gray-500 hover:bg-gray-200 rounded-full transition-colors"><X className="w-5 h-5" /></button>
+    <div className="fixed inset-0 bg-surface-sunken/30 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-surface rounded-card shadow-2xl border border-divider w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95">
+        <div className="px-6 py-4 border-b border-divider flex justify-between items-center bg-surface-page shrink-0">
+          <h2 className="text-lg font-bold text-ink">New Leave Request</h2>
+          <button onClick={onClose} className="p-2 text-ink-muted hover:bg-surface-sunken rounded-full transition-colors"><X className="w-5 h-5" /></button>
         </div>
 
         <div className="p-6 space-y-5">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">From</label>
+              <label className="block text-xs font-bold text-ink-soft uppercase tracking-wider mb-1.5">From</label>
               <FilterSelect
                 value={dateFrom}
                 onChange={(v) => { setDateFrom(v); if (DATE_OPTIONS.indexOf(v) > toIdx) setDateTo(v); }}
@@ -61,34 +61,34 @@ export function LeaveRequestModal({ onClose, onSubmit, initialDate }: {
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">To</label>
+              <label className="block text-xs font-bold text-ink-soft uppercase tracking-wider mb-1.5">To</label>
               <FilterSelect value={dateTo} onChange={setDateTo} options={DATE_OPTIONS} className="w-full" />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Duration</label>
+            <label className="block text-xs font-bold text-ink-soft uppercase tracking-wider mb-1.5">Duration</label>
             <Segmented value={duration} options={DURATIONS} onChange={setDuration} />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">Reason <span className="text-red-500">*</span></label>
-            <select value={reason} onChange={(e) => setReason(e.target.value as LeaveReason)} className="w-full px-3 py-2 border border-gray-300 rounded text-sm text-gray-700 bg-white outline-none focus:border-slate-500">
+            <label className="block text-xs font-bold text-ink-soft uppercase tracking-wider mb-1.5">Reason <span className="text-danger-ink">*</span></label>
+            <select value={reason} onChange={(e) => setReason(e.target.value as LeaveReason)} className="w-full px-3 py-2 border border-divider rounded-control text-sm text-ink-soft bg-surface outline-none focus:border-border-strong">
               {LEAVE_REASONS.map((r) => <option key={r} value={r}>{r}</option>)}
             </select>
             {reason === "Other" && (
-              <input type="text" value={reasonOther} onChange={(e) => setReasonOther(e.target.value)} placeholder="Please describe…" className="w-full mt-2 px-3 py-2 border border-gray-300 rounded text-sm outline-none bg-white focus:border-slate-500" />
+              <input type="text" value={reasonOther} onChange={(e) => setReasonOther(e.target.value)} placeholder="Please describe…" className="w-full mt-2 px-3 py-2 border border-divider rounded-control text-sm outline-none bg-surface focus:border-border-strong" />
             )}
           </div>
         </div>
 
         <div className="px-6 pb-4">
-          <p className="text-xs text-gray-400">Leave requests require administrator approval.</p>
+          <p className="text-xs text-ink-muted">Leave requests require administrator approval.</p>
         </div>
 
-        <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3 bg-gray-50 shrink-0">
-          <button onClick={onClose} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100">Cancel</button>
-          <button onClick={handleSubmit} className="px-6 py-2 rounded text-sm font-bold text-white bg-slate-600 hover:bg-slate-700">Submit Leave Request</button>
+        <div className="px-6 py-4 border-t border-divider flex justify-end space-x-3 bg-surface-page shrink-0">
+          <button onClick={onClose} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
+          <button onClick={handleSubmit} className="px-6 py-2 rounded-control text-sm font-bold text-white bg-ink hover:bg-surface-sunken">Submit Leave Request</button>
         </div>
       </div>
     </div>

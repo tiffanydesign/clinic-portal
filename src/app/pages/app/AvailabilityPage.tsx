@@ -76,34 +76,34 @@ export function AvailabilityPage() {
   });
 
   return (
-    <div className="flex flex-col h-full bg-white relative">
+    <div className="flex flex-col h-full bg-surface relative">
       {/* Toolbar */}
-      <div className="px-8 py-3.5 border-b border-gray-200 flex items-center justify-between gap-4 shrink-0 bg-white flex-wrap">
+      <div className="px-6 py-3.5 border-b border-divider flex items-center justify-between gap-4 shrink-0 bg-surface flex-wrap">
         <div className="flex items-center gap-3">
-          <div className="flex items-center bg-white border border-gray-200 rounded-full shadow-sm">
-            <button className="pl-3 pr-2 py-2 hover:bg-gray-50 rounded-l-full text-gray-500 hover:text-gray-700 transition-colors">
+          <div className="flex items-center bg-surface border border-divider rounded-full shadow-sm">
+            <button className="pl-3 pr-2 py-2 hover:bg-surface-page rounded-l-full text-ink-muted hover:text-ink-soft transition-colors">
               <ChevronLeft className="w-4 h-4" />
             </button>
-            <span className="px-3 text-sm font-bold text-gray-800 whitespace-nowrap tabular-nums">30 Jun – 6 Jul 2026</span>
-            <button className="pl-2 pr-3 py-2 hover:bg-gray-50 rounded-r-full text-gray-500 hover:text-gray-700 transition-colors">
+            <span className="px-3 text-sm font-bold text-ink whitespace-nowrap tabular-nums">30 Jun – 6 Jul 2026</span>
+            <button className="pl-2 pr-3 py-2 hover:bg-surface-page rounded-r-full text-ink-muted hover:text-ink-soft transition-colors">
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
-          <button className="px-4 py-2 text-sm font-bold text-gray-600 border border-gray-200 bg-white rounded-full shadow-sm hover:bg-gray-50 transition-colors">
+          <button className="px-4 py-2 text-sm font-bold text-ink-soft border border-divider bg-surface rounded-full shadow-sm hover:bg-surface-page transition-colors">
             Today
           </button>
 
           {canSeeRooms && (
-            <div className="inline-flex bg-gray-100 p-0.5 rounded-lg border border-gray-200 ml-2">
+            <div className="inline-flex bg-surface-hover p-0.5 rounded-card border border-divider ml-2">
               <button
                 onClick={() => switchTab("people")}
-                className={`px-3.5 py-1.5 text-xs font-bold rounded-md transition-all ${tab === "people" ? "bg-white text-slate-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                className={`px-3.5 py-1.5 text-xs font-bold rounded-control transition-all ${tab === "people" ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted hover:text-ink-soft"}`}
               >
                 People
               </button>
               <button
                 onClick={() => switchTab("rooms")}
-                className={`px-3.5 py-1.5 text-xs font-bold rounded-md transition-all ${tab === "rooms" ? "bg-white text-slate-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+                className={`px-3.5 py-1.5 text-xs font-bold rounded-control transition-all ${tab === "rooms" ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted hover:text-ink-soft"}`}
               >
                 Rooms
               </button>

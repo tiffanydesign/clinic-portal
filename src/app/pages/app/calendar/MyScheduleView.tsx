@@ -136,42 +136,42 @@ export function MyScheduleView({
   );
 
   return (
-    <div className="h-full flex min-h-0 bg-gray-50">
+    <div className="h-full flex min-h-0 bg-surface-page">
       {/* left rail — inline column on wide screens */}
-      {wide && <div className="w-[280px] shrink-0 border-r border-gray-200 bg-white">{rail}</div>}
+      {wide && <div className="w-[280px] shrink-0 border-r border-divider bg-surface">{rail}</div>}
 
       {/* right main */}
       <div className="flex-1 min-w-0 flex flex-col min-h-0">
         {/* top bar */}
-        <div className="px-5 py-3 border-b border-gray-200 bg-white shrink-0 flex items-center justify-between gap-3 flex-wrap">
+        <div className="px-5 py-3 border-b border-divider bg-surface shrink-0 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             {!wide && (
-              <button onClick={() => setRailOpen(true)} aria-label="Open filters" className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg">
+              <button onClick={() => setRailOpen(true)} aria-label="Open filters" className="p-2 text-ink-muted hover:bg-surface-hover rounded-card">
                 <PanelLeftOpen className="w-5 h-5" />
               </button>
             )}
-            <button onClick={goToday} className="px-3 py-1.5 text-sm font-bold text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Today</button>
+            <button onClick={goToday} className="px-3 py-1.5 text-sm font-bold text-ink-soft border border-divider rounded-card hover:bg-surface-page transition-colors">Today</button>
             <div className="flex items-center">
-              <button onClick={() => page(-1)} aria-label="Previous" className="p-1.5 text-gray-400 hover:text-slate-700 hover:bg-gray-100 rounded-md transition-colors"><ChevronLeft className="w-5 h-5" /></button>
-              <button onClick={() => page(1)} aria-label="Next" className="p-1.5 text-gray-400 hover:text-slate-700 hover:bg-gray-100 rounded-md transition-colors"><ChevronRight className="w-5 h-5" /></button>
+              <button onClick={() => page(-1)} aria-label="Previous" className="p-1.5 text-ink-muted hover:text-ink-soft hover:bg-surface-hover rounded-control transition-colors"><ChevronLeft className="w-5 h-5" /></button>
+              <button onClick={() => page(1)} aria-label="Next" className="p-1.5 text-ink-muted hover:text-ink-soft hover:bg-surface-hover rounded-control transition-colors"><ChevronRight className="w-5 h-5" /></button>
             </div>
             <div className="relative">
-              <button onClick={() => setPickerOpen((o) => !o)} className="text-base font-bold text-gray-800 hover:text-slate-700 px-2 py-1 rounded-md hover:bg-gray-50 transition-colors">
+              <button onClick={() => setPickerOpen((o) => !o)} className="text-base font-bold text-ink hover:text-ink-soft px-2 py-1 rounded-control hover:bg-surface-page transition-colors">
                 {title}
               </button>
               {pickerOpen && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setPickerOpen(false)} />
-                  <div className="absolute z-50 top-full left-0 mt-1 w-64 bg-white border border-gray-200 rounded-xl shadow-xl p-3">
+                  <div className="absolute z-50 top-full left-0 mt-1 w-64 bg-surface border border-divider rounded-card shadow-xl p-3">
                     <MiniCalendar selectedDate={selectedDate} today={TODAY} onSelectDate={(d) => { setSelectedDate(d); setPickerOpen(false); }} hasApptsOn={hasApptsOn} />
                   </div>
                 </>
               )}
             </div>
           </div>
-          <div className="inline-flex bg-gray-100 rounded-lg p-0.5 border border-gray-200">
+          <div className="inline-flex bg-surface-hover rounded-card p-0.5 border border-divider">
             {viewOptions.map((v) => (
-              <button key={v} onClick={() => setView(v)} className={`px-3 py-1.5 text-xs font-bold rounded-md capitalize transition-colors ${view === v ? "bg-white text-slate-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>{v}</button>
+              <button key={v} onClick={() => setView(v)} className={`px-3 py-1.5 text-xs font-bold rounded-control capitalize transition-colors ${view === v ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted hover:text-ink-soft"}`}>{v}</button>
             ))}
           </div>
         </div>
@@ -203,9 +203,9 @@ export function MyScheduleView({
               />
               {totalVisible === 0 && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="text-center bg-white/80 rounded-xl px-6 py-4">
-                    <p className="text-sm font-bold text-gray-500">No appointments this {view}</p>
-                    <p className="text-xs text-gray-400 mt-1">{search ? "No patients match your search." : "Nothing scheduled in this range."}</p>
+                  <div className="text-center bg-surface/80 rounded-card px-6 py-4">
+                    <p className="text-sm font-bold text-ink-muted">No appointments this {view}</p>
+                    <p className="text-xs text-ink-muted mt-1">{search ? "No patients match your search." : "Nothing scheduled in this range."}</p>
                   </div>
                 </div>
               )}
@@ -217,10 +217,10 @@ export function MyScheduleView({
       {/* narrow-screen rail overlay */}
       {!wide && railOpen && (
         <div className="fixed inset-0 z-50 flex">
-          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setRailOpen(false)} />
-          <div className="relative w-[300px] max-w-[85vw] bg-white shadow-2xl animate-in slide-in-from-left-8 duration-200 motion-reduce:animate-none">
-            <div className="flex justify-end p-2 border-b border-gray-100">
-              <button onClick={() => setRailOpen(false)} aria-label="Close" className="p-2 text-gray-500 hover:bg-gray-100 rounded-full"><X className="w-5 h-5" /></button>
+          <div className="absolute inset-0 bg-surface-sunken/40 backdrop-blur-sm" onClick={() => setRailOpen(false)} />
+          <div className="relative w-[300px] max-w-[85vw] bg-surface shadow-2xl animate-in slide-in-from-left-8 duration-200 motion-reduce:animate-none">
+            <div className="flex justify-end p-2 border-b border-divider">
+              <button onClick={() => setRailOpen(false)} aria-label="Close" className="p-2 text-ink-muted hover:bg-surface-hover rounded-full"><X className="w-5 h-5" /></button>
             </div>
             {rail}
           </div>
@@ -229,17 +229,17 @@ export function MyScheduleView({
 
       {/* long-press quick menu */}
       {quick && (
-        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4" onClick={() => setQuick(null)}>
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-xs overflow-hidden animate-in fade-in zoom-in-95 motion-reduce:animate-none" onClick={(e) => e.stopPropagation()}>
-            <div className="px-4 py-3 border-b border-gray-100">
-              <div className="text-sm font-bold text-gray-800">{quick.patient.name}</div>
-              <div className="text-xs text-gray-500">{quick.timeLabel}</div>
+        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-surface-sunken/40 backdrop-blur-sm p-4" onClick={() => setQuick(null)}>
+          <div className="bg-surface rounded-card shadow-2xl w-full max-w-xs overflow-hidden animate-in fade-in zoom-in-95 motion-reduce:animate-none" onClick={(e) => e.stopPropagation()}>
+            <div className="px-4 py-3 border-b border-divider">
+              <div className="text-sm font-bold text-ink">{quick.patient.name}</div>
+              <div className="text-xs text-ink-muted">{quick.timeLabel}</div>
             </div>
-            <button onClick={() => { const a = quick; setQuick(null); openAppt(a); }} className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors">
-              <PanelRightOpen className="w-4 h-4 text-slate-500" /> View in drawer
+            <button onClick={() => { const a = quick; setQuick(null); openAppt(a); }} className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold text-ink-soft hover:bg-surface-page transition-colors">
+              <PanelRightOpen className="w-4 h-4 text-ink-muted" /> View in drawer
             </button>
-            <button onClick={() => { const r = quick.patient.route; setQuick(null); navigate(r); }} className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors border-t border-gray-100">
-              <FileText className="w-4 h-4 text-slate-500" /> Open patient record
+            <button onClick={() => { const r = quick.patient.route; setQuick(null); navigate(r); }} className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold text-ink-soft hover:bg-surface-page transition-colors border-t border-divider">
+              <FileText className="w-4 h-4 text-ink-muted" /> Open patient record
             </button>
           </div>
         </div>

@@ -20,9 +20,9 @@ export function sentimentFor(trend: Trend, inverse = false): Sentiment {
 }
 
 const SENTIMENT_COLOR: Record<Sentiment, string> = {
-  good: "#059669",
-  bad: "#dc2626",
-  neutral: "#94a3b8",
+  good: "var(--status-success)",
+  bad: "var(--status-danger)",
+  neutral: "var(--text-muted)",
 };
 
 /** Compact inline SVG sparkline for a stat's recent history. */
@@ -77,10 +77,10 @@ export function DeltaLine({
   informational?: boolean;
 }) {
   if (informational) {
-    return <span className="text-xs font-medium text-gray-400">{text}</span>;
+    return <span className="text-xs font-medium text-ink-muted">{text}</span>;
   }
   const sentiment = sentimentFor(trend, inverse);
-  const color = sentiment === "bad" ? "text-red-600" : sentiment === "neutral" ? "text-gray-400" : "text-emerald-600";
+  const color = sentiment === "bad" ? "text-danger-ink" : sentiment === "neutral" ? "text-ink-muted" : "text-success-ink";
   const arrow = trend === "down" ? "↓" : trend === "flat" ? "—" : "↑";
   return (
     <span className={`text-xs font-semibold ${color}`}>

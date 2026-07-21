@@ -11,14 +11,14 @@ export const LogoMark = ({ className = "w-8 h-8" }: { className?: string }) => (
 
 export function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col lg:flex-row lg:h-screen w-full overflow-x-hidden bg-slate-50 font-sans">
+    <div className="flex flex-col lg:flex-row lg:h-screen w-full overflow-x-hidden bg-surface-page font-sans">
       {/* Left Brand Panel — full 55% split on lg+ (iPad landscape and up);
           collapses to a compact header bar below lg so narrow/portrait
           screens stay usable without horizontal scrolling. */}
-      <div className="relative flex items-center justify-between px-6 py-4 lg:flex-col lg:justify-between lg:items-stretch lg:w-[55%] lg:p-12 bg-gradient-to-br from-[#0B1528] via-[#122A50] to-[#1E4E8C] text-white overflow-hidden shrink-0">
+      <div className="relative flex items-center justify-between px-6 py-4 lg:flex-col lg:justify-between lg:items-stretch lg:w-[55%] lg:p-4 bg-gradient-to-br from-ink via-[var(--phenome-blue-900)] to-[var(--phenome-blue-500)] text-white overflow-hidden shrink-0">
         {/* Decorative background elements (large screens only) */}
-        <div className="hidden lg:block absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-white/5 blur-3xl pointer-events-none"></div>
-        <div className="hidden lg:block absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] rounded-full bg-[#00B4D8]/10 blur-3xl pointer-events-none"></div>
+        <div className="hidden lg:block absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-surface/5 blur-3xl pointer-events-none"></div>
+        <div className="hidden lg:block absolute bottom-[-20%] right-[-10%] w-[70%] h-[70%] rounded-full bg-info/10 blur-3xl pointer-events-none"></div>
 
         {/* Compact header (below lg) */}
         <div className="flex items-center gap-2 z-10 lg:hidden">
@@ -34,20 +34,20 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
         </div>
         <div className="hidden lg:block max-w-xl z-10 mt-[-10vh]">
           <h1 className="text-6xl font-bold mb-6 tracking-tight leading-tight">Phenome Portal</h1>
-          <p className="text-xl text-blue-100/80 leading-relaxed font-light mb-2">
+          <p className="text-xl text-white/80 leading-relaxed font-light mb-2">
             Your clinic operations, in one place.
           </p>
-          <p className="text-lg text-blue-100/60 leading-relaxed font-light">
+          <p className="text-lg text-white/70 leading-relaxed font-light">
             Secure access for authorised clinical staff.
           </p>
         </div>
-        <div className="hidden lg:block z-10 text-sm text-blue-200/50">
+        <div className="hidden lg:block z-10 text-sm text-white/50">
           © 2026 Phenome Longevity · Authorised clinical staff only
         </div>
       </div>
 
       {/* Right Sign-in Panel (approx 45% on lg+, full width below) */}
-      <div className="flex-1 flex flex-col items-center justify-center bg-[#F4F7F9] px-6 py-8 lg:p-12 shrink-0 relative lg:overflow-y-auto">
+      <div className="flex-1 flex flex-col items-center justify-center bg-surface-page px-6 py-4 lg:p-4 shrink-0 relative lg:overflow-y-auto">
         <div className="w-full max-w-[440px]">
           {children}
         </div>

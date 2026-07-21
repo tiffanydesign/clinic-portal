@@ -26,7 +26,7 @@ export function StaffAvailabilityTab() {
   return (
     <div className="h-full flex flex-col min-h-0">
       {/* Admin context banner */}
-      <div className="flex items-start bg-blue-50 border-b border-blue-200 px-6 py-3 text-sm text-blue-800 shrink-0">
+      <div className="flex items-start bg-info/10 border-b border-info/30 px-6 py-3 text-sm text-info-ink shrink-0">
         <Info className="w-4 h-4 mr-2.5 mt-0.5 shrink-0" />
         You are viewing the schedule for <span className="font-bold ml-1">{staff.name}</span>
       </div>

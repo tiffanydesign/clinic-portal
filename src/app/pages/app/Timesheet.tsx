@@ -117,17 +117,17 @@ const ALL_STAFF: StaffMember[] = [
 
 // Icon + colour per schedule-type, so the daily table reads at a glance.
 const SCHEDULE_TYPE_META: Record<DailyRecord["type"], { icon: LucideIcon; cls: string }> = {
-  Regular: { icon: Clock, cls: "bg-blue-50 text-blue-700 border-blue-200" },
-  Override: { icon: Repeat, cls: "bg-purple-50 text-purple-700 border-purple-200" },
-  "Day Off": { icon: Moon, cls: "bg-gray-100 text-gray-500 border-gray-300" },
-  "On Leave": { icon: Plane, cls: "bg-red-50 text-red-700 border-red-200" },
+  Regular: { icon: Clock, cls: "bg-info/10 text-info-ink border-info/30" },
+  Override: { icon: Repeat, cls: "bg-special/10 text-special-ink border-special/30" },
+  "Day Off": { icon: Moon, cls: "bg-surface-hover text-ink-muted border-divider" },
+  "On Leave": { icon: Plane, cls: "bg-danger/10 text-danger-ink border-danger/30" },
 };
 
 // Role → pill classes, shared by the picker and the table's staff column.
 const ROLE_PILL: Record<Role, string> = {
-  Clinician: "bg-blue-50 text-blue-700 border-blue-200",
-  Nurse: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  Receptionist: "bg-purple-50 text-purple-700 border-purple-200",
+  Clinician: "bg-info/10 text-info-ink border-info/30",
+  Nurse: "bg-success/10 text-success-ink border-success/30",
+  Receptionist: "bg-special/10 text-special-ink border-special/30",
 };
 
 export function TimesheetPage() {
@@ -213,83 +213,83 @@ export function TimesheetPage() {
   const staffCount = selectedStaff.length;
 
   return (
-    <div className="flex flex-col h-full bg-gray-50">
-      
+    <div className="flex flex-col h-full bg-surface-page">
+
       {/* Top Header Row */}
-      <div className="bg-white border-b border-gray-200 px-8 py-5 flex justify-between items-center shrink-0">
-        <div className="flex items-center gap-3.5">
-          <span className="w-11 h-11 rounded-xl bg-slate-800 text-white flex items-center justify-center shrink-0">
+      <div className="bg-surface border-b border-divider px-6 py-4 flex justify-between items-center shrink-0">
+        <div className="flex items-center gap-4">
+          <span className="w-11 h-11 rounded-card bg-surface-sunken text-ink flex items-center justify-center shrink-0">
             <Clock className="w-5 h-5" />
           </span>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 leading-tight">Timesheet</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Staff working hours and attendance records</p>
+            <h1 className="text-2xl font-bold text-ink leading-tight">Timesheet</h1>
+            <p className="text-sm text-ink-muted mt-1">Staff working hours and attendance records</p>
           </div>
         </div>
 
         <div className="relative" ref={exportRef}>
           <button 
             onClick={() => setExportOpen(!exportOpen)}
-            className="flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm"
+            className="flex items-center px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-page transition-colors shadow-sm"
           >
-            <Download className="w-4 h-4 mr-2 text-gray-500" /> Export <ChevronDown className="w-4 h-4 ml-2 text-gray-400" />
+            <Download className="w-4 h-4 mr-2 text-ink-muted" /> Export <ChevronDown className="w-4 h-4 ml-2 text-ink-muted" />
           </button>
           {exportOpen && (
-            <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 shadow-xl rounded-lg z-30 py-1 overflow-hidden">
-              <button onClick={() => handleExport('Excel')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 font-medium">Export as Excel (.xlsx)</button>
-              <button onClick={() => handleExport('CSV')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 font-medium">Export as CSV (.csv)</button>
-              <div className="border-t border-gray-100 my-1"></div>
-              <button onClick={() => handleExport('Print')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 font-medium">Print View</button>
+            <div className="absolute right-0 top-full mt-2 w-48 bg-surface border border-divider shadow-xl rounded-card z-30 py-1 overflow-hidden">
+              <button onClick={() => handleExport('Excel')} className="w-full text-left px-4 py-2 text-sm text-ink-soft hover:bg-surface-hover font-medium">Export as Excel (.xlsx)</button>
+              <button onClick={() => handleExport('CSV')} className="w-full text-left px-4 py-2 text-sm text-ink-soft hover:bg-surface-hover font-medium">Export as CSV (.csv)</button>
+              <div className="border-t border-divider my-1"></div>
+              <button onClick={() => handleExport('Print')} className="w-full text-left px-4 py-2 text-sm text-ink-soft hover:bg-surface-hover font-medium">Print View</button>
             </div>
           )}
         </div>
       </div>
 
       {/* Toolbar Row */}
-      <div className="bg-white border-b border-gray-200 px-8 py-3 flex items-center justify-between shrink-0">
+      <div className="bg-surface border-b border-divider px-6 py-3 flex items-center justify-between shrink-0">
         <div className="flex items-center space-x-4">
           
           {/* Staff Picker */}
           <div className="relative" ref={pickerRef}>
             <div 
               onClick={() => setPickerOpen(true)}
-              className="w-[400px] min-h-[38px] border border-gray-300 bg-white rounded shadow-sm flex items-center px-2 cursor-text transition-colors hover:border-gray-400"
+              className="w-[400px] min-h-[38px] border border-divider bg-surface rounded-control shadow-sm flex items-center px-2 cursor-text transition-colors hover:border-border-strong"
             >
               {selectedStaff.length === 0 ? (
-                <span className="text-sm text-gray-400 pl-2">All staff · none selected</span>
+                <span className="text-sm text-ink-muted pl-2">All staff · none selected</span>
               ) : (
-                <div className="flex flex-wrap gap-1.5 py-1.5 w-[360px] max-h-24 overflow-y-auto">
+                <div className="flex flex-wrap gap-2 py-2 w-[360px] max-h-24 overflow-y-auto">
                   {selectedStaff.map(s => (
-                    <div key={s.id} className={`flex items-center rounded pl-1 pr-1.5 py-0.5 border bg-gray-50 border-gray-200`}>
-                      <div className="w-4 h-4 rounded-full bg-white border border-gray-200 flex items-center justify-center text-[8px] font-bold text-gray-600 mr-1.5 shrink-0">
+                    <div key={s.id} className={`flex items-center rounded-control pl-1 pr-2 py-1 border bg-surface-page border-divider`}>
+                      <div className="w-4 h-4 rounded-full bg-surface border border-divider flex items-center justify-center text-label text-ink-soft mr-2 shrink-0">
                         {s.avatar}
                       </div>
-                      <span className="text-xs font-medium text-gray-700 mr-1.5 truncate max-w-[80px]">{s.name.split(' ').pop()}</span>
-                      <button onClick={(e) => { e.stopPropagation(); toggleStaff(s.id); }} className="hover:bg-gray-200 rounded-full p-0.5 text-gray-400 hover:text-gray-700">
+                      <span className="text-xs font-medium text-ink-soft mr-2 truncate max-w-[80px]">{s.name.split(' ').pop()}</span>
+                      <button onClick={(e) => { e.stopPropagation(); toggleStaff(s.id); }} className="hover:bg-surface-sunken rounded-full p-1 text-ink-muted hover:text-ink-soft">
                         <X className="w-3 h-3" />
                       </button>
                     </div>
                   ))}
                 </div>
               )}
-              <div className="absolute right-3 text-xs font-bold text-gray-400 flex items-center bg-white pl-2">
+              <div className="absolute right-3 text-xs font-bold text-ink-muted flex items-center bg-surface pl-2">
                 <ChevronDown className="w-4 h-4" />
               </div>
             </div>
 
             {/* Dropdown Panel */}
             {pickerOpen && (
-              <div className="absolute top-full left-0 mt-1 w-[400px] bg-white border border-gray-200 rounded-lg shadow-xl z-30 flex flex-col max-h-[450px]">
-                <div className="p-3 border-b border-gray-100 shrink-0">
+              <div className="absolute top-full left-0 mt-1 w-[400px] bg-surface border border-divider rounded-card shadow-xl z-30 flex flex-col max-h-[450px]">
+                <div className="p-3 border-b border-divider shrink-0">
                   <div className="relative">
-                    <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Search className="w-4 h-4 text-ink-muted absolute left-3 top-1/2 -translate-y-1/2" />
                     <input 
                       autoFocus
                       type="text" 
                       placeholder="Search by name..." 
                       value={search}
                       onChange={e => setSearch(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-md text-sm outline-none focus:border-slate-400"
+                      className="w-full pl-9 pr-4 py-2 border border-divider rounded-control text-sm outline-none focus:border-info"
                     />
                   </div>
                 </div>
@@ -297,20 +297,20 @@ export function TimesheetPage() {
                   {/* Clinicians */}
                   {clinicians.length > 0 && (
                     <div className="mb-2">
-                      <div className="px-3 py-1.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Clinicians</div>
+                      <div className="px-3 py-2 text-xs font-bold text-ink-muted uppercase tracking-wider">Clinicians</div>
                       {clinicians.map(s => {
                         const isSelected = selectedIds.includes(s.id);
                         return (
                           <div 
                             key={s.id} onClick={() => toggleStaff(s.id)}
-                            className={`flex items-center justify-between px-3 py-2 rounded-md mb-0.5 cursor-pointer hover:bg-gray-50 ${isSelected ? 'bg-slate-50' : ''}`}
+                            className={`flex items-center justify-between px-3 py-2 rounded-control mb-1 cursor-pointer hover:bg-surface-hover ${isSelected ? 'bg-surface-hover' : ''}`}
                           >
                             <div className="flex items-center">
-                              <input type="checkbox" checked={isSelected} readOnly className="mr-3 rounded border-gray-300 text-slate-600 focus:ring-0" />
-                              <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 mr-3">{s.avatar}</div>
-                              <span className="text-sm font-medium text-gray-800">{s.name}</span>
+                              <input type="checkbox" checked={isSelected} readOnly className="mr-3 rounded-control border-divider text-ink-soft focus:ring-0" />
+                              <div className="w-6 h-6 rounded-full bg-surface-sunken flex items-center justify-center text-xs font-bold text-ink-soft mr-3">{s.avatar}</div>
+                              <span className="text-sm font-medium text-ink">{s.name}</span>
                             </div>
-                            <span className={`px-2 py-0.5 border text-[10px] font-bold rounded ${ROLE_PILL.Clinician}`}>Clinician</span>
+                            <span className={`px-2 py-1 border text-overline rounded-control ${ROLE_PILL.Clinician}`}>Clinician</span>
                           </div>
                         );
                       })}
@@ -319,20 +319,20 @@ export function TimesheetPage() {
                   {/* Nurses */}
                   {nurses.length > 0 && (
                     <div className="mb-2">
-                      <div className="px-3 py-1.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Nurses</div>
+                      <div className="px-3 py-2 text-xs font-bold text-ink-muted uppercase tracking-wider">Nurses</div>
                       {nurses.map(s => {
                         const isSelected = selectedIds.includes(s.id);
                         return (
                           <div 
                             key={s.id} onClick={() => toggleStaff(s.id)}
-                            className={`flex items-center justify-between px-3 py-2 rounded-md mb-0.5 cursor-pointer hover:bg-gray-50 ${isSelected ? 'bg-slate-50' : ''}`}
+                            className={`flex items-center justify-between px-3 py-2 rounded-control mb-1 cursor-pointer hover:bg-surface-hover ${isSelected ? 'bg-surface-hover' : ''}`}
                           >
                             <div className="flex items-center">
-                              <input type="checkbox" checked={isSelected} readOnly className="mr-3 rounded border-gray-300 text-slate-600 focus:ring-0" />
-                              <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 mr-3">{s.avatar}</div>
-                              <span className="text-sm font-medium text-gray-800">{s.name}</span>
+                              <input type="checkbox" checked={isSelected} readOnly className="mr-3 rounded-control border-divider text-ink-soft focus:ring-0" />
+                              <div className="w-6 h-6 rounded-full bg-surface-sunken flex items-center justify-center text-xs font-bold text-ink-soft mr-3">{s.avatar}</div>
+                              <span className="text-sm font-medium text-ink">{s.name}</span>
                             </div>
-                            <span className={`px-2 py-0.5 border text-[10px] font-bold rounded ${ROLE_PILL.Nurse}`}>Nurse</span>
+                            <span className={`px-2 py-1 border text-overline rounded-control ${ROLE_PILL.Nurse}`}>Nurse</span>
                           </div>
                         );
                       })}
@@ -341,20 +341,20 @@ export function TimesheetPage() {
                   {/* Receptionists */}
                   {receptionists.length > 0 && (
                     <div className="mb-2">
-                      <div className="px-3 py-1.5 text-xs font-bold text-gray-500 uppercase tracking-wider">Receptionists</div>
+                      <div className="px-3 py-2 text-xs font-bold text-ink-muted uppercase tracking-wider">Receptionists</div>
                       {receptionists.map(s => {
                         const isSelected = selectedIds.includes(s.id);
                         return (
                           <div 
                             key={s.id} onClick={() => toggleStaff(s.id)}
-                            className={`flex items-center justify-between px-3 py-2 rounded-md mb-0.5 cursor-pointer hover:bg-gray-50 ${isSelected ? 'bg-slate-50' : ''}`}
+                            className={`flex items-center justify-between px-3 py-2 rounded-control mb-1 cursor-pointer hover:bg-surface-hover ${isSelected ? 'bg-surface-hover' : ''}`}
                           >
                             <div className="flex items-center">
-                              <input type="checkbox" checked={isSelected} readOnly className="mr-3 rounded border-gray-300 text-slate-600 focus:ring-0" />
-                              <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 mr-3">{s.avatar}</div>
-                              <span className="text-sm font-medium text-gray-800">{s.name}</span>
+                              <input type="checkbox" checked={isSelected} readOnly className="mr-3 rounded-control border-divider text-ink-soft focus:ring-0" />
+                              <div className="w-6 h-6 rounded-full bg-surface-sunken flex items-center justify-center text-xs font-bold text-ink-soft mr-3">{s.avatar}</div>
+                              <span className="text-sm font-medium text-ink">{s.name}</span>
                             </div>
-                            <span className={`px-2 py-0.5 border text-[10px] font-bold rounded ${ROLE_PILL.Receptionist}`}>Receptionist</span>
+                            <span className={`px-2 py-1 border text-overline rounded-control ${ROLE_PILL.Receptionist}`}>Receptionist</span>
                           </div>
                         );
                       })}
@@ -362,13 +362,13 @@ export function TimesheetPage() {
                   )}
                 </div>
                 {/* Presets */}
-                <div className="p-2 border-t border-gray-100 bg-gray-50 flex flex-wrap gap-2 shrink-0">
-                  <button onClick={() => handleSelectGroup('All')} className="px-2 py-1 text-[11px] font-bold text-slate-700 bg-white border border-gray-200 rounded hover:bg-slate-50">All Staff</button>
-                  <button onClick={() => handleSelectGroup('Clinician')} className="px-2 py-1 text-[11px] font-bold text-blue-700 bg-white border border-gray-200 rounded hover:bg-blue-50">Clinicians</button>
-                  <button onClick={() => handleSelectGroup('Nurse')} className="px-2 py-1 text-[11px] font-bold text-emerald-700 bg-white border border-gray-200 rounded hover:bg-emerald-50">Nurses</button>
-                  <button onClick={() => handleSelectGroup('Receptionist')} className="px-2 py-1 text-[11px] font-bold text-purple-700 bg-white border border-gray-200 rounded hover:bg-purple-50">Receptionists</button>
+                <div className="p-2 border-t border-divider bg-surface-page flex flex-wrap gap-2 shrink-0">
+                  <button onClick={() => handleSelectGroup('All')} className="px-2 py-1 text-label text-ink-soft bg-surface border border-divider rounded-control hover:bg-surface-hover">All Staff</button>
+                  <button onClick={() => handleSelectGroup('Clinician')} className="px-2 py-1 text-label text-info-ink bg-surface border border-divider rounded-control hover:bg-info/10">Clinicians</button>
+                  <button onClick={() => handleSelectGroup('Nurse')} className="px-2 py-1 text-label text-success-ink bg-surface border border-divider rounded-control hover:bg-success/10">Nurses</button>
+                  <button onClick={() => handleSelectGroup('Receptionist')} className="px-2 py-1 text-label text-special-ink bg-surface border border-divider rounded-control hover:bg-special/10">Receptionists</button>
                   <div className="flex-1"></div>
-                  <button onClick={() => setSelectedIds([])} className="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-gray-800">Clear</button>
+                  <button onClick={() => setSelectedIds([])} className="px-2 py-1 text-label text-ink-muted hover:text-ink">Clear</button>
                 </div>
               </div>
             )}
@@ -378,15 +378,15 @@ export function TimesheetPage() {
           <div className="relative" ref={dateRef}>
             <div 
               onClick={() => setDatePickerOpen(!datePickerOpen)}
-              className="w-[350px] h-[38px] border border-gray-300 bg-white rounded shadow-sm flex items-center px-3 cursor-pointer hover:border-gray-400"
+              className="w-[350px] h-[38px] border border-divider bg-surface rounded-control shadow-sm flex items-center px-3 cursor-pointer hover:border-border-strong"
             >
-              <CalendarIcon className="w-4 h-4 text-gray-400 mr-2" />
-              <span className="text-sm font-bold text-gray-700 flex-1 truncate">
+              <CalendarIcon className="w-4 h-4 text-ink-muted mr-2" />
+              <span className="text-sm font-bold text-ink-soft flex-1 truncate">
                 {dateRange.preset === "Custom Range" 
                   ? `${format(dateRange.start, "d MMM")} – ${format(dateRange.end, "d MMM yyyy")}`
                   : `${dateRange.preset} · ${format(dateRange.start, "d MMM")} – ${format(dateRange.end, "d MMM yyyy")}`}
               </span>
-              <ChevronDown className="w-4 h-4 text-gray-400 ml-2 shrink-0" />
+              <ChevronDown className="w-4 h-4 text-ink-muted ml-2 shrink-0" />
             </div>
             
             {datePickerOpen && (
@@ -406,16 +406,16 @@ export function TimesheetPage() {
         </div>
 
         {/* View Switcher */}
-        <div className="flex bg-gray-100 p-1 rounded-lg">
-          <button 
+        <div className="flex bg-surface-hover p-1 rounded-control">
+          <button
             onClick={() => setView('Daily')}
-            className={`px-4 py-1.5 text-sm font-bold rounded-md transition-colors ${view === 'Daily' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`px-4 py-2 text-sm font-bold rounded-control transition-colors ${view === 'Daily' ? 'bg-surface text-ink shadow-sm' : 'text-ink-muted hover:text-ink-soft'}`}
           >
             Daily
           </button>
-          <button 
+          <button
             onClick={() => setView('Weekly')}
-            className={`px-4 py-1.5 text-sm font-bold rounded-md transition-colors ${view === 'Weekly' ? 'bg-white text-gray-800 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`px-4 py-2 text-sm font-bold rounded-control transition-colors ${view === 'Weekly' ? 'bg-surface text-ink shadow-sm' : 'text-ink-muted hover:text-ink-soft'}`}
           >
             Weekly Summary
           </button>
@@ -426,7 +426,7 @@ export function TimesheetPage() {
           the aggregation block above from the existing ALL_STAFF records; the
           Stat components never derive a value themselves. */}
       {selectedStaff.length > 0 && (
-        <div className="px-8 py-4 shrink-0">
+        <div className="px-6 py-4 shrink-0">
           <StatStripGroup>
             <Stat
               stat={{ id: "scheduled", label: "Scheduled", kind: "count", variant: "strip",
@@ -458,115 +458,115 @@ export function TimesheetPage() {
       )}
 
       {/* Data Table Area */}
-      <div className="flex-1 overflow-hidden px-8 pb-8 flex flex-col min-h-0 relative">
+      <div className="flex-1 overflow-hidden px-6 pb-6 flex flex-col min-h-0 relative">
         {selectedStaff.length === 0 ? (
-          <div className="flex-1 bg-white border border-gray-200 rounded-xl flex flex-col items-center justify-center py-16">
-            <div className="w-14 h-14 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-              <Users className="w-7 h-7 text-slate-400" />
+          <div className="flex-1 bg-surface border border-divider rounded-card flex flex-col items-center justify-center py-6">
+            <div className="w-14 h-14 bg-surface-hover rounded-full flex items-center justify-center mb-4">
+              <Users className="w-7 h-7 text-ink-muted" />
             </div>
-            <h2 className="text-base font-bold text-gray-800 mb-1">No staff selected</h2>
-            <p className="text-gray-500 mb-5 text-sm">Add team members with the picker above, or view everyone.</p>
-            <button onClick={() => handleSelectGroup('All')} className="inline-flex items-center gap-2 px-5 py-2 bg-slate-700 text-white text-sm font-bold rounded-lg hover:bg-slate-800 transition-colors shadow-sm">
+            <h2 className="text-base font-bold text-ink mb-1">No staff selected</h2>
+            <p className="text-ink-muted mb-4 text-sm">Add team members with the picker above, or view everyone.</p>
+            <button onClick={() => handleSelectGroup('All')} className="inline-flex items-center gap-2 px-4 py-2 btn-primary text-sm rounded-control transition-colors shadow-sm">
               <Users className="w-4 h-4" /> View All Staff
             </button>
           </div>
         ) : (
-          <div className="flex-1 bg-white border border-gray-300 rounded-xl overflow-hidden flex flex-col shadow-sm relative">
+          <div className="flex-1 bg-surface border border-divider rounded-card overflow-hidden flex flex-col shadow-sm relative">
             <div className="flex-1 overflow-auto relative">
               <table className="w-full text-left border-collapse text-sm whitespace-nowrap">
-                <thead className="bg-gray-50 sticky top-0 z-20 shadow-[0_1px_0_#e5e7eb]">
+                <thead className="bg-surface-page sticky top-0 z-20 shadow-[0_1px_0_var(--border-strong)]">
                   {view === 'Daily' ? (
                     <tr>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 sticky left-0 z-30 bg-gray-50 w-[200px] shadow-[1px_0_0_#e5e7eb]">Staff</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 hover:bg-gray-100 cursor-pointer">Date</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Schedule Type</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Scheduled</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-right">Sched. Hours</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-right">Actual Start</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-right">Actual End</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-right">Actual Hours</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-right">Variance</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-right">Overtime</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-right">Appointments</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 w-full">Notes</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider sticky left-0 z-30 bg-surface-page w-[200px] shadow-[1px_0_0_var(--border-strong)]">Staff</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider hover:bg-surface-hover cursor-pointer">Date</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Schedule Type</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Scheduled</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-right">Sched. Hours</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-right">Actual Start</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-right">Actual End</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-right">Actual Hours</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-right">Variance</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-right">Overtime</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-right">Appointments</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider w-full">Notes</th>
                     </tr>
                   ) : (
                     <tr>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 sticky left-0 z-30 bg-gray-50 w-[200px] shadow-[1px_0_0_#e5e7eb]">Staff</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Week</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-center">Days Sched.</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-center">Days Present</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-center">Days Leave</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-right">Total Sched.</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-right">Total Actual</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-right">Variance</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-right">Overtime</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-right">Appointments</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-right">Attendance</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider sticky left-0 z-30 bg-surface-page w-[200px] shadow-[1px_0_0_var(--border-strong)]">Staff</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Week</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-center">Days Sched.</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-center">Days Present</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-center">Days Leave</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-right">Total Sched.</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-right">Total Actual</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-right">Variance</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-right">Overtime</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-right">Appointments</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-right">Attendance</th>
                     </tr>
                   )}
                 </thead>
                 
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-divider">
                   {view === 'Daily' && selectedStaff.flatMap(staff => 
                     staff.dailyRecords.map((rec, i) => {
                       const isFirst = i === 0;
-                      let bgClass = "bg-white";
-                      if (rec.type === 'On Leave') bgClass = "bg-[#FEE2E2]";
-                      else if (rec.type === 'Day Off') bgClass = "bg-[#F3F4F6]";
+                      let bgClass = "bg-surface";
+                      if (rec.type === 'On Leave') bgClass = "bg-danger/10";
+                      else if (rec.type === 'Day Off') bgClass = "bg-surface-hover";
                       
-                      let varColor = "text-gray-500";
-                      if (rec.variance > 0) varColor = "text-green-600 font-bold";
-                      else if (rec.variance < 0) varColor = "text-red-600 font-bold";
+                      let varColor = "text-ink-muted";
+                      if (rec.variance > 0) varColor = "text-success-ink font-bold";
+                      else if (rec.variance < 0) varColor = "text-danger-ink font-bold";
 
                       return (
-                        <tr key={`${staff.id}-${rec.id}`} className={`group hover:bg-slate-50 transition-colors ${bgClass}`}>
+                        <tr key={`${staff.id}-${rec.id}`} className={`group hover:bg-surface-page transition-colors ${bgClass}`}>
                           {/* Sticky Staff Col */}
-                          <td className={`p-4 border-r border-gray-200 sticky left-0 z-10 shadow-[1px_0_0_#e5e7eb] group-hover:bg-slate-50 transition-colors ${isFirst ? 'bg-white' : bgClass}`}>
+                          <td className={`p-4 border-r border-divider sticky left-0 z-10 shadow-[1px_0_0_var(--border-strong)] group-hover:bg-surface-page transition-colors ${isFirst ? 'bg-surface' : bgClass}`}>
                             {isFirst && (
                               <div className="flex items-center">
-                                <div className="w-8 h-8 rounded-full bg-slate-500 flex items-center justify-center text-xs font-bold text-white shrink-0 mr-3">
+                                <div className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-xs font-bold text-ink-soft shrink-0 mr-3">
                                   {staff.avatar}
                                 </div>
                                 <div className="min-w-0">
-                                  <Link to={`/staff/${staff.id}`} className="text-sm font-bold text-gray-800 truncate hover:underline hover:text-slate-600 block">
+                                  <Link to={`/staff/${staff.id}`} className="text-sm font-bold text-ink truncate hover:underline hover:text-ink-soft block">
                                     {staff.name}
                                   </Link>
-                                  <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded border mt-0.5 inline-block ${ROLE_PILL[staff.role]}`}>
+                                  <span className={`px-1.5 py-0.5 text-overline rounded-control border mt-0.5 inline-block ${ROLE_PILL[staff.role]}`}>
                                     {staff.role}
                                   </span>
                                 </div>
                               </div>
                             )}
                           </td>
-                          <td className="p-4 font-medium text-gray-700">{rec.date}</td>
+                          <td className="p-4 font-medium text-ink-soft">{rec.date}</td>
                           <td className="p-4">
                             {(() => {
                               const meta = SCHEDULE_TYPE_META[rec.type];
                               const TypeIcon = meta.icon;
                               return (
-                                <span className={`inline-flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded border ${meta.cls}`}>
+                                <span className={`inline-flex items-center gap-1 px-2 py-1 text-overline rounded-control border ${meta.cls}`}>
                                   <TypeIcon className="w-3 h-3" /> {rec.type}
                                 </span>
                               );
                             })()}
                           </td>
-                          <td className="p-4 text-gray-600">{rec.scheduled}</td>
-                          <td className="p-4 text-right text-gray-600">{rec.scheduledHours > 0 ? `${rec.scheduledHours}h` : '—'}</td>
-                          <td className="p-4 text-right text-gray-800 font-medium">
+                          <td className="p-4 text-ink-soft">{rec.scheduled}</td>
+                          <td className="p-4 text-right text-ink-soft">{rec.scheduledHours > 0 ? `${rec.scheduledHours}h` : '—'}</td>
+                          <td className="p-4 text-right text-ink font-medium">
                             {rec.actualStart} 
-                            {rec.actualStart === rec.scheduled.split(' – ')[0] && rec.actualStart !== '—' && <span className="ml-1 text-[10px] text-gray-400 font-normal">(auto)</span>}
+                            {rec.actualStart === rec.scheduled.split(' – ')[0] && rec.actualStart !== '—' && <span className="ml-1 text-overline text-ink-muted font-normal">(auto)</span>}
                           </td>
-                          <td className="p-4 text-right text-gray-800 font-medium">{rec.actualEnd}</td>
-                          <td className="p-4 text-right font-bold text-gray-800">{rec.actualHours > 0 ? `${rec.actualHours}h` : '—'}</td>
+                          <td className="p-4 text-right text-ink font-medium">{rec.actualEnd}</td>
+                          <td className="p-4 text-right font-bold text-ink">{rec.actualHours > 0 ? `${rec.actualHours}h` : '—'}</td>
                           <td className={`p-4 text-right ${varColor}`}>
                             {rec.variance > 0 ? '+' : ''}{rec.variance === 0 ? '0h' : `${rec.variance}h`}
                           </td>
-                          <td className={`p-4 text-right font-bold ${rec.overtime > 0 ? 'text-orange-500' : 'text-gray-400'}`}>
+                          <td className={`p-4 text-right font-bold ${rec.overtime > 0 ? 'text-warning-ink' : 'text-ink-muted'}`}>
                             {rec.overtime > 0 ? `${rec.overtime}h` : '0h'}
                           </td>
-                          <td className="p-4 text-right text-gray-600">{rec.appointments > 0 ? rec.appointments : '—'}</td>
-                          <td className="p-4 text-gray-500 italic max-w-xs truncate" title={rec.notes}>{rec.notes}</td>
+                          <td className="p-4 text-right text-ink-soft">{rec.appointments > 0 ? rec.appointments : '—'}</td>
+                          <td className="p-4 text-ink-muted italic max-w-xs truncate" title={rec.notes}>{rec.notes}</td>
                         </tr>
                       );
                     })
@@ -574,38 +574,38 @@ export function TimesheetPage() {
 
                   {view === 'Weekly' && selectedStaff.map(staff => {
                     const ws = staff.weeklySummary;
-                    const varColor = ws.totalVariance > 0 ? "text-green-600 font-bold" : ws.totalVariance < 0 ? "text-red-600 font-bold" : "text-gray-500";
+                    const varColor = ws.totalVariance > 0 ? "text-success-ink font-bold" : ws.totalVariance < 0 ? "text-danger-ink font-bold" : "text-ink-muted";
                     
                     return (
-                      <tr key={staff.id} className="hover:bg-slate-50 transition-colors bg-white group">
-                        <td className="p-4 border-r border-gray-200 sticky left-0 z-10 bg-white group-hover:bg-slate-50 transition-colors shadow-[1px_0_0_#e5e7eb]">
+                      <tr key={staff.id} className="hover:bg-surface-page transition-colors bg-surface group">
+                        <td className="p-4 border-r border-divider sticky left-0 z-10 bg-surface group-hover:bg-surface-page transition-colors shadow-[1px_0_0_var(--border-strong)]">
                           <div className="flex items-center">
-                            <div className="w-8 h-8 rounded-full bg-slate-500 flex items-center justify-center text-xs font-bold text-white shrink-0 mr-3">
+                            <div className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-xs font-bold text-ink-soft shrink-0 mr-3">
                               {staff.avatar}
                             </div>
                             <div className="min-w-0">
-                              <Link to={`/staff/${staff.id}`} className="text-sm font-bold text-gray-800 truncate hover:underline hover:text-slate-600 block">
+                              <Link to={`/staff/${staff.id}`} className="text-sm font-bold text-ink truncate hover:underline hover:text-ink-soft block">
                                 {staff.name}
                               </Link>
-                              <span className={`px-1.5 py-0.5 text-[9px] font-bold rounded mt-0.5 inline-block
-                                ${staff.role === 'Clinician' ? 'bg-blue-50 text-blue-700 border border-blue-200' : 
-                                  staff.role === 'Nurse' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 
-                                  'bg-purple-50 text-purple-700 border border-purple-200'}`}>
+                              <span className={`px-1.5 py-0.5 text-overline rounded-control mt-0.5 inline-block
+                                ${staff.role === 'Clinician' ? 'bg-info/10 text-info-ink border border-info/30' : 
+                                  staff.role === 'Nurse' ? 'bg-success/10 text-success-ink border border-success/30' : 
+                                  'bg-special/10 text-special-ink border border-special/30'}`}>
                                 {staff.role}
                               </span>
                             </div>
                           </div>
                         </td>
-                        <td className="p-4 text-gray-700 font-medium">1 Jul – 7 Jul 2026</td>
-                        <td className="p-4 text-center text-gray-700">{ws.daysScheduled}</td>
-                        <td className="p-4 text-center font-bold text-gray-800">{ws.daysPresent}</td>
-                        <td className="p-4 text-center text-red-600">{ws.daysLeave > 0 ? ws.daysLeave : '0'}</td>
-                        <td className="p-4 text-right text-gray-600">{ws.totalScheduled}h</td>
-                        <td className="p-4 text-right font-bold text-gray-800">{ws.totalActual}h</td>
+                        <td className="p-4 text-ink-soft font-medium">1 Jul – 7 Jul 2026</td>
+                        <td className="p-4 text-center text-ink-soft">{ws.daysScheduled}</td>
+                        <td className="p-4 text-center font-bold text-ink">{ws.daysPresent}</td>
+                        <td className="p-4 text-center text-danger-ink">{ws.daysLeave > 0 ? ws.daysLeave : '0'}</td>
+                        <td className="p-4 text-right text-ink-soft">{ws.totalScheduled}h</td>
+                        <td className="p-4 text-right font-bold text-ink">{ws.totalActual}h</td>
                         <td className={`p-4 text-right ${varColor}`}>{ws.totalVariance > 0 ? '+' : ''}{ws.totalVariance}h</td>
-                        <td className={`p-4 text-right font-bold ${ws.totalOvertime > 0 ? 'text-orange-500' : 'text-gray-400'}`}>{ws.totalOvertime}h</td>
-                        <td className="p-4 text-right text-gray-600">{ws.totalAppointments}</td>
-                        <td className="p-4 text-right font-bold text-gray-800">{ws.attendanceRate}%</td>
+                        <td className={`p-4 text-right font-bold ${ws.totalOvertime > 0 ? 'text-warning-ink' : 'text-ink-muted'}`}>{ws.totalOvertime}h</td>
+                        <td className="p-4 text-right text-ink-soft">{ws.totalAppointments}</td>
+                        <td className="p-4 text-right font-bold text-ink">{ws.attendanceRate}%</td>
                       </tr>
                     );
                   })}
@@ -614,14 +614,14 @@ export function TimesheetPage() {
             </div>
 
             {/* Footer / Pagination */}
-            <div className="h-12 border-t border-gray-200 bg-gray-50 flex items-center justify-between px-6 shrink-0">
-              <div className="text-xs text-gray-500 font-medium">
+            <div className="h-12 border-t border-divider bg-surface-page flex items-center justify-between px-6 shrink-0">
+              <div className="text-xs text-ink-muted font-medium">
                 {view === 'Daily' ? `Showing 1–${selectedStaff.length * 7} of ${selectedStaff.length * 7} records` : `Showing 1–${selectedStaff.length} of ${selectedStaff.length} records`}
               </div>
               <div className="flex items-center space-x-1">
-                <button className="px-2 py-1 text-xs font-bold text-gray-400 hover:text-gray-700 border border-transparent hover:bg-gray-200 rounded transition-colors" disabled>Previous</button>
-                <button className="px-2 py-1 text-xs font-bold text-slate-600 border border-slate-300 bg-white rounded shadow-sm">1</button>
-                <button className="px-2 py-1 text-xs font-bold text-gray-400 hover:text-gray-700 border border-transparent hover:bg-gray-200 rounded transition-colors" disabled>Next</button>
+                <button className="px-2 py-1 text-xs font-bold text-ink-muted hover:text-ink-soft border border-transparent hover:bg-surface-sunken rounded-control transition-colors" disabled>Previous</button>
+                <button className="px-2 py-1 text-xs font-bold text-ink-soft border border-divider bg-surface rounded-control shadow-sm">1</button>
+                <button className="px-2 py-1 text-xs font-bold text-ink-muted hover:text-ink-soft border border-transparent hover:bg-surface-sunken rounded-control transition-colors" disabled>Next</button>
               </div>
             </div>
           </div>

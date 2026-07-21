@@ -61,26 +61,26 @@ export function ForgotPasswordPage() {
         return (
           <form onSubmit={handleStepA} className="space-y-6">
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-[#0B1528] tracking-tight mb-2">Reset Password</h2>
-              <p className="text-slate-500 text-sm">Enter your email to receive a verification code.</p>
+              <h2 className="text-2xl font-bold text-ink tracking-tight mb-2">Reset Password</h2>
+              <p className="text-ink-muted text-sm">Enter your email to receive a verification code.</p>
             </div>
             {errorA && (
-              <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm font-medium border border-red-100 text-center">
+              <div className="p-3 rounded-card bg-danger/10 text-danger-ink text-sm font-medium border border-danger/30 text-center">
                 {errorA}
               </div>
             )}
             <div className="space-y-1.5">
-              <label className="block text-sm font-semibold text-slate-700">Email</label>
+              <label className="block text-sm font-semibold text-ink-soft">Email</label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => { setEmail(e.target.value); setErrorA(""); }}
                 placeholder="you@clinic.com"
                 required
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#00B4D8]/50 focus:border-[#00B4D8] transition-all"
+                className="w-full px-4 py-3 rounded-card border border-divider bg-surface text-ink placeholder-ink-muted focus:outline-none focus:ring-2 focus:ring-info/50 focus:border-info transition-all"
               />
             </div>
-            <button type="submit" className="w-full py-3.5 px-4 rounded-xl text-white font-bold bg-gradient-to-r from-[#00B4D8] to-[#0077B6] hover:from-[#0096B4] hover:to-[#005B8C] shadow-md shadow-[#0077B6]/20 transition-all transform active:scale-[0.98]">
+            <button type="submit" className="w-full py-3.5 px-4 rounded-card text-white font-bold btn-primary shadow-md transition-all transform active:scale-[0.98]">
               Send code
             </button>
           </form>
@@ -90,16 +90,16 @@ export function ForgotPasswordPage() {
         return (
           <form onSubmit={handleStepB} className="space-y-6">
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-[#0B1528] tracking-tight mb-2">Verify Email</h2>
-              <p className="text-slate-500 text-sm">Enter the code sent to {email}</p>
+              <h2 className="text-2xl font-bold text-ink tracking-tight mb-2">Verify Email</h2>
+              <p className="text-ink-muted text-sm">Enter the code sent to {email}</p>
             </div>
             {errorB && (
-              <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm font-medium border border-red-100 text-center">
+              <div className="p-3 rounded-card bg-danger/10 text-danger-ink text-sm font-medium border border-danger/30 text-center">
                 {errorB}
               </div>
             )}
             <CodeInputBoxes code={code} onChange={(next) => { setCode(next); setErrorB(""); }} />
-            <button type="submit" className="w-full py-3.5 px-4 rounded-xl text-white font-bold bg-gradient-to-r from-[#00B4D8] to-[#0077B6] hover:from-[#0096B4] hover:to-[#005B8C] shadow-md shadow-[#0077B6]/20 transition-all transform active:scale-[0.98]">
+            <button type="submit" className="w-full py-3.5 px-4 rounded-card text-white font-bold btn-primary shadow-md transition-all transform active:scale-[0.98]">
               Verify
             </button>
           </form>
@@ -109,12 +109,12 @@ export function ForgotPasswordPage() {
         return (
           <form onSubmit={handleStepC} className="space-y-5">
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-[#0B1528] tracking-tight mb-2">New Password</h2>
-              <p className="text-slate-500 text-sm">Create a secure new password.</p>
+              <h2 className="text-2xl font-bold text-ink tracking-tight mb-2">New Password</h2>
+              <p className="text-ink-muted text-sm">Create a secure new password.</p>
             </div>
 
             <div className="space-y-1.5">
-              <label className="block text-sm font-semibold text-slate-700">New Password</label>
+              <label className="block text-sm font-semibold text-ink-soft">New Password</label>
               <div className="relative">
                 <input
                   type={showNew ? "text" : "password"}
@@ -122,9 +122,9 @@ export function ForgotPasswordPage() {
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="••••••••"
                   autoComplete="new-password"
-                  className="w-full px-4 py-3 pr-16 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#00B4D8]/50 focus:border-[#00B4D8] transition-all"
+                  className="w-full px-4 py-3 pr-16 rounded-card border border-divider bg-surface text-ink focus:outline-none focus:ring-2 focus:ring-info/50 focus:border-info transition-all"
                 />
-                <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-500 hover:text-slate-700">
+                <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-ink-muted hover:text-ink-soft">
                   {showNew ? "Hide" : "Show"}
                 </button>
               </div>
@@ -133,7 +133,7 @@ export function ForgotPasswordPage() {
             <PasswordStrengthChecklist password={newPassword} rulesMet={rulesMet} />
 
             <div className="space-y-1.5 pt-2">
-              <label className="block text-sm font-semibold text-slate-700">Confirm Password</label>
+              <label className="block text-sm font-semibold text-ink-soft">Confirm Password</label>
               <div className="relative">
                 <input
                   type={showConfirm ? "text" : "password"}
@@ -141,23 +141,23 @@ export function ForgotPasswordPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
                   autoComplete="new-password"
-                  className="w-full px-4 py-3 pr-16 rounded-xl border border-slate-200 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#00B4D8]/50 focus:border-[#00B4D8] transition-all"
+                  className="w-full px-4 py-3 pr-16 rounded-card border border-divider bg-surface text-ink focus:outline-none focus:ring-2 focus:ring-info/50 focus:border-info transition-all"
                 />
-                <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-500 hover:text-slate-700">
+                <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-ink-muted hover:text-ink-soft">
                   {showConfirm ? "Hide" : "Show"}
                 </button>
               </div>
-              {mismatch && <p className="text-xs font-medium text-red-600 mt-1">Passwords do not match.</p>}
+              {mismatch && <p className="text-xs font-medium text-danger-ink mt-1">Passwords do not match.</p>}
             </div>
 
             <div className="pt-2">
               <button
                 type="submit"
                 disabled={!canSubmitC}
-                className={`w-full py-3.5 px-4 rounded-xl text-white font-bold text-[15px] transition-all transform shadow-md ${
+                className={`w-full py-3.5 px-4 rounded-card text-white font-bold text-section transition-all transform shadow-md ${
                   canSubmitC
-                    ? "bg-gradient-to-r from-[#00B4D8] to-[#0077B6] hover:from-[#0096B4] hover:to-[#005B8C] shadow-[#0077B6]/20 active:scale-[0.98]"
-                    : "bg-slate-300 shadow-none cursor-not-allowed"
+                    ? "btn-primary active:scale-[0.98]"
+                    : "bg-surface-sunken shadow-none cursor-not-allowed"
                 }`}
               >
                 Reset Password
@@ -170,14 +170,14 @@ export function ForgotPasswordPage() {
         return (
           <div className="text-center space-y-6">
             <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
-                <CheckCircle2 className="w-8 h-8 text-green-600" />
+              <div className="w-16 h-16 rounded-full bg-success/15 flex items-center justify-center">
+                <CheckCircle2 className="w-8 h-8 text-success-ink" />
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-[#0B1528] tracking-tight mb-2">Password Reset</h2>
-            <p className="text-slate-500 text-sm">Your password has been successfully updated.</p>
+            <h2 className="text-2xl font-bold text-ink tracking-tight mb-2">Password Reset</h2>
+            <p className="text-ink-muted text-sm">Your password has been successfully updated.</p>
             <div className="pt-6">
-              <Link to="/login" className="block w-full py-3.5 px-4 rounded-xl text-white font-bold bg-gradient-to-r from-[#00B4D8] to-[#0077B6] hover:from-[#0096B4] hover:to-[#005B8C] shadow-md shadow-[#0077B6]/20 transition-all transform active:scale-[0.98]">
+              <Link to="/login" className="block w-full py-3.5 px-4 rounded-card text-white font-bold btn-primary shadow-md transition-all transform active:scale-[0.98]">
                 Return to Login
               </Link>
             </div>
@@ -188,7 +188,7 @@ export function ForgotPasswordPage() {
 
   return (
     <AuthLayout>
-      <div className="bg-white/80 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-2xl p-10 border border-white relative">
+      <div className="bg-surface/80 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-card p-4 border border-white relative">
         {step !== "D" && (
           <button 
             onClick={() => {
@@ -196,14 +196,14 @@ export function ForgotPasswordPage() {
               if (step === "B") { setErrorB(""); setCode(["", "", "", "", "", ""]); setStep("A"); }
               if (step === "C") { setStep("B"); }
             }}
-            className="absolute top-8 left-8 text-slate-400 hover:text-slate-700 transition-colors"
+            className="absolute top-8 left-8 text-ink-muted hover:text-ink-soft transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
         )}
 
         <div className="flex justify-center mb-6 mt-4">
-          <LogoMark className="w-12 h-12 text-[#0B1528]" />
+          <LogoMark className="w-12 h-12 text-ink" />
         </div>
 
         {renderContent()}

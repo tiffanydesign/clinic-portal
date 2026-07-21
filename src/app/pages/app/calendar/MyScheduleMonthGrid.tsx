@@ -21,10 +21,10 @@ export function MyScheduleMonthGrid({ viewMonth, selectedDate, today, countFor, 
   const rows = days.slice(0, endOfMonth(viewMonth) < days[35] ? 35 : 42);
 
   return (
-    <div className="border border-gray-200 rounded-xl shadow-sm bg-white flex flex-col h-full min-h-0 overflow-hidden">
-      <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50 shrink-0">
+    <div className="border border-divider rounded-card shadow-sm bg-surface flex flex-col h-full min-h-0 overflow-hidden">
+      <div className="grid grid-cols-7 border-b border-divider bg-surface-page shrink-0">
         {WEEKDAYS.map((d) => (
-          <div key={d} className="px-2 py-2 text-center text-[11px] font-bold text-gray-400 uppercase tracking-wide">{d}</div>
+          <div key={d} className="px-2 py-2 text-center text-label font-bold text-ink-muted uppercase tracking-wide">{d}</div>
         ))}
       </div>
       <div className="flex-1 grid grid-cols-7 grid-rows-6 min-h-0">
@@ -37,19 +37,19 @@ export function MyScheduleMonthGrid({ viewMonth, selectedDate, today, countFor, 
             <button
               key={d.toISOString()}
               onClick={() => onSelectDay(d)}
-              className={`flex flex-col items-start p-2 border-b border-r border-gray-100 min-h-0 min-w-0 transition-colors text-left ${
-                isSelected ? "bg-slate-50" : "hover:bg-gray-50"
-              } ${!inMonth ? "bg-gray-50/40" : ""}`}
+              className={`flex flex-col items-start p-2 border-b border-r border-divider min-h-0 min-w-0 transition-colors text-left ${
+                isSelected ? "bg-surface-page" : "hover:bg-surface-page"
+              } ${!inMonth ? "bg-surface-page/40" : ""}`}
             >
               <span
                 className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold tabular-nums shrink-0 ${
-                  isToday ? "bg-slate-700 text-white" : inMonth ? "text-gray-700" : "text-gray-300"
+                  isToday ? "bg-ink text-white" : inMonth ? "text-ink-soft" : "text-ink-muted"
                 }`}
               >
                 {d.getDate()}
               </span>
               {count > 0 && (
-                <span className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-bold text-slate-700 bg-slate-100 rounded-full px-2 py-0.5">
+                <span className="mt-1.5 inline-flex items-center gap-1 text-label font-bold text-ink-soft bg-surface-hover rounded-full px-2 py-0.5">
                   {count} {count === 1 ? "patient" : "patients"}
                 </span>
               )}

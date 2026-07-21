@@ -230,7 +230,7 @@ export function SchedulePage() {
   // existing clinician/room column grid below, untouched.
   if (role === "Nurse" || role === "Clinician") {
     return (
-      <div className="h-full flex flex-col bg-gray-50 min-h-0">
+      <div className="h-full flex flex-col bg-surface-page min-h-0">
         <MyScheduleView role={role} onOpenAppt={(id) => navigate(`${BASE}/appointment/${id}`)} />
         {selected && (
           <AppointmentDrawer appt={selected} role={role} basePath={BASE} readOnlyOverlay={isOverlayAppt} handlers={handlers} />
@@ -248,7 +248,7 @@ export function SchedulePage() {
   const isList = (role === "Admin" || role === "Reception") && mode === "list";
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
+    <div className="h-full flex flex-col bg-surface-page">
       <ScheduleToolbar
         role={role}
         dateLabel={dateLabel}
@@ -275,7 +275,7 @@ export function SchedulePage() {
         onBlock={() => setModal({ kind: "block" })}
       />
 
-      <div className="flex-1 min-h-0 p-4 bg-gray-50/80">
+      <div className="flex-1 min-h-0 p-4 bg-surface-page/80">
         {isList ? (
           <ListView appts={scoped} onRowClick={openAppt} selectedDate={selectedDate} />
         ) : effView === "week" ? (

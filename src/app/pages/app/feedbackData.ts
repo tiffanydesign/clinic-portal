@@ -114,47 +114,47 @@ export const MOCK_DATA: FeedbackItem[] = [
 ];
 
 export const SOURCE_COLORS: Record<string, string> = {
-  "Patient": "bg-blue-500",
-  "Clinician": "bg-purple-500",
-  "Nurse": "bg-emerald-500",
-  "Receptionist": "bg-orange-500",
+  "Patient": "bg-info",
+  "Clinician": "bg-special",
+  "Nurse": "bg-success",
+  "Receptionist": "bg-warning",
   "Google Review": "bg-[#4285F4]",
 };
 
 export const TYPE_COLORS: Record<string, string> = {
-  "Visit Feedback": "bg-blue-50 text-blue-700 border-blue-200",
-  "Complaint": "bg-red-50 text-red-700 border-red-200",
-  "Suggestion": "bg-blue-50 text-blue-700 border-blue-200",
-  "System Issue": "bg-orange-50 text-orange-700 border-orange-200",
-  "Incident Report": "bg-red-50 text-red-700 border-red-200",
-  "Compliment": "bg-emerald-50 text-emerald-700 border-emerald-200",
-  "Other": "bg-gray-100 text-gray-600 border-gray-300",
-  "Google Review": "bg-[#e8f0fe] text-[#1a56db] border-[#c3d9fd]",
+  "Visit Feedback": "bg-info/10 text-info-ink border-info/30",
+  "Complaint": "bg-danger/10 text-danger-ink border-danger/30",
+  "Suggestion": "bg-info/10 text-info-ink border-info/30",
+  "System Issue": "bg-warning/10 text-warning-ink border-warning/30",
+  "Incident Report": "bg-danger/10 text-danger-ink border-danger/30",
+  "Compliment": "bg-success/10 text-success-ink border-success/30",
+  "Other": "bg-surface-hover text-ink-soft border-divider",
+  "Google Review": "bg-info/10 text-info-ink border-info/30",
 };
 
 export const STATUS_PILLS: Record<string, string> = {
-  "New": "bg-blue-600 text-white border-transparent",
-  "In Review": "bg-orange-100 text-orange-800 border-orange-300",
-  "Resolved": "bg-emerald-100 text-emerald-800 border-emerald-300",
-  "Archived": "bg-gray-100 text-gray-600 border-gray-300",
-  "Addressed": "bg-emerald-100 text-emerald-800 border-emerald-300",
+  "New": "bg-info-ink text-white border-transparent",
+  "In Review": "bg-warning/15 text-warning-ink border-warning/30",
+  "Resolved": "bg-success/15 text-success-ink border-success/30",
+  "Archived": "bg-surface-hover text-ink-soft border-divider",
+  "Addressed": "bg-success/15 text-success-ink border-success/30",
 };
 
 export const URGENCY_COLORS: Record<Urgency, string> = {
-  Low: "bg-gray-100 text-gray-600 border-gray-300",
-  Medium: "bg-orange-50 text-orange-700 border-orange-200",
-  High: "bg-red-50 text-red-700 border-red-200",
+  Low: "bg-surface-hover text-ink-soft border-divider",
+  Medium: "bg-warning/10 text-warning-ink border-warning/30",
+  High: "bg-danger/10 text-danger-ink border-danger/30",
 };
 
 export const HISTORY_DOT_COLORS: Record<HistoryKind, string> = {
-  received: "bg-blue-500",
-  in_review: "bg-orange-500",
-  resolved: "bg-emerald-500",
-  addressed: "bg-emerald-500",
-  archived: "bg-gray-400",
-  flagged: "bg-red-500",
-  unflagged: "bg-gray-400",
-  note: "bg-slate-400",
+  received: "bg-info",
+  in_review: "bg-warning",
+  resolved: "bg-success",
+  addressed: "bg-success",
+  archived: "bg-ink-muted",
+  flagged: "bg-danger",
+  unflagged: "bg-ink-muted",
+  note: "bg-ink-muted",
   synced: "bg-[#4285F4]",
 };
 

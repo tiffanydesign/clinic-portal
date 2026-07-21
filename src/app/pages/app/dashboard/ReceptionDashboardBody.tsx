@@ -34,14 +34,14 @@ export function ReceptionDashboardBody() {
   const appt = useMemo(() => appts.find((a) => a.id === apptId), [appts, apptId]);
 
   return (
-    <div className="h-full flex flex-col overflow-y-auto overflow-x-hidden bg-gray-50">
+    <div className="h-full flex flex-col overflow-y-auto overflow-x-hidden bg-surface-page">
       {/* Header — same layout as Admin's dashboard: greeting + date on the
           left, KPI range/customise controls on the right of that same row. */}
       <div className="px-6 pt-6">
         <div className="flex items-start justify-between gap-4 mb-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Good morning, {ROLE_GREETING.Reception}</h1>
-            <p className="text-sm text-gray-500 mt-1">{TODAY_LABEL} · Istanbul Clinic</p>
+            <h1 className="text-2xl font-bold text-ink">Good morning, {ROLE_GREETING.Reception}</h1>
+            <p className="text-sm text-ink-muted mt-1">{TODAY_LABEL} · Istanbul Clinic</p>
           </div>
           <KpiControls kpi={kpi} />
         </div>

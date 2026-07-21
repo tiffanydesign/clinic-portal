@@ -33,10 +33,10 @@ export function PatientRecordLayout({ children }: { children?: React.ReactNode }
   const tabs = ROLE_TABS[role];
 
   return (
-    <div className="flex flex-col h-full bg-gray-50">
+    <div className="flex flex-col h-full bg-surface-page">
       <PatientHeader patient={patient} role={role} backTo="/patients" flag={flag} onSetFlag={setFlag} />
 
-      <div className="bg-white border-b border-gray-200 px-6 flex gap-6 shrink-0 overflow-x-auto">
+      <div className="bg-surface border-b border-divider px-6 flex gap-6 shrink-0 overflow-x-auto">
         {tabs.map((tab: TabKey) => {
           const path = `/patients/${patientId}/${tab}`;
           const isActive = location.pathname.startsWith(path);
@@ -44,7 +44,7 @@ export function PatientRecordLayout({ children }: { children?: React.ReactNode }
             <Link
               key={tab}
               to={path}
-              className={`py-3 text-sm font-bold border-b-[3px] whitespace-nowrap transition-colors ${isActive ? "border-slate-600 text-slate-800" : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"}`}
+              className={`py-3 text-sm font-bold border-b-[3px] whitespace-nowrap transition-colors ${isActive ? "border-border-strong text-ink" : "border-transparent text-ink-muted hover:text-ink-soft hover:border-divider"}`}
             >
               {TAB_LABEL[tab]}
             </Link>

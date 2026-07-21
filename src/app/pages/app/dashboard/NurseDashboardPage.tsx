@@ -25,13 +25,13 @@ const DEMO_MOMENTS: DemoMoment[] = ["day-start", "mid-shift", "day-wrap"];
 function DemoMomentSwitcher({ value, onChange }: { value: DemoMoment; onChange: (m: DemoMoment) => void }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Demo Moment:</span>
-      <div className="inline-flex bg-gray-100 rounded-lg p-0.5 border border-gray-200">
+      <span className="text-xs font-semibold text-ink-muted uppercase tracking-wider">Demo Moment:</span>
+      <div className="inline-flex bg-surface-hover rounded-card p-0.5 border border-divider">
         {DEMO_MOMENTS.map((m) => (
           <button
             key={m}
             onClick={() => onChange(m)}
-            className={`px-3 py-1 text-xs font-bold rounded-md transition-all ${value === m ? "bg-white text-slate-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+            className={`px-3 py-1 text-xs font-bold rounded-control transition-all ${value === m ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted hover:text-ink-soft"}`}
           >
             {NURSE_DEMO_SCENARIOS[m].label}
           </button>
@@ -156,12 +156,12 @@ export function NurseDashboardPage() {
     // `items-start`): each card now simply sizes to its own natural content,
     // including Today's Schedule which renders the full day inline with no
     // nested scrollbar of its own (see ClinicianScheduleList's `scrollable`).
-    <div className="bg-gray-50">
+    <div className="bg-surface-page">
       <div className="px-6 pt-6">
         <div className="flex items-start justify-between gap-4 mb-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Good morning, {ROLE_GREETING.Nurse}</h1>
-            <p className="text-sm text-gray-500 mt-1">{TODAY_LABEL} · Istanbul Clinic</p>
+            <h1 className="text-2xl font-bold text-ink">Good morning, {ROLE_GREETING.Nurse}</h1>
+            <p className="text-sm text-ink-muted mt-1">{TODAY_LABEL} · Istanbul Clinic</p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <DemoMomentSwitcher value={demoMoment} onChange={handleDemoMomentChange} />
@@ -180,7 +180,7 @@ export function NurseDashboardPage() {
               onComplete={handleComplete}
             />
           ) : (
-            <div className="bg-white border border-gray-200 rounded-2xl shadow-sm flex flex-col overflow-hidden min-h-[420px]">
+            <div className="bg-surface border border-divider rounded-card shadow-sm flex flex-col overflow-hidden min-h-[420px]">
               <EmptyJourney
                 hasQueue={upNext.length > 0}
                 completedCount={completedToday.length}

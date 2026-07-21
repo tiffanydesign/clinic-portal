@@ -39,7 +39,7 @@ type StripItem = {
 
 function KpiStrip({ items }: { items: StripItem[] }) {
   return (
-    <div className="px-8 py-4 shrink-0">
+    <div className="px-6 py-4 shrink-0">
       <StatStripGroup>
         {items.map((s) => (
           <Stat
@@ -122,22 +122,22 @@ export function PatientsPage() {
     const t = titles[role];
 
     return (
-      <div className="bg-white border-b border-gray-200 px-8 py-5 flex justify-between items-center shrink-0">
+      <div className="bg-surface border-b border-divider px-6 py-4 flex justify-between items-center shrink-0">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">{t.title}</h1>
-          <p className="text-sm text-gray-500 mt-1">{t.sub}</p>
+          <h1 className="text-page-title text-ink">{t.title}</h1>
+          <p className="text-sm text-ink-muted mt-1">{t.sub}</p>
         </div>
         <div className="flex space-x-3">
           {role === 'Admin' && (
-            <button className="flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm">
-              <Download className="w-4 h-4 mr-2 text-gray-500" /> Export
+            <button className="flex items-center px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-page transition-colors shadow-sm">
+              <Download className="w-4 h-4 mr-2 text-ink-muted" /> Export
             </button>
           )}
           {/* Admin + Reception only — Nurse/Clinician never see a register entry. */}
           {(role === 'Admin' || role === 'Reception') && (
             <button
               onClick={() => openRegister()}
-              className="flex items-center min-h-11 px-4 py-2 bg-slate-600 text-white rounded-lg text-sm font-bold hover:bg-slate-700 transition-colors shadow-sm"
+              className="flex items-center min-h-11 px-4 py-2 btn-primary rounded-control text-sm font-bold transition-colors shadow-sm"
             >
               <UserPlus className="w-4 h-4 mr-2" /> Register Patient
             </button>
@@ -149,10 +149,10 @@ export function PatientsPage() {
 
   const Toolbar = () => {
     if (role === 'Admin') return (
-      <div className="bg-white border-b border-gray-200 px-8 py-3 flex items-center shrink-0 space-x-4">
+      <div className="bg-surface border-b border-divider px-6 py-3 flex items-center shrink-0 space-x-4">
         <div className="relative w-[280px]">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, ID, email..." className="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded text-sm outline-none focus:border-slate-500 bg-white shadow-sm" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
+          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, ID, email..." className="w-full pl-9 pr-3 py-2 border border-divider rounded-control text-sm outline-none focus:border-info bg-surface shadow-sm" />
         </div>
         <FilterSelect value={statusFilter} onChange={setStatusFilter} options={["Status: All", "Active", "Inactive", "New", "Pending Onboarding"]} />
         <FilterSelect value={clinicianFilter} onChange={setClinicianFilter} options={CLINICIAN_NAME_OPTIONS} />
@@ -162,15 +162,15 @@ export function PatientsPage() {
     );
 
     if (role === 'Reception') return (
-      <div className="bg-white border-b border-gray-200 px-8 py-3 flex items-center shrink-0 space-x-4">
+      <div className="bg-surface border-b border-divider px-6 py-3 flex items-center shrink-0 space-x-4">
         <div className="relative w-[280px]">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, phone, appt..." className="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded text-sm outline-none focus:border-slate-500 bg-white shadow-sm" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
+          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, phone, appt..." className="w-full pl-9 pr-3 py-2 border border-divider rounded-control text-sm outline-none focus:border-info bg-surface shadow-sm" />
         </div>
-        <div className="flex bg-gray-100 p-1 rounded-lg mr-2">
-          <button className="px-4 py-1 text-sm font-medium rounded text-gray-500 hover:text-gray-700">All Patients</button>
-          <button className="px-4 py-1 text-sm font-bold rounded bg-white text-gray-800 shadow-sm">Today's Appointments</button>
-          <button className="px-4 py-1 text-sm font-medium rounded text-gray-500 hover:text-gray-700">Awaiting Check-in</button>
+        <div className="flex bg-surface-hover p-1 rounded-control mr-2">
+          <button className="px-4 py-1 text-sm font-medium rounded-control text-ink-muted hover:text-ink-soft">All Patients</button>
+          <button className="px-4 py-1 text-sm font-bold rounded-control bg-surface text-ink shadow-sm">Today's Appointments</button>
+          <button className="px-4 py-1 text-sm font-medium rounded-control text-ink-muted hover:text-ink-soft">Awaiting Check-in</button>
         </div>
         <FilterSelect value={consentFilter} onChange={setConsentFilter} options={["Consent: All", "Signed", "Pending"]} />
         <FilterSelect value={paymentFilter} onChange={setPaymentFilter} options={["Payment: All", "Paid", "Unpaid"]} />
@@ -178,10 +178,10 @@ export function PatientsPage() {
     );
 
     if (role === 'Clinician') return (
-      <div className="bg-white border-b border-gray-200 px-8 py-3 flex items-center shrink-0 space-x-4">
+      <div className="bg-surface border-b border-divider px-6 py-3 flex items-center shrink-0 space-x-4">
         <div className="relative w-[280px]">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search my patients..." className="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded text-sm outline-none focus:border-slate-500 bg-white shadow-sm" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
+          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search my patients..." className="w-full pl-9 pr-3 py-2 border border-divider rounded-control text-sm outline-none focus:border-info bg-surface shadow-sm" />
         </div>
         <FilterSelect value={reviewFilter} onChange={setReviewFilter} options={["Review Status: All", "Results Pending Review", "Awaiting Sign-off"]} />
         <FilterSelect value={flagFilter} onChange={setFlagFilter} options={["Flag: All", "Urgent", "Follow-up"]} />
@@ -190,14 +190,14 @@ export function PatientsPage() {
     );
 
     if (role === 'Nurse') return (
-      <div className="bg-white border-b border-gray-200 px-8 py-3 flex items-center shrink-0 space-x-4">
+      <div className="bg-surface border-b border-divider px-6 py-3 flex items-center shrink-0 space-x-4">
         <div className="relative w-[280px]">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search my patients..." className="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded text-sm outline-none focus:border-slate-500 bg-white shadow-sm" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
+          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search my patients..." className="w-full pl-9 pr-3 py-2 border border-divider rounded-control text-sm outline-none focus:border-info bg-surface shadow-sm" />
         </div>
-        <div className="flex bg-gray-100 p-1 rounded-lg mr-2">
-          <button className="px-4 py-1 text-sm font-bold rounded bg-white text-gray-800 shadow-sm">Today's Patients</button>
-          <button className="px-4 py-1 text-sm font-medium rounded text-gray-500 hover:text-gray-700">All Assigned</button>
+        <div className="flex bg-surface-hover p-1 rounded-control mr-2">
+          <button className="px-4 py-1 text-sm font-bold rounded-control bg-surface text-ink shadow-sm">Today's Patients</button>
+          <button className="px-4 py-1 text-sm font-medium rounded-control text-ink-muted hover:text-ink-soft">All Assigned</button>
         </div>
         <FilterSelect value={journeyFilter} onChange={setJourneyFilter} options={["Journey Status: All", "In Progress", "Awaiting Start"]} />
       </div>
@@ -234,103 +234,103 @@ export function PatientsPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-full bg-gray-50">
+    <div className="flex flex-col min-h-full bg-surface-page">
       <Header />
       <Toolbar />
       <KPICards />
 
       {/* Table Area — grows with content; the page (AppShell) is the only
           scroll surface, so the card never grows its own inner scrollbar. */}
-      <div className="px-8 pb-8 flex flex-col relative">
-        <div className="bg-white border border-gray-300 rounded-xl overflow-hidden flex flex-col shadow-sm relative">
+      <div className="px-6 pb-4 flex flex-col relative">
+        <div className="bg-surface border border-divider rounded-card overflow-hidden flex flex-col shadow-sm relative">
           
           {/* Bulk Actions Bar (Admin only) */}
           {selectedIds.size > 0 && role === 'Admin' && (
-            <div className="bg-blue-50 border-b border-blue-200 px-4 py-2.5 flex items-center justify-between shrink-0 sticky top-0 z-40">
-              <span className="text-sm font-bold text-blue-800">{selectedIds.size} selected</span>
+            <div className="bg-info/10 border-b border-info/30 px-4 py-3 flex items-center justify-between shrink-0 sticky top-0 z-40">
+              <span className="text-sm font-bold text-info-ink">{selectedIds.size} selected</span>
               <div className="flex items-center space-x-2">
-                <button className="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 text-xs font-bold rounded shadow-sm hover:bg-blue-100">Assign Clinician</button>
-                <button className="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 text-xs font-bold rounded shadow-sm hover:bg-blue-100">Assign Nurse</button>
-                <button className="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 text-xs font-bold rounded shadow-sm hover:bg-blue-100">Change Group</button>
-                <button className="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 text-xs font-bold rounded shadow-sm hover:bg-blue-100">Export Selected</button>
-                <button onClick={() => setSelectedIds(new Set())} className="px-3 py-1.5 text-blue-600 hover:text-blue-800 text-xs font-bold ml-2">Deselect All</button>
+                <button className="px-3 py-1.5 bg-surface border border-info/30 text-info-ink text-xs font-bold rounded-control shadow-sm hover:bg-info/15">Assign Clinician</button>
+                <button className="px-3 py-1.5 bg-surface border border-info/30 text-info-ink text-xs font-bold rounded-control shadow-sm hover:bg-info/15">Assign Nurse</button>
+                <button className="px-3 py-1.5 bg-surface border border-info/30 text-info-ink text-xs font-bold rounded-control shadow-sm hover:bg-info/15">Change Group</button>
+                <button className="px-3 py-1.5 bg-surface border border-info/30 text-info-ink text-xs font-bold rounded-control shadow-sm hover:bg-info/15">Export Selected</button>
+                <button onClick={() => setSelectedIds(new Set())} className="px-3 py-1.5 text-info-ink hover:opacity-90 text-xs font-bold ml-2">Deselect All</button>
               </div>
             </div>
           )}
 
           <div className="relative">
             <table className="w-full text-left border-collapse text-sm [&_th]:!px-3 [&_td]:!px-3">
-              <thead className="bg-gray-50 sticky top-0 z-30 shadow-[0_1px_0_#e5e7eb]">
+              <thead className="bg-surface-page sticky top-0 z-30 shadow-[0_1px_0_var(--border-strong)]">
                 <tr>
-                  {role === 'Admin' && <th className="p-4 w-[40px] border-b border-gray-200 sticky left-0 z-40 bg-gray-50 shadow-[1px_0_0_#e5e7eb]"><input type="checkbox" onChange={toggleSelectAll} checked={selectedIds.size === patients.length && patients.length > 0} className="rounded text-slate-600 focus:ring-slate-500" /></th>}
-                  <th className={`p-4 font-bold text-gray-600 border-b border-gray-200 sticky left-[${role==='Admin'?'40px':'0px'}] z-40 bg-gray-50 w-[180px] shadow-[1px_0_0_#e5e7eb] cursor-pointer hover:bg-gray-100`}>Patient</th>
+                  {role === 'Admin' && <th className="p-4 w-[40px] border-b border-divider sticky left-0 z-40 bg-surface-page shadow-[1px_0_0_var(--border-strong)]"><input type="checkbox" onChange={toggleSelectAll} checked={selectedIds.size === patients.length && patients.length > 0} className="rounded-control text-ink-soft focus:ring-info" /></th>}
+                  <th className={`p-4 font-bold text-ink-soft border-b border-divider sticky left-[${role==='Admin'?'40px':'0px'}] z-40 bg-surface-page w-[180px] shadow-[1px_0_0_var(--border-strong)] cursor-pointer hover:bg-surface-hover`}>Patient</th>
                   
                   {role === 'Admin' && (
                     <>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Contact</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Age / Sex</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Group</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Assigned Clinician</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Assigned Nurse</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Status</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Last Visit</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Next Appt</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-center">Actions</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Contact</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Age / Sex</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Group</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Assigned Clinician</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Assigned Nurse</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Status</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Last Visit</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Next Appt</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-center">Actions</th>
                     </>
                   )}
 
                   {role === 'Reception' && (
                     <>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Phone</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Today's Appt</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Clinician</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Consent</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Payment</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Check-in</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Journey</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-center w-[120px]">Actions</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Phone</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Today's Appt</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Clinician</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Consent</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Payment</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Check-in</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Journey</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-center w-[120px]">Actions</th>
                     </>
                   )}
 
                   {role === 'Clinician' && (
                     <>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Age / Sex</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Flag</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Review Status</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Last Visit</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Next Appt</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-center">Actions</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Age / Sex</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Flag</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Review Status</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Last Visit</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Next Appt</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-center">Actions</th>
                     </>
                   )}
 
                   {role === 'Nurse' && (
                     <>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Today's Appt</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Clinician</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Journey</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Waiting Since</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200">Room</th>
-                      <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-center w-[100px]">Actions</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Today's Appt</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Clinician</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Journey</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Waiting Since</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Room</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-center w-[100px]">Actions</th>
                     </>
                   )}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-divider">
                 {patients.length === 0 ? (
                   <tr>
-                    <td colSpan={10} className="p-16 text-center text-gray-500">
+                    <td colSpan={10} className="p-6 text-center text-ink-muted">
                       {/* A search that finds nobody is the walk-in signal: offer to
                           register the typed name straight away. Filter-only misses
                           keep the plain message — there's no name to seed. */}
                       {search && (role === 'Admin' || role === 'Reception') ? (
                         <>
-                          <div className="text-lg font-bold mb-2 text-gray-700">No patients found</div>
-                          <p className="mb-5">Nobody matches “{search}”.</p>
+                          <div className="text-lg font-bold mb-2 text-ink-soft">No patients found</div>
+                          <p className="mb-4">Nobody matches “{search}”.</p>
                           <button
                             onClick={() => openRegister(search)}
-                            className="inline-flex items-center gap-2 min-h-11 px-4 py-2 border border-gray-300 rounded-lg text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 hover:border-slate-400 transition-colors shadow-sm"
+                            className="inline-flex items-center gap-2 min-h-11 px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-page hover:border-border-strong transition-colors shadow-sm"
                           >
-                            <UserPlus className="w-4 h-4 text-gray-500" /> Register “{search}” as new patient
+                            <UserPlus className="w-4 h-4 text-ink-muted" /> Register “{search}” as new patient
                           </button>
                         </>
                       ) : (
@@ -343,13 +343,13 @@ export function PatientsPage() {
                   </tr>
                 ) : patients.map(p => {
                   const isSelected = selectedIds.has(p.id);
-                  let rowBg = "bg-white hover:bg-slate-50";
-                  if (isSelected) rowBg = "bg-slate-50";
+                  let rowBg = "bg-surface hover:bg-surface-page";
+                  if (isSelected) rowBg = "bg-surface-page";
 
                   // Reception visual cues
                   const isTodayRec = role === 'Reception' && p.nextAppt?.includes("3 Jul");
                   const hasIssueRec = role === 'Reception' && isTodayRec && (p.consent !== 'Signed' || p.payment === 'Unpaid');
-                  if (isTodayRec && hasIssueRec) rowBg = "bg-red-50/50 hover:bg-red-50";
+                  if (isTodayRec && hasIssueRec) rowBg = "bg-danger/5 hover:bg-danger/10";
 
                   return (
                     <tr 
@@ -358,19 +358,19 @@ export function PatientsPage() {
                       className={`cursor-pointer group relative transition-colors ${rowBg}`}
                     >
                       {role === 'Admin' && (
-                        <td className="p-4 border-r border-gray-200 sticky left-0 z-10 shadow-[1px_0_0_#e5e7eb] bg-white group-hover:bg-slate-50 transition-colors w-[40px]" onClick={e => e.stopPropagation()}>
-                          <input type="checkbox" checked={isSelected} onChange={(e) => toggleSelect(p.id, e as any)} className="rounded text-slate-600 focus:ring-slate-500" />
+                        <td className="p-4 border-r border-divider sticky left-0 z-10 shadow-[1px_0_0_var(--border-strong)] bg-surface group-hover:bg-surface-page transition-colors w-[40px]" onClick={e => e.stopPropagation()}>
+                          <input type="checkbox" checked={isSelected} onChange={(e) => toggleSelect(p.id, e as any)} className="rounded-control text-ink-soft focus:ring-info" />
                         </td>
                       )}
                       
-                      <td className={`p-4 border-r border-gray-200 sticky z-10 shadow-[1px_0_0_#e5e7eb] bg-white group-hover:bg-slate-50 transition-colors w-[180px] ${role === 'Admin' ? 'left-[40px]' : 'left-0'}`}>
+                      <td className={`p-4 border-r border-divider sticky z-10 shadow-[1px_0_0_var(--border-strong)] bg-surface group-hover:bg-surface-page transition-colors w-[180px] ${role === 'Admin' ? 'left-[40px]' : 'left-0'}`}>
                         <div className="flex items-center">
-                          <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-white shrink-0 mr-3">
+                          <div className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-xs font-bold text-ink-soft shrink-0 mr-3">
                             {p.avatar}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <div className="text-sm font-bold text-gray-800 truncate leading-tight group-hover:underline">{p.name}</div>
-                            <div className="text-[10px] text-gray-400 font-medium">{p.patientId}</div>
+                            <div className="text-sm font-bold text-ink truncate leading-tight group-hover:underline">{p.name}</div>
+                            <div className="text-label text-ink-muted">{p.patientId}</div>
                           </div>
                         </div>
                       </td>
@@ -379,34 +379,34 @@ export function PatientsPage() {
                       {role === 'Admin' && (
                         <>
                           <td className="p-4">
-                            <div className="font-medium text-gray-800">{p.phone}</div>
-                            <div className="text-[10px] text-gray-500">{p.email}</div>
+                            <div className="font-medium text-ink">{p.phone}</div>
+                            <div className="text-label text-ink-muted">{p.email}</div>
                           </td>
-                          <td className="p-4 text-gray-600 font-medium">{ageSexLabel(p)}</td>
+                          <td className="p-4 text-ink-soft font-medium">{ageSexLabel(p)}</td>
                           <td className="p-4">
-                            <span className={`px-2 py-0.5 text-[10px] font-bold rounded 
-                              ${p.group === 'VIP' ? 'bg-amber-100 text-amber-800' : 
-                                p.group === 'Corporate' ? 'bg-blue-100 text-blue-800' : 
-                                p.group === 'Insurance' ? 'bg-emerald-100 text-emerald-800' : 
-                                p.group === 'Walk-in' ? 'bg-gray-200 text-gray-700' : 'text-gray-400'}`}>
+                            <span className={`px-2 py-0.5 text-label font-bold rounded-control
+                              ${p.group === 'VIP' ? 'bg-warning/15 text-warning-ink' :
+                                p.group === 'Corporate' ? 'bg-info/15 text-info-ink' :
+                                p.group === 'Insurance' ? 'bg-success/15 text-success-ink' :
+                                p.group === 'Walk-in' ? 'bg-surface-sunken text-ink-soft' : 'text-ink-muted'}`}>
                               {p.group}
                             </span>
                           </td>
-                          <td className={`p-4 font-medium ${!p.clinician ? 'text-orange-600' : 'text-gray-700'}`}>{p.clinician || 'Unassigned'}</td>
-                          <td className="p-4 text-gray-600">{p.nurse || '—'}</td>
+                          <td className={`p-4 font-medium ${!p.clinician ? 'text-warning-ink' : 'text-ink-soft'}`}>{p.clinician || 'Unassigned'}</td>
+                          <td className="p-4 text-ink-soft">{p.nurse || '—'}</td>
                           <td className="p-4">
-                            <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border
-                              ${p.status === 'Active' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 
-                                p.status === 'Inactive' ? 'bg-gray-50 text-gray-500 border-gray-200' : 
-                                p.status === 'New' ? 'bg-blue-50 text-blue-700 border-blue-200' : 
-                                'bg-orange-50 text-orange-700 border-orange-200'}`}>
+                            <span className={`px-2 py-0.5 text-overline rounded-control border
+                              ${p.status === 'Active' ? 'bg-success/10 text-success-ink border-success/30' :
+                                p.status === 'Inactive' ? 'bg-surface-page text-ink-muted border-divider' :
+                                p.status === 'New' ? 'bg-info/10 text-info-ink border-info/30' :
+                                'bg-warning/10 text-warning-ink border-warning/30'}`}>
                               {p.status}
                             </span>
                           </td>
-                          <td className={`p-4 ${p.lastVisit === 'Never' ? 'text-gray-400 italic' : 'text-gray-600 font-medium'}`}>{p.lastVisit}</td>
-                          <td className="p-4 text-gray-600">{p.nextAppt || '—'}</td>
+                          <td className={`p-4 ${p.lastVisit === 'Never' ? 'text-ink-muted italic' : 'text-ink-soft font-medium'}`}>{p.lastVisit}</td>
+                          <td className="p-4 text-ink-soft">{p.nextAppt || '—'}</td>
                           <td className="p-4 text-center">
-                            <button onClick={(e) => { e.stopPropagation(); toast('Open actions menu'); }} className="p-1.5 text-gray-400 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors">
+                            <button onClick={(e) => { e.stopPropagation(); toast('Open actions menu'); }} className="p-2 text-ink-muted hover:text-ink hover:bg-surface-sunken rounded-control transition-colors">
                               <MoreHorizontal className="w-4 h-4" />
                             </button>
                           </td>
@@ -416,56 +416,56 @@ export function PatientsPage() {
                       {/* --- Reception Cols --- */}
                       {role === 'Reception' && (
                         <>
-                          <td className="p-4 text-blue-600 font-medium hover:underline flex items-center pt-5">
+                          <td className="p-4 text-info-ink font-medium hover:underline flex items-center pt-4">
                             <Phone className="w-3.5 h-3.5 mr-1" /> {p.phone}
                           </td>
-                          <td className="p-4 font-bold text-gray-800">{isTodayRec ? p.nextAppt : '—'}</td>
-                          <td className="p-4 text-gray-600">{p.clinician}</td>
+                          <td className="p-4 font-bold text-ink">{isTodayRec ? p.nextAppt : '—'}</td>
+                          <td className="p-4 text-ink-soft">{p.clinician}</td>
                           <td className="p-4">
-                            <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border flex items-center w-max
-                              ${p.consent === 'Signed' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 
-                                p.consent === 'Pending' ? 'bg-orange-50 text-orange-700 border-orange-200' : 
-                                p.consent === 'Not Sent' ? 'bg-red-50 text-red-700 border-red-200' :
-                                'bg-gray-50 text-gray-400 border-gray-200'}`}>
+                            <span className={`px-2 py-0.5 text-overline rounded-control border flex items-center w-max
+                              ${p.consent === 'Signed' ? 'bg-success/10 text-success-ink border-success/30' :
+                                p.consent === 'Pending' ? 'bg-warning/10 text-warning-ink border-warning/30' :
+                                p.consent === 'Not Sent' ? 'bg-danger/10 text-danger-ink border-danger/30' :
+                                'bg-surface-page text-ink-muted border-divider'}`}>
                               {p.consent === 'Signed' && <Check className="w-3 h-3 mr-1" />}
                               {p.consent}
                             </span>
                           </td>
                           <td className="p-4">
-                            <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border flex items-center w-max
-                              ${p.payment === 'Paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 
-                                p.payment === 'Partial' ? 'bg-orange-50 text-orange-700 border-orange-200' : 
-                                p.payment === 'Unpaid' ? 'bg-red-50 text-red-700 border-red-200' :
-                                'bg-gray-50 text-gray-400 border-gray-200'}`}>
+                            <span className={`px-2 py-0.5 text-overline rounded-control border flex items-center w-max
+                              ${p.payment === 'Paid' ? 'bg-success/10 text-success-ink border-success/30' :
+                                p.payment === 'Partial' ? 'bg-warning/10 text-warning-ink border-warning/30' :
+                                p.payment === 'Unpaid' ? 'bg-danger/10 text-danger-ink border-danger/30' :
+                                'bg-surface-page text-ink-muted border-divider'}`}>
                               {p.payment === 'Paid' && <Check className="w-3 h-3 mr-1" />}
                               {p.payment}
                             </span>
                           </td>
                           <td className="p-4">
-                            <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border flex items-center w-max
-                              ${p.checkIn === 'Checked In' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 
-                                p.checkIn === 'Waiting' ? 'bg-orange-50 text-orange-700 border-orange-200' : 
-                                p.checkIn === 'Completed' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                'bg-gray-50 text-gray-400 border-transparent'}`}>
+                            <span className={`px-2 py-0.5 text-overline rounded-control border flex items-center w-max
+                              ${p.checkIn === 'Checked In' ? 'bg-success/10 text-success-ink border-success/30' :
+                                p.checkIn === 'Waiting' ? 'bg-warning/10 text-warning-ink border-warning/30' :
+                                p.checkIn === 'Completed' ? 'bg-info/10 text-info-ink border-info/30' :
+                                'bg-surface-page text-ink-muted border-transparent'}`}>
                               {p.checkIn}
                             </span>
                           </td>
                           <td className="p-4">
                             {p.journeyStep ? (
-                              <div className="text-xs text-gray-600 font-medium">Consent → <span className="font-bold text-gray-800">{p.journeyStep}</span></div>
-                            ) : <span className="text-gray-400">—</span>}
+                              <div className="text-xs text-ink-soft font-medium">Consent → <span className="font-bold text-ink">{p.journeyStep}</span></div>
+                            ) : <span className="text-ink-muted">—</span>}
                           </td>
                           <td className="p-4 text-center">
                             {p.checkIn === 'Waiting' && p.consent === 'Signed' && p.payment === 'Paid' && (
-                              <button onClick={e => { e.stopPropagation(); toast('Checked in'); }} className="px-3 py-1.5 bg-emerald-600 text-white text-[10px] font-bold rounded shadow-sm hover:bg-emerald-700">Check In</button>
+                              <button onClick={e => { e.stopPropagation(); toast('Checked in'); }} className="px-3 py-2 bg-success-ink text-white text-overline rounded-control shadow-sm hover:opacity-90 touch-extend">Check In</button>
                             )}
                             {p.checkIn === 'Waiting' && (p.consent !== 'Signed' || p.payment !== 'Paid') && (
-                              <button onClick={e => e.stopPropagation()} className="px-3 py-1.5 bg-gray-200 text-gray-400 text-[10px] font-bold rounded cursor-not-allowed" title="Complete consent and payment first">Check In</button>
+                              <button onClick={e => e.stopPropagation()} className="px-3 py-2 bg-surface-sunken text-ink-muted text-overline rounded-control cursor-not-allowed" title="Complete consent and payment first">Check In</button>
                             )}
                             {p.checkIn === 'Checked In' && (
-                              <button onClick={e => { e.stopPropagation(); toast('Checked out'); }} className="px-3 py-1.5 bg-blue-600 text-white text-[10px] font-bold rounded shadow-sm hover:bg-blue-700">Check Out</button>
+                              <button onClick={e => { e.stopPropagation(); toast('Checked out'); }} className="px-3 py-2 bg-info-ink text-white text-overline rounded-control shadow-sm hover:opacity-90 touch-extend">Check Out</button>
                             )}
-                            {p.checkIn !== 'Waiting' && p.checkIn !== 'Checked In' && <span className="text-gray-400">—</span>}
+                            {p.checkIn !== 'Waiting' && p.checkIn !== 'Checked In' && <span className="text-ink-muted">—</span>}
                           </td>
                         </>
                       )}
@@ -473,33 +473,33 @@ export function PatientsPage() {
                       {/* --- Clinician Cols --- */}
                       {role === 'Clinician' && (
                         <>
-                          <td className="p-4 text-gray-600 font-medium">{ageSexLabel(p)}</td>
+                          <td className="p-4 text-ink-soft font-medium">{ageSexLabel(p)}</td>
                           <td className="p-4 text-center" onClick={e => e.stopPropagation()}>
-                            {p.flag === 'Urgent' && <div className="w-5 h-5 rounded-full bg-red-100 flex items-center justify-center cursor-pointer"><div className="w-2.5 h-2.5 bg-red-600 rounded-full" /></div>}
-                            {p.flag === 'Follow-up' && <div className="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center cursor-pointer"><div className="w-2.5 h-2.5 bg-orange-500 rounded-full" /></div>}
-                            {p.flag === 'Watch' && <div className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center cursor-pointer"><div className="w-2.5 h-2.5 bg-amber-400 rounded-full" /></div>}
-                            {p.flag === 'No flag' && <div className="w-5 h-5 rounded-full border-2 border-gray-200 flex items-center justify-center cursor-pointer hover:border-gray-300" />}
+                            {p.flag === 'Urgent' && <div className="w-5 h-5 rounded-full bg-danger/15 flex items-center justify-center cursor-pointer touch-extend"><div className="w-2.5 h-2.5 bg-danger rounded-full" /></div>}
+                            {p.flag === 'Follow-up' && <div className="w-5 h-5 rounded-full bg-warning/15 flex items-center justify-center cursor-pointer touch-extend"><div className="w-2.5 h-2.5 bg-warning rounded-full" /></div>}
+                            {p.flag === 'Watch' && <div className="w-5 h-5 rounded-full bg-warning/15 flex items-center justify-center cursor-pointer touch-extend"><div className="w-2.5 h-2.5 bg-warning rounded-full" /></div>}
+                            {p.flag === 'No flag' && <div className="w-5 h-5 rounded-full border-2 border-divider flex items-center justify-center cursor-pointer hover:border-border-strong touch-extend" />}
                           </td>
                           <td className="p-4">
-                            <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border
-                              ${p.reviewStatus === 'Results Pending' ? 'bg-blue-50 text-blue-700 border-blue-200' : 
-                                p.reviewStatus === 'Awaiting Sign-off' ? 'bg-orange-50 text-orange-700 border-orange-200' : 
-                                p.reviewStatus === 'Follow-up Due' ? 'bg-purple-50 text-purple-700 border-purple-200' : 
-                                'bg-emerald-50 text-emerald-700 border-emerald-200'}`}>
+                            <span className={`px-2 py-0.5 text-overline rounded-control border
+                              ${p.reviewStatus === 'Results Pending' ? 'bg-info/10 text-info-ink border-info/30' :
+                                p.reviewStatus === 'Awaiting Sign-off' ? 'bg-warning/10 text-warning-ink border-warning/30' :
+                                p.reviewStatus === 'Follow-up Due' ? 'bg-special/10 text-special-ink border-special/30' :
+                                'bg-success/10 text-success-ink border-success/30'}`}>
                               {p.reviewStatus}
                             </span>
                           </td>
-                          <td className="p-4 text-gray-600 font-medium">{p.lastVisit}</td>
+                          <td className="p-4 text-ink-soft font-medium">{p.lastVisit}</td>
                           <td className="p-4">
                             {p.nextAppt ? (
                               <div>
-                                <div className="font-bold text-gray-800">{p.nextAppt}</div>
-                                <div className="text-[10px] text-gray-500 uppercase font-bold mt-0.5">in 2 days</div>
+                                <div className="font-bold text-ink">{p.nextAppt}</div>
+                                <div className="text-overline text-ink-muted mt-1">in 2 days</div>
                               </div>
-                            ) : <span className="text-gray-400">—</span>}
+                            ) : <span className="text-ink-muted">—</span>}
                           </td>
                           <td className="p-4 text-center">
-                            <button onClick={(e) => { e.stopPropagation(); toast('Open actions menu'); }} className="p-1.5 text-gray-400 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors">
+                            <button onClick={(e) => { e.stopPropagation(); toast('Open actions menu'); }} className="p-2 text-ink-muted hover:text-ink hover:bg-surface-sunken rounded-control transition-colors">
                               <MoreHorizontal className="w-4 h-4" />
                             </button>
                           </td>
@@ -509,18 +509,18 @@ export function PatientsPage() {
                       {/* --- Nurse Cols --- */}
                       {role === 'Nurse' && (
                         <>
-                          <td className="p-4 font-bold text-gray-800">{p.nextAppt}</td>
-                          <td className="p-4 text-gray-600 font-medium">{p.clinician}</td>
+                          <td className="p-4 font-bold text-ink">{p.nextAppt}</td>
+                          <td className="p-4 text-ink-soft font-medium">{p.clinician}</td>
                           <td className="p-4">
                             {(() => {
                               const appt = primaryApptForPatient(appts, p.patientId);
-                              return appt ? <JourneyProgressChip appt={appt} /> : <span className="text-gray-400">—</span>;
+                              return appt ? <JourneyProgressChip appt={appt} /> : <span className="text-ink-muted">—</span>;
                             })()}
                           </td>
-                          <td className="p-4 font-bold text-orange-600">12 min</td>
-                          <td className="p-4 text-gray-600 font-medium">Room 3</td>
+                          <td className="p-4 font-bold text-warning-ink">12 min</td>
+                          <td className="p-4 text-ink-soft font-medium">Room 3</td>
                           <td className="p-4 text-center">
-                            <button onClick={e => { e.stopPropagation(); toast('Action clicked'); }} className="px-3 py-1.5 bg-slate-600 text-white text-[10px] font-bold rounded shadow-sm hover:bg-slate-700">Continue</button>
+                            <button onClick={e => { e.stopPropagation(); toast('Action clicked'); }} className="px-3 py-2 btn-primary text-overline rounded-control shadow-sm touch-extend">Continue</button>
                           </td>
                         </>
                       )}
@@ -533,12 +533,12 @@ export function PatientsPage() {
           
           {/* Footer / Pagination */}
           {patients.length > 0 && (
-            <div className="h-12 border-t border-gray-200 bg-white flex items-center justify-between px-6 shrink-0">
-              <div className="text-xs text-gray-500 font-medium">Showing 1–{patients.length} of {patients.length} patients</div>
+            <div className="h-12 border-t border-divider bg-surface flex items-center justify-between px-4 shrink-0">
+              <div className="text-xs text-ink-muted font-medium">Showing 1–{patients.length} of {patients.length} patients</div>
               <div className="flex items-center space-x-1">
-                <button className="px-2 py-1 text-xs font-bold text-gray-400 hover:text-gray-700 border border-transparent hover:bg-gray-200 rounded transition-colors" disabled>Previous</button>
-                <button className="px-2 py-1 text-xs font-bold text-slate-600 border border-slate-300 bg-gray-50 rounded shadow-sm">1</button>
-                <button className="px-2 py-1 text-xs font-bold text-gray-600 hover:text-gray-800 border border-transparent hover:bg-gray-200 rounded transition-colors">Next</button>
+                <button className="px-2 py-1 text-xs font-bold text-ink-muted hover:text-ink-soft border border-transparent hover:bg-surface-sunken rounded-control transition-colors" disabled>Previous</button>
+                <button className="px-2 py-1 text-xs font-bold text-ink-soft border border-divider bg-surface-page rounded-control shadow-sm">1</button>
+                <button className="px-2 py-1 text-xs font-bold text-ink-soft hover:text-ink border border-transparent hover:bg-surface-sunken rounded-control transition-colors">Next</button>
               </div>
             </div>
           )}

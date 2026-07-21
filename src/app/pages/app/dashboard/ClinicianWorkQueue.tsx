@@ -5,15 +5,15 @@ import { CLINICIAN_REVIEW_QUEUE, QueueItem } from "./clinicianDashboardData";
 
 function QueueRow({ item, onAction }: { item: QueueItem; onAction: () => void }) {
   return (
-    <div className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50 gap-2">
+    <div className="flex items-center justify-between px-4 py-2.5 hover:bg-surface-page gap-2">
       <div className="min-w-0">
-        <div className="text-sm font-medium text-gray-800 truncate">{item.patient}</div>
-        <div className="text-xs text-gray-400 flex items-center gap-1.5">
+        <div className="text-sm font-medium text-ink truncate">{item.patient}</div>
+        <div className="text-xs text-ink-muted flex items-center gap-1.5">
           {item.test} · {item.submitted}
-          {item.overdue && <span className="text-[10px] font-bold text-red-600 flex items-center gap-0.5"><AlertTriangle className="w-3 h-3" /> Overdue</span>}
+          {item.overdue && <span className="text-label font-bold text-danger-ink flex items-center gap-0.5"><AlertTriangle className="w-3 h-3" /> Overdue</span>}
         </div>
       </div>
-      <button onClick={onAction} className="px-3 py-1.5 text-[11px] font-bold text-slate-700 border border-slate-300 bg-slate-50 rounded hover:bg-slate-100 shrink-0">
+      <button onClick={onAction} className="px-3 py-1.5 text-label font-bold text-ink-soft border border-divider bg-surface-page rounded-control hover:bg-surface-hover shrink-0">
         Review
       </button>
     </div>
@@ -23,7 +23,7 @@ function QueueRow({ item, onAction }: { item: QueueItem; onAction: () => void })
 // Single-purpose Work Queue card: results awaiting a first look. The queue
 // used to be segmented Review/Sign-off, but sign-off happens elsewhere now —
 // this card only ever shows Review, so there's nothing left to toggle. Shares
-// ClinicianScheduleList's ("Today's Schedule") exact shell — same rounded-xl
+// ClinicianScheduleList's ("Today's Schedule") exact shell — same rounded-card
 // border, same bordered/tinted header bar — so the two cards stacked in the
 // dashboard's two columns read as one consistent card language instead of
 // two different ones (this one used to be a plain h-12 header with no tint).
@@ -32,18 +32,18 @@ export function ClinicianWorkQueue() {
   const sorted = [...CLINICIAN_REVIEW_QUEUE].sort((a, b) => Number(b.overdue) - Number(a.overdue));
 
   return (
-    <div className="border border-gray-200 rounded-xl shadow-sm bg-white flex flex-col h-full min-h-0">
-      <div className="border-b border-gray-200 bg-gray-50/70 px-4 py-2.5 flex items-center justify-between shrink-0">
-        <h3 className="font-bold text-gray-800 text-sm">Work Queue</h3>
-        <span className="text-xs font-semibold text-gray-400">{sorted.length} pending review</span>
+    <div className="border border-divider rounded-card shadow-sm bg-surface flex flex-col h-full min-h-0">
+      <div className="border-b border-divider bg-surface-page/70 px-4 py-2.5 flex items-center justify-between shrink-0">
+        <h3 className="font-bold text-ink text-sm">Work Queue</h3>
+        <span className="text-xs font-semibold text-ink-muted">{sorted.length} pending review</span>
       </div>
       <div className="flex-1 overflow-y-auto min-h-0">
         {sorted.length === 0 ? (
-          <div className="h-full flex items-center justify-center gap-2 text-sm font-medium text-gray-400">
-            <CheckCircle2 className="w-4 h-4 text-emerald-500" /> All clear
+          <div className="h-full flex items-center justify-center gap-2 text-sm font-medium text-ink-muted">
+            <CheckCircle2 className="w-4 h-4 text-success-ink" /> All clear
           </div>
         ) : (
-          <div className="divide-y divide-gray-100">
+          <div className="divide-y divide-divider">
             {sorted.map((item) => (
               <QueueRow key={`${item.patient}-${item.test}`} item={item} onAction={() => nav("/patients/P-001/results")} />
             ))}

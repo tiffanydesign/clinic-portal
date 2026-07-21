@@ -168,32 +168,32 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <div className="flex h-screen w-screen min-w-[1024px] bg-white text-gray-800 font-sans overflow-hidden">
-      <div className={`${sidebarCollapsed ? "w-16" : "w-60"} bg-white border-r border-gray-300 flex flex-col shrink-0 transition-[width] duration-200 ease-out`}>
+    <div className="flex h-screen w-screen min-w-[1024px] bg-surface text-ink font-sans overflow-hidden">
+      <div className={`${sidebarCollapsed ? "w-16" : "w-60"} bg-surface border-r border-divider flex flex-col shrink-0 transition-[width] duration-200 ease-out`}>
         {/* Brand + collapse toggle. Collapsed: the logo mark doubles as the
             expand affordance, so a 64px rail isn't split between mark + button. */}
-        <div className={`h-16 flex items-center border-b border-gray-300 shrink-0 ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-4"}`}>
+        <div className={`h-16 flex items-center border-b border-divider shrink-0 ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-4"}`}>
           {sidebarCollapsed ? (
             <button
               onClick={toggleSidebar}
               title="Expand sidebar"
               aria-label="Expand sidebar"
-              className="group p-1.5 rounded-lg hover:bg-gray-100 transition-colors flex items-center justify-center"
+              className="group p-1.5 rounded-card hover:bg-surface-hover transition-colors flex items-center justify-center"
             >
               <img src={epLogo} alt="Phenome" className="h-7 w-auto group-hover:hidden" />
-              <PanelLeftOpen className="w-5 h-5 text-gray-400 hidden group-hover:block" />
+              <PanelLeftOpen className="w-5 h-5 text-ink-muted hidden group-hover:block" />
             </button>
           ) : (
             <>
               <span className="flex items-center gap-2 min-w-0">
                 <img src={epLogo} alt="Phenome" className="h-6 w-auto shrink-0" />
-                <span className="font-bold text-sm text-gray-800 tracking-tight truncate">Phenome Portal</span>
+                <span className="font-bold text-sm text-ink tracking-tight truncate">Phenome Portal</span>
               </span>
               <button
                 onClick={toggleSidebar}
                 title="Collapse sidebar"
                 aria-label="Collapse sidebar"
-                className="w-11 h-11 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
+                className="w-11 h-11 flex items-center justify-center text-ink-muted hover:text-ink-soft hover:bg-surface-hover rounded-card transition-colors shrink-0"
               >
                 <PanelLeftClose className="w-5 h-5" />
               </button>
@@ -202,14 +202,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Search — inline field expanded, icon-to-overlay collapsed */}
-        <div className={`shrink-0 border-b border-gray-200 ${sidebarCollapsed ? "py-2 flex justify-center" : "px-3 py-3"}`}>
+        <div className={`shrink-0 border-b border-divider ${sidebarCollapsed ? "py-2 flex justify-center" : "px-3 py-3"}`}>
           {sidebarCollapsed ? (
             <button
               onClick={() => setSearchOverlayOpen(true)}
               title="Search"
               aria-label="Search"
               {...longPressHandlers("Search")}
-              className="w-12 h-12 flex items-center justify-center text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="w-12 h-12 flex items-center justify-center text-ink-muted hover:text-ink-soft hover:bg-surface-hover rounded-card transition-colors"
             >
               <Search className="w-5 h-5" />
             </button>
@@ -238,26 +238,26 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       setCalendarExpanded(!isInlineExpanded);
                     }}
                     {...longPressHandlers(item.label)}
-                    className={`w-full flex items-center rounded-lg cursor-pointer transition-colors ${sidebarCollapsed ? "justify-center h-12" : "justify-between px-3 min-h-11 py-2.5"} text-sm font-medium ${isActive ? "bg-slate-100 text-slate-800" : "text-gray-600 hover:bg-gray-50"}`}
+                    className={`w-full flex items-center rounded-card cursor-pointer transition-colors ${sidebarCollapsed ? "justify-center h-12" : "justify-between px-3 min-h-11 py-2.5"} text-sm font-medium ${isActive ? "bg-surface-hover text-ink" : "text-ink-soft hover:bg-surface-page"}`}
                   >
                     <span className="flex items-center gap-3 min-w-0">
                       <Icon className="w-[18px] h-[18px] shrink-0" />
                       {!sidebarCollapsed && <span className="truncate">{item.label}</span>}
                     </span>
-                    {!sidebarCollapsed && (isInlineExpanded ? <ChevronDown className="w-4 h-4 text-gray-400 shrink-0" /> : <ChevronRight className="w-4 h-4 text-gray-400 shrink-0" />)}
+                    {!sidebarCollapsed && (isInlineExpanded ? <ChevronDown className="w-4 h-4 text-ink-muted shrink-0" /> : <ChevronRight className="w-4 h-4 text-ink-muted shrink-0" />)}
                   </div>
 
                   {isInlineExpanded && (
-                    <div className="flex flex-col bg-slate-50/60 rounded-lg py-1 mt-0.5">
+                    <div className="flex flex-col bg-surface-page/60 rounded-card py-1 mt-0.5">
                       {item.children.map(child => {
                         const isChildActive = location.pathname.startsWith(child.path);
                         return (
                           <Link
                             key={child.label}
                             to={child.path}
-                            className={`flex items-center pl-8 pr-3 min-h-11 py-2.5 rounded-lg text-sm font-medium transition-colors ${isChildActive ? "bg-slate-200 text-slate-800" : "text-gray-500 hover:bg-slate-100 hover:text-gray-700"}`}
+                            className={`flex items-center pl-4 pr-3 min-h-11 py-2.5 rounded-card text-sm font-medium transition-colors ${isChildActive ? "bg-surface-sunken text-ink" : "text-ink-muted hover:bg-surface-hover hover:text-ink-soft"}`}
                           >
-                            <span className="w-1 h-1 rounded-full bg-slate-400 mr-2 shrink-0"></span>
+                            <span className="w-1 h-1 rounded-full bg-ink-muted mr-2 shrink-0"></span>
                             {child.label}
                           </Link>
                         );
@@ -267,8 +267,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
                   {sidebarCollapsed && calendarFlyoutOpen && (
                     <FloatingPopover anchorRef={calendarAnchorRef} onClose={() => setCalendarFlyoutOpen(false)} align="left">
-                      <div className="w-52 bg-white border border-gray-200 rounded-lg shadow-lg py-1.5">
-                        <div className="px-3 pb-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider">{item.label}</div>
+                      <div className="w-52 bg-surface border border-divider rounded-card shadow-lg py-1.5">
+                        <div className="px-3 pb-1.5 text-label font-bold text-ink-muted uppercase tracking-wider">{item.label}</div>
                         {item.children.map(child => {
                           const isChildActive = location.pathname.startsWith(child.path);
                           return (
@@ -276,7 +276,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                               key={child.label}
                               to={child.path}
                               onClick={() => setCalendarFlyoutOpen(false)}
-                              className={`flex items-center min-h-11 py-2.5 px-3 text-sm font-medium transition-colors ${isChildActive ? "bg-slate-100 text-slate-800" : "text-gray-600 hover:bg-gray-50"}`}
+                              className={`flex items-center min-h-11 py-2.5 px-3 text-sm font-medium transition-colors ${isChildActive ? "bg-surface-hover text-ink" : "text-ink-soft hover:bg-surface-page"}`}
                             >
                               {child.label}
                             </Link>
@@ -294,17 +294,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 key={item.label}
                 to={item.path}
                 {...longPressHandlers(item.label)}
-                className={`w-full flex items-center gap-3 rounded-lg transition-colors ${sidebarCollapsed ? "justify-center h-12" : "px-3 min-h-11 py-2.5"} text-sm font-medium ${isActive ? "bg-slate-100 text-slate-800" : "text-gray-600 hover:bg-gray-50"}`}
+                className={`w-full flex items-center gap-3 rounded-card transition-colors ${sidebarCollapsed ? "justify-center h-12" : "px-3 min-h-11 py-2.5"} text-sm font-medium ${isActive ? "bg-surface-hover text-ink" : "text-ink-soft hover:bg-surface-page"}`}
               >
                 <span className="relative shrink-0">
                   <Icon className="w-[18px] h-[18px]" />
                   {showBadge && sidebarCollapsed && (
-                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-slate-600 rounded-full border-2 border-white" />
+                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-surface-sunken rounded-full border-2 border-white" />
                   )}
                 </span>
                 {!sidebarCollapsed && <span className="truncate flex-1">{item.label}</span>}
                 {!sidebarCollapsed && showBadge && (
-                  <span className="shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-slate-600 text-white text-[10px] font-bold flex items-center justify-center">
+                  <span className="shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-surface-sunken text-ink-soft text-label font-bold flex items-center justify-center">
                     {unreadNotifications}
                   </span>
                 )}
@@ -317,20 +317,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             Help both live on the Profile page now (Log Out action, and the
             "Contact Administrator" button which already opens the same
             feedback modal Help used to). */}
-        <div className="shrink-0 border-t border-gray-200">
+        <div className="shrink-0 border-t border-divider">
           <Link
             to="/profile"
             title="Profile"
             {...longPressHandlers("Profile")}
-            className={`w-full flex items-center gap-3 hover:bg-gray-50 transition-colors ${sidebarCollapsed ? "justify-center h-14" : "px-4 h-16"}`}
+            className={`w-full flex items-center gap-3 hover:bg-surface-page transition-colors ${sidebarCollapsed ? "justify-center h-14" : "px-4 h-16"}`}
           >
-            <div className="w-9 h-9 rounded-full bg-slate-200 border border-slate-300 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">
+            <div className="w-9 h-9 rounded-full bg-surface-sunken border border-divider flex items-center justify-center text-xs font-bold text-ink-soft shrink-0">
               {role.charAt(0)}
             </div>
             {!sidebarCollapsed && (
               <div className="min-w-0 flex-1 text-left">
-                <div className="text-sm font-semibold text-gray-800 truncate">{ROLE_GREETING[role]}</div>
-                <div className="text-xs text-gray-500 truncate">{role}</div>
+                <div className="text-sm font-semibold text-ink truncate">{ROLE_GREETING[role]}</div>
+                <div className="text-xs text-ink-muted truncate">{role}</div>
               </div>
             )}
           </Link>
@@ -338,7 +338,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="flex-1 overflow-auto bg-gray-50 relative">
+        <div className="flex-1 overflow-auto bg-surface-page relative">
           {children}
         </div>
       </div>
@@ -349,7 +349,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       {pressedLabel && createPortal(
         <div
-          className="fixed z-[110] px-2.5 py-1.5 rounded-lg bg-slate-800 text-white text-xs font-medium shadow-lg pointer-events-none whitespace-nowrap"
+          className="fixed z-[110] px-2.5 py-1.5 rounded-card bg-ink text-white text-xs font-medium shadow-lg pointer-events-none whitespace-nowrap"
           style={{ top: pressedLabel.rect.top + pressedLabel.rect.height / 2, left: pressedLabel.rect.right + 10, transform: "translateY(-50%)" }}
         >
           {pressedLabel.label}

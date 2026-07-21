@@ -24,10 +24,10 @@ function typeLabel(a: Appt): string {
 // The two together read as a compact status pair, never a duplicate.
 function GateBadge({ ok, label, amount }: { ok: boolean; label: string; amount?: string }) {
   const cls = ok
-    ? "bg-emerald-50 border-emerald-200 text-emerald-700"
-    : "bg-red-50 border-red-200 text-red-700";
+    ? "bg-success/10 border-success/30 text-success-ink"
+    : "bg-danger/10 border-danger/30 text-danger-ink";
   return (
-    <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-2 py-1 rounded-md border whitespace-nowrap ${cls}`}>
+    <span className={`inline-flex items-center gap-1 text-label font-bold px-2 py-1 rounded-control border whitespace-nowrap ${cls}`}>
       {ok ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
       {label}{!ok && amount ? ` ${amount}` : ""}
     </span>
@@ -43,7 +43,7 @@ function GatesRow({ appt }: { appt: Appt }) {
   const pOk = paymentOk(appt);
   if (cOk && pOk) {
     return (
-      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-2 py-1 rounded-md border bg-emerald-50 border-emerald-200 text-emerald-700 whitespace-nowrap">
+      <span className="inline-flex items-center gap-1.5 text-label font-bold px-2 py-1 rounded-control border bg-success/10 border-success/30 text-success-ink whitespace-nowrap">
         <CheckCircle2 className="w-3.5 h-3.5" /> Ready to check in
       </span>
     );
@@ -58,17 +58,17 @@ function GatesRow({ appt }: { appt: Appt }) {
 
 function ConfirmCheckInModal({ appt, onCancel, onConfirm }: { appt: Appt; onCancel: () => void; onConfirm: () => void }) {
   return (
-    <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm flex items-center justify-center z-[60]">
-      <div className="bg-white rounded-xl shadow-2xl border border-gray-200 w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95">
+    <div className="fixed inset-0 bg-surface-sunken/30 backdrop-blur-sm flex items-center justify-center z-[60]">
+      <div className="bg-surface rounded-card shadow-2xl border border-divider w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95">
         <div className="px-6 py-5">
-          <h2 className="text-lg font-bold text-gray-800 mb-2">Check in {appt.patient.name}?</h2>
-          <p className="text-sm text-gray-600 leading-relaxed">This will notify the nurse.</p>
+          <h2 className="text-lg font-bold text-ink mb-2">Check in {appt.patient.name}?</h2>
+          <p className="text-sm text-ink-soft leading-relaxed">This will notify the nurse.</p>
         </div>
-        <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3 bg-gray-50">
-          <button onClick={onCancel} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100 transition-colors">
+        <div className="px-6 py-4 border-t border-divider flex justify-end space-x-3 bg-surface-page">
+          <button onClick={onCancel} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover transition-colors">
             Cancel
           </button>
-          <button onClick={onConfirm} className="px-6 py-2 rounded text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors">
+          <button onClick={onConfirm} className="px-6 py-2 rounded-control text-sm font-bold text-white bg-success-ink hover:bg-success-ink transition-colors">
             Check In
           </button>
         </div>
@@ -84,10 +84,10 @@ function ConfirmCheckInModal({ appt, onCancel, onConfirm }: { appt: Appt; onCanc
 // Mark Arrived read as one consistent control language instead of three
 // heavyweight solid buttons next to one lightweight badge.
 const PILL_TONE: Record<"blue" | "amber" | "emerald" | "sky", string> = {
-  blue: "bg-blue-100 text-blue-700 border-blue-200 hover:bg-blue-200",
-  amber: "bg-amber-100 text-amber-700 border-amber-200 hover:bg-amber-200",
-  emerald: "bg-emerald-100 text-emerald-700 border-emerald-200 hover:bg-emerald-200",
-  sky: "bg-sky-100 text-sky-700 border-sky-200 hover:bg-sky-200",
+  blue: "bg-info/15 text-info-ink border-info/30 hover:bg-info",
+  amber: "bg-warning/15 text-warning-ink border-warning/30 hover:bg-warning",
+  emerald: "bg-success/15 text-success-ink border-success/30 hover:bg-success",
+  sky: "bg-info/15 text-info-ink border-info/30 hover:bg-info",
 };
 
 function ActionPill({ onClick, tone, icon, label }: {
@@ -148,21 +148,21 @@ function QueueRow({ appt, readOnly, selected, onOpen, onMarkArrived }: {
   }, [selected]);
 
   return (
-    // One standardized card per row: consistent padding, rounded corners,
+    // One standardized card per row: consistent padding, rounded-control corners,
     // time on the left, patient + stacked details in the middle, the single
     // next-step control vertically centered on the right. A just-arrived
     // selection gets a blue ring; everything else is a plain white card.
     <div
       ref={rowRef}
-      className={`rounded-xl border px-3.5 py-3 flex items-center gap-3 transition-colors animate-in fade-in duration-200 ${
-        selected ? "border-blue-400 ring-2 ring-blue-200 bg-blue-50/50" : "border-gray-200 bg-white hover:border-gray-300"
+      className={`rounded-card border px-3.5 py-3 flex items-center gap-3 transition-colors animate-in fade-in duration-200 ${
+        selected ? "border-info ring-2 ring-info bg-info/10" : "border-divider bg-surface hover:border-divider"
       }`}
     >
       {/* Left: time + optional LATE badge */}
       <div className="w-11 shrink-0 flex flex-col items-start gap-1 pt-0.5">
-        <span className="text-sm font-bold text-gray-700 tabular-nums">{appt.timeLabel.slice(0, 5)}</span>
+        <span className="text-sm font-bold text-ink-soft tabular-nums">{appt.timeLabel.slice(0, 5)}</span>
         {late && (
-          <span className="inline-flex items-center gap-0.5 text-[9px] font-extrabold text-red-600 bg-red-50 border border-red-200 rounded px-1 py-0.5 leading-none">
+          <span className="inline-flex items-center gap-0.5 text-label font-extrabold text-danger-ink bg-danger/10 border border-danger/30 rounded-control px-1 py-0.5 leading-none">
             <Clock className="w-2.5 h-2.5" /> LATE
           </span>
         )}
@@ -170,18 +170,18 @@ function QueueRow({ appt, readOnly, selected, onOpen, onMarkArrived }: {
 
       {/* Core: name + stacked details (+ gates for actionable rows) */}
       <button onClick={() => onOpen(appt.id)} className="flex-1 min-w-0 text-left">
-        <div className="text-[15px] font-bold text-gray-900 leading-tight">{appt.patient.name}</div>
-        <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-1.5">
-          <MapPin className="w-3.5 h-3.5 shrink-0 text-gray-400" />
+        <div className="text-section font-bold text-ink leading-tight">{appt.patient.name}</div>
+        <div className="flex items-center gap-1.5 text-xs text-ink-muted mt-1.5">
+          <MapPin className="w-3.5 h-3.5 shrink-0 text-ink-muted" />
           <span>{typeLabel(appt)} · {appt.room}</span>
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-gray-500 mt-1">
-          <Stethoscope className="w-3.5 h-3.5 shrink-0 text-gray-400" />
+        <div className="flex items-center gap-1.5 text-xs text-ink-muted mt-1">
+          <Stethoscope className="w-3.5 h-3.5 shrink-0 text-ink-muted" />
           <span>{appt.doctor}</span>
         </div>
         {readOnly ? (
-          <div className="inline-flex items-center gap-1.5 mt-2 text-[11px] font-bold px-2 py-1 rounded-md border bg-gray-50 border-gray-200 text-gray-500 whitespace-nowrap">
-            <span className="w-1.5 h-1.5 rounded-full bg-orange-400" /> In clinic ·{" "}
+          <div className="inline-flex items-center gap-1.5 mt-2 text-label font-bold px-2 py-1 rounded-control border bg-surface-page border-divider text-ink-muted whitespace-nowrap">
+            <span className="w-1.5 h-1.5 rounded-full bg-warning" /> In clinic ·{" "}
             <JourneyProgressChip appt={appt} />
           </div>
         ) : (
@@ -238,8 +238,8 @@ function EmptyGroup({ group, unpaidOnly }: { group: QueueGroup; unpaidOnly?: boo
     : group === "upcoming" ? "No upcoming appointments."
     : "No one in clinic right now.";
   return (
-    <div className="flex items-center justify-center px-4 py-10">
-      <span className="text-sm text-gray-400">{message}</span>
+    <div className="flex items-center justify-center px-4 py-6">
+      <span className="text-sm text-ink-muted">{message}</span>
     </div>
   );
 }
@@ -278,7 +278,7 @@ function QueueTab({ label, count, active, onClick }: { label: string; count: num
   return (
     <button
       onClick={onClick}
-      className={`flex-1 px-2.5 py-1.5 text-[11px] font-bold rounded-md transition-all whitespace-nowrap text-center inline-flex items-center justify-center gap-1.5 ${active ? "bg-white text-slate-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+      className={`flex-1 px-2.5 py-1.5 text-label font-bold rounded-control transition-all whitespace-nowrap text-center inline-flex items-center justify-center gap-1.5 ${active ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted hover:text-ink-soft"}`}
     >
       {label}
       <Stat stat={{ id: `queue-${label}`, label, kind: "count", variant: "pill", value: String(count) }} />
@@ -321,23 +321,23 @@ export function FrontDeskQueue({ appts, tab, onTabChange, unpaidOnly = false, on
   const listAppts = unpaidOnly ? grouped[tab].filter((a) => !paymentOk(a)) : grouped[tab];
 
   return (
-    <div className="h-full border border-gray-200 rounded-xl bg-white shadow-sm flex flex-col">
-      <div className="border-b border-gray-200 shrink-0">
+    <div className="h-full border border-divider rounded-card bg-surface shadow-sm flex flex-col">
+      <div className="border-b border-divider shrink-0">
         <div className="h-11 px-4 flex items-center gap-2">
-          <h3 className="font-bold text-gray-800 text-sm">Front Desk Queue</h3>
+          <h3 className="font-bold text-ink text-sm">Front Desk Queue</h3>
           {onAdd && (
             <button
               onClick={onAdd}
               title="Register patient"
               aria-label="Register patient"
-              className="w-8 h-8 flex items-center justify-center rounded-lg border border-gray-300 text-gray-600 hover:bg-slate-50 hover:border-slate-400 hover:text-slate-700 transition-colors shrink-0"
+              className="w-8 h-8 flex items-center justify-center rounded-card border border-divider text-ink-soft hover:bg-surface-page hover:border-border-strong hover:text-ink-soft transition-colors shrink-0"
             >
               <Plus className="w-4 h-4" />
             </button>
           )}
         </div>
         <div className="px-3 pb-3">
-          <div className="flex bg-gray-100 p-0.5 rounded-lg border border-gray-200">
+          <div className="flex bg-surface-hover p-0.5 rounded-card border border-divider">
             {(["all", "needs-action", "upcoming", "in-clinic"] as QueueGroup[]).map((g) => (
               <QueueTab key={g} label={GROUP_LABEL[g]} count={grouped[g].length} active={tab === g} onClick={() => selectTab(g)} />
             ))}

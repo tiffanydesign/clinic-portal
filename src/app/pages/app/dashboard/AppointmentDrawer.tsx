@@ -35,27 +35,27 @@ function DrawerShell({ title, subtitle, avatar, onClose, children, footer, banne
 }) {
   return (
     <div className="fixed inset-0 z-40" role="dialog" aria-modal>
-      <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-[1px]" onClick={onClose} />
-      <div className="absolute top-0 right-0 h-full w-[500px] bg-white border-l border-gray-300 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
-        <div className="px-5 py-4 border-b border-gray-200 flex items-start justify-between shrink-0 bg-gray-50">
+      <div className="absolute inset-0 bg-surface-sunken/20 backdrop-blur-[1px]" onClick={onClose} />
+      <div className="absolute top-0 right-0 h-full w-[500px] bg-surface border-l border-divider shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
+        <div className="px-5 py-4 border-b border-divider flex items-start justify-between shrink-0 bg-surface-page">
           {headerBody ?? (
             <div className="flex items-center gap-3 min-w-0">
               {avatar && (
-                <div className="w-11 h-11 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center shrink-0 text-sm">{avatar}</div>
+                <div className="w-11 h-11 rounded-full bg-surface-hover text-ink-soft font-bold flex items-center justify-center shrink-0 text-sm">{avatar}</div>
               )}
               <div className="min-w-0">
-                <div className="font-bold text-gray-800 truncate">{title}</div>
-                {subtitle && <div className="text-xs text-gray-500">{subtitle}</div>}
+                <div className="font-bold text-ink truncate">{title}</div>
+                {subtitle && <div className="text-xs text-ink-muted">{subtitle}</div>}
               </div>
             </div>
           )}
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors shrink-0 ml-2">
+          <button onClick={onClose} className="p-2 text-ink-muted hover:text-ink-soft hover:bg-surface-sunken rounded-full transition-colors shrink-0 ml-2">
             <X className="w-5 h-5" />
           </button>
         </div>
         {banner}
         <div className="flex-1 overflow-y-auto">{children}</div>
-        {footer && <div className="border-t border-gray-200 p-4 shrink-0 bg-white space-y-2.5">{footer}</div>}
+        {footer && <div className="border-t border-divider p-4 shrink-0 bg-surface space-y-2.5">{footer}</div>}
       </div>
     </div>
   );
@@ -81,8 +81,8 @@ function JourneyBlock({ appt }: { appt: Appt }) {
   const navigate = useNavigate();
   if (appt.isVideo) return null;
   return (
-    <div className="px-5 py-4 border-b border-gray-100">
-      <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wide mb-3.5">Journey Today</h4>
+    <div className="px-5 py-4 border-b border-divider">
+      <h4 className="text-xs font-bold text-ink-soft uppercase tracking-wide mb-3.5">Journey Today</h4>
       <ApptJourneyStrip appt={appt} onOpen={() => navigate(`${appt.patient.route}/journeys`)} />
     </div>
   );
@@ -132,7 +132,7 @@ function AdminFooter({ appt, nav, onClose, h }: { appt: Appt; nav: (r: string) =
       </div>
       <button
         onClick={h.onCancel ?? (() => { toast.error("Appointment cancelled (demo)"); onClose(); })}
-        className="w-full text-center text-xs font-bold text-red-600 hover:text-red-700 py-1"
+        className="w-full text-center text-xs font-bold text-danger-ink hover:text-danger-ink py-1"
       >
         Cancel Appointment
       </button>
@@ -146,13 +146,13 @@ function AdminFooter({ appt, nav, onClose, h }: { appt: Appt; nav: (r: string) =
 function PatientDetailsCollapsible({ patient }: { patient: Appt["patient"] }) {
   const [open, setOpen] = React.useState(false);
   return (
-    <div className="border-b border-gray-100">
+    <div className="border-b border-divider">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full px-5 py-3 flex items-center justify-between text-xs font-bold text-gray-500 hover:bg-gray-50 transition-colors"
+        className="w-full px-5 py-3 flex items-center justify-between text-xs font-bold text-ink-muted hover:bg-surface-page transition-colors"
       >
         Patient Details
-        <span className="text-gray-400">{open ? "▾" : "▸"}</span>
+        <span className="text-ink-muted">{open ? "▾" : "▸"}</span>
       </button>
       {open && (
         <div className="px-5 pb-3.5">
@@ -185,9 +185,9 @@ function ReceptionInner({ appt }: { appt: Appt }) {
           <div className="space-y-2">
             {appt.forms.map((f) => (
               <div key={f.name} className="flex items-center justify-between text-sm gap-3">
-                <span className="text-gray-700 truncate">{f.name}</span>
+                <span className="text-ink-soft truncate">{f.name}</span>
                 {f.status === "Signed" ? (
-                  <button onClick={() => toast("Opening signed form (demo)")} className="text-xs font-bold text-slate-600 hover:underline shrink-0">View Signed Form</button>
+                  <button onClick={() => toast("Opening signed form (demo)")} className="text-xs font-bold text-ink-soft hover:underline shrink-0">View Signed Form</button>
                 ) : (
                   <StatusPill status={f.status} type={f.status === "Pending" ? "warning" : "error"} />
                 )}
@@ -196,8 +196,8 @@ function ReceptionInner({ appt }: { appt: Appt }) {
           </div>
           {appt.forms.some((f) => f.status !== "Signed") && (
             <div className="flex gap-2 mt-3">
-              <button onClick={() => toast("Signing request sent to reception iPad")} className="flex-1 px-3 py-2 bg-slate-600 text-white text-xs font-bold rounded hover:bg-slate-700">Initialize Signing</button>
-              <button onClick={() => toast("Form sent to patient app")} className="flex-1 px-3 py-2 border border-gray-300 bg-white text-gray-700 text-xs font-bold rounded hover:bg-gray-50">Send Form</button>
+              <button onClick={() => toast("Signing request sent to reception iPad")} className="flex-1 px-3 py-2 bg-ink text-white text-xs font-bold rounded-control hover:bg-ink">Initialize Signing</button>
+              <button onClick={() => toast("Form sent to patient app")} className="flex-1 px-3 py-2 border border-divider bg-surface text-ink-soft text-xs font-bold rounded-control hover:bg-surface-page">Send Form</button>
             </div>
           )}
         </Block>
@@ -207,13 +207,13 @@ function ReceptionInner({ appt }: { appt: Appt }) {
         <Block title="Payment Detail">
           <div className="flex justify-between items-center mb-1">
             <StatusPill status={appt.payment} type={payType} />
-            <span className="font-bold text-gray-800 text-sm">{appt.amount}</span>
+            <span className="font-bold text-ink text-sm">{appt.amount}</span>
           </div>
-          {appt.balance !== "₺0" && <div className="text-xs text-red-600 font-medium text-right mb-2">Balance due: {appt.balance}</div>}
+          {appt.balance !== "₺0" && <div className="text-xs text-danger-ink font-medium text-right mb-2">Balance due: {appt.balance}</div>}
           {appt.payment !== "Paid" && (
             <div className="flex gap-2 mt-2">
-              <button onClick={() => toast("Transaction started on Terminal #1")} className="flex-1 px-3 py-2 bg-slate-600 text-white text-xs font-bold rounded hover:bg-slate-700 flex items-center justify-center gap-1.5"><CreditCard className="w-3.5 h-3.5" />Start Transaction</button>
-              <button onClick={() => toast("Payment link sent to patient")} className="flex-1 px-3 py-2 border border-gray-300 bg-white text-gray-700 text-xs font-bold rounded hover:bg-gray-50">Send Payment Link</button>
+              <button onClick={() => toast("Transaction started on Terminal #1")} className="flex-1 px-3 py-2 bg-ink text-white text-xs font-bold rounded-control hover:bg-ink flex items-center justify-center gap-1.5"><CreditCard className="w-3.5 h-3.5" />Start Transaction</button>
+              <button onClick={() => toast("Payment link sent to patient")} className="flex-1 px-3 py-2 border border-divider bg-surface text-ink-soft text-xs font-bold rounded-control hover:bg-surface-page">Send Payment Link</button>
             </div>
           )}
         </Block>
@@ -250,7 +250,7 @@ function ReceptionFooter({ appt, nav, onClose, h }: { appt: Appt; nav: (r: strin
       </div>
       <button
         onClick={h.onCancel ?? (() => { toast.error("Appointment cancelled (demo)"); onClose(); })}
-        className="w-full text-center text-xs font-bold text-red-600 hover:text-red-700 py-1"
+        className="w-full text-center text-xs font-bold text-danger-ink hover:text-danger-ink py-1"
       >
         Cancel
       </button>
@@ -287,7 +287,7 @@ function NurseFooter({ appt, nav }: { appt: Appt; nav: (r: string) => void }) {
         <SecondaryChip icon={<CheckCircle2 className="w-3.5 h-3.5" />} label="Mark Journey Step" onClick={() => toast("Journey step marked (demo)")} />
         <SecondaryChip icon={<FileText className="w-3.5 h-3.5" />} label="View Signed Forms Status" onClick={() => toast("Signed forms status (demo)")} />
       </div>
-      <p className="text-xs text-gray-400 text-center">Complete detailed journey work in the Patient Record.</p>
+      <p className="text-xs text-ink-muted text-center">Complete detailed journey work in the Patient Record.</p>
     </>
   );
 }
@@ -295,11 +295,11 @@ function NurseFooter({ appt, nav }: { appt: Appt; nav: (r: string) => void }) {
 function PrepRow({ ok, label, detail }: { ok: boolean; label: string; detail: string }) {
   return (
     <div className="flex items-center justify-between text-sm py-1">
-      <span className="flex items-center gap-2 text-gray-700">
-        {ok ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Clock className="w-4 h-4 text-orange-400" />}
+      <span className="flex items-center gap-2 text-ink-soft">
+        {ok ? <CheckCircle2 className="w-4 h-4 text-success-ink" /> : <Clock className="w-4 h-4 text-warning" />}
         {label}
       </span>
-      <span className={`text-xs font-medium ${ok ? "text-emerald-600" : "text-orange-600"}`}>{detail}</span>
+      <span className={`text-xs font-medium ${ok ? "text-success-ink" : "text-warning-ink"}`}>{detail}</span>
     </div>
   );
 }
@@ -322,9 +322,9 @@ function ClinicianBody({ appt, nav }: { appt: Appt; nav: (r: string) => void }) 
         {!appt.isVideo && <PrepRow ok={formsOk} label="Signed Forms" detail={formsOk ? "Signed" : "Pending"} />}
         <PrepRow ok={appt.prep.sample === "Collected"} label="Sample Status" detail={appt.prep.sample} />
         <PrepRow ok={appt.prep.scan === "Completed"} label="Scan Status" detail={appt.prep.scan} />
-        <div className="flex items-center justify-between text-sm py-1 mt-1 border-t border-gray-100 pt-2">
-          <span className="text-gray-500">Previous Visit</span>
-          <span className="flex items-center gap-2"><span className="text-gray-700 text-xs">{appt.previousVisit}</span><button onClick={() => nav(appt.patient.route)} className="text-xs font-bold text-slate-600 hover:underline">View summary</button></span>
+        <div className="flex items-center justify-between text-sm py-1 mt-1 border-t border-divider pt-2">
+          <span className="text-ink-muted">Previous Visit</span>
+          <span className="flex items-center gap-2"><span className="text-ink-soft text-xs">{appt.previousVisit}</span><button onClick={() => nav(appt.patient.route)} className="text-xs font-bold text-ink-soft hover:underline">View summary</button></span>
         </div>
       </Block>
     </>
@@ -354,7 +354,7 @@ function OverlayReadOnly({ appt, onClose }: { appt: Appt; onClose: () => void })
       title="Appointment"
       onClose={onClose}
       banner={
-        <div className="flex items-center gap-2 bg-gray-100 border-b border-gray-200 px-5 py-2.5 text-xs font-medium text-gray-500">
+        <div className="flex items-center gap-2 bg-surface-hover border-b border-divider px-5 py-2.5 text-xs font-medium text-ink-muted">
           <Lock className="w-3.5 h-3.5" /> Read-only — another clinician&#39;s appointment
         </div>
       }

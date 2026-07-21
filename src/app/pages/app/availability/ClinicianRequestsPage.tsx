@@ -28,21 +28,21 @@ export function ClinicianRequestsPage() {
   };
 
   return (
-    <div className="h-full overflow-y-auto bg-gray-50">
-      <div className="px-8 py-6 border-b border-gray-200 bg-white flex items-center justify-between">
+    <div className="h-full overflow-y-auto bg-surface-page">
+      <div className="px-6 py-6 border-b border-divider bg-surface flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">My Requests</h1>
-          <p className="text-sm text-gray-500 mt-1">Availability changes you've submitted, and their approval status.</p>
+          <h1 className="text-2xl font-bold text-ink">My Requests</h1>
+          <p className="text-sm text-ink-muted mt-1">Availability changes you've submitted, and their approval status.</p>
         </div>
         <button
           onClick={() => navigate("/calendar/my-availability")}
-          className="flex items-center gap-1.5 text-sm font-bold text-slate-600 hover:underline shrink-0"
+          className="flex items-center gap-1.5 text-sm font-bold text-ink-soft hover:underline shrink-0"
         >
           Go to My Availability <ArrowRight className="w-4 h-4" />
         </button>
       </div>
 
-      <div className="p-8 max-w-2xl mx-auto">
+      <div className="p-4 max-w-2xl mx-auto">
         <PendingRequestsSection
           pending={pending}
           decisions={store.decisions}

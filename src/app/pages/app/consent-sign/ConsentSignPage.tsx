@@ -56,10 +56,10 @@ export function ConsentSignPage() {
 
   if (!appt) {
     return (
-      <div className="fixed inset-0 bg-white z-50 flex items-center justify-center">
+      <div className="fixed inset-0 bg-surface z-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-gray-500 mb-4">Appointment not found.</p>
-          <button onClick={() => navigate("/dashboard")} className="px-5 py-2.5 bg-slate-600 text-white font-bold rounded hover:bg-slate-700">
+          <p className="text-ink-muted mb-4">Appointment not found.</p>
+          <button onClick={() => navigate("/dashboard")} className="px-5 py-2.5 bg-ink text-white font-bold rounded-control hover:bg-ink">
             Back to Dashboard
           </button>
         </div>
@@ -69,13 +69,13 @@ export function ConsentSignPage() {
 
   if (stage === "done") {
     return (
-      <div className="fixed inset-0 bg-white z-50 flex flex-col items-center justify-center text-center px-8">
-        <div className="w-16 h-16 rounded-full bg-emerald-500 text-white flex items-center justify-center mb-5">
+      <div className="fixed inset-0 bg-surface z-50 flex flex-col items-center justify-center text-center px-6">
+        <div className="w-16 h-16 rounded-full bg-success-ink text-white flex items-center justify-center mb-5">
           <Check className="w-9 h-9" strokeWidth={3} />
         </div>
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">Thank you, {appt.patient.name.split(" ")[0]}.</h1>
-        <p className="text-gray-500 max-w-sm">Please hand the iPad back to reception.</p>
-        <button onClick={handleDone} className="mt-8 px-8 py-3.5 bg-slate-600 text-white font-bold text-base rounded-xl hover:bg-slate-700 transition-colors min-w-[160px]">
+        <h1 className="text-2xl font-bold text-ink mb-2">Thank you, {appt.patient.name.split(" ")[0]}.</h1>
+        <p className="text-ink-muted max-w-sm">Please hand the iPad back to reception.</p>
+        <button onClick={handleDone} className="mt-8 px-6 py-3.5 bg-ink text-white font-bold text-base rounded-card hover:bg-ink transition-colors min-w-[160px]">
           Done
         </button>
       </div>
@@ -83,18 +83,18 @@ export function ConsentSignPage() {
   }
 
   return (
-    <div className="fixed inset-0 bg-white z-50 flex flex-col">
+    <div className="fixed inset-0 bg-surface z-50 flex flex-col">
       {/* Header */}
-      <div className="shrink-0 border-b border-gray-200 px-8 py-4 flex items-center justify-between">
+      <div className="shrink-0 border-b border-divider px-6 py-4 flex items-center justify-between">
         <div>
-          <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Phenome Clinic</div>
-          <h1 className="text-lg font-bold text-gray-800 mt-0.5">{ACTIVE_FORM.content.title}</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{appt.patient.name} · {appt.type.replace(" (in-person)", "").replace(" (video)", "")} · {appt.timeLabel}</p>
+          <div className="text-xs font-bold text-ink-muted uppercase tracking-wider">Phenome Clinic</div>
+          <h1 className="text-lg font-bold text-ink mt-0.5">{ACTIVE_FORM.content.title}</h1>
+          <p className="text-sm text-ink-muted mt-0.5">{appt.patient.name} · {appt.type.replace(" (in-person)", "").replace(" (video)", "")} · {appt.timeLabel}</p>
         </div>
         <button
           onClick={() => setExitConfirmOpen(true)}
           aria-label="Exit signing"
-          className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors shrink-0"
+          className="p-2 text-ink-muted hover:text-ink-soft hover:bg-surface-hover rounded-full transition-colors shrink-0"
         >
           <X className="w-5 h-5" />
         </button>
@@ -102,16 +102,16 @@ export function ConsentSignPage() {
 
       {/* Scrollable consent document */}
       <div className="flex-1 overflow-y-auto" onScroll={handleScroll}>
-        <div className="max-w-[720px] mx-auto px-8 py-8">
-          <div className="text-[15px] leading-relaxed text-gray-700" dangerouslySetInnerHTML={{ __html: ACTIVE_FORM.content.introductionHtml }} />
+        <div className="max-w-[720px] mx-auto px-6 py-4">
+          <div className="text-section leading-relaxed text-ink-soft" dangerouslySetInnerHTML={{ __html: ACTIVE_FORM.content.introductionHtml }} />
 
           <div className="mt-8 space-y-8">
             {ACTIVE_FORM.content.sections.map((section) => (
               <div key={section.id}>
-                <h2 className="text-base font-bold text-gray-800 mb-2">
-                  {section.title}{section.required && <span className="text-red-500 ml-1">*</span>}
+                <h2 className="text-base font-bold text-ink mb-2">
+                  {section.title}{section.required && <span className="text-danger-ink ml-1">*</span>}
                 </h2>
-                <div className="text-[15px] leading-relaxed text-gray-600" dangerouslySetInnerHTML={{ __html: section.bodyHtml }} />
+                <div className="text-section leading-relaxed text-ink-soft" dangerouslySetInnerHTML={{ __html: section.bodyHtml }} />
                 <label className="flex items-start gap-3 mt-3 cursor-pointer select-none">
                   <input
                     type="checkbox"
@@ -119,7 +119,7 @@ export function ConsentSignPage() {
                     onChange={(e) => setChecked((prev) => ({ ...prev, [section.id]: e.target.checked }))}
                     className="mt-1 w-5 h-5 accent-slate-600 shrink-0"
                   />
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className="text-sm font-medium text-ink-soft">
                     {section.required ? "I have read and agree to this section." : "I agree (optional)."}
                   </span>
                 </label>
@@ -127,23 +127,23 @@ export function ConsentSignPage() {
             ))}
           </div>
 
-          <div className="mt-10 pt-6 border-t border-gray-200 text-xs text-gray-400 leading-relaxed" dangerouslySetInnerHTML={{ __html: ACTIVE_FORM.content.footerHtml }} />
+          <div className="mt-10 pt-6 border-t border-divider text-xs text-ink-muted leading-relaxed" dangerouslySetInnerHTML={{ __html: ACTIVE_FORM.content.footerHtml }} />
 
           {/* Signature */}
           <div className="mt-10">
             <div className="flex items-center justify-between mb-2">
-              <h2 className="text-base font-bold text-gray-800">Signature</h2>
+              <h2 className="text-base font-bold text-ink">Signature</h2>
               <button
                 onClick={() => signatureRef.current?.clear()}
-                className="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-gray-700"
+                className="flex items-center gap-1.5 text-xs font-bold text-ink-muted hover:text-ink-soft"
               >
                 <Trash2 className="w-3.5 h-3.5" /> Clear
               </button>
             </div>
-            <div className="border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 h-40">
+            <div className="border-2 border-dashed border-divider rounded-card bg-surface-page h-40">
               <SignatureCanvas ref={signatureRef} onChange={setHasSignature} className="w-full h-full" />
             </div>
-            <p className="text-xs text-gray-400 mt-2">Sign above using your finger or a stylus.</p>
+            <p className="text-xs text-ink-muted mt-2">Sign above using your finger or a stylus.</p>
           </div>
 
           {/* Bottom padding so the sticky footer never covers the last field */}
@@ -152,10 +152,10 @@ export function ConsentSignPage() {
       </div>
 
       {/* Sticky footer with Agree & Sign */}
-      <div className="shrink-0 border-t border-gray-200 px-8 py-4 bg-white">
+      <div className="shrink-0 border-t border-divider px-6 py-4 bg-surface">
         <div className="max-w-[720px] mx-auto">
           {!canSubmit && (
-            <p className="text-xs text-amber-600 font-medium mb-2 text-center">
+            <p className="text-xs text-warning-ink font-medium mb-2 text-center">
               {!scrolledToEnd
                 ? "Please scroll to the end of the document."
                 : !allRequiredChecked
@@ -166,8 +166,8 @@ export function ConsentSignPage() {
           <button
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className={`w-full h-14 rounded-xl text-base font-bold transition-colors ${
-              canSubmit ? "bg-emerald-600 text-white hover:bg-emerald-700" : "bg-gray-100 text-gray-400 cursor-not-allowed"
+            className={`w-full h-14 rounded-card text-base font-bold transition-colors ${
+              canSubmit ? "bg-success-ink text-white hover:bg-success-ink" : "bg-surface-hover text-ink-muted cursor-not-allowed"
             }`}
           >
             Agree &amp; Sign
@@ -176,17 +176,17 @@ export function ConsentSignPage() {
       </div>
 
       {exitConfirmOpen && (
-        <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm flex items-center justify-center z-[60]">
-          <div className="bg-white rounded-xl shadow-2xl border border-gray-200 w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95">
+        <div className="fixed inset-0 bg-surface-sunken/30 backdrop-blur-sm flex items-center justify-center z-[60]">
+          <div className="bg-surface rounded-card shadow-2xl border border-divider w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95">
             <div className="px-6 py-5">
-              <h2 className="text-lg font-bold text-gray-800 mb-2">Cancel signing?</h2>
-              <p className="text-sm text-gray-600 leading-relaxed">This will return to the dashboard without saving a signature.</p>
+              <h2 className="text-lg font-bold text-ink mb-2">Cancel signing?</h2>
+              <p className="text-sm text-ink-soft leading-relaxed">This will return to the dashboard without saving a signature.</p>
             </div>
-            <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3 bg-gray-50">
-              <button onClick={() => setExitConfirmOpen(false)} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100 transition-colors">
+            <div className="px-6 py-4 border-t border-divider flex justify-end space-x-3 bg-surface-page">
+              <button onClick={() => setExitConfirmOpen(false)} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover transition-colors">
                 Stay
               </button>
-              <button onClick={handleExitConfirm} className="px-6 py-2 rounded text-sm font-bold text-white bg-red-600 hover:bg-red-700 transition-colors">
+              <button onClick={handleExitConfirm} className="px-6 py-2 rounded-control text-sm font-bold text-white bg-danger-ink hover:bg-danger-ink transition-colors">
                 Cancel signing
               </button>
             </div>

@@ -310,12 +310,12 @@ function dayToCell(day: DaySchedule, onClick: (e: React.MouseEvent) => void): Gr
 function RowHeader({ staff }: { staff: StaffMember }) {
   return (
     <div className="min-w-0 flex-1 flex items-center gap-3">
-      <div className="w-9 h-9 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600 shrink-0">
+      <div className="w-9 h-9 rounded-full bg-surface-sunken flex items-center justify-center text-xs font-bold text-ink-soft shrink-0">
         {staff.avatar}
       </div>
       <div className="min-w-0">
-        <div className="text-sm font-bold text-gray-800 leading-tight truncate">{staff.name}</div>
-        <span className="text-[11px] font-medium text-gray-400">{staff.role}</span>
+        <div className="text-sm font-bold text-ink leading-tight truncate">{staff.name}</div>
+        <span className="text-label font-medium text-ink-muted">{staff.role}</span>
       </div>
     </div>
   );

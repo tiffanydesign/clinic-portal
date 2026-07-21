@@ -69,32 +69,32 @@ export function getStaff(id: string | undefined): Staff | undefined {
 
 export function rolePillClass(role: StaffRole): string {
   switch (role) {
-    case "Admin": return "bg-indigo-100 text-indigo-800 border-indigo-200";
-    case "Clinician": return "bg-blue-50 text-blue-700 border-blue-200";
-    case "Nurse": return "bg-emerald-50 text-emerald-700 border-emerald-200";
-    case "Receptionist": return "bg-orange-50 text-orange-700 border-orange-200";
+    case "Admin": return "bg-special/15 text-special-ink border-special/30";
+    case "Clinician": return "bg-info/10 text-info-ink border-info/30";
+    case "Nurse": return "bg-success/10 text-success-ink border-success/30";
+    case "Receptionist": return "bg-warning/10 text-warning-ink border-warning/30";
   }
 }
 
 export function statusPillClass(status: StaffStatus): string {
   switch (status) {
-    case "Active": return "bg-emerald-50 text-emerald-700 border-emerald-200";
-    case "On Leave": return "bg-orange-50 text-orange-700 border-orange-200";
-    case "Inactive": return "bg-gray-50 text-gray-500 border-gray-200";
+    case "Active": return "bg-success/10 text-success-ink border-success/30";
+    case "On Leave": return "bg-warning/10 text-warning-ink border-warning/30";
+    case "Inactive": return "bg-surface-page text-ink-muted border-divider";
   }
 }
 
 export function workloadColor(pct: number): { bar: string; text: string } {
-  if (pct < 60) return { bar: "bg-emerald-500", text: "text-emerald-700" };
-  if (pct <= 85) return { bar: "bg-orange-500", text: "text-orange-600" };
-  return { bar: "bg-red-500", text: "text-red-600" };
+  if (pct < 60) return { bar: "bg-success", text: "text-success-ink" };
+  if (pct <= 85) return { bar: "bg-warning", text: "text-warning-ink" };
+  return { bar: "bg-danger", text: "text-danger-ink" };
 }
 
 export function todayDotClass(today: TodayStatus): string {
   switch (today) {
-    case "On Duty": return "bg-emerald-500";
-    case "Off": return "bg-red-400";
-    case "On Leave": return "bg-amber-400";
+    case "On Duty": return "bg-success";
+    case "Off": return "bg-danger";
+    case "On Leave": return "bg-warning";
   }
 }
 
@@ -122,11 +122,11 @@ export const ASSIGNED_PATIENTS: AssignedPatient[] = [
 ];
 
 export const APPOINTMENT_DISTRIBUTION = [
-  { type: "Body Scan", count: 12, fill: "#475569" },
-  { type: "Consultation (in-person)", count: 8, fill: "#3b82f6" },
-  { type: "Consultation (video)", count: 6, fill: "#8b5cf6" },
-  { type: "Follow-up", count: 4, fill: "#f59e0b" },
-  { type: "Sample Collection", count: 2, fill: "#10b981" },
+  { type: "Body Scan", count: 12, fill: "var(--chart-3)" },
+  { type: "Consultation (in-person)", count: 8, fill: "var(--chart-1)" },
+  { type: "Consultation (video)", count: 6, fill: "var(--chart-4)" },
+  { type: "Follow-up", count: 4, fill: "var(--chart-5)" },
+  { type: "Sample Collection", count: 2, fill: "var(--chart-2)" },
 ];
 
 export const WEEKLY_TREND = [

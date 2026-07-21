@@ -41,18 +41,18 @@ function EventBlock({ item, role, dimmed, past, onClick, onLong }: {
     >
       <div className="flex items-center gap-1 min-w-0">
         <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${apptStatusDotClass(a.status)}`} />
-        {a.isVideo && <Video className="w-3 h-3 text-cyan-600 shrink-0" />}
-        <span className="text-[11px] font-bold text-gray-800 truncate">{a.patient.name}</span>
+        {a.isVideo && <Video className="w-3 h-3 text-info-ink shrink-0" />}
+        <span className="text-label font-bold text-ink truncate">{a.patient.name}</span>
       </div>
-      <div className="text-[10px] text-gray-600 truncate mt-0.5">{typeShort(a.type)} · {a.durationMin} min</div>
-      <div className="text-[10px] text-gray-500 truncate">{a.room} · {a.doctor}</div>
+      <div className="text-label text-ink-soft truncate mt-0.5">{typeShort(a.type)} · {a.durationMin} min</div>
+      <div className="text-label text-ink-muted truncate">{a.room} · {a.doctor}</div>
       {showJourney && (
-        <div className="text-[10px] font-semibold text-orange-700 truncate mt-0.5">
-          → <JourneyProgressChip appt={a} className="!text-orange-700" />
+        <div className="text-label font-semibold text-warning-ink truncate mt-0.5">
+          → <JourneyProgressChip appt={a} className="!text-warning-ink" />
         </div>
       )}
       {a.isVideo && role === "Clinician" && (
-        <div className="text-[10px] font-semibold text-cyan-700 truncate mt-0.5">Video · ready to join</div>
+        <div className="text-label font-semibold text-info-ink truncate mt-0.5">Video · ready to join</div>
       )}
     </div>
   );
@@ -74,18 +74,18 @@ function DayColumn({ day, role, layers, schedule, blockedTime, leaves, search, n
   const hasSearch = search.trim().length > 0;
 
   return (
-    <div className="flex-1 relative border-l border-gray-200 min-w-0">
+    <div className="flex-1 relative border-l border-divider min-w-0">
       {/* non-working shading */}
       {bands.map(([s, e], i) => (
-        <div key={`nw-${i}`} className="absolute left-0 right-0 bg-gray-100/70 pointer-events-none" style={{ top: topPx(s), height: ((e - s) / 60) * HOUR_PX }} />
+        <div key={`nw-${i}`} className="absolute left-0 right-0 bg-surface-hover/70 pointer-events-none" style={{ top: topPx(s), height: ((e - s) / 60) * HOUR_PX }} />
       ))}
       {/* approved leave — full grey wash */}
       {leave && (
-        <div className="absolute inset-0 bg-gray-200/70 pointer-events-none flex flex-col items-center pt-8 gap-1">
-          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-gray-600 uppercase tracking-wide bg-white rounded-full px-2.5 py-1 shadow-sm border border-gray-200">
+        <div className="absolute inset-0 bg-surface-sunken/70 pointer-events-none flex flex-col items-center pt-4 gap-1">
+          <span className="inline-flex items-center gap-1 text-label font-bold text-ink-soft uppercase tracking-wide bg-surface rounded-full px-2.5 py-1 shadow-sm border border-divider">
             <Plane className="w-3 h-3" /> On leave
           </span>
-          <span className="text-[10px] font-semibold text-gray-500 bg-white/80 rounded px-1.5 py-0.5">{leave.reason}</span>
+          <span className="text-label font-semibold text-ink-muted bg-surface/80 rounded-control px-1.5 py-0.5">{leave.reason}</span>
         </div>
       )}
       {/* blocked time — diagonal stripes + reason */}
@@ -93,10 +93,10 @@ function DayColumn({ day, role, layers, schedule, blockedTime, leaves, search, n
         <div
           key={b.id}
           style={{ top: topPx(b.startMin), height: (b.durationMin / 60) * HOUR_PX - 2 }}
-          className="absolute left-0.5 right-0.5 rounded-md border border-gray-300 bg-[repeating-linear-gradient(45deg,#f3f4f6,#f3f4f6_6px,#e5e7eb_6px,#e5e7eb_12px)] px-2 py-1 overflow-hidden pointer-events-none"
+          className="absolute left-0.5 right-0.5 rounded-control border border-divider bg-[repeating-linear-gradient(45deg,var(--surface-hover),var(--surface-hover)_6px,var(--border-strong)_6px,var(--border-strong)_12px)] px-2 py-1 overflow-hidden pointer-events-none"
         >
-          <div className="text-[10px] font-bold text-gray-500 truncate">{b.reason}</div>
-          <div className="text-[9px] text-gray-400">Blocked</div>
+          <div className="text-label font-bold text-ink-muted truncate">{b.reason}</div>
+          <div className="text-label text-ink-muted">Blocked</div>
         </div>
       ))}
 
@@ -119,8 +119,8 @@ function DayColumn({ day, role, layers, schedule, blockedTime, leaves, search, n
       {/* now line */}
       {isToday && nowMinutes >= DAY_START && nowMinutes <= DAY_END && (
         <div className="absolute left-0 right-0 z-20 pointer-events-none" style={{ top: topPx(nowMinutes) }}>
-          <div className="relative border-t-2 border-red-500">
-            <span className="absolute -left-[3px] -top-[5px] w-2.5 h-2.5 rounded-full bg-red-500 ring-2 ring-white" />
+          <div className="relative border-t-2 border-danger">
+            <span className="absolute -left-[3px] -top-[5px] w-2.5 h-2.5 rounded-full bg-danger-ink ring-2 ring-white" />
           </div>
         </div>
       )}
@@ -143,18 +143,18 @@ export function MyScheduleGrid({ role, view, weekDays, nowMinutes, layers, sched
   }, [view]);
 
   return (
-    <div className="border border-gray-200 rounded-xl shadow-sm bg-white flex flex-col h-full min-h-0 overflow-hidden">
+    <div className="border border-divider rounded-card shadow-sm bg-surface flex flex-col h-full min-h-0 overflow-hidden">
       {/* column headers */}
-      <div className="flex border-b border-gray-200 bg-gray-50 shrink-0 pl-14">
+      <div className="flex border-b border-divider bg-surface-page shrink-0 pl-14">
         {weekDays.map((d) => (
-          <div key={d.date.toISOString()} className={`flex-1 px-2 py-2 text-center border-l border-gray-200 min-w-0 ${d.isToday ? "bg-slate-100/70" : ""}`}>
+          <div key={d.date.toISOString()} className={`flex-1 px-2 py-2 text-center border-l border-divider min-w-0 ${d.isToday ? "bg-surface-hover/70" : ""}`}>
             {view === "week" ? (
               <>
-                <div className="text-[10px] font-bold text-gray-400 uppercase">{format(d.date, "EEE")}</div>
-                <div className={`text-sm font-bold tabular-nums ${d.isToday ? "text-slate-700" : "text-gray-700"}`}>{format(d.date, "d")}</div>
+                <div className="text-label font-bold text-ink-muted uppercase">{format(d.date, "EEE")}</div>
+                <div className={`text-sm font-bold tabular-nums ${d.isToday ? "text-ink-soft" : "text-ink-soft"}`}>{format(d.date, "d")}</div>
               </>
             ) : (
-              <div className="text-sm font-bold text-gray-700">{format(d.date, "EEEE, d MMM")}</div>
+              <div className="text-sm font-bold text-ink-soft">{format(d.date, "EEEE, d MMM")}</div>
             )}
           </div>
         ))}
@@ -164,15 +164,15 @@ export function MyScheduleGrid({ role, view, weekDays, nowMinutes, layers, sched
       <div ref={scrollRef} className="flex-1 overflow-y-auto">
         <div className="flex" style={{ height: gridHeight }}>
           {/* gutter */}
-          <div className="w-14 shrink-0 relative border-r border-gray-200 bg-gray-50/40">
-            <span className="absolute left-1 top-1 text-[9px] font-bold text-gray-400">GMT+3</span>
+          <div className="w-14 shrink-0 relative border-r border-divider bg-surface-page/40">
+            <span className="absolute left-1 top-1 text-label font-bold text-ink-muted">GMT+3</span>
             {hours.map((h, i) => (
-              <div key={h} className="absolute right-2 text-[10px] font-semibold text-gray-500 tabular-nums" style={{ top: i * HOUR_PX - 6 }}>
+              <div key={h} className="absolute right-2 text-label font-semibold text-ink-muted tabular-nums" style={{ top: i * HOUR_PX - 6 }}>
                 {i === 0 ? "" : `${String(h).padStart(2, "0")}:00`}
               </div>
             ))}
             {anyToday && nowMinutes >= DAY_START && nowMinutes <= DAY_END && (
-              <span className="absolute right-1.5 z-20 text-[9px] font-bold text-white bg-red-500 rounded px-1 py-[1px] tabular-nums" style={{ top: topPx(nowMinutes) - 7 }}>
+              <span className="absolute right-1.5 z-20 text-label font-bold text-white bg-danger-ink rounded-control px-1 py-[1px] tabular-nums" style={{ top: topPx(nowMinutes) - 7 }}>
                 {minToClock(nowMinutes)}
               </span>
             )}
@@ -182,11 +182,11 @@ export function MyScheduleGrid({ role, view, weekDays, nowMinutes, layers, sched
           <div className="flex-1 relative">
             {/* hour gridlines */}
             {hours.map((h, i) => (
-              <div key={h} className="absolute left-0 right-0 border-t border-gray-100" style={{ top: i * HOUR_PX }} />
+              <div key={h} className="absolute left-0 right-0 border-t border-divider" style={{ top: i * HOUR_PX }} />
             ))}
             {/* faint now line across all columns */}
             {anyToday && nowMinutes >= DAY_START && nowMinutes <= DAY_END && (
-              <div className="absolute left-0 right-0 border-t border-red-200 pointer-events-none z-10" style={{ top: topPx(nowMinutes) }} />
+              <div className="absolute left-0 right-0 border-t border-danger/30 pointer-events-none z-10" style={{ top: topPx(nowMinutes) }} />
             )}
             <div className="flex h-full">
               {weekDays.map((d) => (

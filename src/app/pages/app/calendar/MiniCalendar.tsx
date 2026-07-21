@@ -30,19 +30,19 @@ export function MiniCalendar({ selectedDate, today, onSelectDate, hasApptsOn }: 
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
-        <h3 className="text-sm font-bold text-gray-800">{format(viewMonth, "MMMM yyyy")}</h3>
+        <h3 className="text-sm font-bold text-ink">{format(viewMonth, "MMMM yyyy")}</h3>
         <div className="flex items-center gap-0.5">
-          <button onClick={() => setViewMonth((m) => subMonths(m, 1))} aria-label="Previous month" className="p-1.5 text-gray-400 hover:text-slate-700 hover:bg-gray-100 rounded-md transition-colors">
+          <button onClick={() => setViewMonth((m) => subMonths(m, 1))} aria-label="Previous month" className="p-1.5 text-ink-muted hover:text-ink-soft hover:bg-surface-hover rounded-control transition-colors">
             <ChevronLeft className="w-4 h-4" />
           </button>
-          <button onClick={() => setViewMonth((m) => addMonths(m, 1))} aria-label="Next month" className="p-1.5 text-gray-400 hover:text-slate-700 hover:bg-gray-100 rounded-md transition-colors">
+          <button onClick={() => setViewMonth((m) => addMonths(m, 1))} aria-label="Next month" className="p-1.5 text-ink-muted hover:text-ink-soft hover:bg-surface-hover rounded-control transition-colors">
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
       <div className="grid grid-cols-7 gap-0.5 mb-1">
         {WEEKDAYS.map((d, i) => (
-          <div key={i} className="text-[10px] font-bold text-gray-400 text-center py-1">{d}</div>
+          <div key={i} className="text-label font-bold text-ink-muted text-center py-1">{d}</div>
         ))}
       </div>
       <div className="grid grid-cols-7 gap-0.5">
@@ -57,17 +57,17 @@ export function MiniCalendar({ selectedDate, today, onSelectDate, hasApptsOn }: 
               onClick={() => onSelectDate(d)}
               className={`relative aspect-square flex items-center justify-center rounded-full text-xs transition-colors ${
                 isSelected
-                  ? "bg-slate-700 text-white font-bold"
+                  ? "bg-ink text-white font-bold"
                   : isToday
-                  ? "text-slate-700 font-bold ring-1 ring-slate-400"
+                  ? "text-ink-soft font-bold ring-1 ring-info"
                   : inMonth
-                  ? "text-gray-700 hover:bg-gray-100"
-                  : "text-gray-300 hover:bg-gray-50"
+                  ? "text-ink-soft hover:bg-surface-hover"
+                  : "text-ink-muted hover:bg-surface-page"
               }`}
             >
               {d.getDate()}
               {hasAppts && (
-                <span className={`absolute bottom-1 w-1 h-1 rounded-full ${isSelected ? "bg-white" : "bg-slate-400"}`} aria-hidden />
+                <span className={`absolute bottom-1 w-1 h-1 rounded-full ${isSelected ? "bg-surface" : "bg-ink-muted"}`} aria-hidden />
               )}
             </button>
           );

@@ -89,9 +89,9 @@ export function displayStatus(v: DeviceView): DeviceDisplayStatus {
 // Fixed clinic semantic colors: green = online/active, amber = needs attention,
 // gray = offline.
 export const DEVICE_STATUS_META: Record<DeviceDisplayStatus, { label: string; dot: string; text: string; chip: string }> = {
-  online: { label: "Online", dot: "bg-emerald-500", text: "text-emerald-700", chip: "bg-emerald-50 border-emerald-200 text-emerald-700" },
-  offline: { label: "Offline", dot: "bg-gray-400", text: "text-gray-500", chip: "bg-gray-100 border-gray-200 text-gray-500" },
-  "needs-attention": { label: "Needs attention", dot: "bg-amber-500", text: "text-amber-700", chip: "bg-amber-50 border-amber-200 text-amber-700" },
+  online: { label: "Online", dot: "bg-success", text: "text-success-ink", chip: "bg-success/10 border-success/30 text-success-ink" },
+  offline: { label: "Offline", dot: "bg-ink-muted", text: "text-ink-muted", chip: "bg-surface-hover border-divider text-ink-muted" },
+  "needs-attention": { label: "Needs attention", dot: "bg-warning", text: "text-warning-ink", chip: "bg-warning/10 border-warning/30 text-warning-ink" },
 };
 
 export function deviceIcon(type: DeviceType): "scan" | "tv" | "terminal" {

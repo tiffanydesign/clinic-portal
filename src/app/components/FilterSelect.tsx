@@ -42,18 +42,18 @@ export function FilterSelect({
       disabled={disabled}
     >
       <SelectPrimitive.Trigger
-        className={`inline-flex items-center justify-between gap-2 px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-700 bg-white shadow-sm outline-none transition-colors hover:border-gray-400 focus:border-slate-500 data-[state=open]:border-slate-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-gray-300 ${className ?? ""}`}
+        className={`inline-flex items-center justify-between gap-2 px-3 py-1.5 border border-divider rounded-card text-sm text-ink-soft bg-surface shadow-sm outline-none transition-colors hover:border-border-strong focus:border-border-strong data-[state=open]:border-border-strong disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-divider ${className ?? ""}`}
       >
         <SelectPrimitive.Value placeholder={placeholder} />
         <SelectPrimitive.Icon asChild>
-          <ChevronDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+          <ChevronDown className="w-3.5 h-3.5 text-ink-muted shrink-0" />
         </SelectPrimitive.Icon>
       </SelectPrimitive.Trigger>
       <SelectPrimitive.Portal>
         <SelectPrimitive.Content
           position="popper"
           sideOffset={6}
-          className="z-50 min-w-[var(--radix-select-trigger-width)] max-h-72 overflow-hidden bg-white border border-gray-200 rounded-xl shadow-lg animate-in fade-in zoom-in-95 duration-100"
+          className="z-50 min-w-[var(--radix-select-trigger-width)] max-h-72 overflow-hidden bg-surface border border-divider rounded-card shadow-lg animate-in fade-in zoom-in-95 duration-100"
         >
           <SelectPrimitive.Viewport className="p-1 overflow-y-auto max-h-72">
             {normalized.map((o) => {
@@ -62,7 +62,7 @@ export function FilterSelect({
                 <SelectPrimitive.Item
                   key={v}
                   value={v}
-                  className="relative flex items-center gap-2 pl-7 pr-3 py-2 text-sm text-gray-700 rounded-md cursor-pointer select-none outline-none data-[highlighted]:bg-gray-50 data-[state=checked]:font-bold data-[state=checked]:text-slate-700"
+                  className="relative flex items-center gap-2 pl-7 pr-3 py-2 text-sm text-ink-soft rounded-control cursor-pointer select-none outline-none data-[highlighted]:bg-surface-page data-[state=checked]:font-bold data-[state=checked]:text-ink-soft"
                 >
                   <SelectPrimitive.ItemIndicator className="absolute left-2 flex items-center">
                     <Check className="w-3.5 h-3.5" />

@@ -23,9 +23,9 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
   return (
     <button
       onClick={onChange}
-      className={`w-10 h-5 rounded-full relative transition-colors shrink-0 ${checked ? "bg-slate-600" : "bg-gray-300"}`}
+      className={`w-10 h-5 rounded-full relative transition-colors shrink-0 ${checked ? "bg-surface-sunken" : "bg-surface-sunken"}`}
     >
-      <div className={`w-3.5 h-3.5 bg-white rounded-full absolute top-[3px] transition-all ${checked ? "left-[22px]" : "left-[3px]"}`} />
+      <div className={`w-3.5 h-3.5 bg-surface rounded-full absolute top-[3px] transition-all ${checked ? "left-[22px]" : "left-[3px]"}`} />
     </button>
   );
 }
@@ -237,38 +237,38 @@ export function AvailabilityEditorPage() {
   const overridesForDialog = store.overrides.filter((o) => o.status !== "Rejected").map((o) => parseInt(o.date.split(" ")[0], 10));
 
   return (
-    <div className="flex flex-col h-full bg-gray-50 relative">
+    <div className="flex flex-col h-full bg-surface-page relative">
       {/* Top Bar */}
-      <div className="bg-white border-b border-gray-300 px-6 py-4 flex justify-between items-center shrink-0">
+      <div className="bg-surface border-b border-divider px-6 py-4 flex justify-between items-center shrink-0">
         <div className="flex items-center">
-          <button onClick={handleBack} className="p-2 mr-2 text-gray-500 hover:text-gray-800 rounded hover:bg-gray-100 transition-colors">
+          <button onClick={handleBack} className="p-2 mr-2 text-ink-muted hover:text-ink rounded-control hover:bg-surface-hover transition-colors">
             <ChevronLeft className="w-5 h-5" />
           </button>
           <div>
             <div className="flex items-center group cursor-pointer" onClick={() => setIsEditingTitle(true)}>
               {isEditingTitle ? (
-                <input autoFocus type="text" value={title} onChange={(e) => setTitle(e.target.value)} onBlur={() => setIsEditingTitle(false)} onKeyDown={(e) => e.key === "Enter" && setIsEditingTitle(false)} className="text-xl font-bold text-gray-800 border-b border-slate-500 outline-none bg-transparent" />
+                <input autoFocus type="text" value={title} onChange={(e) => setTitle(e.target.value)} onBlur={() => setIsEditingTitle(false)} onKeyDown={(e) => e.key === "Enter" && setIsEditingTitle(false)} className="text-xl font-bold text-ink border-b border-border-strong outline-none bg-transparent" />
               ) : (
                 <>
-                  <h1 className="text-xl font-bold text-gray-800 mr-2">{title}</h1>
-                  <span className="px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[9px] font-bold uppercase tracking-wider rounded-full mr-2">Applies instantly</span>
-                  <Edit2 className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <h1 className="text-xl font-bold text-ink mr-2">{title}</h1>
+                  <span className="px-2 py-0.5 bg-success/10 border border-success/30 text-success-ink text-overline rounded-full mr-2">Applies instantly</span>
+                  <Edit2 className="w-4 h-4 text-ink-muted opacity-0 group-hover:opacity-100 transition-opacity" />
                 </>
               )}
             </div>
-            <p className="text-sm text-gray-500 mt-1">Only leave requires Admin approval. Everything else applies instantly.</p>
+            <p className="text-sm text-ink-muted mt-1">Only leave requires Admin approval. Everything else applies instantly.</p>
           </div>
         </div>
 
         <div className="flex items-center space-x-4">
           <div title="Default schedules cannot be deleted" className="cursor-not-allowed">
-            <button disabled className="p-2 text-gray-300 border border-transparent rounded"><Trash2 className="w-5 h-5" /></button>
+            <button disabled className="p-2 text-ink-muted border border-transparent rounded-control"><Trash2 className="w-5 h-5" /></button>
           </div>
           <button
             onClick={handleSaveClick}
             disabled={!evalResult.isDirty}
-            className={`px-6 py-2 font-bold text-sm rounded transition-colors ${
-              !evalResult.isDirty ? "bg-gray-200 text-gray-400 cursor-not-allowed" : "bg-slate-600 text-white hover:bg-slate-700"
+            className={`px-6 py-2 font-bold text-sm rounded-control transition-colors ${
+              !evalResult.isDirty ? "bg-surface-sunken text-ink-muted cursor-not-allowed" : "bg-ink text-white hover:bg-ink"
             }`}
           >
             Save
@@ -278,24 +278,24 @@ export function AvailabilityEditorPage() {
 
       {/* Unsaved changes banner */}
       {evalResult.isDirty && (
-        <div className="bg-amber-50 border-b border-amber-200 px-6 py-2 flex items-center gap-3 shrink-0">
-          <p className="text-xs text-amber-800 font-medium">Unsaved changes</p>
-          <button onClick={handleDiscard} className="text-xs font-bold text-amber-800 hover:underline">Discard</button>
+        <div className="bg-warning/10 border-b border-warning/30 px-6 py-2 flex items-center gap-3 shrink-0">
+          <p className="text-xs text-warning-ink font-medium">Unsaved changes</p>
+          <button onClick={handleDiscard} className="text-xs font-bold text-warning-ink hover:underline">Discard</button>
         </div>
       )}
 
       {/* Content Area */}
       <div className="flex-1 overflow-hidden flex">
         {/* Left Side (65%) — weekly editor */}
-        <div className="w-[65%] h-full overflow-y-auto p-8 border-r border-gray-300 bg-white">
+        <div className="w-[65%] h-full overflow-y-auto p-4 border-r border-divider bg-surface">
           <div className="max-w-2xl mx-auto space-y-6">
             {DAYS.map((day) => {
               const config = localSchedule[day];
               return (
-                <div key={day} className="flex items-start py-4 border-b border-gray-100 last:border-0">
+                <div key={day} className="flex items-start py-4 border-b border-divider last:border-0">
                   <div className="w-40 flex items-center shrink-0 pt-2">
                     <Toggle checked={config.active} onChange={() => toggleDay(day)} />
-                    <span className={`ml-3 text-sm font-bold whitespace-nowrap ${config.active ? "text-gray-800" : "text-gray-400"}`}>{day}</span>
+                    <span className={`ml-3 text-sm font-bold whitespace-nowrap ${config.active ? "text-ink" : "text-ink-muted"}`}>{day}</span>
                   </div>
 
                   <div className="flex-1 flex flex-col space-y-3">
@@ -309,7 +309,7 @@ export function AvailabilityEditorPage() {
                               options={TIME_OPTIONS}
                               className="w-28 justify-center"
                             />
-                            <span className="text-gray-400">-</span>
+                            <span className="text-ink-muted">-</span>
                             <FilterSelect
                               value={slot.end}
                               onChange={(v) => updateSlotTime(day, idx, "end", v)}
@@ -319,14 +319,14 @@ export function AvailabilityEditorPage() {
                           </div>
 
                           <div className="flex items-center ml-4 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            {idx === 0 && <button onClick={() => addSlot(day)} className="p-1.5 text-gray-400 hover:text-slate-600 rounded hover:bg-gray-100"><Plus className="w-4 h-4" /></button>}
-                            {config.slots.length > 1 && <button onClick={() => removeSlot(day, idx)} className="p-1.5 text-gray-400 hover:text-red-600 rounded hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>}
-                            {idx === 0 && <button title="Copy to all" className="p-1.5 text-gray-400 hover:text-slate-600 rounded hover:bg-gray-100 ml-2"><Copy className="w-4 h-4" /></button>}
+                            {idx === 0 && <button onClick={() => addSlot(day)} className="p-1.5 text-ink-muted hover:text-ink-soft rounded-control hover:bg-surface-hover"><Plus className="w-4 h-4" /></button>}
+                            {config.slots.length > 1 && <button onClick={() => removeSlot(day, idx)} className="p-1.5 text-ink-muted hover:text-danger-ink rounded-control hover:bg-danger/10"><Trash2 className="w-4 h-4" /></button>}
+                            {idx === 0 && <button title="Copy to all" className="p-1.5 text-ink-muted hover:text-ink-soft rounded-control hover:bg-surface-hover ml-2"><Copy className="w-4 h-4" /></button>}
                           </div>
                         </div>
                       ))
                     ) : (
-                      <div className="pt-2 text-sm text-gray-400 font-medium">Unavailable</div>
+                      <div className="pt-2 text-sm text-ink-muted font-medium">Unavailable</div>
                     )}
                   </div>
                 </div>
@@ -336,7 +336,7 @@ export function AvailabilityEditorPage() {
         </div>
 
         {/* Right Side (35%) */}
-        <div className="w-[35%] h-full overflow-y-auto bg-gray-50 p-8 space-y-6">
+        <div className="w-[35%] h-full overflow-y-auto bg-surface-page p-4 space-y-6">
           <PendingRequestsSection
             pending={pending}
             decisions={store.decisions}

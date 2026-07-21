@@ -24,7 +24,7 @@ export function DemoControlsPill() {
         onClick={() => setExpanded(true)}
         aria-label="Open demo controls"
         title="Demo controls"
-        className="fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full bg-slate-800/90 text-white shadow-lg flex items-center justify-center hover:bg-slate-800 transition-colors"
+        className="fixed bottom-6 right-6 z-40 w-12 h-12 rounded-full bg-surface-sunken/90 text-ink-soft shadow-lg flex items-center justify-center hover:bg-surface-sunken transition-colors"
       >
         <FlaskConical className="w-5 h-5" />
       </button>
@@ -32,15 +32,15 @@ export function DemoControlsPill() {
   }
 
   return (
-    <div className="fixed bottom-6 right-6 z-40 w-64 bg-white border border-gray-200 rounded-2xl shadow-2xl overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2.5 bg-slate-800 text-white">
+    <div className="fixed bottom-6 right-6 z-40 w-64 bg-surface border border-divider rounded-card shadow-2xl overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2.5 bg-ink text-white">
         <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider">
           <FlaskConical className="w-3.5 h-3.5" /> Demo Controls
         </span>
         <button
           onClick={() => setExpanded(false)}
           aria-label="Collapse demo controls"
-          className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-white/10"
+          className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-surface/10"
         >
           <X className="w-4 h-4" />
         </button>
@@ -50,17 +50,17 @@ export function DemoControlsPill() {
         <Link
           to="/site-map"
           onClick={() => setExpanded(false)}
-          className="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-800"
+          className="flex items-center gap-2 text-sm font-semibold text-ink-soft hover:text-ink"
         >
           <Map className="w-4 h-4" /> Site Map
         </Link>
 
         <div>
-          <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Demo Role</div>
+          <div className="text-xs font-semibold text-ink-muted uppercase tracking-wider mb-1.5">Demo Role</div>
           <select
             value={role}
             onChange={handleRoleChange}
-            className="w-full border border-gray-300 rounded text-sm px-2 py-1.5 outline-none focus:border-slate-500 bg-white"
+            className="w-full border border-divider rounded-control text-sm px-2 py-1.5 outline-none focus:border-border-strong bg-surface"
           >
             <option value="Admin">Admin</option>
             <option value="Reception">Reception</option>

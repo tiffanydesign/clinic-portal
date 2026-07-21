@@ -37,7 +37,7 @@ export function StaffRowMenu({ staff }: { staff: Staff }) {
       <button
         ref={btnRef}
         onClick={toggle}
-        className="p-1.5 text-gray-400 hover:text-gray-800 hover:bg-gray-200 rounded transition-colors"
+        className="p-1.5 text-ink-muted hover:text-ink hover:bg-surface-sunken rounded-control transition-colors"
         aria-label={`Actions for ${staff.name}`}
       >
         <MoreHorizontal className="w-4 h-4" />
@@ -58,10 +58,10 @@ function MenuItems({ staff, pos, onClose }: { staff: Staff; pos: { top: number; 
 
   const go = (path: string) => { onClose(); navigate(path); };
 
-  const itemCls = "w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50";
+  const itemCls = "w-full text-left px-4 py-2 text-sm text-ink-soft hover:bg-surface-page";
 
   return (
-    <div className="fixed w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1" style={{ top: pos.top, left: pos.left }}>
+    <div className="fixed w-48 bg-surface border border-divider rounded-card shadow-lg z-50 py-1" style={{ top: pos.top, left: pos.left }}>
       <button className={itemCls} onClick={() => go(`/staff/${staff.id}/overview`)}>View Profile</button>
       <button className={itemCls} onClick={() => go(`/staff/${staff.id}/workload`)}>View Workload</button>
     </div>

@@ -379,20 +379,20 @@ export function checkInBlockReason(a: Appt): string | null {
 type StatusStyle = { card: string; dot: string; text: string };
 
 const STATUS_STYLE: Record<ApptStatus, StatusStyle> = {
-  Booked: { card: "bg-blue-50/70 border border-blue-200/80", dot: "bg-blue-500", text: "text-blue-900" },
-  Arrived: { card: "bg-amber-50/80 border border-amber-200", dot: "bg-amber-500", text: "text-amber-900" },
-  "Checked In": { card: "bg-emerald-50/70 border border-emerald-200", dot: "bg-emerald-500", text: "text-emerald-900" },
-  "In Clinic": { card: "bg-orange-50/80 border border-orange-200", dot: "bg-orange-500", text: "text-orange-900" },
-  Completed: { card: "bg-gray-50 border border-gray-200", dot: "bg-gray-400", text: "text-gray-600" },
-  "No Show": { card: "bg-red-50/60 border border-dashed border-red-300", dot: "bg-red-400", text: "text-red-800" },
-  Cancelled: { card: "bg-gray-50 border border-gray-200 line-through", dot: "bg-gray-300", text: "text-gray-400" },
+  Booked: { card: "bg-info/10 border border-info/30", dot: "bg-info", text: "text-info-ink" },
+  Arrived: { card: "bg-warning/10 border border-warning/30", dot: "bg-warning", text: "text-warning-ink" },
+  "Checked In": { card: "bg-success/10 border border-success/30", dot: "bg-success", text: "text-success-ink" },
+  "In Clinic": { card: "bg-warning/10 border border-warning/30", dot: "bg-warning", text: "text-warning-ink" },
+  Completed: { card: "bg-surface-page border border-divider", dot: "bg-ink-muted", text: "text-ink-soft" },
+  "No Show": { card: "bg-danger/10 border border-dashed border-danger/30", dot: "bg-danger", text: "text-danger-ink" },
+  Cancelled: { card: "bg-surface-page border border-divider line-through", dot: "bg-surface-sunken", text: "text-ink-muted" },
 };
 
 export function apptBlockClass(status: ApptStatus): string {
   // A resting shadow (not just on hover) is what makes a block read as an
   // object sitting on the grid rather than a flat tinted rectangle — this is
   // the single biggest lever for the calendar's perceived depth.
-  return `${STATUS_STYLE[status].card} rounded-lg shadow-[0_1px_2px_rgba(15,23,42,0.06)]`;
+  return `${STATUS_STYLE[status].card} rounded-card shadow-[0_1px_2px_rgba(15,23,42,0.06)]`;
 }
 
 // The small leading dot every calendar/timeline block renders before the

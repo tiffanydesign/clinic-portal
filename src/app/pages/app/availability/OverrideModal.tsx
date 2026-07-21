@@ -50,26 +50,26 @@ export function OverrideModal({ onClose, onApply, onRequestLeaveInstead, existin
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-2xl border border-gray-200 w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
-        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 shrink-0">
-          <h2 className="text-lg font-bold text-gray-800">{editing ? "Edit Date Override" : "Add Date Override"}</h2>
-          <button onClick={onClose} className="p-2 text-gray-500 hover:bg-gray-200 rounded-full transition-colors"><X className="w-5 h-5" /></button>
+    <div className="fixed inset-0 bg-surface-sunken/30 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-surface rounded-card shadow-2xl border border-divider w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
+        <div className="px-6 py-4 border-b border-divider flex justify-between items-center bg-surface-page shrink-0">
+          <h2 className="text-lg font-bold text-ink">{editing ? "Edit Date Override" : "Add Date Override"}</h2>
+          <button onClick={onClose} className="p-2 text-ink-muted hover:bg-surface-sunken rounded-full transition-colors"><X className="w-5 h-5" /></button>
         </div>
 
         <div className="flex-1 flex overflow-hidden">
           {/* Left: Calendar */}
-          <div className="w-1/2 p-8 border-r border-gray-200 bg-white overflow-y-auto">
-            <h3 className="text-base font-bold text-gray-800 mb-6">{editing ? "Date" : "Select the date to override"}</h3>
-            <div className={`border border-gray-200 rounded p-4 ${editing ? "opacity-60 pointer-events-none" : ""}`}>
+          <div className="w-1/2 p-4 border-r border-divider bg-surface overflow-y-auto">
+            <h3 className="text-base font-bold text-ink mb-6">{editing ? "Date" : "Select the date to override"}</h3>
+            <div className={`border border-divider rounded-control p-4 ${editing ? "opacity-60 pointer-events-none" : ""}`}>
               <div className="flex justify-between items-center mb-6">
-                <button className="p-1 text-gray-400 hover:text-gray-800"><ChevronLeft className="w-5 h-5" /></button>
-                <div className="font-bold text-gray-800">July 2026</div>
-                <button className="p-1 text-gray-400 hover:text-gray-800"><ChevronRight className="w-5 h-5" /></button>
+                <button className="p-1 text-ink-muted hover:text-ink"><ChevronLeft className="w-5 h-5" /></button>
+                <div className="font-bold text-ink">July 2026</div>
+                <button className="p-1 text-ink-muted hover:text-ink"><ChevronRight className="w-5 h-5" /></button>
               </div>
               <div className="grid grid-cols-7 mb-2">
                 {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
-                  <div key={d} className="text-center text-xs font-bold text-gray-400 uppercase tracking-wider py-2">{d}</div>
+                  <div key={d} className="text-center text-xs font-bold text-ink-muted uppercase tracking-wider py-2">{d}</div>
                 ))}
               </div>
               <div className="grid grid-cols-7 gap-1">
@@ -82,11 +82,11 @@ export function OverrideModal({ onClose, onApply, onRequestLeaveInstead, existin
                       key={d}
                       onClick={() => setSelectedDate(d)}
                       className={`h-10 w-full rounded-full flex flex-col items-center justify-center relative text-sm font-medium transition-colors
-                        ${isSelected ? "bg-slate-600 text-white shadow-md" : "text-gray-700 hover:bg-gray-100"}
+                        ${isSelected ? "bg-ink text-white shadow-md" : "text-ink-soft hover:bg-surface-hover"}
                         ${hasOverride && !isSelected ? "font-bold" : ""}`}
                     >
                       {d}
-                      {hasOverride && <div className={`w-1 h-1 rounded-full absolute bottom-1.5 ${isSelected ? "bg-white" : "bg-slate-500"}`}></div>}
+                      {hasOverride && <div className={`w-1 h-1 rounded-full absolute bottom-1.5 ${isSelected ? "bg-surface" : "bg-ink-muted"}`}></div>}
                     </button>
                   );
                 })}
@@ -95,42 +95,42 @@ export function OverrideModal({ onClose, onApply, onRequestLeaveInstead, existin
           </div>
 
           {/* Right: Time slots */}
-          <div className="w-1/2 p-8 bg-gray-50 overflow-y-auto flex flex-col">
-            <h3 className="text-base font-bold text-gray-800 mb-6">Working hours for this date</h3>
+          <div className="w-1/2 p-4 bg-surface-page overflow-y-auto flex flex-col">
+            <h3 className="text-base font-bold text-ink mb-6">Working hours for this date</h3>
             <div className="flex-1 flex flex-col">
               <div className="space-y-4 mb-6">
                 {slots.length === 0 ? (
-                  <div className="text-sm font-bold text-gray-500 bg-gray-100 p-4 rounded text-center">No hours set</div>
+                  <div className="text-sm font-bold text-ink-muted bg-surface-hover p-4 rounded-control text-center">No hours set</div>
                 ) : (
                   slots.map((slot, i) => (
                     <div key={i} className="flex items-center space-x-3">
                       <FilterSelect value={slot.start} onChange={(v) => updateSlot(i, "start", v)} options={TIME_OPTIONS} className="flex-1 justify-center" />
-                      <span className="text-gray-400 font-medium">-</span>
+                      <span className="text-ink-muted font-medium">-</span>
                       <FilterSelect value={slot.end} onChange={(v) => updateSlot(i, "end", v)} options={TIME_OPTIONS} className="flex-1 justify-center" />
-                      <button onClick={() => removeSlot(i)} className="p-2 text-gray-400 hover:text-red-600 rounded hover:bg-red-50 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                      <button onClick={() => removeSlot(i)} className="p-2 text-ink-muted hover:text-danger-ink rounded-control hover:bg-danger/10 transition-colors"><Trash2 className="w-4 h-4" /></button>
                     </div>
                   ))
                 )}
-                <button onClick={addSlot} className="flex items-center text-sm font-bold text-slate-600 hover:underline">
+                <button onClick={addSlot} className="flex items-center text-sm font-bold text-ink-soft hover:underline">
                   <Plus className="w-4 h-4 mr-1" /> Add time
                 </button>
               </div>
 
-              <div className="mt-auto pt-6 border-t border-gray-200">
+              <div className="mt-auto pt-6 border-t border-divider">
                 <button
                   onClick={() => { onRequestLeaveInstead(dateStr ?? `1 Jul 2026`); onClose(); }}
-                  className="w-full flex items-center justify-center gap-1.5 text-sm text-gray-500 hover:text-slate-700 transition-colors"
+                  className="w-full flex items-center justify-center gap-1.5 text-sm text-ink-muted hover:text-ink-soft transition-colors"
                 >
-                  Need a full day off? <span className="font-bold text-slate-600 hover:underline flex items-center gap-1">Request Leave instead <ArrowRight className="w-3.5 h-3.5" /></span>
+                  Need a full day off? <span className="font-bold text-ink-soft hover:underline flex items-center gap-1">Request Leave instead <ArrowRight className="w-3.5 h-3.5" /></span>
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3 bg-gray-50 shrink-0">
-          <button onClick={onClose} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100">Cancel</button>
-          <button onClick={handleApply} className="px-6 py-2 rounded text-sm font-bold text-white bg-slate-600 hover:bg-slate-700">{editing ? "Save Override" : "Apply Override"}</button>
+        <div className="px-6 py-4 border-t border-divider flex justify-end space-x-3 bg-surface-page shrink-0">
+          <button onClick={onClose} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
+          <button onClick={handleApply} className="px-6 py-2 rounded-control text-sm font-bold text-white bg-ink hover:bg-surface-sunken">{editing ? "Save Override" : "Apply Override"}</button>
         </div>
       </div>
     </div>

@@ -43,25 +43,25 @@ export function GlobalSearchOverlay({ onClose }: { onClose: () => void }) {
   const trimmed = query.trim();
 
   return createPortal(
-    <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm z-50 flex items-start justify-center pt-[12vh] px-6">
+    <div className="fixed inset-0 bg-surface-sunken/30 backdrop-blur-sm z-50 flex items-start justify-center pt-[12vh] px-6">
       <div
         ref={panelRef}
-        className="w-full max-w-[560px] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden"
+        className="w-full max-w-[560px] bg-surface rounded-card shadow-2xl border border-divider overflow-hidden"
       >
-        <div className="relative border-b border-gray-100">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+        <div className="relative border-b border-divider">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-ink-muted pointer-events-none" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search patients, staff…"
-            className="w-full h-14 pl-12 pr-12 text-base outline-none"
+            className="w-full h-14 pl-4 pr-4 text-base outline-none"
           />
           <button
             onClick={onClose}
             aria-label="Close search"
-            className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full"
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center text-ink-muted hover:text-ink-soft hover:bg-surface-hover rounded-full"
           >
             <X className="w-4 h-4" />
           </button>
@@ -75,7 +75,7 @@ export function GlobalSearchOverlay({ onClose }: { onClose: () => void }) {
               onSelectStaff={goToStaff}
             />
           ) : (
-            <div className="text-sm text-gray-400 text-center px-4 py-10">Start typing to search patients or staff.</div>
+            <div className="text-sm text-ink-muted text-center px-4 py-6">Start typing to search patients or staff.</div>
           )}
         </div>
       </div>

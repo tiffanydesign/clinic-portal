@@ -26,36 +26,36 @@ export function DiscardDialog({
 }) {
   return (
     <div
-      className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-[70] p-6"
+      className="fixed inset-0 bg-surface-sunken/40 backdrop-blur-sm flex items-center justify-center z-[70] p-6"
       onClick={onKeepEditing}
     >
       <div
         role="alertdialog"
         aria-label={title}
-        className="bg-white rounded-xl shadow-2xl border border-gray-200 w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95"
+        className="bg-surface rounded-card shadow-2xl border border-divider w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6">
           <div className="flex gap-3">
-            <span className="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+            <span className="w-9 h-9 rounded-card bg-warning/10 text-warning-ink flex items-center justify-center shrink-0">
               <AlertTriangle className="w-4 h-4" />
             </span>
             <div className="min-w-0">
-              <h2 className="text-base font-bold text-gray-800">{title}</h2>
-              <p className="text-sm text-gray-600 mt-1 leading-relaxed">{message}</p>
+              <h2 className="text-base font-bold text-ink">{title}</h2>
+              <p className="text-sm text-ink-soft mt-1 leading-relaxed">{message}</p>
             </div>
           </div>
         </div>
-        <div className="px-6 py-4 border-t border-gray-200 flex justify-end gap-3 bg-gray-50">
+        <div className="px-6 py-4 border-t border-divider flex justify-end gap-3 bg-surface-page">
           <button
             onClick={onKeepEditing}
-            className="min-h-11 px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100 transition-colors"
+            className="min-h-11 px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover transition-colors"
           >
             Keep editing
           </button>
           <button
             onClick={onDiscard}
-            className="min-h-11 px-5 py-2 rounded text-sm font-bold text-white bg-red-600 hover:bg-red-700 transition-colors shadow-sm"
+            className="min-h-11 px-5 py-2 rounded-control text-sm font-bold text-white bg-danger-ink hover:bg-danger-ink transition-colors shadow-sm"
           >
             {confirmLabel}
           </button>

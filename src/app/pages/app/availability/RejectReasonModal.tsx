@@ -10,15 +10,15 @@ export function RejectReasonModal({ onCancel, onConfirm }: { onCancel: () => voi
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-sm flex items-center justify-center z-[60]">
-      <div className="bg-white rounded-xl shadow-2xl border border-gray-200 w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95">
+    <div className="fixed inset-0 bg-surface-sunken/30 backdrop-blur-sm flex items-center justify-center z-[60]">
+      <div className="bg-surface rounded-card shadow-2xl border border-divider w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95">
         <div className="px-6 py-5">
-          <h2 className="text-lg font-bold text-gray-800 mb-2">Reject Request</h2>
-          <p className="text-sm text-gray-600 leading-relaxed mb-4">
+          <h2 className="text-lg font-bold text-ink mb-2">Reject Request</h2>
+          <p className="text-sm text-ink-soft leading-relaxed mb-4">
             This reason will be sent to the employee.
           </p>
-          <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-1.5">
-            Reason <span className="text-red-500">*</span>
+          <label className="block text-xs font-bold text-ink-soft uppercase tracking-wider mb-1.5">
+            Reason <span className="text-danger-ink">*</span>
           </label>
           <textarea
             autoFocus
@@ -26,14 +26,14 @@ export function RejectReasonModal({ onCancel, onConfirm }: { onCancel: () => voi
             onChange={(e) => setReason(e.target.value)}
             rows={3}
             placeholder="e.g. Insufficient staffing that week"
-            className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none bg-white focus:border-slate-500 resize-none"
+            className="w-full px-3 py-2 border border-divider rounded-control text-sm outline-none bg-surface focus:border-border-strong resize-none"
           />
         </div>
-        <div className="px-6 py-4 border-t border-gray-200 flex justify-end space-x-3 bg-gray-50">
-          <button onClick={onCancel} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100 transition-colors">
+        <div className="px-6 py-4 border-t border-divider flex justify-end space-x-3 bg-surface-page">
+          <button onClick={onCancel} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover transition-colors">
             Cancel
           </button>
-          <button onClick={submit} className="px-6 py-2 rounded text-sm font-bold text-white bg-red-600 hover:bg-red-700 transition-colors">
+          <button onClick={submit} className="px-6 py-2 rounded-control text-sm font-bold text-white bg-danger-ink hover:bg-danger-ink transition-colors">
             Reject Request
           </button>
         </div>

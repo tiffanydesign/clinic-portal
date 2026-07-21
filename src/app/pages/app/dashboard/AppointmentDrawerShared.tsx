@@ -14,17 +14,17 @@ import { Appt, ApptStatusTone, Patient, apptStatusTone, formsSigned } from "./da
 export function KV({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-baseline gap-2.5 py-1 text-sm">
-      <span className="w-[88px] shrink-0 text-gray-400 font-semibold text-xs">{label}</span>
-      <span className="font-medium text-gray-700 min-w-0 truncate">{value}</span>
+      <span className="w-[88px] shrink-0 text-ink-muted font-semibold text-xs">{label}</span>
+      <span className="font-medium text-ink-soft min-w-0 truncate">{value}</span>
     </div>
   );
 }
 
 export function Block({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <div className="px-5 py-3.5 border-b border-gray-100">
+    <div className="px-5 py-3.5 border-b border-divider">
       <div className="flex items-center justify-between mb-2">
-        <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{title}</h4>
+        <h4 className="text-label font-bold text-ink-muted uppercase tracking-wider">{title}</h4>
         {action}
       </div>
       {children}
@@ -37,7 +37,7 @@ export function Block({ title, children, action }: { title: string; children: Re
 // above every other section, never buried below static contact details.
 export function AllergyBanner({ alert }: { alert: string }) {
   return (
-    <div className="flex items-center gap-2 bg-red-50 border-b border-red-200 px-5 py-2.5 text-sm font-bold text-red-700 shrink-0">
+    <div className="flex items-center gap-2 bg-danger/10 border-b border-danger/30 px-5 py-2.5 text-sm font-bold text-danger-ink shrink-0">
       <AlertTriangle className="w-4 h-4 shrink-0" /> Allergy: {alert}
     </div>
   );
@@ -51,17 +51,17 @@ export function AllergyBanner({ alert }: { alert: string }) {
 export function PatientHeaderBody({ patient, onOpenRecord }: { patient: Patient; onOpenRecord: () => void }) {
   return (
     <div className="flex items-start gap-3 min-w-0 flex-1">
-      <div className="w-11 h-11 rounded-full bg-slate-100 text-slate-700 font-bold flex items-center justify-center shrink-0 text-sm mt-0.5">
+      <div className="w-11 h-11 rounded-full bg-surface-hover text-ink-soft font-bold flex items-center justify-center shrink-0 text-sm mt-0.5">
         {patient.avatar}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="font-bold text-gray-800 truncate">{patient.name}</div>
-        <div className="text-xs text-gray-500">{patient.age}y · {patient.sex}</div>
+        <div className="font-bold text-ink truncate">{patient.name}</div>
+        <div className="text-xs text-ink-muted">{patient.age}y · {patient.sex}</div>
         <div className="flex items-center gap-2 mt-1">
-          <span className="text-[11px] text-gray-400 font-semibold truncate">
+          <span className="text-label text-ink-muted font-semibold truncate">
             {patient.patientId}{patient.group !== "—" ? ` · ${patient.group}` : ""}
           </span>
-          <button onClick={onOpenRecord} className="text-[11px] font-bold text-slate-600 hover:underline shrink-0 ml-auto">
+          <button onClick={onOpenRecord} className="text-label font-bold text-ink-soft hover:underline shrink-0 ml-auto">
             View Record →
           </button>
         </div>
@@ -71,17 +71,17 @@ export function PatientHeaderBody({ patient, onOpenRecord }: { patient: Patient;
 }
 
 const TONE_CLASS: Record<ApptStatusTone, string> = {
-  blue: "bg-blue-50 border-blue-300 text-blue-800",
-  amber: "bg-amber-50 border-amber-300 text-amber-800",
-  emerald: "bg-emerald-50 border-emerald-300 text-emerald-800",
-  orange: "bg-orange-50 border-orange-300 text-orange-800",
-  gray: "bg-gray-100 border-gray-300 text-gray-600",
-  red: "bg-red-50 border-red-300 text-red-700",
+  blue: "bg-info/10 border-info/30 text-info-ink",
+  amber: "bg-warning/10 border-warning/30 text-warning-ink",
+  emerald: "bg-success/10 border-success/30 text-success-ink",
+  orange: "bg-warning/10 border-warning/30 text-warning-ink",
+  gray: "bg-surface-hover border-divider text-ink-soft",
+  red: "bg-danger/10 border-danger/30 text-danger-ink",
 };
 
 function BigPill({ tone, children }: { tone: ApptStatusTone; children: React.ReactNode }) {
   return (
-    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] font-extrabold tracking-wide whitespace-nowrap ${TONE_CLASS[tone]}`}>
+    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-label font-extrabold tracking-wide whitespace-nowrap ${TONE_CLASS[tone]}`}>
       {children}
     </span>
   );
@@ -90,7 +90,7 @@ function BigPill({ tone, children }: { tone: ApptStatusTone; children: React.Rea
 function GateBlock({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="px-2 py-3.5 flex flex-col items-center text-center gap-1.5 min-w-0">
-      <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{label}</span>
+      <span className="text-label font-bold text-ink-muted uppercase tracking-wider">{label}</span>
       {children}
     </div>
   );
@@ -114,8 +114,8 @@ export function StatusGateCard({ appt, showPayment = true }: { appt: Appt; showP
   const cols = 1 + (showPaymentBlock ? 1 : 0) + (showConsentBlock ? 1 : 0);
 
   return (
-    <div className={`mx-5 mt-4 rounded-xl border bg-white shadow-sm shrink-0 ${hasAlert ? "border-red-300" : "border-gray-200"}`}>
-      <div className={`grid divide-x divide-gray-100 ${cols === 3 ? "grid-cols-3" : cols === 2 ? "grid-cols-2" : "grid-cols-1"}`}>
+    <div className={`mx-5 mt-4 rounded-card border bg-surface shadow-sm shrink-0 ${hasAlert ? "border-danger/30" : "border-divider"}`}>
+      <div className={`grid divide-x divide-divider ${cols === 3 ? "grid-cols-3" : cols === 2 ? "grid-cols-2" : "grid-cols-1"}`}>
         <GateBlock label="Status">
           <BigPill tone={apptStatusTone(appt.status)}>{appt.status.toUpperCase()}</BigPill>
         </GateBlock>
@@ -127,7 +127,7 @@ export function StatusGateCard({ appt, showPayment = true }: { appt: Appt; showP
             ) : (
               <>
                 <BigPill tone="red"><AlertTriangle className="w-3.5 h-3.5" /> UNPAID</BigPill>
-                <span className="text-[11px] font-bold text-red-600">{appt.balance} due</span>
+                <span className="text-label font-bold text-danger-ink">{appt.balance} due</span>
               </>
             )}
           </GateBlock>
@@ -176,13 +176,13 @@ export function PrimaryActionButton({ label, onClick, icon, disabled, reason }: 
       <button
         onClick={onClick}
         disabled={disabled}
-        className={`w-full py-3 font-bold text-sm rounded-lg transition-colors flex items-center justify-center gap-2 ${
-          disabled ? "bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed" : "bg-slate-600 text-white hover:bg-slate-700"
+        className={`w-full py-3 font-bold text-sm rounded-card transition-colors flex items-center justify-center gap-2 ${
+          disabled ? "bg-surface-hover text-ink-muted border border-divider cursor-not-allowed" : "bg-ink text-white hover:bg-ink"
         }`}
       >
         {icon}{label}
       </button>
-      {disabled && reason && <p className="text-xs text-red-600 font-medium mt-2 text-center">{reason}</p>}
+      {disabled && reason && <p className="text-xs text-danger-ink font-medium mt-2 text-center">{reason}</p>}
     </>
   );
 }
@@ -197,7 +197,7 @@ export function SecondaryChip({ label, onClick, icon, danger }: {
     <button
       onClick={onClick}
       className={`px-3 py-1.5 text-xs font-bold rounded-full border transition-colors flex items-center gap-1.5 ${
-        danger ? "text-red-600 border-red-200 bg-red-50 hover:bg-red-100" : "text-gray-700 border-gray-300 bg-white hover:bg-gray-50"
+        danger ? "text-danger-ink border-danger/30 bg-danger/10 hover:bg-danger/15" : "text-ink-soft border-divider bg-surface hover:bg-surface-page"
       }`}
     >
       {icon}{label}

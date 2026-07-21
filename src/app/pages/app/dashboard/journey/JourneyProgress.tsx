@@ -16,17 +16,17 @@ import { journeyTimingCaption } from "../AppointmentDrawerShared";
 // is all the space allows.
 export function JourneyProgressChip({ appt, className = "" }: { appt: Appt; className?: string }) {
   const info = journeyChipInfo(appt);
-  if (info.kind === "none") return <span className={`text-gray-400 ${className}`}>—</span>;
+  if (info.kind === "none") return <span className={`text-ink-muted ${className}`}>—</span>;
   if (info.kind === "completed") {
     return (
-      <span className={`inline-flex items-center gap-1 text-xs font-bold text-emerald-700 ${className}`}>
+      <span className={`inline-flex items-center gap-1 text-xs font-bold text-success-ink ${className}`}>
         <Check className="w-3.5 h-3.5" /> Completed
       </span>
     );
   }
   return (
-    <span className={`text-xs font-bold text-gray-700 whitespace-nowrap ${className}`}>
-      {info.station} <span className="text-gray-400 font-semibold">· {info.x}/{info.N}</span>
+    <span className={`text-xs font-bold text-ink-soft whitespace-nowrap ${className}`}>
+      {info.station} <span className="text-ink-muted font-semibold">· {info.x}/{info.N}</span>
     </span>
   );
 }
@@ -55,45 +55,45 @@ export function JourneyProgressStrip({ steps, current, isDone, caption, onOpen, 
   return (
     <Wrapper
       onClick={onOpen}
-      className={`w-full text-left block ${onOpen ? "cursor-pointer hover:bg-gray-50 rounded-lg transition-colors" : ""} ${className}`}
+      className={`w-full text-left block ${onOpen ? "cursor-pointer hover:bg-surface-page rounded-card transition-colors" : ""} ${className}`}
     >
       <div className="flex items-center gap-3 min-h-11">
-        <div className="flex items-center gap-1 min-w-0 flex-1 text-xs text-gray-400 font-semibold truncate">
-          <Check className="w-3 h-3 text-emerald-500 shrink-0" />
+        <div className="flex items-center gap-1 min-w-0 flex-1 text-xs text-ink-muted font-semibold truncate">
+          <Check className="w-3 h-3 text-success-ink shrink-0" />
           <span className="truncate">{isDone ? steps[steps.length - 1] : prevName}</span>
         </div>
 
         <div className="min-w-0 flex-[2] text-center">
           {isDone ? (
-            <div className="flex items-center justify-center gap-1.5 text-sm font-bold text-emerald-700">
+            <div className="flex items-center justify-center gap-1.5 text-sm font-bold text-success-ink">
               <Check className="w-4 h-4" /> Completed
             </div>
           ) : (
             <>
-              <div className="text-sm font-bold text-blue-700 truncate">{currentName}</div>
-              {caption && <div className="text-[11px] text-gray-500 truncate">{caption}</div>}
+              <div className="text-sm font-bold text-info-ink truncate">{currentName}</div>
+              {caption && <div className="text-label text-ink-muted truncate">{caption}</div>}
             </>
           )}
         </div>
 
-        <div className="flex items-center gap-1 min-w-0 flex-1 justify-end text-xs text-gray-400 font-semibold truncate">
+        <div className="flex items-center gap-1 min-w-0 flex-1 justify-end text-xs text-ink-muted font-semibold truncate">
           {!isDone && (
             <>
               <span className="truncate">{nextName}</span>
-              <span className="w-1.5 h-1.5 rounded-full border border-gray-300 shrink-0" />
+              <span className="w-1.5 h-1.5 rounded-full border border-divider shrink-0" />
             </>
           )}
         </div>
       </div>
 
       <div className="flex items-center gap-2 mt-1.5">
-        <div className="flex-1 h-1 bg-gray-100 rounded-full overflow-hidden">
+        <div className="flex-1 h-1 bg-surface-hover rounded-full overflow-hidden">
           {/* Same status colors as the text above it: emerald once done,
               blue while a step is actively in progress — not a fixed gray
               regardless of where the journey actually stands. */}
-          <div className={`h-full rounded-full transition-all ${isDone ? "bg-emerald-500" : "bg-blue-600"}`} style={{ width: `${pct}%` }} />
+          <div className={`h-full rounded-full transition-all ${isDone ? "bg-success" : "bg-info"}`} style={{ width: `${pct}%` }} />
         </div>
-        <span className="text-[11px] font-bold text-gray-400 shrink-0">{x} of {steps.length}</span>
+        <span className="text-label font-bold text-ink-muted shrink-0">{x} of {steps.length}</span>
       </div>
     </Wrapper>
   );

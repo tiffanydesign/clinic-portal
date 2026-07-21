@@ -30,22 +30,22 @@ const STATUS_OPTIONS = [
 
 function DeviceTable({ views, onOpen }: { views: DeviceView[]; onOpen: (v: DeviceView) => void }) {
   return (
-    <div className="border border-gray-300 rounded-xl overflow-hidden shadow-sm">
+    <div className="border border-divider rounded-card overflow-hidden shadow-sm">
       <div>
         <table className="w-full text-left [&_th]:!px-2 [&_td]:!px-2">
-          <thead className="bg-gray-50">
-            <tr className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-              <th className="px-4 py-3 border-b border-gray-200">Device</th>
-              <th className="px-4 py-3 border-b border-gray-200">Model</th>
-              <th className="px-4 py-3 border-b border-gray-200">Short Code</th>
-              <th className="px-4 py-3 border-b border-gray-200">Type</th>
-              <th className="px-4 py-3 border-b border-gray-200">Assigned Room</th>
-              <th className="px-4 py-3 border-b border-gray-200">Status</th>
-              <th className="px-4 py-3 border-b border-gray-200">Last Seen</th>
-              <th className="px-3 py-3 border-b border-gray-200 text-right">Actions</th>
+          <thead className="bg-surface-page">
+            <tr className="text-xs font-bold text-ink-muted uppercase tracking-wider">
+              <th className="px-4 py-3 border-b border-divider">Device</th>
+              <th className="px-4 py-3 border-b border-divider">Model</th>
+              <th className="px-4 py-3 border-b border-divider">Short Code</th>
+              <th className="px-4 py-3 border-b border-divider">Type</th>
+              <th className="px-4 py-3 border-b border-divider">Assigned Room</th>
+              <th className="px-4 py-3 border-b border-divider">Status</th>
+              <th className="px-4 py-3 border-b border-divider">Last Seen</th>
+              <th className="px-3 py-3 border-b border-divider text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100 bg-white">
+          <tbody className="divide-y divide-divider bg-surface">
             {views.map((v) => <DeviceRow key={v.id} view={v} onOpen={onOpen} />)}
           </tbody>
         </table>
@@ -112,44 +112,44 @@ export function DevicesPage() {
   const onOpen = (v: DeviceView) => setDetailId(v.id);
 
   return (
-    <div className="flex flex-col h-full overflow-hidden bg-white">
-      <div className="px-8 py-6 border-b border-gray-200 shrink-0 flex justify-between items-start bg-white">
+    <div className="flex flex-col h-full overflow-hidden bg-surface">
+      <div className="px-6 py-6 border-b border-divider shrink-0 flex justify-between items-start bg-surface">
         <div>
-          <div className="flex items-center gap-1.5 text-xs font-medium text-gray-400 mb-2">
-            <Link to="/clinic-settings" className="hover:text-slate-600 hover:underline">Clinic Settings</Link>
+          <div className="flex items-center gap-1.5 text-xs font-medium text-ink-muted mb-2">
+            <Link to="/clinic-settings" className="hover:text-ink-soft hover:underline">Clinic Settings</Link>
             <ChevronRight className="w-3 h-3" />
-            <span className="text-gray-600 font-bold">Devices</span>
+            <span className="text-ink-soft font-bold">Devices</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-800">Devices</h1>
-          <p className="text-sm text-gray-500 mt-1">Scanners, room TVs and payment terminals across the clinic</p>
+          <h1 className="text-2xl font-bold text-ink">Devices</h1>
+          <p className="text-sm text-ink-muted mt-1">Scanners, room TVs and payment terminals across the clinic</p>
         </div>
         <div className="flex items-center gap-4 shrink-0">
           <DemoStateControl state={state} onChange={set} />
-          <button onClick={() => setShowAdd(true)} className="flex items-center px-4 py-2 bg-slate-600 text-white rounded-lg text-sm font-bold hover:bg-slate-700 transition-colors shadow-sm">
+          <button onClick={() => setShowAdd(true)} className="flex items-center px-4 py-2 bg-ink text-white rounded-card text-sm font-bold hover:bg-ink transition-colors shadow-sm">
             <Plus className="w-4 h-4 mr-2" /> Add device
           </button>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="px-8 py-3 border-b border-gray-100 bg-gray-50/60 shrink-0 flex items-center justify-between gap-4 flex-wrap">
-        <div className="inline-flex bg-gray-100 rounded-lg p-0.5 border border-gray-200">
+      <div className="px-6 py-3 border-b border-divider bg-surface-page/60 shrink-0 flex items-center justify-between gap-4 flex-wrap">
+        <div className="inline-flex bg-surface-hover rounded-card p-0.5 border border-divider">
           {TYPE_TABS.map((t) => (
             <button
               key={t.v}
               onClick={() => setTypeTab(t.v)}
-              className={`px-3 py-1.5 text-xs font-bold rounded-md transition-colors flex items-center gap-1.5 ${typeTab === t.v ? "bg-white text-slate-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+              className={`px-3 py-1.5 text-xs font-bold rounded-control transition-colors flex items-center gap-1.5 ${typeTab === t.v ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted hover:text-ink-soft"}`}
             >
               {t.label}
-              <span className={`text-[10px] tabular-nums ${typeTab === t.v ? "text-slate-400" : "text-gray-400"}`}>{typeCount(t.v)}</span>
+              <span className={`text-label tabular-nums ${typeTab === t.v ? "text-ink-muted" : "text-ink-muted"}`}>{typeCount(t.v)}</span>
             </button>
           ))}
         </div>
         <div className="flex items-center gap-2">
           <FilterSelect value={status} onChange={(v) => setStatus(v as StatusFilter)} options={STATUS_OPTIONS} className="text-xs py-1.5" />
-          <div className="inline-flex bg-gray-100 rounded-lg p-0.5 border border-gray-200">
+          <div className="inline-flex bg-surface-hover rounded-card p-0.5 border border-divider">
             {[{ v: false, label: "List" }, { v: true, label: "By room" }].map((o) => (
-              <button key={o.label} onClick={() => setGrouped(o.v)} className={`px-3 py-1.5 text-xs font-bold rounded-md transition-colors ${grouped === o.v ? "bg-white text-slate-700 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
+              <button key={o.label} onClick={() => setGrouped(o.v)} className={`px-3 py-1.5 text-xs font-bold rounded-control transition-colors ${grouped === o.v ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted hover:text-ink-soft"}`}>
                 {o.label}
               </button>
             ))}
@@ -157,7 +157,7 @@ export function DevicesPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-8">
+      <div className="flex-1 overflow-y-auto p-4">
         {state === "loading" ? (
           <LoadingState />
         ) : state === "error" ? (
@@ -167,17 +167,17 @@ export function DevicesPage() {
             icon={MonitorSmartphone}
             title="No devices here"
             body={status === "retired" ? "No retired devices to show." : "No devices match these filters. Try a different type or status."}
-            cta={status !== "retired" && <button onClick={() => setShowAdd(true)} className="px-6 py-3 bg-slate-600 text-white rounded-lg text-base font-bold hover:bg-slate-700 transition-colors shadow-sm">Add a device</button>}
+            cta={status !== "retired" && <button onClick={() => setShowAdd(true)} className="px-6 py-3 bg-ink text-white rounded-card text-base font-bold hover:bg-ink transition-colors shadow-sm">Add a device</button>}
           />
         ) : groups ? (
           <div className="space-y-6">
             {groups.map((g) => (
               <div key={g.key}>
                 <div className="flex items-center gap-2 mb-2.5">
-                  <h3 className="text-sm font-bold text-gray-700">{g.label}</h3>
-                  <span className="text-xs font-semibold text-gray-400">{g.views.length}</span>
+                  <h3 className="text-sm font-bold text-ink-soft">{g.label}</h3>
+                  <span className="text-xs font-semibold text-ink-muted">{g.views.length}</span>
                   {g.unassigned && (
-                    <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2 py-0.5">
+                    <span className="inline-flex items-center gap-1 text-xs font-bold text-warning-ink bg-warning/10 border border-warning/30 rounded-full px-2 py-0.5">
                       <AlertTriangle className="w-3 h-3" /> needs a room
                     </span>
                   )}

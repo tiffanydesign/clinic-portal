@@ -45,41 +45,41 @@ function SaveVersionModal({
     : directBullets.join("; ");
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-6" onClick={onCancel}>
+    <div className="fixed inset-0 z-50 bg-surface-sunken/40 backdrop-blur-sm flex items-center justify-center p-6" onClick={onCancel}>
       <div
-        className="bg-white rounded-xl shadow-2xl border border-gray-200 w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95"
+        className="bg-surface rounded-card shadow-2xl border border-divider w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50 shrink-0">
-          <h2 className="text-lg font-bold text-gray-800">Save New Version</h2>
-          <button onClick={onCancel} className="p-1.5 text-gray-400 hover:text-gray-700 hover:bg-gray-200 rounded-full transition-colors">
+        <div className="px-6 py-4 border-b border-divider flex justify-between items-center bg-surface-page shrink-0">
+          <h2 className="text-lg font-bold text-ink">Save New Version</h2>
+          <button onClick={onCancel} className="p-1.5 text-ink-muted hover:text-ink-soft hover:bg-surface-sunken rounded-full transition-colors">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-5">
-          <p className="text-sm text-gray-600">
-            This will create <span className="font-bold text-gray-800">Version {nextVersion}</span> and set it as the active consent form.
+          <p className="text-sm text-ink-soft">
+            This will create <span className="font-bold text-ink">Version {nextVersion}</span> and set it as the active consent form.
           </p>
 
           <div>
-            <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Change Summary — detected automatically</label>
+            <label className="block text-xs font-bold text-ink-soft uppercase tracking-wider mb-2">Change Summary — detected automatically</label>
 
             {restoredFrom ? (
               <div className="space-y-4">
                 <div>
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 mb-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-ink-soft mb-2">
                     <RotateCcw className="w-3.5 h-3.5" /> Restored from Version {restoredFrom.version}
                   </div>
                   <ContentDiff from={activeVersion.content} to={restoredFrom.content} />
                 </div>
 
                 <div>
-                  <div className="text-xs font-bold text-slate-700 mb-2">Additional edits after restoring</div>
+                  <div className="text-xs font-bold text-ink-soft mb-2">Additional edits after restoring</div>
                   {furtherBullets.length > 0 ? (
                     <ContentDiff from={restoredFrom.content} to={draft} />
                   ) : (
-                    <p className="text-sm text-gray-400 italic">No further edits made after restoring this version.</p>
+                    <p className="text-sm text-ink-muted italic">No further edits made after restoring this version.</p>
                   )}
                 </div>
               </div>
@@ -89,32 +89,32 @@ function SaveVersionModal({
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">Admin Notes (optional)</label>
+            <label className="block text-xs font-bold text-ink-soft uppercase tracking-wider mb-2">Admin Notes (optional)</label>
             <textarea
               value={adminNote}
               onChange={(e) => setAdminNote(e.target.value)}
               rows={2}
               placeholder="Add any context for this change (optional)..."
-              className="w-full px-3 py-2 border border-gray-300 rounded text-sm outline-none focus:border-slate-500 resize-none"
+              className="w-full px-3 py-2 border border-divider rounded-control text-sm outline-none focus:border-border-strong resize-none"
             />
           </div>
 
-          <div className="flex gap-2.5 p-3 bg-amber-50 border border-amber-200 rounded">
-            <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-            <p className="text-xs text-amber-800 leading-relaxed">
+          <div className="flex gap-2.5 p-3 bg-warning/10 border border-warning/30 rounded-control">
+            <AlertTriangle className="w-4 h-4 text-warning-ink shrink-0 mt-0.5" />
+            <p className="text-xs text-warning-ink leading-relaxed">
               Previously signed consent forms are not affected. Patients who already signed will remain bound to the version they signed. This new
               version applies only to future signatures.
             </p>
           </div>
         </div>
 
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3 shrink-0">
-          <button onClick={onCancel} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100">
+        <div className="px-6 py-4 bg-surface-page border-t border-divider flex justify-end gap-3 shrink-0">
+          <button onClick={onCancel} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">
             Cancel
           </button>
           <button
             onClick={() => onConfirm(autoSummary, adminNote.trim())}
-            className="px-5 py-2 rounded text-sm font-bold text-white bg-slate-600 hover:bg-slate-700 transition-colors"
+            className="px-5 py-2 rounded-control text-sm font-bold text-white bg-ink hover:bg-surface-sunken transition-colors"
           >
             Confirm &amp; Activate
           </button>
@@ -126,17 +126,17 @@ function SaveVersionModal({
 
 function DiscardConfirmModal({ onCancel, onDiscard }: { onCancel: () => void; onDiscard: () => void }) {
   return (
-    <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-6" onClick={onCancel}>
-      <div className="bg-white rounded-xl shadow-2xl border border-gray-200 w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 bg-surface-sunken/40 backdrop-blur-sm flex items-center justify-center p-6" onClick={onCancel}>
+      <div className="bg-surface rounded-card shadow-2xl border border-divider w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95" onClick={(e) => e.stopPropagation()}>
         <div className="p-6">
-          <h2 className="text-base font-bold text-gray-800 mb-1.5">Discard changes?</h2>
-          <p className="text-sm text-gray-500">Your edits have not been saved. This will discard them and return to the active version.</p>
+          <h2 className="text-base font-bold text-ink mb-1.5">Discard changes?</h2>
+          <p className="text-sm text-ink-muted">Your edits have not been saved. This will discard them and return to the active version.</p>
         </div>
-        <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end gap-3">
-          <button onClick={onCancel} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100">
+        <div className="px-6 py-4 bg-surface-page border-t border-divider flex justify-end gap-3">
+          <button onClick={onCancel} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">
             Keep Editing
           </button>
-          <button onClick={onDiscard} className="px-4 py-2 rounded text-sm font-bold text-white bg-red-600 hover:bg-red-700 transition-colors">
+          <button onClick={onDiscard} className="px-4 py-2 rounded-control text-sm font-bold text-white bg-danger-ink hover:bg-danger-ink transition-colors">
             Discard Changes
           </button>
         </div>
@@ -211,54 +211,54 @@ export function ConsentFormPage() {
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden bg-white">
-      <div className="px-8 py-6 border-b border-gray-200 shrink-0 flex justify-between items-start bg-white">
+    <div className="flex flex-col h-full overflow-hidden bg-surface">
+      <div className="px-6 py-6 border-b border-divider shrink-0 flex justify-between items-start bg-surface">
         <div>
-          <div className="flex items-center gap-1.5 text-xs font-medium text-gray-400 mb-2">
-            <Link to="/clinic-settings" className="hover:text-slate-600 hover:underline">Clinic Settings</Link>
+          <div className="flex items-center gap-1.5 text-xs font-medium text-ink-muted mb-2">
+            <Link to="/clinic-settings" className="hover:text-ink-soft hover:underline">Clinic Settings</Link>
             <ChevronRight className="w-3 h-3" />
-            <span className="text-gray-600 font-bold">Consent Form Template</span>
+            <span className="text-ink-soft font-bold">Consent Form Template</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-800">Consent Form Template</h1>
-          <p className="text-sm text-gray-500 mt-1">The consent form patients sign at reception before their visit</p>
+          <h1 className="text-2xl font-bold text-ink">Consent Form Template</h1>
+          <p className="text-sm text-ink-muted mt-1">The consent form patients sign at reception before their visit</p>
         </div>
         <div className="text-right shrink-0">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-success/10 border border-success/30 text-success-ink text-xs font-bold">
             Version {activeVersion.version} · Active
           </div>
-          <div className="text-xs text-gray-500 mt-1.5">
+          <div className="text-xs text-ink-muted mt-1.5">
             Last edited by {activeVersion.editedBy} · {activeVersion.editedAtShort}
           </div>
         </div>
       </div>
 
-      <div className="px-8 py-3 border-b border-gray-100 flex justify-between items-center bg-gray-50/60 shrink-0">
+      <div className="px-6 py-3 border-b border-divider flex justify-between items-center bg-surface-page/60 shrink-0">
         {isEditing ? (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold text-slate-700 bg-slate-100 rounded">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold text-ink-soft bg-surface-hover rounded-control">
             <Pencil className="w-4 h-4" /> Editing
           </span>
         ) : (
           <button
             onClick={handleEditClick}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold text-gray-600 border border-gray-300 bg-white rounded hover:bg-gray-50 hover:border-slate-400 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold text-ink-soft border border-divider bg-surface rounded-control hover:bg-surface-page hover:border-border-strong transition-colors"
           >
             <Pencil className="w-4 h-4" /> Edit
           </button>
         )}
         <button
           onClick={() => setHistoryOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold text-gray-600 border border-gray-300 bg-white rounded hover:bg-gray-50 hover:border-slate-400 transition-colors"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold text-ink-soft border border-divider bg-surface rounded-control hover:bg-surface-page hover:border-border-strong transition-colors"
         >
           <History className="w-4 h-4" /> Version History
         </button>
       </div>
 
       <div className="flex-1 min-h-0 flex overflow-hidden">
-        <div className="w-1/2 min-w-0 overflow-y-auto p-8 border-r border-gray-200 bg-white">
+        <div className="w-1/2 min-w-0 overflow-y-auto p-4 border-r border-divider bg-surface">
           {isEditing && draft ? <ConsentFormEditor draft={draft} onChange={setDraft} /> : <ConsentFormReadView content={activeVersion.content} />}
         </div>
-        <div className="w-1/2 min-w-0 overflow-y-auto p-8 bg-gray-100">
-          <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-[11px] font-bold uppercase tracking-wider mb-4">
+        <div className="w-1/2 min-w-0 overflow-y-auto p-4 bg-surface-hover">
+          <div className="inline-flex items-center px-2.5 py-1 rounded-full bg-info/10 border border-info/30 text-info-ink text-overline mb-4">
             Patient View Preview
           </div>
           <ConsentFormPreview content={isEditing && draft ? draft : activeVersion.content} />
@@ -266,14 +266,14 @@ export function ConsentFormPage() {
       </div>
 
       {isEditing && (
-        <div className="px-8 py-4 border-t border-gray-200 bg-white flex justify-between items-center shrink-0">
-          <button onClick={handleCancelClick} className="px-4 py-2 border border-gray-300 rounded text-sm font-bold text-gray-700 bg-white hover:bg-gray-100">
+        <div className="px-6 py-4 border-t border-divider bg-surface flex justify-between items-center shrink-0">
+          <button onClick={handleCancelClick} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">
             Cancel
           </button>
           <button
             onClick={() => setSaveModalOpen(true)}
             disabled={!hasChanges}
-            className={`px-6 py-2 rounded text-sm font-bold text-white transition-colors ${hasChanges ? "bg-slate-600 hover:bg-slate-700" : "bg-gray-300 cursor-not-allowed"}`}
+            className={`px-6 py-2 rounded-control text-sm font-bold text-white transition-colors ${hasChanges ? "bg-surface-sunken hover:bg-surface-sunken" : "bg-surface-sunken cursor-not-allowed"}`}
           >
             Save as New Version
           </button>

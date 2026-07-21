@@ -116,43 +116,43 @@ export function StaffListPage() {
   const SortableTh = ({ label, k, className = "" }: { label: string; k: SortKey; className?: string }) => (
     <th
       onClick={() => toggleSort(k)}
-      className={`p-4 font-bold text-gray-600 border-b border-gray-200 cursor-pointer hover:bg-gray-100 select-none ${className}`}
+      className={`p-4 font-bold text-ink-soft border-b border-divider cursor-pointer hover:bg-surface-hover select-none ${className}`}
     >
       <span className="flex items-center">
         {label}
-        <ArrowUpDown className={`w-3 h-3 ml-1 ${sortKey === k ? "text-slate-700" : "text-gray-300"}`} />
+        <ArrowUpDown className={`w-3 h-3 ml-1 ${sortKey === k ? "text-ink-soft" : "text-ink-muted"}`} />
       </span>
     </th>
   );
 
   return (
-    <div className="flex flex-col min-h-full bg-gray-50">
+    <div className="flex flex-col min-h-full bg-surface-page">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-8 py-5 flex justify-between items-center shrink-0">
+      <div className="bg-surface border-b border-divider px-6 py-5 flex justify-between items-center shrink-0">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Staff Management</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage clinic staff, roles, permissions, and workload</p>
+          <h1 className="text-2xl font-bold text-ink">Staff Management</h1>
+          <p className="text-sm text-ink-muted mt-1">Manage clinic staff, roles, permissions, and workload</p>
         </div>
         <div className="relative">
           <button
             onClick={() => setShowAddMenu(!showAddMenu)}
-            className="flex items-center px-4 py-2 bg-slate-600 text-white rounded-lg text-sm font-bold hover:bg-slate-700 transition-colors shadow-sm"
+            className="flex items-center px-4 py-2 bg-ink text-white rounded-card text-sm font-bold hover:bg-ink transition-colors shadow-sm"
           >
             <Plus className="w-4 h-4 mr-2" /> Add Staff <ChevronDown className="w-3.5 h-3.5 ml-2" />
           </button>
           {showAddMenu && (
-            <div className="absolute right-0 top-full mt-1 w-52 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1" onMouseLeave={() => setShowAddMenu(false)}>
+            <div className="absolute right-0 top-full mt-1 w-52 bg-surface border border-divider rounded-card shadow-lg z-50 py-1" onMouseLeave={() => setShowAddMenu(false)}>
               <button
                 onClick={() => { setShowAddMenu(false); setShowAddModal(true); }}
-                className="w-full flex items-center gap-2.5 text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                className="w-full flex items-center gap-2.5 text-left px-4 py-2 text-sm text-ink-soft hover:bg-surface-page"
               >
-                <UserPlus className="w-4 h-4 text-gray-400" /> Add Individually
+                <UserPlus className="w-4 h-4 text-ink-muted" /> Add Individually
               </button>
               <button
                 onClick={() => { setShowAddMenu(false); setShowImportModal(true); }}
-                className="w-full flex items-center gap-2.5 text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                className="w-full flex items-center gap-2.5 text-left px-4 py-2 text-sm text-ink-soft hover:bg-surface-page"
               >
-                <Upload className="w-4 h-4 text-gray-400" /> Import from File
+                <Upload className="w-4 h-4 text-ink-muted" /> Import from File
               </button>
             </div>
           )}
@@ -161,7 +161,7 @@ export function StaffListPage() {
 
       {/* Roster summary — Stat family T3 `strip`. Clicking a segment drives the
           existing role / availability filters rather than navigating away. */}
-      <div className="px-8 py-4 shrink-0">
+      <div className="px-6 py-4 shrink-0">
         <StatStripGroup>
           <Stat
             stat={{ id: "total-staff", label: "Total Staff", kind: "count", variant: "strip",
@@ -212,13 +212,13 @@ export function StaffListPage() {
       </div>
 
       {/* Toolbar */}
-      <div className="bg-white border-y border-gray-200 px-8 py-3 flex items-center shrink-0 space-x-4">
+      <div className="bg-surface border-y border-divider px-6 py-3 flex items-center shrink-0 space-x-4">
         <div className="relative w-[280px]">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
           <input
             type="text" value={search} onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name, email, or employee ID..."
-            className="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded text-sm outline-none focus:border-slate-500 bg-white shadow-sm"
+            className="w-full pl-9 pr-3 py-1.5 border border-divider rounded-control text-sm outline-none focus:border-border-strong bg-surface shadow-sm"
           />
         </div>
 
@@ -226,15 +226,15 @@ export function StaffListPage() {
         <div className="relative">
           <button
             onClick={() => setShowRoleMenu(!showRoleMenu)}
-            className="flex items-center px-3 py-1.5 border border-gray-300 rounded text-sm text-gray-700 bg-white shadow-sm hover:border-slate-400 max-w-[220px]"
+            className="flex items-center px-3 py-1.5 border border-divider rounded-control text-sm text-ink-soft bg-surface shadow-sm hover:border-border-strong max-w-[220px]"
           >
-            <span className="truncate">{roleFilterLabel}</span> <ChevronDown className="w-3.5 h-3.5 ml-2 text-gray-400 shrink-0" />
+            <span className="truncate">{roleFilterLabel}</span> <ChevronDown className="w-3.5 h-3.5 ml-2 text-ink-muted shrink-0" />
           </button>
           {showRoleMenu && (
-            <div className="absolute left-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1" onMouseLeave={() => setShowRoleMenu(false)}>
+            <div className="absolute left-0 top-full mt-1 w-48 bg-surface border border-divider rounded-card shadow-lg z-50 py-1" onMouseLeave={() => setShowRoleMenu(false)}>
               {ROLE_OPTIONS.map((r) => (
-                <label key={r} className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 cursor-pointer">
-                  <input type="checkbox" checked={roleFilter.has(r)} onChange={() => toggleRoleFilter(r)} className="rounded text-slate-600 focus:ring-slate-500 mr-2.5" />
+                <label key={r} className="flex items-center px-4 py-2 text-sm text-ink-soft hover:bg-surface-page cursor-pointer">
+                  <input type="checkbox" checked={roleFilter.has(r)} onChange={() => toggleRoleFilter(r)} className="rounded-control text-ink-soft focus:ring-info mr-2.5" />
                   {r}
                 </label>
               ))}
@@ -268,25 +268,25 @@ export function StaffListPage() {
       </div>
 
       {/* Body */}
-      <div className="px-8 py-5 pb-8 flex flex-col">
-        <div className="bg-white border border-gray-300 rounded-xl overflow-hidden flex flex-col shadow-sm">
+      <div className="px-6 py-5 pb-4 flex flex-col">
+        <div className="bg-surface border border-divider rounded-card overflow-hidden flex flex-col shadow-sm">
             <div className="relative">
               <table className="w-full text-left border-collapse text-sm whitespace-nowrap">
-                <thead className="bg-gray-50 sticky top-0 z-30 shadow-[0_1px_0_#e5e7eb]">
+                <thead className="bg-surface-page sticky top-0 z-30 shadow-[0_1px_0_var(--border-strong)]">
                   <tr>
-                    <SortableTh label="Staff" k="name" className="sticky left-0 z-40 bg-gray-50 w-[200px] shadow-[1px_0_0_#e5e7eb]" />
-                    <th className="p-4 font-bold text-gray-600 border-b border-gray-200 w-[100px]">Role</th>
-                    <th className="p-4 font-bold text-gray-600 border-b border-gray-200 w-[90px]">Status</th>
+                    <SortableTh label="Staff" k="name" className="sticky left-0 z-40 bg-surface-page w-[200px] shadow-[1px_0_0_var(--border-strong)]" />
+                    <th className="p-4 font-bold text-ink-soft border-b border-divider w-[100px]">Role</th>
+                    <th className="p-4 font-bold text-ink-soft border-b border-divider w-[90px]">Status</th>
                     <SortableTh label="Patients" k="patients" className="w-[70px]" />
                     <SortableTh label="Workload" k="workload" className="w-[100px]" />
                     <SortableTh label="Joined" k="joined" className="w-[80px]" />
-                    <th className="p-4 font-bold text-gray-600 border-b border-gray-200 text-center w-[60px]">Actions</th>
+                    <th className="p-4 font-bold text-ink-soft border-b border-divider text-center w-[60px]">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-divider">
                   {groups.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="p-16 text-center text-gray-500">
+                      <td colSpan={7} className="p-4 text-center text-ink-muted">
                         <div className="text-lg font-bold mb-2">No staff match your criteria</div>
                         <p>Try adjusting your filters or search terms.</p>
                       </td>
@@ -294,9 +294,9 @@ export function StaffListPage() {
                   )}
                   {groups.map(({ role, members }) => (
                     <React.Fragment key={role}>
-                      <tr className="bg-gray-50/80 cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => toggleGroup(role)}>
+                      <tr className="bg-surface-page/80 cursor-pointer hover:bg-surface-hover transition-colors" onClick={() => toggleGroup(role)}>
                         <td colSpan={7} className="px-4 py-2 sticky left-0">
-                          <span className="flex items-center text-xs font-bold text-gray-600 uppercase tracking-wider">
+                          <span className="flex items-center text-xs font-bold text-ink-soft uppercase tracking-wider">
                             {collapsed.has(role) ? <ChevronRight className="w-3.5 h-3.5 mr-1.5" /> : <ChevronDown className="w-3.5 h-3.5 mr-1.5" />}
                             {ROLE_GROUP_LABEL[role]} ({members.length})
                           </span>
@@ -308,8 +308,8 @@ export function StaffListPage() {
                 </tbody>
               </table>
             </div>
-            <div className="h-12 border-t border-gray-200 bg-white flex items-center justify-between px-6 shrink-0">
-              <div className="text-xs text-gray-500 font-medium">Showing {filtered.length} of {allStaff.length} staff</div>
+            <div className="h-12 border-t border-divider bg-surface flex items-center justify-between px-6 shrink-0">
+              <div className="text-xs text-ink-muted font-medium">Showing {filtered.length} of {allStaff.length} staff</div>
             </div>
         </div>
       </div>
@@ -335,42 +335,42 @@ function StaffRow({ staff: s, onOpen }: { staff: Staff; onOpen: () => void }) {
   const overCapacity = s.workload !== null && s.workload > 85;
 
   return (
-    <tr onClick={onOpen} className="cursor-pointer group relative transition-colors bg-white hover:bg-slate-50">
-      {overCapacity && <td className="absolute left-0 top-0 bottom-0 w-[3px] bg-red-500 z-40" />}
-      <td className="p-4 border-r border-gray-200 sticky left-0 z-10 shadow-[1px_0_0_#e5e7eb] bg-white group-hover:bg-slate-50 transition-colors w-[200px]">
+    <tr onClick={onOpen} className="cursor-pointer group relative transition-colors bg-surface hover:bg-surface-page">
+      {overCapacity && <td className="absolute left-0 top-0 bottom-0 w-[3px] bg-danger-ink z-40" />}
+      <td className="p-4 border-r border-divider sticky left-0 z-10 shadow-[1px_0_0_var(--border-strong)] bg-surface group-hover:bg-surface-page transition-colors w-[200px]">
         <div className="flex items-center">
-          <div className="w-8 h-8 rounded-full bg-slate-500 flex items-center justify-center text-xs font-bold text-white shrink-0 mr-3">{s.avatar}</div>
+          <div className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-xs font-bold text-ink-soft shrink-0 mr-3">{s.avatar}</div>
           <div className="min-w-0 flex-1">
-            <div className="text-sm font-bold text-gray-800 truncate leading-tight group-hover:underline">{s.name}</div>
-            <div className="text-[10px] text-gray-400 font-medium">{s.id}</div>
+            <div className="text-sm font-bold text-ink truncate leading-tight group-hover:underline">{s.name}</div>
+            <div className="text-label text-ink-muted font-medium">{s.id}</div>
           </div>
         </div>
       </td>
       <td className="p-4">
-        <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border ${rolePillClass(s.role)}`}>{s.role}</span>
+        <span className={`px-2 py-0.5 text-overline rounded-control border ${rolePillClass(s.role)}`}>{s.role}</span>
       </td>
       <td className="p-4">
         <span
           title={s.status === "On Leave" && s.leaveRange ? `On leave: ${s.leaveRange}` : undefined}
-          className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border ${statusPillClass(s.status)}`}
+          className={`px-2 py-0.5 text-overline rounded-control border ${statusPillClass(s.status)}`}
         >
           {s.status === "Active" ? "On Duty" : s.status}
         </span>
       </td>
-      <td className="p-4 text-gray-700 font-medium">{s.patients ?? "—"}</td>
+      <td className="p-4 text-ink-soft font-medium">{s.patients ?? "—"}</td>
       <td className="p-4">
         {s.workload !== null ? (
           <div className="flex items-center">
-            <div className="w-14 h-1.5 bg-gray-200 rounded-full overflow-hidden mr-2">
+            <div className="w-14 h-1.5 bg-surface-sunken rounded-full overflow-hidden mr-2">
               <div className={`h-full rounded-full ${workloadColor(s.workload).bar}`} style={{ width: `${s.workload}%` }} />
             </div>
             <span className={`text-xs font-bold ${workloadColor(s.workload).text}`}>{s.workload}%</span>
           </div>
         ) : (
-          <span className="text-gray-400">—</span>
+          <span className="text-ink-muted">—</span>
         )}
       </td>
-      <td className="p-4 text-gray-600">{s.joined}</td>
+      <td className="p-4 text-ink-soft">{s.joined}</td>
       <td className="p-4 text-center" onClick={(e) => e.stopPropagation()}>
         <StaffRowMenu staff={s} />
       </td>

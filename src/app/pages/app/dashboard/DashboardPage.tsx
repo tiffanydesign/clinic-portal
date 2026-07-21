@@ -31,14 +31,14 @@ export function DashboardPage() {
   const appt = getAppt(apptId);
 
   return (
-    <div className="bg-gray-50">
+    <div className="bg-surface-page">
       {/* Header — part of the normal page flow, so the whole page (including
           this) scrolls together rather than pinning under a fixed header. */}
       <div className="px-6 pt-6">
         <div className="flex items-start justify-between gap-4 mb-3">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Good morning, {ROLE_GREETING[role]}</h1>
-            <p className="text-sm text-gray-500 mt-1">{TODAY_LABEL} · Istanbul Clinic</p>
+            <h1 className="text-2xl font-bold text-ink">Good morning, {ROLE_GREETING[role]}</h1>
+            <p className="text-sm text-ink-muted mt-1">{TODAY_LABEL} · Istanbul Clinic</p>
           </div>
           {/* Clinician gets its own plain live counters (see
               ClinicianDashboardBody) instead of the configurable KPI bar. */}

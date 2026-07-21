@@ -7,9 +7,9 @@ export { NotificationsPage } from "./NotificationsPage";
 
 export function SkeletonPage({ title, children }: { title: string, children: React.ReactNode }) {
   return (
-    <div className="p-8 w-full h-full flex flex-col">
-      <h1 className="text-2xl font-bold text-gray-800 mb-2">{title}</h1>
-      <p className="text-sm text-gray-500 mb-8 italic">Detailed content in a later pass</p>
+    <div className="p-4 w-full h-full flex flex-col">
+      <h1 className="text-2xl font-bold text-ink mb-2">{title}</h1>
+      <p className="text-sm text-ink-muted mb-8 italic">Detailed content in a later pass</p>
       <div className="flex-1">
         {children}
       </div>
@@ -18,7 +18,7 @@ export function SkeletonPage({ title, children }: { title: string, children: Rea
 }
 
 export const PlaceholderBlock = ({ label, className = "" }: { label: string, className?: string }) => (
-  <div className={`border border-gray-300 bg-white rounded flex items-center justify-center text-sm font-medium text-gray-400 p-4 ${className}`}>
+  <div className={`border border-divider bg-surface rounded-control flex items-center justify-center text-sm font-medium text-ink-muted p-4 ${className}`}>
     {label}
   </div>
 );
@@ -47,10 +47,10 @@ export { AvailabilityPage } from "./AvailabilityPage";
 export function AppointmentDrawerSkeleton() {
   const navigate = useNavigate();
   return (
-    <div className="absolute top-0 right-0 w-[500px] h-full bg-gray-50 border-l border-gray-300 shadow-xl z-10 flex flex-col animate-in slide-in-from-right">
-      <div className="p-4 border-b border-gray-300 flex justify-between items-center bg-white">
-        <h3 className="font-bold text-gray-800">Appointment Details</h3>
-        <button onClick={() => navigate('/calendar')} className="text-gray-500 hover:text-gray-800">Close</button>
+    <div className="absolute top-0 right-0 w-[500px] h-full bg-surface-page border-l border-divider shadow-xl z-10 flex flex-col animate-in slide-in-from-right">
+      <div className="p-4 border-b border-divider flex justify-between items-center bg-surface">
+        <h3 className="font-bold text-ink">Appointment Details</h3>
+        <button onClick={() => navigate('/calendar')} className="text-ink-muted hover:text-ink">Close</button>
       </div>
       <div className="flex-1 p-6">
         <PlaceholderBlock label="Right-Side Drawer Content" className="h-full border-dashed" />
@@ -91,7 +91,7 @@ export { ProfilePage } from "./ProfilePage";
 export { BillingPage } from "./BillingPage";
 export { FeedbackAdminPage } from "./FeedbackAdminPage";
 export { TimesheetPage } from "./Timesheet";
-export const ApprovalDetailSkeleton = () => <SkeletonPage title="Approval Request"><Link to="/approval" className="mb-4 inline-block text-sm text-slate-500">← Back</Link><PlaceholderBlock label="Request Details & Actions" className="h-96" /></SkeletonPage>;
+export const ApprovalDetailSkeleton = () => <SkeletonPage title="Approval Request"><Link to="/approval" className="mb-4 inline-block text-sm text-ink-muted">← Back</Link><PlaceholderBlock label="Request Details & Actions" className="h-96" /></SkeletonPage>;
 
 // Admin approves availability requests (the real queue); a Clinician can't
 // approve anything themselves, so /approval instead shows the status of
@@ -150,16 +150,16 @@ export function SiteMap() {
   ];
 
   return (
-    <div className="p-8 w-full max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-800 mb-8">Site Map</h1>
+    <div className="p-4 w-full max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold text-ink mb-8">Site Map</h1>
       <div className="space-y-8">
         {routes.map(group => (
-          <div key={group.section} className="bg-white border border-gray-300 rounded p-6">
-            <h2 className="text-lg font-bold text-slate-700 mb-4 pb-2 border-b border-gray-200">{group.section}</h2>
+          <div key={group.section} className="bg-surface border border-divider rounded-control p-6">
+            <h2 className="text-lg font-bold text-ink-soft mb-4 pb-2 border-b border-divider">{group.section}</h2>
             <div className="grid grid-cols-2 gap-4">
               {group.links.map(link => (
-                <Link key={link.path} to={link.path} className="text-sm font-medium text-slate-600 hover:text-slate-900 hover:underline flex items-center">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-300 mr-2"></span>
+                <Link key={link.path} to={link.path} className="text-sm font-medium text-ink-soft hover:text-ink hover:underline flex items-center">
+                  <span className="w-1.5 h-1.5 rounded-full bg-surface-sunken mr-2"></span>
                   {link.label}
                 </Link>
               ))}

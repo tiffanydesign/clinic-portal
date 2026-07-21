@@ -21,7 +21,7 @@ export function GlassCard({ children, className = "", index = 0 }: {
 export function GlassCardHeader({ title, description }: { title: string; description?: string }) {
   return (
     <div className="mb-6 pb-4" style={{ borderBottom: "1px solid var(--divider)" }}>
-      <h2 className="text-[15px] font-medium" style={{ color: "var(--ink-900)" }}>{title}</h2>
+      <h2 className="text-section font-medium" style={{ color: "var(--ink-900)" }}>{title}</h2>
       {description && <p className="text-sm mt-1" style={{ color: "var(--ink-600)" }}>{description}</p>}
     </div>
   );

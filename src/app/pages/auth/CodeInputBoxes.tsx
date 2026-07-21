@@ -39,7 +39,7 @@ export function CodeInputBoxes({ code, onChange }: { code: string[]; onChange: (
           value={digit}
           onChange={(e) => handleChange(index, e.target.value)}
           onKeyDown={(e) => handleKeyDown(index, e)}
-          className="w-12 h-14 text-center text-2xl font-bold rounded-xl border border-slate-200 bg-white text-[#0B1528] focus:outline-none focus:ring-2 focus:ring-[#00B4D8]/50 focus:border-[#00B4D8] transition-all shadow-sm"
+          className="w-12 h-14 text-center text-2xl font-bold rounded-card border border-divider bg-surface text-ink focus:outline-none focus:ring-2 focus:ring-info/50 focus:border-info transition-all shadow-sm"
         />
       ))}
     </div>

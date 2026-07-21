@@ -14,13 +14,13 @@ export function InfoRow({ label, value, editing, children, className = "" }: {
 }) {
   return (
     <div className={className}>
-      <div className="text-[11px] font-medium uppercase tracking-[0.08em] mb-1" style={{ color: "var(--ink-400)" }}>
+      <div className="text-label font-medium uppercase tracking-[0.08em] mb-1" style={{ color: "var(--ink-400)" }}>
         {label}
       </div>
       {editing ? (
         children
       ) : (
-        <div className="text-[15px]" style={{ color: "var(--ink-900)" }}>{value}</div>
+        <div className="text-section" style={{ color: "var(--ink-900)" }}>{value}</div>
       )}
     </div>
   );
@@ -32,7 +32,7 @@ export function InfoRow({ label, value, editing, children, className = "" }: {
 export function SectionTitle({ children, action }: { children: React.ReactNode; action?: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between mb-4">
-      <h2 className="text-[18px] font-medium" style={{ color: "var(--ink-900)" }}>{children}</h2>
+      <h2 className="text-section font-medium" style={{ color: "var(--ink-900)" }}>{children}</h2>
       {action}
     </div>
   );
@@ -46,7 +46,7 @@ export function EditToggle({ editing, onClick }: { editing: boolean; onClick: ()
   return (
     <button
       onClick={onClick}
-      className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-full transition-colors hover:bg-white/70"
+      className="flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-full transition-colors hover:bg-surface/70"
       style={{ color: "var(--phenome-blue-500)" }}
     >
       <Pencil className="w-3.5 h-3.5" /> Edit
@@ -66,7 +66,7 @@ export function ToggleSwitch({ checked, onChange, disabled }: { checked: boolean
       style={{ background: checked ? "var(--phenome-blue-500)" : "var(--phenome-blue-100)", opacity: disabled ? 0.5 : 1, cursor: disabled ? "not-allowed" : "pointer" }}
     >
       <span
-        className="w-3.5 h-3.5 bg-white rounded-full absolute top-[3px] transition-all shadow-sm"
+        className="w-3.5 h-3.5 bg-surface rounded-full absolute top-[3px] transition-all shadow-sm"
         style={{ left: checked ? 19 : 3 }}
       />
     </button>

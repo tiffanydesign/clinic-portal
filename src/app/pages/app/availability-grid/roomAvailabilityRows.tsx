@@ -61,8 +61,8 @@ function dayToCell(room: Room, dayIndex: number, appts: Appt[], onClick: (e: Rea
 function RoomRowHeader({ room }: { room: Room }) {
   return (
     <div className="min-w-0 flex-1">
-      <div className="text-sm font-bold text-gray-800 truncate">{room.name}</div>
-      <span className="text-[11px] font-medium text-gray-400">{room.type}</span>
+      <div className="text-sm font-bold text-ink truncate">{room.name}</div>
+      <span className="text-label font-medium text-ink-muted">{room.type}</span>
     </div>
   );
 }
