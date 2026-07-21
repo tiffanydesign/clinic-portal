@@ -91,7 +91,7 @@ export function ErrorState({ entity, onRetry }: { entity: string; onRetry: () =>
       </div>
       <h2 className="text-lg font-bold text-ink mb-1">Couldn't load {entity}</h2>
       <p className="text-sm text-ink-muted max-w-sm mb-6">Something went wrong reaching the clinic's device service. Check your connection and try again.</p>
-      <button onClick={onRetry} className="flex items-center gap-2 px-6 py-3 bg-ink text-white rounded-card text-base font-bold hover:bg-ink transition-colors shadow-sm">
+      <button onClick={onRetry} className="flex items-center gap-2 px-6 py-3 btn-primary rounded-control text-base font-bold transition-colors">
         <RefreshCw className="w-4 h-4" /> Retry
       </button>
     </div>

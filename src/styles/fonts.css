@@ -1,0 +1,46 @@
+/* ====================================================================
+   TeX Gyre Heros — self-hosted webfont (the portal's single typeface).
+   --------------------------------------------------------------------
+   TeX Gyre Heros is an open, libre Helvetica/Arial-metric-compatible
+   grotesque from GUST (GUST Font License, an LPPL-style free licence —
+   no royalties, free to embed and redistribute). Self-hosting it means
+   the portal renders the SAME face on every OS (incl. Windows, which
+   has no Helvetica Neue), instead of falling back to Arial.
+
+   The family ships two weights only — Regular (400) and Bold (700) —
+   plus their italics. CSS weight matching maps Tailwind's font-medium
+   (500) -> Regular and font-semibold (600) -> Bold, so the existing
+   heading/body hierarchy is preserved without synthetic weights.
+   ==================================================================== */
+
+@font-face {
+  font-family: "TeX Gyre Heros";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/texgyreheros-regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "TeX Gyre Heros";
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/texgyreheros-italic.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "TeX Gyre Heros";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./fonts/texgyreheros-bold.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "TeX Gyre Heros";
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./fonts/texgyreheros-bolditalic.woff2") format("woff2");
+}

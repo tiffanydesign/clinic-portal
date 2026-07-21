@@ -143,7 +143,7 @@ export function MyScheduleGrid({ role, view, weekDays, nowMinutes, layers, sched
   }, [view]);
 
   return (
-    <div className="border border-divider rounded-card shadow-sm bg-surface flex flex-col h-full min-h-0 overflow-hidden">
+    <div className="rounded-card bg-surface flex flex-col h-full min-h-0 overflow-hidden">
       {/* column headers */}
       <div className="flex border-b border-divider bg-surface-page shrink-0 pl-14">
         {weekDays.map((d) => (

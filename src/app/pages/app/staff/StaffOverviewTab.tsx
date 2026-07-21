@@ -23,7 +23,7 @@ function SectionCard({
   title: string; action?: React.ReactNode; children: React.ReactNode; footer?: React.ReactNode;
 }) {
   return (
-    <div className="bg-surface border border-divider rounded-card p-6 shadow-sm">
+    <div className="bg-surface rounded-card p-6">
       <div className="flex justify-between items-center mb-3">
         <h3 className="text-base font-bold text-ink">{title}</h3>
         {action}

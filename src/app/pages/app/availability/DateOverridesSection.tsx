@@ -11,7 +11,7 @@ export function DateOverridesSection({ overrides, onAdd, onEdit, onDelete }: {
   const visible = overrides.filter((o) => o.status !== "Rejected");
 
   return (
-    <div className="bg-surface border border-divider rounded-card p-6 shadow-sm">
+    <div className="bg-surface rounded-card p-6">
       <div className="flex items-center mb-2">
         <h3 className="text-base font-bold text-ink mr-2">Date overrides</h3>
         <div className="group relative">

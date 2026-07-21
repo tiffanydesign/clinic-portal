@@ -21,7 +21,7 @@ export function MyScheduleMonthGrid({ viewMonth, selectedDate, today, countFor, 
   const rows = days.slice(0, endOfMonth(viewMonth) < days[35] ? 35 : 42);
 
   return (
-    <div className="border border-divider rounded-card shadow-sm bg-surface flex flex-col h-full min-h-0 overflow-hidden">
+    <div className="rounded-card bg-surface flex flex-col h-full min-h-0 overflow-hidden">
       <div className="grid grid-cols-7 border-b border-divider bg-surface-page shrink-0">
         {WEEKDAYS.map((d) => (
           <div key={d} className="px-2 py-2 text-center text-label font-bold text-ink-muted uppercase tracking-wide">{d}</div>

@@ -108,7 +108,7 @@ export function CalendarWidget({ onAdd }: { onAdd?: () => void } = {}) {
   };
 
   return (
-    <div className="border border-divider rounded-card shadow-md bg-surface flex flex-col h-full min-h-0">
+    <div className="rounded-card bg-surface flex flex-col h-full min-h-0">
       {/* Header */}
       <div className="h-12 border-b border-divider bg-surface-page/70 px-4 flex items-center justify-between shrink-0 gap-3">
         <div className="flex items-center gap-2 min-w-0 shrink-0">
@@ -134,25 +134,23 @@ export function CalendarWidget({ onAdd }: { onAdd?: () => void } = {}) {
         </button>
       </div>
 
-      {/* Progress summary + room/clinician toggle */}
-      <div className="px-4 py-2 bg-surface flex items-center justify-between gap-3 shrink-0">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-label min-w-0">
+      {/* Progress summary + room/clinician toggle. On the narrow dashboard
+          column this row wraps: the counts wrap cleanly — separated by gap +
+          status colour rather than standalone "·" spans that dangle at line
+          ends — and the toggle drops to its own line instead of fighting the
+          counts for width. */}
+      <div className="px-4 py-2 bg-surface flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 shrink-0">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 text-label min-w-0">
           <span className="font-bold text-ink-soft whitespace-nowrap">{summary.total} appointments</span>
-          <span className="text-ink-muted">·</span>
           <span className="font-semibold text-ink-muted whitespace-nowrap">{summary.completed} completed</span>
-          <span className="text-ink-muted">·</span>
           <span className="font-semibold text-warning-ink whitespace-nowrap">{summary.inProgress} in progress</span>
-          <span className="text-ink-muted">·</span>
           <span className="font-semibold text-info-ink whitespace-nowrap">{summary.upcoming} upcoming</span>
-          <span className="text-ink-muted">·</span>
           <span className="font-semibold text-danger-ink whitespace-nowrap">{summary.noShow} no-show</span>
         </div>
         <ViewModeToggle mode={mode} onChange={setMode} />
       </div>
-      {/* A soft tint of each status color, in the same left-to-right order as
-          the counts above, replaces a plain gray rule — ties the divider
-          back to what it's separating without shouting. */}
-      <div className="h-[3px] shrink-0 bg-gradient-to-r from-surface-sunken via-warning via-30% via-info via-70% to-danger" />
+      {/* Plain solid divider under the summary/toggle row — no gradient. */}
+      <div className="h-px shrink-0 bg-divider" />
 
       {/* Full timeline, no internal scroll — the whole 08:00-19:00 day
           always renders in full; the page itself is the only scroll

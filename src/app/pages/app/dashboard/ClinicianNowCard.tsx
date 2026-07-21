@@ -136,7 +136,7 @@ export function ClinicianNowCard({
           );
         })()
       ) : (
-        <div className="border border-divider bg-surface rounded-card shadow-sm p-5 flex items-center gap-3">
+        <div className="bg-surface rounded-card p-5 flex items-center gap-3">
           <CheckCircle2 className="w-5 h-5 text-success-ink shrink-0" />
           <p className="text-sm font-medium text-ink-soft">All caught up — no more patients scheduled today.</p>
         </div>

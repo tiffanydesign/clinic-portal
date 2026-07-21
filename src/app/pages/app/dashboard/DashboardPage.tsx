@@ -7,6 +7,7 @@ import { AppointmentDrawer } from "./AppointmentDrawer";
 import { ActivityFeed } from "./ActivityFeed";
 import { AdminPanels } from "./RolePanels";
 import { NeedsYourActionCard } from "./NeedsYourActionCard";
+import { DashboardQuickActions } from "./DashboardQuickActions";
 import { NurseDashboardPage } from "./NurseDashboardPage";
 import { ClinicianDashboardBody } from "./ClinicianDashboardBody";
 import { ReceptionDashboardBody } from "./ReceptionDashboardBody";
@@ -35,13 +36,18 @@ export function DashboardPage() {
       {/* Header — part of the normal page flow, so the whole page (including
           this) scrolls together rather than pinning under a fixed header. */}
       <div className="px-6 pt-6">
-        <div className="flex items-start justify-between gap-4 mb-3">
-          <div>
-            <h1 className="text-2xl font-bold text-ink">Good morning, {ROLE_GREETING[role]}</h1>
-            <p className="text-sm text-ink-muted mt-1">{TODAY_LABEL} · Istanbul Clinic</p>
+        <div className="flex items-center justify-between gap-4 mb-3 flex-wrap">
+          {/* Greeting + the two front-desk quick actions (New Patient / New
+              Booking) sit together on the left; the KPI range/customise
+              controls stay on the far right. Wraps gracefully at narrow iPad
+              widths. Clinician gets its own plain live counters instead. */}
+          <div className="flex items-center gap-x-4 gap-y-2 flex-wrap min-w-0">
+            <div className="shrink-0">
+              <h1 className="text-2xl font-bold text-ink whitespace-nowrap">Good morning, {ROLE_GREETING[role]}</h1>
+              <p className="text-sm text-ink-muted mt-1 whitespace-nowrap">{TODAY_LABEL} · Istanbul Clinic</p>
+            </div>
+            {role === "Admin" && <DashboardQuickActions />}
           </div>
-          {/* Clinician gets its own plain live counters (see
-              ClinicianDashboardBody) instead of the configurable KPI bar. */}
           {role === "Admin" && <KpiControls kpi={kpi} />}
         </div>
         {role === "Admin" && <KpiCards kpi={kpi} />}
@@ -55,9 +61,9 @@ export function DashboardPage() {
            Needs Your Action at the same proportions Reception uses for its
            Schedule + Front Desk Queue row (flex-1 calendar + a 420px fixed
            column, both stretched to the taller side's natural height).
-           Tier 2 (below): Results Queue + Waiting Room, the room-by-room
-           monitoring pair. Tier 3: Recent Activity, collapsed by default —
-           an audit trail, not something Admin needs open by default. */
+           Tier 2 (below): Results Queue + Waiting Room + Recent Activity —
+           the three monitoring cards packed into ONE height-matched row so
+           Admin scans the clinic's live state without scrolling the page. */
         <div className="px-6 py-4 space-y-4">
           <div className="flex gap-4">
             {/* The inner `shrink-0` wrapper (not `h-full` directly on a
@@ -71,8 +77,13 @@ export function DashboardPage() {
             </div>
             <div className="w-[420px] shrink-0"><NeedsYourActionCard /></div>
           </div>
-          <div><AdminPanels /></div>
-          <ActivityFeed defaultCollapsed />
+          {/* Fixed-height row: each card is flex-1 (equal thirds) and scrolls
+              its own body — Recent Activity is expanded here since it now owns
+              a full column rather than a collapsed strip beneath the pair. */}
+          <div className="flex gap-4 h-72">
+            <AdminPanels />
+            <ActivityFeed className="flex-1 min-w-0" />
+          </div>
         </div>
       )}
 

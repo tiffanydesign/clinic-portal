@@ -9,7 +9,7 @@ import { Stat, StatStripGroup } from "../../../components/stat";
 export function MyPatientsTodayCard({ scheduled, inProgress, done }: { scheduled: number; inProgress: number; done: number }) {
   const total = scheduled + inProgress + done;
   return (
-    <div className="bg-surface border border-divider rounded-card shadow-sm p-5 shrink-0">
+    <div className="bg-surface rounded-card p-5 shrink-0">
       <div className="flex items-baseline justify-between mb-3.5">
         <h3 className="text-base font-extrabold text-ink">My Patients Today</h3>
         <span className="text-xs font-semibold text-ink-muted">{total} total</span>

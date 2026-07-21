@@ -53,8 +53,13 @@ const INITIAL_NOTIFS = [
 // untouched since StaffOverviewTab.tsx also depends on ProfilePatterns.tsx) ---
 
 function FlatCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+  // Fully "invisible" container: a white surface with a soft rounded-2xl
+  // edge, separated from the pale page (bg-surface #FFF vs bg-surface-page
+  // #F4F6FB) by colour alone — no shadow and no drawn border, so the blocks
+  // recede into a calm, flat settings-panel look. (The sign-out modal opts
+  // back into elevation via its own shadow-lg override.)
   return (
-    <div className={`bg-surface border border-divider rounded-card transition-shadow duration-150 hover:shadow-sm ${className}`}>
+    <div className={`bg-surface rounded-card ${className}`}>
       {children}
     </div>
   );
@@ -80,7 +85,7 @@ function EditButton({ editing, onClick }: { editing?: boolean; onClick: () => vo
 
 function SaveButton({ onClick, children = "Save Changes" }: { onClick: () => void; children?: React.ReactNode }) {
   return (
-    <button onClick={onClick} className="px-4 py-2 rounded-card bg-ink text-white text-sm font-medium hover:bg-ink transition-colors">
+    <button onClick={onClick} className="px-4 py-2 rounded-control bg-ink text-white text-sm font-medium hover:bg-ink transition-colors">
       {children}
     </button>
   );
@@ -88,7 +93,7 @@ function SaveButton({ onClick, children = "Save Changes" }: { onClick: () => voi
 
 function CancelButton({ onClick }: { onClick: () => void }) {
   return (
-    <button onClick={onClick} className="px-4 py-2 rounded-card text-sm font-medium text-ink-soft hover:bg-surface-hover transition-colors">
+    <button onClick={onClick} className="px-4 py-2 rounded-control text-sm font-medium text-ink-soft hover:bg-surface-hover transition-colors">
       Cancel
     </button>
   );
@@ -503,7 +508,7 @@ export function ProfilePage() {
                 <CancelButton onClick={() => setSignOutTarget(null)} />
                 <button
                   onClick={confirmSignOut}
-                  className="px-4 py-2 rounded-card bg-danger-ink text-white text-sm font-medium hover:bg-danger-ink transition-colors"
+                  className="px-4 py-2 rounded-control bg-danger-ink text-white text-sm font-medium hover:bg-danger-ink transition-colors"
                 >
                   {signOutTarget === 'all' ? 'Sign Out All' : 'Sign Out'}
                 </button>

@@ -66,9 +66,9 @@ export function DeviceAddDrawer({ onClose }: { onClose: () => void }) {
       onClose={onClose}
       footer={
         <>
-          <button onClick={onClose} className="px-4 py-2 border border-divider rounded-card text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
+          <button onClick={onClose} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
           <button onClick={save} disabled={!canSave}
-            className={`px-5 py-2 rounded-card text-sm font-bold text-white transition-colors ${canSave ? "bg-surface-sunken hover:bg-surface-sunken" : "bg-surface-sunken cursor-not-allowed"}`}>
+            className={`px-5 py-2 rounded-control text-sm font-bold text-white transition-colors ${canSave ? "bg-surface-sunken hover:bg-surface-sunken" : "bg-surface-sunken cursor-not-allowed"}`}>
             Add device
           </button>
         </>
@@ -84,7 +84,7 @@ export function DeviceAddDrawer({ onClose }: { onClose: () => void }) {
                 <button
                   key={o.v}
                   onClick={() => setType(o.v)}
-                  className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-card border text-xs font-bold transition-colors ${
+                  className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-control border text-xs font-bold transition-colors ${
                     active ? "border-border-strong bg-surface-page text-ink-soft ring-1 ring-info" : "border-divider bg-surface text-ink-muted hover:border-divider"
                   }`}
                 >

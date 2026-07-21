@@ -460,7 +460,7 @@ export function TimesheetPage() {
       {/* Data Table Area */}
       <div className="flex-1 overflow-hidden px-6 pb-6 flex flex-col min-h-0 relative">
         {selectedStaff.length === 0 ? (
-          <div className="flex-1 bg-surface border border-divider rounded-card flex flex-col items-center justify-center py-6">
+          <div className="flex-1 bg-surface rounded-card flex flex-col items-center justify-center py-6">
             <div className="w-14 h-14 bg-surface-hover rounded-full flex items-center justify-center mb-4">
               <Users className="w-7 h-7 text-ink-muted" />
             </div>
@@ -471,7 +471,7 @@ export function TimesheetPage() {
             </button>
           </div>
         ) : (
-          <div className="flex-1 bg-surface border border-divider rounded-card overflow-hidden flex flex-col shadow-sm relative">
+          <div className="flex-1 bg-surface rounded-card overflow-hidden flex flex-col relative">
             <div className="flex-1 overflow-auto relative">
               <table className="w-full text-left border-collapse text-sm whitespace-nowrap">
                 <thead className="bg-surface-page sticky top-0 z-20 shadow-[0_1px_0_var(--border-strong)]">

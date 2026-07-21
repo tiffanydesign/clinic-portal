@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { UserPlus, CalendarPlus } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
 import { RegisterPatientModal } from "../patients/RegisterPatientModal";
 import { NewAppointmentModal } from "../calendar/CreateModals";
@@ -38,10 +39,31 @@ export function ReceptionDashboardBody() {
       {/* Header — same layout as Admin's dashboard: greeting + date on the
           left, KPI range/customise controls on the right of that same row. */}
       <div className="px-6 pt-6">
-        <div className="flex items-start justify-between gap-4 mb-3">
-          <div>
-            <h1 className="text-2xl font-bold text-ink">Good morning, {ROLE_GREETING.Reception}</h1>
-            <p className="text-sm text-ink-muted mt-1">{TODAY_LABEL} · Istanbul Clinic</p>
+        <div className="flex items-center justify-between gap-4 mb-3 flex-wrap">
+          {/* Greeting + the two front-desk quick actions sit together on the
+              left; KPI range/customise controls stay on the far right. Buttons
+              reuse the same modal state the panel "+" quick-adds already drive
+              (one source of truth). New Booking is primary, New Patient
+              secondary. Wraps gracefully at narrow iPad widths. */}
+          <div className="flex items-center gap-x-4 gap-y-2 flex-wrap min-w-0">
+            <div className="shrink-0">
+              <h1 className="text-2xl font-bold text-ink whitespace-nowrap">Good morning, {ROLE_GREETING.Reception}</h1>
+              <p className="text-sm text-ink-muted mt-1 whitespace-nowrap">{TODAY_LABEL} · Istanbul Clinic</p>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => setRegisterOpen(true)}
+                className="inline-flex items-center gap-2 h-9 px-3.5 rounded-control text-sm font-medium text-ink-soft border border-divider bg-surface hover:bg-surface-page hover:text-ink transition-colors"
+              >
+                <UserPlus className="w-4 h-4" /> New Patient
+              </button>
+              <button
+                onClick={() => setBookingOpen(true)}
+                className="inline-flex items-center gap-2 h-9 px-3.5 btn-primary rounded-control text-sm font-bold transition-colors"
+              >
+                <CalendarPlus className="w-4 h-4" /> New Booking
+              </button>
+            </div>
           </div>
           <KpiControls kpi={kpi} />
         </div>

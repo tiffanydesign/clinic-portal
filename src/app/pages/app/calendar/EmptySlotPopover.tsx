@@ -99,7 +99,7 @@ export function EmptySlotPopover({
         </button>
         <button
           onClick={onConfirm}
-          className="min-h-11 px-3.5 py-2 rounded-card text-xs font-bold text-white bg-ink hover:bg-surface-sunken transition-colors shadow-sm"
+          className="min-h-11 px-3.5 py-2 rounded-control text-xs font-bold btn-primary transition-colors shadow-sm"
         >
           Create booking
         </button>

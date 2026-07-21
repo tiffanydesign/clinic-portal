@@ -112,7 +112,7 @@ export function DayGrid({
   };
 
   return (
-    <div className="border border-divider rounded-card shadow-md bg-surface flex flex-col h-full min-h-0 overflow-hidden">
+    <div className="rounded-card bg-surface flex flex-col h-full min-h-0 overflow-hidden">
       {/* column headers */}
       <div className="flex border-b border-divider bg-gradient-to-b from-surface-page to-surface-page/50 shrink-0 pl-14 relative z-10 shadow-[0_1px_3px_rgba(15,23,42,0.04)]">
         {columns.map((c) => (

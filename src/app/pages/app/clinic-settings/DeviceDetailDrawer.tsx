@@ -97,22 +97,22 @@ export function DeviceDetailDrawer({ view, onClose }: { view: DeviceView; onClos
       footer={
         view.retired ? (
           <button onClick={() => { restoreDevice(view.id); toast.success(`${view.label} restored.`); onClose(); }}
-            className="px-5 py-2 rounded-card text-sm font-bold text-white bg-ink hover:bg-surface-sunken flex items-center gap-2">
+            className="px-5 py-2 rounded-control text-sm font-bold text-white bg-ink hover:bg-surface-sunken flex items-center gap-2">
             <RotateCcw className="w-4 h-4" /> Restore device
           </button>
         ) : (
           <div className="flex justify-between items-center w-full">
             {isTerminal ? (
-              <button onClick={() => setRemoveStage(true)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-card text-sm font-bold text-danger-ink border border-danger/30 bg-surface hover:bg-danger/10 transition-colors">
+              <button onClick={() => setRemoveStage(true)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-control text-sm font-bold text-danger-ink border border-danger/30 bg-surface hover:bg-danger/10 transition-colors">
                 <Trash2 className="w-4 h-4" /> Remove terminal
               </button>
             ) : (
-              <button onClick={() => setConfirmRetire(true)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-card text-sm font-bold text-danger-ink border border-danger/30 bg-surface hover:bg-danger/10 transition-colors">
+              <button onClick={() => setConfirmRetire(true)} className="inline-flex items-center gap-1.5 px-4 py-2 rounded-control text-sm font-bold text-danger-ink border border-danger/30 bg-surface hover:bg-danger/10 transition-colors">
                 <Archive className="w-4 h-4" /> Retire device
               </button>
             )}
             {dirty && (
-              <button onClick={saveEdits} className="px-5 py-2 rounded-card text-sm font-bold text-white bg-ink hover:bg-surface-sunken">Save changes</button>
+              <button onClick={saveEdits} className="px-5 py-2 rounded-control text-sm font-bold text-white bg-ink hover:bg-surface-sunken">Save changes</button>
             )}
           </div>
         )

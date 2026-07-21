@@ -32,8 +32,11 @@ export function AdminPanels() {
 
   const waitColor = (m: number) => (m > 30 ? "text-danger-ink" : m > 15 ? "text-warning-ink" : "text-ink");
 
+  // Renders as a fragment (no own row wrapper) so DashboardPage can place
+  // Results Queue + Waiting Room in the SAME flex row as Recent Activity —
+  // the three monitoring cards share one height-matched row.
   return (
-    <div className="flex gap-4 items-stretch">
+    <>
       <Section title="Results Queue" className="flex-1 min-w-0" action={<button onClick={() => nav("/patients")} className="text-xs font-bold text-ink-soft hover:underline">View all patients →</button>}>
         <div className="divide-y divide-divider">
           {results.map((r) => (
@@ -65,7 +68,7 @@ export function AdminPanels() {
           ))}
         </div>
       </Section>
-    </div>
+    </>
   );
 }
 

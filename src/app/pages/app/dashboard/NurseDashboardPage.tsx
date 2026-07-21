@@ -180,7 +180,7 @@ export function NurseDashboardPage() {
               onComplete={handleComplete}
             />
           ) : (
-            <div className="bg-surface border border-divider rounded-card shadow-sm flex flex-col overflow-hidden min-h-[420px]">
+            <div className="bg-surface rounded-card flex flex-col overflow-hidden min-h-[420px]">
               <EmptyJourney
                 hasQueue={upNext.length > 0}
                 completedCount={completedToday.length}

@@ -47,7 +47,7 @@ function ReceptionActions() {
       <button onClick={() => toast("Contact patient (demo)")} className="px-4 py-2 bg-surface border border-divider rounded-control text-sm font-bold text-ink-soft hover:bg-surface-page shadow-sm transition-colors">
         Contact Patient
       </button>
-      <button onClick={() => navigate("/calendar/schedule")} className="px-4 py-2 bg-ink text-white rounded-control text-sm font-bold hover:bg-ink shadow-sm transition-colors">
+      <button onClick={() => navigate("/calendar/schedule")} className="px-4 py-2 btn-primary rounded-control text-sm font-bold transition-colors">
         + New Appointment
       </button>
     </div>
@@ -59,7 +59,7 @@ function ClinicianActions({ flag, onSetFlag }: { flag: PatientRecord["flag"]; on
   const options: PatientRecord["flag"][] = ["Urgent", "Follow-up", "Watch", "No flag"];
   return (
     <div className="flex items-center gap-2 relative">
-      <button onClick={() => toast.success("Consultation started (demo)")} className="px-4 py-2 bg-ink text-white rounded-control text-sm font-bold hover:bg-ink shadow-sm transition-colors">
+      <button onClick={() => toast.success("Consultation started (demo)")} className="px-4 py-2 btn-primary rounded-control text-sm font-bold transition-colors">
         Start Consultation
       </button>
       <button onClick={() => setOpen((o) => !o)} title="Set flag" className="p-2 border border-divider rounded-control text-ink-muted hover:bg-surface-page shadow-sm">

@@ -22,7 +22,7 @@ export function Section({
   bodyClassName?: string;
 }) {
   return (
-    <div className={`border border-divider rounded-control bg-surface flex flex-col ${className}`}>
+    <div className={`bg-surface rounded-card flex flex-col overflow-hidden ${className}`}>
       <div className="h-12 border-b border-divider px-4 flex items-center justify-between shrink-0">
         <h3 className="font-bold text-ink text-sm flex items-center">{title}</h3>
         {action}

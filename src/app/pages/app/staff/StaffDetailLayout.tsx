@@ -85,14 +85,14 @@ export function StaffDetailLayout({ children }: { children?: React.ReactNode }) 
           <div className="flex items-center space-x-3">
             <button
               onClick={() => toast("Edit profile (demo)")}
-              className="flex items-center px-4 py-2 border border-divider rounded-card text-sm font-bold text-ink-soft bg-surface hover:bg-surface-page transition-colors shadow-sm"
+              className="flex items-center px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-page transition-colors shadow-sm"
             >
               <Pencil className="w-4 h-4 mr-2 text-ink-muted" /> Edit Profile
             </button>
             <div className="relative">
               <button
                 onClick={() => setShowMenu(!showMenu)}
-                className="p-2 border border-divider rounded-card text-ink-muted bg-surface hover:bg-surface-page transition-colors shadow-sm"
+                className="p-2 border border-divider rounded-control text-ink-muted bg-surface hover:bg-surface-page transition-colors shadow-sm"
                 aria-label="More actions"
               >
                 <MoreHorizontal className="w-4 h-4" />

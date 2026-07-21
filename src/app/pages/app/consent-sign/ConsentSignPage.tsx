@@ -75,7 +75,7 @@ export function ConsentSignPage() {
         </div>
         <h1 className="text-2xl font-bold text-ink mb-2">Thank you, {appt.patient.name.split(" ")[0]}.</h1>
         <p className="text-ink-muted max-w-sm">Please hand the iPad back to reception.</p>
-        <button onClick={handleDone} className="mt-8 px-6 py-3.5 bg-ink text-white font-bold text-base rounded-card hover:bg-ink transition-colors min-w-[160px]">
+        <button onClick={handleDone} className="mt-8 px-6 py-3.5 bg-ink text-white font-bold text-base rounded-control hover:bg-ink transition-colors min-w-[160px]">
           Done
         </button>
       </div>
@@ -166,7 +166,7 @@ export function ConsentSignPage() {
           <button
             onClick={handleSubmit}
             disabled={!canSubmit}
-            className={`w-full h-14 rounded-card text-base font-bold transition-colors ${
+            className={`w-full h-14 rounded-control text-base font-bold transition-colors ${
               canSubmit ? "bg-success-ink text-white hover:bg-success-ink" : "bg-surface-hover text-ink-muted cursor-not-allowed"
             }`}
           >

@@ -67,7 +67,7 @@ function ClinicianMultiSelect({ selected, onToggle }: { selected: Set<string>; o
   const label = selected.size === 0 || selected.size === CLINICIANS.length ? "All clinicians" : `${selected.size} clinician${selected.size === 1 ? "" : "s"}`;
   return (
     <div className="relative">
-      <button onClick={() => setOpen((o) => !o)} className="inline-flex items-center justify-between gap-2 px-3 py-1.5 border border-divider rounded-card text-xs font-medium text-ink-soft bg-surface shadow-sm outline-none transition-colors hover:border-border-strong">
+      <button onClick={() => setOpen((o) => !o)} className="inline-flex items-center justify-between gap-2 px-3 py-1.5 border border-divider rounded-control text-xs font-medium text-ink-soft bg-surface shadow-sm outline-none transition-colors hover:border-border-strong">
         {label} <span className="text-ink-muted text-label">▾</span>
       </button>
       {open && (
@@ -209,7 +209,7 @@ export function ScheduleToolbar({
           <button
             onClick={onToday}
             disabled={isToday}
-            className={`px-3 py-2 border rounded-card text-xs font-bold shadow-sm transition-colors shrink-0 ${
+            className={`px-3 py-2 border rounded-control text-xs font-bold shadow-sm transition-colors shrink-0 ${
               isToday ? "border-divider text-ink-muted bg-surface-page cursor-not-allowed" : "border-divider text-ink-soft bg-surface hover:bg-surface-page"
             }`}
           >

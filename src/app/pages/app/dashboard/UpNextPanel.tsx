@@ -83,7 +83,7 @@ export function UpNextPanel({
   const next = queue[0];
 
   return (
-    <div className="bg-surface border border-divider rounded-card shadow-sm shrink-0">
+    <div className="bg-surface rounded-card shrink-0">
       <div className="px-5 pt-4 pb-1">
         <h3 className="text-base font-extrabold text-ink">Up Next</h3>
       </div>

@@ -139,7 +139,7 @@ export function PatientsPage() {
               onClick={() => openRegister()}
               className="flex items-center min-h-11 px-4 py-2 btn-primary rounded-control text-sm font-bold transition-colors shadow-sm"
             >
-              <UserPlus className="w-4 h-4 mr-2" /> Register Patient
+              <UserPlus className="w-4 h-4 mr-2" /> New Patient
             </button>
           )}
         </div>
@@ -242,7 +242,7 @@ export function PatientsPage() {
       {/* Table Area — grows with content; the page (AppShell) is the only
           scroll surface, so the card never grows its own inner scrollbar. */}
       <div className="px-6 pb-4 flex flex-col relative">
-        <div className="bg-surface border border-divider rounded-card overflow-hidden flex flex-col shadow-sm relative">
+        <div className="bg-surface rounded-card overflow-hidden flex flex-col relative">
           
           {/* Bulk Actions Bar (Admin only) */}
           {selectedIds.size > 0 && role === 'Admin' && (
@@ -416,8 +416,8 @@ export function PatientsPage() {
                       {/* --- Reception Cols --- */}
                       {role === 'Reception' && (
                         <>
-                          <td className="p-4 text-info-ink font-medium hover:underline flex items-center pt-4">
-                            <Phone className="w-3.5 h-3.5 mr-1" /> {p.phone}
+                          <td className="p-4 text-info-ink font-medium">
+                            <span className="flex items-center whitespace-nowrap"><Phone className="w-3.5 h-3.5 mr-1 shrink-0" /> {p.phone}</span>
                           </td>
                           <td className="p-4 font-bold text-ink">{isTodayRec ? p.nextAppt : '—'}</td>
                           <td className="p-4 text-ink-soft">{p.clinician}</td>

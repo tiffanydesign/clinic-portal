@@ -25,8 +25,8 @@ export function ExitConfirmPopover({ engine, step }: { engine: JourneyEngine; st
         {fmtClock(enter)} → {fmtClock(engine.clock)} · {engine.clock - enter} min
       </div>
       <div className="flex gap-3 mt-6">
-        <button onClick={engine.closeExitPopover} className="flex-1 h-12 border border-divider rounded-card text-sm font-bold text-ink-soft bg-surface hover:bg-surface-page">Cancel</button>
-        <button onClick={engine.confirmExit} className="flex-[1.3] h-12 rounded-card text-sm font-bold text-white bg-ink hover:bg-surface-sunken">Confirm Completion</button>
+        <button onClick={engine.closeExitPopover} className="flex-1 h-12 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-page">Cancel</button>
+        <button onClick={engine.confirmExit} className="flex-[1.3] h-12 rounded-control text-sm font-bold text-white bg-ink hover:bg-surface-sunken">Confirm Completion</button>
       </div>
     </ScrimDialog>
   );
@@ -44,8 +44,8 @@ export function NotePopover({ engine }: { engine: JourneyEngine }) {
         className="w-full min-h-[110px] mt-4 border border-divider rounded-card p-3 text-sm text-ink outline-none focus:border-border-strong resize-none"
       />
       <div className="flex gap-3 mt-5">
-        <button onClick={engine.closeNote} className="flex-1 h-12 border border-divider rounded-card text-sm font-bold text-ink-soft bg-surface hover:bg-surface-page">Cancel</button>
-        <button onClick={engine.saveNote} className="flex-[1.3] h-12 rounded-card text-sm font-bold text-white bg-ink hover:bg-surface-sunken">Save note</button>
+        <button onClick={engine.closeNote} className="flex-1 h-12 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-page">Cancel</button>
+        <button onClick={engine.saveNote} className="flex-[1.3] h-12 rounded-control text-sm font-bold text-white bg-ink hover:bg-surface-sunken">Save note</button>
       </div>
     </ScrimDialog>
   );
@@ -65,7 +65,7 @@ export function SkipDialog({ engine, stepName }: { engine: JourneyEngine; stepNa
             <button
               key={r}
               onClick={() => engine.setSkipReason(r)}
-              className={`flex items-center gap-3 min-h-[48px] px-4 rounded-card border-[1.5px] text-sm font-bold text-left transition-colors ${on ? "border-ink bg-surface-page" : "border-divider text-ink-soft hover:bg-surface-page"}`}
+              className={`flex items-center gap-3 min-h-[48px] px-4 rounded-control border-[1.5px] text-sm font-bold text-left transition-colors ${on ? "border-ink bg-surface-page" : "border-divider text-ink-soft hover:bg-surface-page"}`}
             >
               <span className={`w-5 h-5 rounded-full border-2 shrink-0 ${on ? "border-ink bg-[radial-gradient(circle,#334155_0_6px,#fff_7px_20px)]" : "border-divider"}`} />
               {r}
@@ -83,11 +83,11 @@ export function SkipDialog({ engine, stepName }: { engine: JourneyEngine; stepNa
         />
       )}
       <div className="flex gap-3 mt-6">
-        <button onClick={engine.closeDialog} className="flex-1 h-12 rounded-card border border-divider text-sm font-bold text-ink-soft bg-surface hover:bg-surface-page">Cancel</button>
+        <button onClick={engine.closeDialog} className="flex-1 h-12 rounded-control border border-divider text-sm font-bold text-ink-soft bg-surface hover:bg-surface-page">Cancel</button>
         <button
           onClick={engine.confirmSkip}
           disabled={!engine.skipCan}
-          className={`flex-1 h-12 rounded-card text-sm font-bold text-white ${engine.skipCan ? "bg-surface-sunken hover:bg-surface-sunken" : "bg-surface-sunken text-ink-muted cursor-not-allowed"}`}
+          className={`flex-1 h-12 rounded-control text-sm font-bold text-white ${engine.skipCan ? "bg-surface-sunken hover:bg-surface-sunken" : "bg-surface-sunken text-ink-muted cursor-not-allowed"}`}
         >
           Skip {stepName}
         </button>
@@ -114,11 +114,11 @@ export function GoBackDialog({ engine, prevName, curName }: { engine: JourneyEng
         className="w-full min-h-[80px] border border-divider rounded-card p-3 text-sm text-ink outline-none focus:border-border-strong resize-none"
       />
       <div className="flex gap-3 mt-6">
-        <button onClick={engine.closeDialog} className="flex-1 h-12 rounded-card border border-divider text-sm font-bold text-ink-soft bg-surface hover:bg-surface-page">Cancel</button>
+        <button onClick={engine.closeDialog} className="flex-1 h-12 rounded-control border border-divider text-sm font-bold text-ink-soft bg-surface hover:bg-surface-page">Cancel</button>
         <button
           onClick={engine.confirmGoBack}
           disabled={!engine.gobackCan}
-          className={`flex-1 h-12 rounded-card text-sm font-bold text-white ${engine.gobackCan ? "bg-warning-ink hover:bg-warning-ink" : "bg-surface-sunken text-ink-muted cursor-not-allowed"}`}
+          className={`flex-1 h-12 rounded-control text-sm font-bold text-white ${engine.gobackCan ? "bg-warning-ink hover:bg-warning-ink" : "bg-surface-sunken text-ink-muted cursor-not-allowed"}`}
         >
           Confirm &amp; Go Back
         </button>

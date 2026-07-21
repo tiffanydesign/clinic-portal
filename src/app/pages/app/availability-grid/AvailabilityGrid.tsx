@@ -54,7 +54,10 @@ function OverrideMarker({ detail }: { detail: NonNullable<GridCell["override"]> 
 
 function Cell({ cell, isToday }: { cell: GridCell; isToday: boolean }) {
   const clickable = !!cell.onClick;
-  const base = "relative flex-1 min-w-0 px-2.5 py-2 border-b border-divider overflow-hidden";
+  // Cells carry BOTH a bottom and a right border so the day columns read as a
+  // real grid — a border-strong vertical rule keeps adjacent heatmap cells
+  // (green-on-green) visibly separated where the faint divider disappeared.
+  const base = "relative flex-1 min-w-0 px-2.5 py-2 border-b border-divider border-r border-border-strong overflow-hidden";
   const interactivity = clickable ? "cursor-pointer hover:brightness-[0.98] transition-[filter]" : "";
 
   if (cell.status === "off") {
@@ -134,7 +137,7 @@ export function AvailabilityGrid({
           {days.map((d) => (
             <div
               key={d.key}
-              className={`flex-1 min-w-0 py-2.5 text-center ${d.isToday ? "bg-surface-hover/70" : "bg-surface-page/70"}`}
+              className={`flex-1 min-w-0 py-2.5 text-center border-r border-border-strong ${d.isToday ? "bg-surface-hover/70" : "bg-surface-page/70"}`}
             >
               <span className={`text-xs uppercase tracking-wider ${d.isToday ? "font-extrabold text-ink" : "font-bold text-ink-muted"}`}>
                 {d.label}

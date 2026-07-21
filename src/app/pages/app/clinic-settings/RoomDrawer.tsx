@@ -23,7 +23,7 @@ function AssignedDevices({ devices, onOpen }: { devices: DeviceView[]; onOpen: (
           <button
             key={d.id}
             onClick={() => onOpen(d.id)}
-            className="inline-flex items-center gap-1.5 pl-2 pr-2.5 py-1.5 rounded-card border border-divider bg-surface-page hover:border-border-strong hover:bg-surface transition-colors text-sm font-semibold text-ink-soft"
+            className="inline-flex items-center gap-1.5 pl-2 pr-2.5 py-1.5 rounded-control border border-divider bg-surface-page hover:border-border-strong hover:bg-surface transition-colors text-sm font-semibold text-ink-soft"
           >
             <Icon className="w-3.5 h-3.5 text-ink-muted shrink-0" />
             {d.label}
@@ -71,11 +71,11 @@ export function RoomDrawer({ room, onClose }: { room?: Room; onClose: () => void
       onClose={onClose}
       footer={
         <>
-          <button onClick={onClose} className="px-4 py-2 border border-divider rounded-card text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
+          <button onClick={onClose} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
           <button
             onClick={save}
             disabled={!canSave}
-            className={`px-5 py-2 rounded-card text-sm font-bold text-white transition-colors ${canSave ? "bg-surface-sunken hover:bg-surface-sunken" : "bg-surface-sunken cursor-not-allowed"}`}
+            className={`px-5 py-2 rounded-control text-sm font-bold text-white transition-colors ${canSave ? "bg-surface-sunken hover:bg-surface-sunken" : "bg-surface-sunken cursor-not-allowed"}`}
           >
             {isEdit ? "Save changes" : "Add room"}
           </button>

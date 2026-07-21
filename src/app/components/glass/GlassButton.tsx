@@ -34,8 +34,8 @@ export function GlassButton({ children, variant = "secondary", onClick, disabled
       <button
         onClick={onClick}
         title={title}
-        className={`${base} text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25)] hover:brightness-105 focus-visible:ring-[var(--phenome-blue-400)] ${className}`}
-        style={{ background: "var(--gradient-brand)" }}
+        className={`${base} text-white hover:brightness-110 focus-visible:ring-[var(--phenome-blue-400)] ${className}`}
+        style={{ backgroundColor: "var(--phenome-blue-400)" }}
       >
         {children}
       </button>

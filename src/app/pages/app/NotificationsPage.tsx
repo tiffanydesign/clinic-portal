@@ -363,7 +363,7 @@ export function NotificationsPage() {
   };
 
   return (
-    <div className="h-full overflow-y-auto bg-surface">
+    <div className="h-full overflow-y-auto bg-surface-page">
       <div className="px-6 pt-4">
         {/* L1 — Header */}
         <div className="flex items-center justify-between gap-4">
@@ -395,7 +395,7 @@ export function NotificationsPage() {
           {unreadCount > 0 && (
             <button
               onClick={() => markAllRead(allItems.map((n) => n.id))}
-              className="inline-flex items-center gap-2 h-9 px-3.5 rounded-card text-sm font-medium text-ink-soft border border-divider bg-surface hover:bg-surface-page hover:text-ink transition-colors shrink-0"
+              className="inline-flex items-center gap-2 h-9 px-3.5 rounded-control text-sm font-medium text-ink-soft border border-divider bg-surface hover:bg-surface-page hover:text-ink transition-colors shrink-0"
             >
               <CheckCheck className="w-4 h-4" /> Mark all as read
             </button>
@@ -421,8 +421,12 @@ export function NotificationsPage() {
       </div>
 
       <div className="mx-auto max-w-[880px] px-6 pb-6">
+        {/* Feed panel — a white surface on the pale page, matching the app's
+            card-on-surface-page pattern (this page was previously a full-bleed
+            white background, out of step with every other page). */}
+        <div className="bg-surface rounded-card mt-4 px-4 pb-2">
         {/* L3 — Filter bar, right-aligned, one visual layer below scope */}
-        <div className="flex items-center justify-end gap-2 mt-4 mb-2">
+        <div className="flex items-center justify-end gap-2 pt-2 mb-2">
           <label className="flex items-center gap-2 h-11 px-1 text-sm text-ink-soft cursor-pointer select-none">
             <ToggleSwitch checked={unreadOnly} onChange={() => setUnreadOnly((v) => !v)} />
             Unread only
@@ -472,7 +476,7 @@ export function NotificationsPage() {
               <div className="flex justify-center pt-6">
                 <button
                   onClick={() => setVisibleCount((v) => v + PAGE_SIZE)}
-                  className="px-4 py-2 rounded-card text-sm font-medium text-ink-soft border border-divider hover:bg-surface-page transition-colors"
+                  className="px-4 py-2 rounded-control text-sm font-medium text-ink-soft border border-divider hover:bg-surface-page transition-colors"
                 >
                   Load more
                 </button>
@@ -480,6 +484,7 @@ export function NotificationsPage() {
             )}
           </div>
         )}
+        </div>
       </div>
     </div>
   );

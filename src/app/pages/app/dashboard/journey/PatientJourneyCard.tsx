@@ -100,7 +100,7 @@ export function EmptyJourney({
         <p className="text-sm text-ink-muted mb-5 max-w-xs">Start the next patient from your queue to begin their journey.</p>
         <button
           onClick={onStartNext}
-          className="px-6 py-3 rounded-card text-sm font-bold transition-colors btn-primary shadow-md"
+          className="px-6 py-3 rounded-control text-sm font-bold transition-colors btn-primary shadow-md"
         >
           Start Next Patient
         </button>
@@ -162,7 +162,7 @@ export function PatientJourneyCard({
   const primaryBtnClass = engine.paused ? "bg-success-ink hover:opacity-90" : "bg-info-ink hover:opacity-90";
 
   return (
-    <div className="h-full bg-surface border border-divider rounded-card shadow-sm flex flex-col overflow-hidden">
+    <div className="h-full bg-surface rounded-card flex flex-col overflow-hidden">
       {/* Identity bar */}
       <div className="p-5 border-b border-divider flex items-start justify-between gap-4 shrink-0">
         <div className="flex items-center gap-3 min-w-0">
@@ -229,24 +229,24 @@ export function PatientJourneyCard({
             )}
             {engine.paused && <div className="text-center text-xs font-extrabold text-warning-ink mb-1.5">Journey paused — timers stopped</div>}
 
-            <button onClick={engine.primaryTap} className={`w-full h-12 rounded-card text-white text-sm font-extrabold tracking-tight transition-colors ${primaryBtnClass}`}>
+            <button onClick={engine.primaryTap} className={`w-full h-12 rounded-control text-white text-sm font-extrabold tracking-tight transition-colors ${primaryBtnClass}`}>
               {primaryLabel}
             </button>
 
             {cur.mode === "enter" && (
               <div className="flex items-center gap-1 mt-2.5">
-                <button onClick={engine.openSkip} className="flex items-center gap-1.5 h-11 px-3 rounded-card text-xs font-bold text-ink-soft hover:bg-surface-hover"><SkipForward className="w-3.5 h-3.5" /> Skip this station</button>
-                <button onClick={engine.openNote} className="flex items-center gap-1.5 h-11 px-3 rounded-card text-xs font-bold text-ink-soft hover:bg-surface-hover"><StickyNote className="w-3.5 h-3.5" /> Add Note</button>
+                <button onClick={engine.openSkip} className="flex items-center gap-1.5 h-11 px-3 rounded-control text-xs font-bold text-ink-soft hover:bg-surface-hover"><SkipForward className="w-3.5 h-3.5" /> Skip this station</button>
+                <button onClick={engine.openNote} className="flex items-center gap-1.5 h-11 px-3 rounded-control text-xs font-bold text-ink-soft hover:bg-surface-hover"><StickyNote className="w-3.5 h-3.5" /> Add Note</button>
               </div>
             )}
             {cur.mode === "exit" && (
               <div className="flex items-center gap-1 mt-2.5">
-                <button onClick={engine.openNote} className="flex items-center gap-1.5 h-11 px-3 rounded-card text-xs font-bold text-ink-soft hover:bg-surface-hover"><StickyNote className="w-3.5 h-3.5" /> Add Note</button>
-                <button onClick={engine.toggleFlag} className={`flex items-center gap-1.5 h-11 px-3 rounded-card text-xs font-bold hover:bg-surface-hover ${engine.flagged ? "text-danger-ink" : "text-ink-soft"}`}><Flag className="w-3.5 h-3.5" /> {engine.flagged ? "Unflag" : "Flag Issue"}</button>
-                <button onClick={engine.togglePause} className="flex items-center gap-1.5 h-11 px-3 rounded-card text-xs font-bold text-ink-soft hover:bg-surface-hover">{engine.paused ? <PlayCircle className="w-3.5 h-3.5" /> : <PauseCircle className="w-3.5 h-3.5" />} {engine.paused ? "Resume" : "Pause Journey"}</button>
+                <button onClick={engine.openNote} className="flex items-center gap-1.5 h-11 px-3 rounded-control text-xs font-bold text-ink-soft hover:bg-surface-hover"><StickyNote className="w-3.5 h-3.5" /> Add Note</button>
+                <button onClick={engine.toggleFlag} className={`flex items-center gap-1.5 h-11 px-3 rounded-control text-xs font-bold hover:bg-surface-hover ${engine.flagged ? "text-danger-ink" : "text-ink-soft"}`}><Flag className="w-3.5 h-3.5" /> {engine.flagged ? "Unflag" : "Flag Issue"}</button>
+                <button onClick={engine.togglePause} className="flex items-center gap-1.5 h-11 px-3 rounded-control text-xs font-bold text-ink-soft hover:bg-surface-hover">{engine.paused ? <PlayCircle className="w-3.5 h-3.5" /> : <PauseCircle className="w-3.5 h-3.5" />} {engine.paused ? "Resume" : "Pause Journey"}</button>
                 <div className="w-px h-6 bg-surface-sunken mx-1 ml-auto" />
                 {engine.prevStation && (
-                  <button onClick={engine.openGoBack} className="flex items-center gap-1.5 h-11 px-3 rounded-card text-label font-bold text-ink-muted hover:bg-surface-hover"><Undo2 className="w-3 h-3" /> Go Back</button>
+                  <button onClick={engine.openGoBack} className="flex items-center gap-1.5 h-11 px-3 rounded-control text-label font-bold text-ink-muted hover:bg-surface-hover"><Undo2 className="w-3 h-3" /> Go Back</button>
                 )}
               </div>
             )}

@@ -277,9 +277,25 @@
   --color-special-ink: var(--status-special-ink);
   /* brand (D-5): auth ramp unifies onto the existing phenome-blue scale */
   --color-brand-ink: var(--phenome-blue-900); /* #0A1E57 dark navy */
-  /* radius (2-tier) */
-  --radius-control: var(--radius-sm);        /* rounded-control (8px)  */
-  --radius-card: var(--radius-md);           /* rounded-card    (12px) */
+  /* radius (2-tier) — the ONE canonical container radius lives here, so
+     every `rounded-card` panel/card/modal shares it and can never drift.
+     Bumped to 16px (was --radius-md 12px) to match the approved container
+     look; kept as a literal so it does NOT change shadcn's `rounded-md`
+     (inputs/buttons stay tighter via --radius-control / --radius-md). */
+  --radius-control: var(--radius-sm);        /* rounded-control (8px)  — buttons, inputs, chips */
+  --radius-card: 16px;                        /* rounded-card    (16px) — cards, panels, modals  */
+
+  /* typeface (unified): TeX Gyre Heros is the ONE typeface for the whole
+     portal — an open, libre Helvetica/Arial-metric clone self-hosted in
+     fonts.css, so every OS (incl. Windows, which lacks Helvetica Neue)
+     renders the same face instead of falling back to Arial. sans / serif
+     / mono all resolve to it so no font utility (font-sans / font-serif /
+     font-mono) can introduce a second face. The tail (Helvetica, Arial,
+     sans-serif) is a pure availability fallback while the webfont loads /
+     if it fails — not a second design choice. */
+  --font-sans:  "TeX Gyre Heros", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-serif: "TeX Gyre Heros", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-mono:  "TeX Gyre Heros", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 @layer components {
@@ -297,16 +313,16 @@
   .kpi-value-lg { font-size: var(--kpi-value-lg); line-height: 1.1; font-weight: 600; font-variant-numeric: tabular-nums; }
   .kpi-value-sm { font-size: var(--kpi-value-sm); line-height: 1.1; font-weight: 600; font-variant-numeric: tabular-nums; }
 
-  /* Primary action button (D-5/D-7): the one brand-gradient affordance.
-     Replaces ad-hoc bg-slate-600/700 primary buttons. Keep it rare — one
-     primary per view. */
+  /* Primary action button (D-5/D-7): the one primary affordance. Solid brand
+     navy — NO gradient (gradients removed portal-wide) — replacing ad-hoc
+     bg-slate-600/700 primaries. Keep it rare: one primary per view. */
   .btn-primary {
-    background-image: var(--gradient-brand);
+    background-color: var(--phenome-blue-400);
     color: #fff;
     border: none;
   }
-  .btn-primary:hover { filter: brightness(1.05); }
-  .btn-primary:active { filter: brightness(0.97); }
+  .btn-primary:hover { background-color: var(--phenome-blue-500); }
+  .btn-primary:active { background-color: var(--phenome-blue-500); filter: brightness(0.97); }
 
   /* Hit-area extender: keep a control's visual box small (e.g. 32/38px)
      while guaranteeing a >=44x44px tap target. Center a transparent
@@ -407,6 +423,9 @@
 
   html {
     font-size: var(--font-size);
+    /* Single portal typeface — every element inherits Helvetica Neue,
+       including popovers/drawers portaled outside the font-sans shells. */
+    font-family: var(--font-sans);
   }
 
   h1 {

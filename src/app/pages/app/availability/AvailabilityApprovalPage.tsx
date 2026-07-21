@@ -170,7 +170,7 @@ function LeaveDrawer({ leave, onClose, onApprove, onReject, onResolve }: {
             <div className="flex items-center gap-2">
               <span className={`px-2 py-0.5 text-overline rounded-control border ${kindBadgeClass("Leave")}`}>Leave request</span>
             </div>
-            <button onClick={onClose} aria-label="Close" className="w-8 h-8 -mt-1 -mr-2 flex items-center justify-center rounded-card text-ink-muted hover:bg-surface-hover hover:text-ink-soft transition-colors">
+            <button onClick={onClose} aria-label="Close" className="w-8 h-8 -mt-1 -mr-2 flex items-center justify-center rounded-control text-ink-muted hover:bg-surface-hover hover:text-ink-soft transition-colors">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -275,7 +275,7 @@ export function AvailabilityApprovalPage() {
       </div>
 
       {/* L2 — Overview */}
-      <div className="grid grid-cols-3 divide-x divide-divider bg-surface border border-divider rounded-card shadow-sm mb-6">
+      <div className="grid grid-cols-3 divide-x divide-divider bg-surface rounded-card mb-6">
         <OverviewTile icon={Inbox} value={awaiting} label="Awaiting decision" iconClass="bg-warning/10 text-warning-ink" />
         <OverviewTile
           icon={needsAttention > 0 ? AlertTriangle : CheckCircle2}
@@ -293,7 +293,7 @@ export function AvailabilityApprovalPage() {
       </div>
 
       {awaiting === 0 ? (
-        <div className="border border-divider rounded-card bg-surface py-6 flex flex-col items-center justify-center text-center">
+        <div className="rounded-card bg-surface py-6 flex flex-col items-center justify-center text-center">
           <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mb-3">
             <CheckCircle2 className="w-6 h-6 text-success-ink" />
           </div>
@@ -301,7 +301,7 @@ export function AvailabilityApprovalPage() {
           <p className="text-xs text-ink-muted mt-1">No leave requests need your decision right now.</p>
         </div>
       ) : (
-        <div className="border border-divider rounded-card bg-surface divide-y divide-divider overflow-hidden shadow-sm">
+        <div className="rounded-card bg-surface divide-y divide-divider overflow-hidden">
           {pendingLeaves.map((l) => (
             <QueueRow key={l.id} leave={l} active={selectedId === l.id} onOpen={() => setSelectedId(l.id)} />
           ))}
@@ -312,7 +312,7 @@ export function AvailabilityApprovalPage() {
       {store.decisions.length > 0 && (
         <div className="mt-8">
           <h2 className="text-sm font-bold text-ink-muted uppercase tracking-wider mb-2">Recently decided</h2>
-          <div className="border border-divider rounded-card bg-surface divide-y divide-divider overflow-hidden">
+          <div className="rounded-card bg-surface divide-y divide-divider overflow-hidden">
             {store.decisions.slice(0, 5).map((d) => (
               <div key={d.id} className="px-4 py-3 flex items-center gap-3">
                 <span className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${d.result === "Approved" ? "bg-success/10 text-success-ink" : "bg-danger/10 text-danger-ink"}`}>

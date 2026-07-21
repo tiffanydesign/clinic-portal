@@ -57,7 +57,7 @@ export function RoomDeactivateDialog({ room, onClose, onDone }: { room: Room; on
                     </div>
                     <button
                       onClick={() => openBooking(a.id)}
-                      className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-card border border-divider text-xs font-bold text-ink-soft bg-surface hover:bg-surface-page transition-colors"
+                      className="shrink-0 inline-flex items-center gap-1 px-2.5 py-1.5 rounded-control border border-divider text-xs font-bold text-ink-soft bg-surface hover:bg-surface-page transition-colors"
                     >
                       Reschedule <ArrowRight className="w-3 h-3" />
                     </button>
@@ -69,7 +69,7 @@ export function RoomDeactivateDialog({ room, onClose, onDone }: { room: Room; on
               </p>
             </div>
             <div className="px-6 py-4 bg-surface-page border-t border-divider flex justify-end">
-              <button onClick={onClose} className="px-5 py-2 rounded-card text-sm font-bold text-white bg-ink hover:bg-surface-sunken">Got it</button>
+              <button onClick={onClose} className="px-5 py-2 rounded-control text-sm font-bold text-white bg-ink hover:bg-surface-sunken">Got it</button>
             </div>
           </>
         ) : (
@@ -84,8 +84,8 @@ export function RoomDeactivateDialog({ room, onClose, onDone }: { room: Room; on
               </p>
             </div>
             <div className="px-6 py-4 bg-surface-page border-t border-divider flex justify-end gap-3">
-              <button onClick={onClose} className="px-4 py-2 border border-divider rounded-card text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
-              <button onClick={confirm} className="px-5 py-2 rounded-card text-sm font-bold text-white bg-ink hover:bg-surface-sunken">Deactivate</button>
+              <button onClick={onClose} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
+              <button onClick={confirm} className="px-5 py-2 rounded-control text-sm font-bold text-white bg-ink hover:bg-surface-sunken">Deactivate</button>
             </div>
           </>
         )}

@@ -121,7 +121,7 @@ export function RoomsPage() {
           <DemoStateControl state={state} onChange={set} />
           <button
             onClick={() => setDrawer({ mode: "add" })}
-            className="flex items-center px-4 py-2 bg-ink text-white rounded-card text-sm font-bold hover:bg-ink transition-colors shadow-sm"
+            className="flex items-center px-4 py-2 btn-primary rounded-control text-sm font-bold transition-colors"
           >
             <Plus className="w-4 h-4 mr-2" /> Add room
           </button>
@@ -138,7 +138,7 @@ export function RoomsPage() {
             icon={DoorOpen}
             title="No rooms yet"
             body="Add your first room to start booking patients into it."
-            cta={<button onClick={() => setDrawer({ mode: "add" })} className="px-6 py-3 bg-ink text-white rounded-card text-base font-bold hover:bg-ink transition-colors shadow-sm">Add your first room</button>}
+            cta={<button onClick={() => setDrawer({ mode: "add" })} className="px-6 py-3 btn-primary rounded-control text-base font-bold transition-colors">Add your first room</button>}
           />
         ) : (
           <div className="border border-divider rounded-card overflow-hidden shadow-sm">

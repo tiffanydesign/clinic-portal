@@ -20,7 +20,7 @@ export function WeeklyAvailabilityPreview({ schedule }: { schedule: WeekSchedule
   return (
     <div>
       <label className="block text-xs font-bold text-ink-soft uppercase tracking-wider mb-2">Weekly Preview</label>
-      <div className="bg-surface border border-divider rounded-card p-3">
+      <div className="bg-surface rounded-card p-3">
         <div className="flex pl-9 mb-1.5 text-label font-semibold text-ink-muted">
           <span className="flex-1">6am</span>
           <span className="flex-1 text-center">12pm</span>

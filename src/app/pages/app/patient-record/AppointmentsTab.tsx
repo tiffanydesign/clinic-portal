@@ -13,7 +13,7 @@ function ApptTable({ title, appts, expandable, editable, action }: {
 }) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   return (
-    <div className="border border-divider rounded-card bg-surface overflow-hidden">
+    <div className="rounded-card bg-surface overflow-hidden">
       <div className="px-5 py-3 border-b border-divider flex items-center justify-between">
         <h3 className="text-sm font-bold text-ink">{title}</h3>
         {action}
@@ -75,7 +75,7 @@ function ApptTable({ title, appts, expandable, editable, action }: {
 
 function NurseTodayCard({ appt }: { appt?: RecordAppt }) {
   return (
-    <div className="border border-divider rounded-card bg-surface p-5 max-w-md">
+    <div className="rounded-card bg-surface p-5 max-w-md">
       <h3 className="text-sm font-bold text-ink mb-3">Today&#39;s Appointment Information</h3>
       {appt ? (
         <div className="space-y-2 text-sm">

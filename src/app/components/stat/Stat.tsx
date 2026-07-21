@@ -133,8 +133,8 @@ function StatCard({ stat, range = "today", locked, clickable, icon, iconTone, on
   return (
     <button
       onClick={interactive ? () => onOpen?.(stat.route) : undefined}
-      className={`text-left border border-divider rounded-control bg-surface px-4 py-2.5 min-h-[88px] max-h-24 flex flex-col gap-1.5 relative transition-all ${
-        interactive ? "hover:border-border-strong hover:shadow-sm cursor-pointer" : "cursor-default"
+      className={`text-left rounded-control bg-surface px-4 py-2.5 min-h-[88px] max-h-24 flex flex-col gap-1.5 relative transition-all ${
+        interactive ? "hover:shadow-sm cursor-pointer" : "cursor-default"
       }`}
     >
       <div className="flex items-center gap-3">
@@ -199,8 +199,8 @@ function StatTile({ stat }: StatProps) {
   return (
     <Tag
       onClick={onActivate}
-      className={`w-full min-h-[44px] max-h-[72px] text-left bg-surface border border-divider rounded-card px-5 py-3 shadow-sm transition-colors ${
-        onActivate ? "hover:border-border-strong hover:shadow-md cursor-pointer" : ""
+      className={`w-full min-h-[44px] max-h-[72px] text-left bg-surface rounded-card px-5 py-3 transition-colors ${
+        onActivate ? "hover:shadow-md cursor-pointer" : ""
       }`}
     >
       <div className="text-overline truncate">{stat.label}</div>
@@ -218,7 +218,7 @@ function StatTile({ stat }: StatProps) {
  */
 export function StatStripGroup({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`flex items-stretch bg-surface border border-divider rounded-card divide-x divide-divider overflow-hidden shadow-sm shrink-0 ${className}`}>
+    <div className={`flex items-stretch bg-surface rounded-card divide-x divide-divider overflow-hidden shrink-0 ${className}`}>
       {children}
     </div>
   );

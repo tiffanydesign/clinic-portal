@@ -321,7 +321,7 @@ export function FrontDeskQueue({ appts, tab, onTabChange, unpaidOnly = false, on
   const listAppts = unpaidOnly ? grouped[tab].filter((a) => !paymentOk(a)) : grouped[tab];
 
   return (
-    <div className="h-full border border-divider rounded-card bg-surface shadow-sm flex flex-col">
+    <div className="h-full rounded-card bg-surface flex flex-col">
       <div className="border-b border-divider shrink-0">
         <div className="h-11 px-4 flex items-center gap-2">
           <h3 className="font-bold text-ink text-sm">Front Desk Queue</h3>

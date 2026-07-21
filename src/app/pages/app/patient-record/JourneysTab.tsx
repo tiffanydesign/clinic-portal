@@ -39,7 +39,7 @@ function ProgressBar({ done, total }: { done: number; total: number }) {
 function JourneyCard({ journey, patientId, showOpen }: { journey: Journey; patientId: string; showOpen: boolean }) {
   const navigate = useNavigate();
   return (
-    <div className="border border-divider rounded-card bg-surface p-5 hover:border-border-strong transition-colors">
+    <div className="rounded-card bg-surface p-5 hover:bg-surface-page transition-colors">
       <div className="flex items-start justify-between mb-4">
         <h3 className="text-sm font-bold text-ink">{journey.name}</h3>
         <StatusPill status={journey.status} type={journeyStatusPillType(journey.status)} />
@@ -108,7 +108,7 @@ export function JourneysTab() {
       )}
 
       {view === "table" ? (
-        <div className="border border-divider rounded-card bg-surface overflow-hidden">
+        <div className="rounded-card bg-surface overflow-hidden">
           <table className="w-full text-sm text-left">
             <thead className="bg-surface-page border-b border-divider text-ink-soft">
               <tr>

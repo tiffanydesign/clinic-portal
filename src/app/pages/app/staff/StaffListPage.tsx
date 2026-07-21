@@ -136,7 +136,7 @@ export function StaffListPage() {
         <div className="relative">
           <button
             onClick={() => setShowAddMenu(!showAddMenu)}
-            className="flex items-center px-4 py-2 bg-ink text-white rounded-card text-sm font-bold hover:bg-ink transition-colors shadow-sm"
+            className="flex items-center px-4 py-2 btn-primary rounded-control text-sm font-bold transition-colors"
           >
             <Plus className="w-4 h-4 mr-2" /> Add Staff <ChevronDown className="w-3.5 h-3.5 ml-2" />
           </button>

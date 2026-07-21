@@ -39,7 +39,7 @@ export function StaffWorkloadTab() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-3 gap-6">
-        <div className="bg-surface border border-divider rounded-card p-5 shadow-sm">
+        <div className="bg-surface rounded-card p-5">
           <div className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Patient Load</div>
           <div className="text-3xl font-bold text-ink">{staff.patients ?? 0} <span className="text-lg font-medium text-ink-muted">patients</span></div>
           <div className="text-sm mt-1 font-medium text-ink-muted">
@@ -47,12 +47,12 @@ export function StaffWorkloadTab() {
             {(staff.patients ?? 0) > 18 * 1.3 && <span className="ml-2 text-danger-ink font-bold">Above capacity</span>}
           </div>
         </div>
-        <div className="bg-surface border border-divider rounded-card p-5 shadow-sm">
+        <div className="bg-surface rounded-card p-5">
           <div className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Weekly Appointments</div>
           <div className="text-3xl font-bold text-ink">8.5 <span className="text-lg font-medium text-ink-muted">avg/week</span></div>
           <div className="text-sm text-ink-muted mt-1 font-medium">Team avg: 6.2</div>
         </div>
-        <div className="bg-surface border border-divider rounded-card p-5 shadow-sm">
+        <div className="bg-surface rounded-card p-5">
           <div className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Utilisation Rate</div>
           <div className={`text-3xl font-bold ${utilColor.text}`}>{utilisation}%</div>
           <div className="text-sm text-ink-muted mt-1 font-medium">of available hours booked</div>
@@ -61,7 +61,7 @@ export function StaffWorkloadTab() {
 
       {/* Charts */}
       <div className="grid grid-cols-[55fr_45fr] gap-6">
-        <div className="bg-surface border border-divider rounded-card p-6 shadow-sm">
+        <div className="bg-surface rounded-card p-6">
           <h3 className="text-base font-bold text-ink mb-1">Appointment Distribution</h3>
           <p className="text-xs text-ink-muted mb-4">Appointments by type · {range.toLowerCase()}</p>
           <ResponsiveContainer width="100%" height={240}>
@@ -76,7 +76,7 @@ export function StaffWorkloadTab() {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-surface border border-divider rounded-card p-6 shadow-sm">
+        <div className="bg-surface rounded-card p-6">
           <h3 className="text-base font-bold text-ink mb-1">Weekly Trend</h3>
           <p className="text-xs text-ink-muted mb-4">Appointments per week · past 8 weeks</p>
           <ResponsiveContainer width="100%" height={240}>

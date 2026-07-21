@@ -14,7 +14,7 @@ export function OverviewTab() {
 
 export function Card({ title, children, action }: { title: string; children: React.ReactNode; action?: React.ReactNode }) {
   return (
-    <div className="border border-divider rounded-card bg-surface overflow-hidden">
+    <div className="bg-surface rounded-card overflow-hidden">
       <div className="px-5 py-3 border-b border-divider flex items-center justify-between">
         <h3 className="text-sm font-bold text-ink">{title}</h3>
         {action}

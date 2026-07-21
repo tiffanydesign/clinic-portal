@@ -113,12 +113,12 @@ export function BillingPage() {
 
       {/* KPI Cards */}
       <div className="px-6 py-4 shrink-0 grid grid-cols-4 gap-6">
-        <div className="bg-surface border border-divider rounded-card p-4 shadow-sm">
+        <div className="bg-surface rounded-card p-4">
           <div className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Today's Collections</div>
           <div className="text-3xl font-bold text-ink">₺12,400</div>
           <div className="text-sm text-ink-muted mt-1 font-medium">8 payments received</div>
         </div>
-        <div className="bg-surface border border-divider rounded-card p-4 shadow-sm">
+        <div className="bg-surface rounded-card p-4">
           <div className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Awaiting Payment</div>
           <div className="text-3xl font-bold text-ink">3</div>
           <div className="text-sm text-ink-muted mt-1 font-medium flex items-center justify-between">
@@ -128,7 +128,7 @@ export function BillingPage() {
         </div>
         {isAdmin && (
           <>
-            <div className="bg-surface border border-divider rounded-card p-4 shadow-sm">
+            <div className="bg-surface rounded-card p-4">
               <div className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Monthly Revenue</div>
               <div className="text-3xl font-bold text-ink">₺186,500</div>
               <div className="flex items-center justify-between mt-1">
@@ -136,7 +136,7 @@ export function BillingPage() {
                 <span className="text-xs text-success-ink font-bold">↑ 8% vs Jun</span>
               </div>
             </div>
-            <div className="bg-surface border border-divider rounded-card p-4 shadow-sm">
+            <div className="bg-surface rounded-card p-4">
               <div className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Outstanding Balance</div>
               <div className="text-3xl font-bold text-ink">₺24,800</div>
               <div className="flex items-center justify-between mt-1">

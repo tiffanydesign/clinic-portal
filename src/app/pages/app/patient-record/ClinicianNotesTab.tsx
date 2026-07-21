@@ -9,7 +9,7 @@ const CURRENT_CLINICIAN_ID = "EMP-003"; // Dr. Ebru Reis (signed-in clinician)
 
 function NoteCard({ note, canManage, onDelete }: { note: ClinicianNote; canManage: boolean; onDelete: () => void }) {
   return (
-    <div className="border border-divider rounded-card bg-surface p-5">
+    <div className="rounded-card bg-surface p-5">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-full bg-surface-hover text-ink-soft text-xs font-bold flex items-center justify-center shrink-0">{note.authorAvatar}</div>

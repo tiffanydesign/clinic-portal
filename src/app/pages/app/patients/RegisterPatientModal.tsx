@@ -222,7 +222,7 @@ export function RegisterPatientModal({
 
   // --- form ---
   return (
-    <Shell onClose={requestClose} title="Register New Patient">
+    <Shell onClose={requestClose} title="New Patient">
       <div className="p-6 space-y-6 overflow-y-auto">
         <StepDots step={step as 1 | 2} />
 
@@ -310,7 +310,7 @@ export function RegisterPatientModal({
               step2Valid ? "bg-ink hover:bg-surface-sunken text-white" : "bg-surface-sunken text-ink-muted cursor-not-allowed"
             }`}
           >
-            <UserPlus className="w-4 h-4" /> Register Patient
+            <UserPlus className="w-4 h-4" /> Add Patient
           </button>
         )}
       </div>

@@ -5,7 +5,7 @@ export function LeaveRequestsSection({ leaves, onNew }: { leaves: LeaveItem[]; o
   const upcoming = [...leaves].sort((a, b) => a.dateFrom.localeCompare(b.dateFrom));
 
   return (
-    <div className="bg-surface border border-divider rounded-card p-6 shadow-sm">
+    <div className="bg-surface rounded-card p-6">
       <h3 className="text-base font-bold text-ink mb-2">Leave</h3>
       <p className="text-sm text-ink-muted mb-6">Upcoming leave and vacation time.</p>
 

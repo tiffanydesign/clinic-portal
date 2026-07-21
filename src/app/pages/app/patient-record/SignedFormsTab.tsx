@@ -14,7 +14,7 @@ export function SignedFormsTab() {
 
   return (
     <div className="p-4 max-w-5xl mx-auto">
-      <div className="border border-divider rounded-card bg-surface overflow-hidden">
+      <div className="rounded-card bg-surface overflow-hidden">
         <table className="w-full text-sm text-left">
           <thead className="bg-surface-page border-b border-divider text-ink-soft">
             <tr>

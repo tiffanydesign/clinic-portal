@@ -125,7 +125,7 @@ export function DevicesPage() {
         </div>
         <div className="flex items-center gap-4 shrink-0">
           <DemoStateControl state={state} onChange={set} />
-          <button onClick={() => setShowAdd(true)} className="flex items-center px-4 py-2 bg-ink text-white rounded-card text-sm font-bold hover:bg-ink transition-colors shadow-sm">
+          <button onClick={() => setShowAdd(true)} className="flex items-center px-4 py-2 btn-primary rounded-control text-sm font-bold transition-colors">
             <Plus className="w-4 h-4 mr-2" /> Add device
           </button>
         </div>
@@ -167,7 +167,7 @@ export function DevicesPage() {
             icon={MonitorSmartphone}
             title="No devices here"
             body={status === "retired" ? "No retired devices to show." : "No devices match these filters. Try a different type or status."}
-            cta={status !== "retired" && <button onClick={() => setShowAdd(true)} className="px-6 py-3 bg-ink text-white rounded-card text-base font-bold hover:bg-ink transition-colors shadow-sm">Add a device</button>}
+            cta={status !== "retired" && <button onClick={() => setShowAdd(true)} className="px-6 py-3 btn-primary rounded-control text-base font-bold transition-colors">Add a device</button>}
           />
         ) : groups ? (
           <div className="space-y-6">

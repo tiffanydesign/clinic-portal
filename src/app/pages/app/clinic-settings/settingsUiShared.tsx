@@ -163,10 +163,10 @@ export function ConfirmDialog({ title, body, confirmLabel, danger, onCancel, onC
           <div className="text-sm text-ink-muted leading-relaxed">{body}</div>
         </div>
         <div className="px-6 py-4 bg-surface-page border-t border-divider flex justify-end gap-3">
-          <button onClick={onCancel} className="px-4 py-2 border border-divider rounded-card text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
+          <button onClick={onCancel} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
           <button
             onClick={onConfirm}
-            className={`px-5 py-2 rounded-card text-sm font-bold text-white transition-colors ${danger ? "bg-danger-ink hover:bg-danger-ink" : "bg-surface-sunken hover:bg-surface-sunken"}`}
+            className={`px-5 py-2 rounded-control text-sm font-bold text-white transition-colors ${danger ? "bg-danger-ink hover:bg-danger-ink" : "bg-surface-sunken hover:bg-surface-sunken"}`}
           >
             {confirmLabel}
           </button>

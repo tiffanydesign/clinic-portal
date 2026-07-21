@@ -48,7 +48,7 @@ export function PendingRequestsSection({ pending, decisions, onWithdraw }: {
   const recentDecisions = decisions.slice(0, 5);
 
   return (
-    <div className="bg-surface border border-divider rounded-card p-6 shadow-sm">
+    <div className="bg-surface rounded-card p-6">
       <div className="flex items-center gap-2 mb-4">
         <h3 className="text-base font-bold text-ink">Pending Requests</h3>
         {pending.length > 0 && (

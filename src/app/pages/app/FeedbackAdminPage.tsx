@@ -352,21 +352,21 @@ function FeedbackDrawer({ item, onClose, newNote, setNewNote, onAddNote, onUpdat
         {isGoogle ? (
           <div className="flex gap-2">
             {item.status !== "Addressed" && (
-              <button onClick={() => onMarkAddressed(item.id)} className="px-4 py-2 bg-success-ink text-white rounded-card text-sm font-bold hover:opacity-90 transition-colors shadow-sm">
+              <button onClick={() => onMarkAddressed(item.id)} className="px-4 py-2 bg-success-ink text-white rounded-control text-sm font-bold hover:opacity-90 transition-colors shadow-sm">
                 Mark Addressed
               </button>
             )}
-            <a href={item.reviewUrl} target="_blank" rel="noreferrer" className="flex items-center px-4 py-2 border border-divider bg-surface text-ink-soft rounded-card text-sm font-bold hover:bg-surface-page transition-colors">
+            <a href={item.reviewUrl} target="_blank" rel="noreferrer" className="flex items-center px-4 py-2 border border-divider bg-surface text-ink-soft rounded-control text-sm font-bold hover:bg-surface-page transition-colors">
               Reply on Google <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
             </a>
           </div>
         ) : (
           <div className="flex space-x-3">
-            <button onClick={() => onUpdateStatus(item.id, "Archived")} className="px-4 py-2 bg-surface border border-divider text-ink-soft rounded-card text-sm font-bold hover:bg-surface-page transition-colors">
+            <button onClick={() => onUpdateStatus(item.id, "Archived")} className="px-4 py-2 bg-surface border border-divider text-ink-soft rounded-control text-sm font-bold hover:bg-surface-page transition-colors">
               Archive
             </button>
             {["New", "In Review"].includes(item.status) && (
-              <button onClick={() => onUpdateStatus(item.id, "Resolved")} className="px-6 py-2 bg-success-ink text-white rounded-card text-sm font-bold hover:opacity-90 transition-colors shadow-sm">
+              <button onClick={() => onUpdateStatus(item.id, "Resolved")} className="px-6 py-2 bg-success-ink text-white rounded-control text-sm font-bold hover:opacity-90 transition-colors shadow-sm">
                 Mark as Resolved
               </button>
             )}
@@ -474,10 +474,10 @@ export function FeedbackAdminPage() {
             <p className="text-sm text-ink-muted mt-1">Patient and staff feedback records</p>
           </div>
           <div className="flex items-center space-x-3">
-            <button onClick={handleExport} className="flex items-center px-4 py-2 border border-divider rounded-card text-sm font-bold text-ink-soft hover:bg-surface-page transition-colors shadow-sm">
+            <button onClick={handleExport} className="flex items-center px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft hover:bg-surface-page transition-colors shadow-sm">
               <Download className="w-4 h-4 mr-2 text-ink-muted" /> Export
             </button>
-            <button className="p-2 border border-divider rounded-card text-ink-muted hover:bg-surface-page hover:text-ink-soft transition-colors shadow-sm">
+            <button className="p-2 border border-divider rounded-control text-ink-muted hover:bg-surface-page hover:text-ink-soft transition-colors shadow-sm">
               <Settings className="w-5 h-5" />
             </button>
           </div>
@@ -541,7 +541,7 @@ export function FeedbackAdminPage() {
           icon tile; only the actionable one (Open Issues / overdue) shows alarm
           color, so triage happens in a single glance. */}
       <div className="px-6 py-3 shrink-0">
-        <div className="flex items-stretch flex-wrap bg-surface border border-divider rounded-card shadow-sm divide-x divide-divider overflow-hidden">
+        <div className="flex items-stretch flex-wrap bg-surface rounded-card divide-x divide-divider overflow-hidden">
           <StatSegment
             tile="bg-surface-hover"
             icon={<MessageSquare className="w-[18px] h-[18px] text-ink-muted" />}
