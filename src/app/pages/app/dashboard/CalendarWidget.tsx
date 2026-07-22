@@ -162,7 +162,7 @@ export function CalendarWidget({ onAdd }: { onAdd?: () => void } = {}) {
         {columns.length > 1 && (
           <div className="sticky top-0 z-30 flex border-b border-divider bg-gradient-to-b from-surface-page to-surface-page/50 pl-14">
             {columns.map((c) => (
-              <div key={c.key} className="flex-1 px-1.5 py-2 text-center border-l border-divider min-w-0">
+              <div key={c.key} className="flex-1 px-1.5 py-2 text-center border-l border-grid-line min-w-0">
                 <div className="text-xs font-bold text-ink-soft truncate">{c.label}</div>
                 {c.sub && <div className="text-label text-ink-muted truncate mt-0.5">{c.sub}</div>}
                 <span className="inline-block mt-1 px-1.5 py-0.5 rounded-full bg-surface-hover text-label font-bold text-ink-muted tabular-nums">
@@ -194,9 +194,10 @@ export function CalendarWidget({ onAdd }: { onAdd?: () => void } = {}) {
             {hours.map((h, i) => i % 2 === 1 && (
               <div key={`band-${h}`} className="absolute left-0 right-0 bg-surface-page/60 pointer-events-none" style={{ top: (i - 1) * HOUR_PX, height: HOUR_PX }} />
             ))}
-            {/* Hour gridlines */}
+            {/* Hour gridlines — fainter than section dividers so the blocks
+                read first (see --grid-line). */}
             {hours.map((h, i) => (
-              <div key={h} className="absolute left-0 right-0 border-t border-divider" style={{ top: i * HOUR_PX }} />
+              <div key={h} className="absolute left-0 right-0 border-t border-grid-line" style={{ top: i * HOUR_PX }} />
             ))}
 
             {/* Now line */}
@@ -211,7 +212,7 @@ export function CalendarWidget({ onAdd }: { onAdd?: () => void } = {}) {
               {columns.map((c) => {
                 const sorted = [...c.appts].sort((a, b) => a.startMin - b.startMin);
                 return (
-                  <div key={c.key} className="flex-1 relative border-l border-divider">
+                  <div key={c.key} className="flex-1 relative border-l border-grid-line">
                     {sorted.map((appt) => (
                       <ApptBlock
                         key={appt.id}

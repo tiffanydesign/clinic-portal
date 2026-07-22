@@ -1,14 +1,18 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import { Plane, RefreshCcw } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import { Section } from "./DashboardShared";
 import { Stat } from "../../../components/stat";
 import { useAvailabilityStore, getPendingRequests } from "../availability/availabilityStore";
 import { needsYourActionItems, ActionItem, ActionItemKind } from "./needsYourActionData";
 
-const KIND_STYLE: Record<ActionItemKind, { pill: string; icon: React.ReactNode }> = {
-  Leave: { pill: "bg-warning/10 text-warning-ink border-warning/30", icon: <Plane className="w-3.5 h-3.5 text-warning-ink" /> },
-  Refund: { pill: "bg-special/10 text-special-ink border-special/30", icon: <RefreshCcw className="w-3.5 h-3.5 text-special-ink" /> },
+// Type is carried by a single low-saturation chip — neutral grey fill + a tiny
+// colour dot — rather than a saturated amber/purple pill. The dot alone
+// distinguishes the two kinds, so the list reads as one calm column instead of
+// a scatter of competing accent colours.
+const KIND_DOT: Record<ActionItemKind, string> = {
+  Leave: "bg-warning",
+  Refund: "bg-special",
 };
 
 type Filter = "All" | ActionItemKind;
@@ -19,14 +23,37 @@ type Filter = "All" | ActionItemKind;
 function ActionRow({ item, onOpen }: { item: ActionItem; onOpen: () => void }) {
   const overdue = item.waitHours > 48;
   return (
-    <button onClick={onOpen} className="w-full min-h-[48px] flex items-center gap-3 px-4 py-3 hover:bg-surface-page text-left transition-colors">
-      <span className="shrink-0">{KIND_STYLE[item.kind].icon}</span>
+    <button onClick={onOpen} className="w-full flex items-start gap-3 px-4 py-4 hover:bg-surface-page text-left transition-colors">
       <span className="min-w-0 flex-1">
-        <span className={`inline-block px-1.5 py-0.5 text-overline rounded-control border mb-0.5 ${KIND_STYLE[item.kind].pill}`}>{item.kind}</span>
-        <span className="block text-sm font-medium text-ink truncate">{item.summary}</span>
+        {/* Low-sat type chip: grey fill, grey text, one tiny colour dot. */}
+        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-overline rounded-control bg-surface-hover text-ink-soft">
+          <span className={`w-1.5 h-1.5 rounded-full ${KIND_DOT[item.kind]}`} aria-hidden />
+          {item.kind}
+        </span>
+        {/* Primary line: name (+ amount) bold in ink — weight, not colour,
+            carries the emphasis. */}
+        <span className="block text-sm text-ink mt-2 truncate">
+          <span className="font-semibold">{item.primary}</span>
+          {item.emphasis && (
+            <>
+              <span className="text-ink-muted"> · </span>
+              <span className="font-semibold tabular-nums">{item.emphasis}</span>
+            </>
+          )}
+        </span>
+        {/* Secondary line: regular weight, muted — recedes below the name. */}
+        {item.detail && (
+          <span className="block text-xs font-normal text-ink-muted mt-0.5 truncate">{item.detail}</span>
+        )}
       </span>
-      <span className={`text-xs font-bold shrink-0 ${overdue ? "text-danger-ink" : "text-ink-muted"}`}>
-        {item.waitLabel}{overdue ? " · overdue" : ""}
+      {/* Wait meta stays quiet: muted grey, or slightly darker grey + a small
+          red alert glyph once overdue — no full-width red text. */}
+      <span
+        className={`shrink-0 inline-flex items-center gap-1 text-xs font-medium mt-0.5 ${overdue ? "text-ink-soft" : "text-ink-muted"}`}
+        title={overdue ? "Overdue — waiting more than 48h" : undefined}
+      >
+        {overdue && <AlertCircle className="w-3.5 h-3.5 text-danger shrink-0" aria-hidden />}
+        {item.waitLabel}
       </span>
     </button>
   );
@@ -83,9 +110,9 @@ export function NeedsYourActionCard() {
       subHeader={
         allItems.length > 0 ? (
           <div className="inline-flex items-center gap-0.5 bg-surface-hover p-0.5 rounded-card border border-divider">
-            <FilterChip label="All" count={allItems.length} active={kindFilter === "All"} activeText="text-ink-soft" onClick={() => setKindFilter("All")} />
-            <FilterChip label="Leave" count={leaveCount} active={kindFilter === "Leave"} activeText="text-warning-ink" onClick={() => setKindFilter("Leave")} />
-            <FilterChip label="Refunds" count={refundCount} active={kindFilter === "Refund"} activeText="text-special-ink" onClick={() => setKindFilter("Refund")} />
+            <FilterChip label="All" count={allItems.length} active={kindFilter === "All"} activeText="text-ink" onClick={() => setKindFilter("All")} />
+            <FilterChip label="Leave" count={leaveCount} active={kindFilter === "Leave"} activeText="text-ink" onClick={() => setKindFilter("Leave")} />
+            <FilterChip label="Refunds" count={refundCount} active={kindFilter === "Refund"} activeText="text-ink" onClick={() => setKindFilter("Refund")} />
           </div>
         ) : undefined
       }

@@ -12,7 +12,14 @@ export type ActionItemKind = "Leave" | "Refund";
 export type ActionItem = {
   id: string;
   kind: ActionItemKind;
-  summary: string;
+  // Split so the card can carry visual hierarchy with font weight rather than
+  // colour: `primary` (+ optional `emphasis`) render bold in ink; `detail`
+  // renders in a lighter, muted weight underneath. `emphasis` is the one extra
+  // fact worth bolding beside the name — the refund amount — kept apart from
+  // the name so both stay legible as distinct data points.
+  primary: string;
+  emphasis?: string;
+  detail?: string;
   waitHours: number;
   waitLabel: string;
   route: string;
@@ -39,7 +46,8 @@ export function leaveActionItems(pending: PendingRequest[]): ActionItem[] {
       return {
         id: `leave-${p.id}`,
         kind: "Leave" as const,
-        summary: `Dr. Ebru Reis — ${p.summary}`,
+        primary: "Dr. Ebru Reis",
+        detail: p.summary,
         waitHours,
         waitLabel: waitLabel(waitHours),
         route: "/approval",
@@ -53,7 +61,9 @@ export function refundActionItems(records: BillingRecord[] = refundPendingRecord
     return {
       id: `refund-${r.id}`,
       kind: "Refund" as const,
-      summary: `${r.patientName} — ₺${r.totalAmount.toLocaleString()} refund`,
+      primary: r.patientName,
+      emphasis: `₺${r.totalAmount.toLocaleString()}`,
+      detail: "Refund requested",
       waitHours,
       waitLabel: waitLabel(waitHours),
       route: "/billing",

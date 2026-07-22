@@ -1,7 +1,18 @@
 import React from "react";
 import { useNavigate } from "react-router";
-import { AlertTriangle } from "lucide-react";
-import { Section, LiveDot } from "./DashboardShared";
+import { Section } from "./DashboardShared";
+
+// A quiet "live" marker for a card title: a small pulsing green dot + a muted,
+// normal-weight "Live" label — reads as ambient status, not a shouting badge
+// like the old all-caps green LiveDot.
+function SubtleLive() {
+  return (
+    <span className="inline-flex items-center gap-1 ml-2 text-label font-medium text-ink-muted" title="Updating live">
+      <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" aria-hidden />
+      Live
+    </span>
+  );
+}
 
 // ============================ ADMIN ============================
 
@@ -30,7 +41,11 @@ export function AdminPanels() {
     { patient: "Serkan Çetin", checkIn: "09:08", wait: 6, step: "Waiting for Consultation", nurse: "Aylin Demir" },
   ].sort((a, b) => b.wait - a.wait);
 
-  const waitColor = (m: number) => (m > 30 ? "text-danger-ink" : m > 15 ? "text-warning-ink" : "text-ink");
+  // Single threshold — a wait only earns a colour once it crosses the line
+  // that genuinely needs attention. Everything under it stays neutral grey, so
+  // the list reads calm instead of a three-colour (red/amber/black) traffic
+  // light where the grading was never actually defined.
+  const WAIT_ALERT_MIN = 30;
 
   // Renders as a fragment (no own row wrapper) so DashboardPage can place
   // Results Queue + Waiting Room in the SAME flex row as Recent Activity —
@@ -39,33 +54,51 @@ export function AdminPanels() {
     <>
       <Section title="Results Queue" className="flex-1 min-w-0" action={<button onClick={() => nav("/patients")} className="text-xs font-bold text-ink-soft hover:underline">View all patients →</button>}>
         <div className="divide-y divide-divider">
-          {results.map((r) => (
-            <button key={r.patient} onClick={() => nav("/patients/P-001/results")} className="w-full flex items-center justify-between px-4 py-2.5 hover:bg-surface-page text-left gap-2">
-              <span className="min-w-0">
-                <span className="text-sm font-medium text-ink truncate block">{r.patient}</span>
-                <span className="text-xs text-ink-muted truncate block">{r.test} · {r.doctor.replace("Dr. ", "")}</span>
-              </span>
-              {r.days > 3 ? (
-                <span className="text-label font-bold text-danger-ink flex items-center gap-1 shrink-0"><AlertTriangle className="w-3 h-3" /> {r.days}d overdue</span>
-              ) : (
-                <span className="text-xs text-ink-muted shrink-0">{r.days}d</span>
-              )}
-            </button>
-          ))}
+          {results.map((r) => {
+            const overdue = r.days > 3;
+            return (
+              // Patient name is the single prominent element; the queue age
+              // drops to a restrained tag on the secondary line rather than a
+              // large red status competing with the name.
+              <button key={r.patient} onClick={() => nav("/patients/P-001/results")} className="w-full flex flex-col items-start gap-1 px-4 py-3 hover:bg-surface-page text-left">
+                <span className="text-sm font-semibold text-ink truncate w-full">{r.patient}</span>
+                <span className="flex items-center gap-2 min-w-0 w-full">
+                  <span className="text-xs text-ink-muted truncate min-w-0">{r.test} · {r.doctor.replace("Dr. ", "")}</span>
+                  {overdue ? (
+                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-control text-overline bg-danger/10 text-danger-ink shrink-0">
+                      <span className="w-1.5 h-1.5 rounded-full bg-danger" aria-hidden />
+                      {r.days}d overdue
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-control text-overline bg-surface-hover text-ink-muted shrink-0">
+                      {r.days}d
+                    </span>
+                  )}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </Section>
 
-      <Section title={<>Waiting Room <LiveDot /></>} className="flex-1 min-w-0">
+      <Section title={<>Waiting Room <SubtleLive /></>} className="flex-1 min-w-0">
         <div className="divide-y divide-divider">
-          {waiting.map((w) => (
-            <div key={w.patient} className="flex items-center justify-between px-4 py-2.5 hover:bg-surface-page">
-              <div className="min-w-0">
-                <div className="text-sm font-medium text-ink truncate">{w.patient}</div>
-                <div className="text-xs text-ink-muted truncate">In {w.checkIn} · {w.step} · {w.nurse}</div>
-              </div>
-              <div className={`text-sm font-bold shrink-0 ${waitColor(w.wait)}`}>{w.wait}m</div>
-            </div>
-          ))}
+          {waiting.map((w) => {
+            const alert = w.wait >= WAIT_ALERT_MIN;
+            const step = w.step.replace("Waiting for ", "");
+            return (
+              // Name (interactive, in system blue) leads; the wait time moves
+              // down to the secondary line and is coloured only when it crosses
+              // the alert threshold — otherwise it stays neutral.
+              <button key={w.patient} onClick={() => nav("/patients")} className="w-full flex flex-col items-start gap-1 px-4 py-3 hover:bg-surface-page text-left">
+                <span className="text-sm font-semibold text-info-ink truncate w-full">{w.patient}</span>
+                <span className="text-xs text-ink-muted truncate w-full">
+                  <span className={`font-semibold tabular-nums ${alert ? "text-danger-ink" : "text-ink-soft"}`}>{w.wait}m</span>
+                  {" waiting · "}{step}{" · in at "}{w.checkIn}{" · "}{w.nurse}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </Section>
     </>

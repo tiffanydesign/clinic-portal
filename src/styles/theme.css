@@ -225,6 +225,11 @@
   --surface-hover:  #EEF1F8;                 /* hover / chip fill (was bg-gray-100/slate-100) */
   --surface-sunken: #E7EBF3;                 /* track / well / disabled (was bg-gray-200) */
   --border-strong:  rgba(32, 58, 133, 0.16); /* emphasised border (was border-gray-400/slate-400) */
+  /* Interior data-grid hairlines (schedule hour lines, column separators).
+     Deliberately fainter than --divider (.08) so the timetable's content —
+     appointment blocks, the now-line — reads first and the ruling recedes
+     into the background rather than competing with it. */
+  --grid-line:      rgba(32, 58, 133, 0.05);
 
   /* --- 4. RADIUS (2 tiers; rounded-full stays for pills/avatars) ----
      NOTE: distinct from Tailwind's inlined `rounded-sm/md` utilities
@@ -262,6 +267,7 @@
   /* lines */
   --color-divider: var(--divider);           /* border-divider  */
   --color-border-strong: var(--border-strong); /* border-border-strong (D-7) */
+  --color-grid-line: var(--grid-line);       /* border-grid-line — interior data-grid hairlines */
   /* status — one colour, one meaning.
      bg-/border-/dot use the signal colour; TEXT uses the -ink variant
      (text-success-ink …) so it clears 4.5:1 on tints. */

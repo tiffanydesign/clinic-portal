@@ -49,8 +49,8 @@ function RangeSwitcher({ range }: { range: TimeRange }) {
         <button
           key={r}
           onClick={() => setKpiRange(r)}
-          className={`px-3 py-1.5 text-xs font-bold rounded-control transition-colors ${
-            range === r ? "bg-[var(--phenome-blue-400)] text-white" : "text-ink-muted hover:text-ink-soft"
+          className={`px-3 py-1.5 text-xs font-bold rounded-control transition-all ${
+            range === r ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted hover:text-ink-soft"
           }`}
         >
           {RANGE_LABEL[r]}
