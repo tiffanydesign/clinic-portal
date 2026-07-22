@@ -240,12 +240,10 @@ export function overrideStatusPillClass(status: OverrideStatus | LeaveStatus): s
   }
 }
 
-export function kindBadgeClass(kind: PendingKind): string {
-  switch (kind) {
-    case "Schedule Change": return "bg-info/10 text-info-ink border-info/30";
-    case "Date Override": return "bg-special/10 text-special-ink border-special/30";
-    case "Leave": return "bg-warning/10 text-warning-ink border-warning/30";
-  }
+// One neutral style for every kind — the label text ("Leave", "Date Override",
+// "Schedule Change") says what it is; per-kind colours were visual noise.
+export function kindBadgeClass(_kind: PendingKind): string {
+  return "bg-surface-hover text-ink-soft border-divider";
 }
 
 export function leaveDateLabel(l: Pick<LeaveItem, "dateFrom" | "dateTo">): string {

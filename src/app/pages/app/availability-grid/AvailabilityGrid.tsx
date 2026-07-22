@@ -6,16 +6,17 @@ import type { GridCell, GridDay, GridRow } from "./types";
 
 const HEADER_COL_W = 232;
 
-// Heatmap tiers: all four derived from the existing emerald/success scale —
-// no new palette. Fully free sits at the lightest tier that's still visibly
-// green; the busier a "normal" (still has some free time) cell gets, the
-// closer its tint fades to white. Fully Booked is a separate status (plain
-// white + gray text below), not the bottom of this ramp.
+// Heatmap tiers: all four are soft, evenly-stepped tints of the success green
+// (no solid fill) so the ramp reads as one calm family that sits with the
+// system's muted palette — the old top tier used the full-saturation green,
+// which jumped hard off the lighter cells and clashed. More free time = a
+// slightly deeper (but still gentle) mint; busier cells fade toward white.
+// Fully Booked is a separate status (plain white + gray text), not this ramp.
 function heatmapClass(ratio: number): string {
-  if (ratio >= 0.7) return "bg-success";
+  if (ratio >= 0.7) return "bg-success/25";
   if (ratio >= 0.45) return "bg-success/15";
   if (ratio >= 0.2) return "bg-success/10";
-  return "bg-success/10";
+  return "bg-success/[0.06]";
 }
 
 // Faint diagonal hatch, used at two different weights: barely-there for Day

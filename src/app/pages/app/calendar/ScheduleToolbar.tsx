@@ -254,11 +254,11 @@ export function ScheduleToolbar({
               onClick={onNew}
               disabled={disableCreate}
               title={disableCreate ? "Only the demo day (Fri, 3 Jul 2026) has bookable data" : undefined}
-              className={`min-h-11 px-3.5 py-2 text-xs font-bold rounded-card shadow-sm flex items-center gap-1.5 transition-colors ${
+              className={`inline-flex items-center gap-2 h-9 px-3.5 rounded-control text-sm font-bold transition-colors ${
                 disableCreate ? "bg-surface-hover text-ink-muted cursor-not-allowed" : "btn-primary"
               }`}
             >
-              <CalendarPlus className="w-3.5 h-3.5" /> New Booking
+              <CalendarPlus className="w-4 h-4" /> New Booking
             </button>
           )}
           {role === "Clinician" && (
@@ -266,11 +266,11 @@ export function ScheduleToolbar({
               onClick={onBlock}
               disabled={disableCreate}
               title={disableCreate ? "Only the demo day (Fri, 3 Jul 2026) has bookable data" : undefined}
-              className={`px-3.5 py-2 text-xs font-bold rounded-card shadow-sm flex items-center gap-1.5 transition-colors ${
+              className={`inline-flex items-center gap-2 h-9 px-3.5 rounded-control text-sm font-bold transition-colors ${
                 disableCreate ? "bg-surface-hover text-ink-muted cursor-not-allowed" : "btn-primary"
               }`}
             >
-              <Plus className="w-3.5 h-3.5" /> Block Time
+              <Plus className="w-4 h-4" /> Block Time
             </button>
           )}
         </div>

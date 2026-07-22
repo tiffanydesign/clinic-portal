@@ -298,6 +298,22 @@
   --font-mono:  "TeX Gyre Heros", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
+/* ====================================================================
+   Sentence-case typography refresh (retire the all-caps + tracked labels)
+   --------------------------------------------------------------------
+   The portal no longer uses SHOUTING, letter-spaced micro-labels. Labels
+   read in their source (sentence) case with normal spacing; hierarchy is
+   carried by size + weight + a muted colour, not by capitals. These rules
+   are intentionally UNLAYERED so they win over Tailwind's `utilities`
+   layer, neutralizing the legacy `uppercase` / `tracking-*` utilities
+   wherever they still appear in markup. Add `normal-case`/`tracking-normal`
+   explicitly only if a specific spot ever needs the old look back.
+   ==================================================================== */
+.uppercase { text-transform: none; }
+.tracking-wide,
+.tracking-wider,
+.tracking-widest { letter-spacing: normal; }
+
 @layer components {
   /* Typography helper classes — the migration targets. Placed in the
      components layer so Tailwind utilities can still override when needed. */
@@ -306,9 +322,12 @@
   .text-body       { font-size: var(--text-body);       line-height: 1.4;  font-weight: 400; }
   .text-data       { font-size: var(--text-data);       line-height: 1.35; font-weight: 400; }
   .text-label      { font-size: var(--text-label);      line-height: 1.2;  font-weight: 500; }
+  /* Overline/label: sentence case now (no all-caps, no tracked-out spacing).
+     Hierarchy comes from the small size + weight + a muted colour at the call
+     site, not from shouting. */
   .text-overline   {
     font-size: var(--text-overline); line-height: 1.2; font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.06em;
+    letter-spacing: normal;
   }
   .kpi-value-lg { font-size: var(--kpi-value-lg); line-height: 1.1; font-weight: 600; font-variant-numeric: tabular-nums; }
   .kpi-value-sm { font-size: var(--kpi-value-sm); line-height: 1.1; font-weight: 600; font-variant-numeric: tabular-nums; }

@@ -125,7 +125,7 @@ function StatCard({ stat, range = "today", locked, clickable, icon, iconTone, on
 
   const label = rv.label ?? stat.label;
   const isLive = stat.kind === "live";
-  const pillText = isLive ? "LIVE" : RANGE_PILL[range];
+  const pillText = isLive ? "Live" : RANGE_PILL[range];
   const inverse = rv.inverse ?? stat.inverse ?? false;
   const Icon = icon;
   const interactive = clickable ?? true;
@@ -275,4 +275,4 @@ function StatPill({ stat, tone = "neutral", dot }: StatProps) {
 
 // Range pill text lives here (not kpiRangeStore) so the family owns every
 // string it renders.
-const RANGE_PILL: Record<TimeRange, string> = { today: "TODAY", "7d": "7D", "30d": "30D" };
+const RANGE_PILL: Record<TimeRange, string> = { today: "Today", "7d": "7d", "30d": "30d" };

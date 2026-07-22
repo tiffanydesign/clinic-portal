@@ -24,16 +24,10 @@ type PendingLeave = LeaveItem & { status: "Pending" };
 const reasonText = (l: Pick<LeaveItem, "reason" | "reasonOther">) =>
   l.reason === "Other" ? l.reasonOther ?? "Other" : l.reason;
 
-// Per-reason accent so the queue is scannable at a glance.
-function reasonBadgeClass(reason: LeaveReason): string {
-  switch (reason) {
-    case "Annual Leave": return "bg-info/10 text-info-ink border-info/30";
-    case "Sick Leave": return "bg-danger/10 text-danger-ink border-danger/30";
-    case "Conference / Training": return "bg-special/10 text-special-ink border-special/30";
-    case "Personal":
-    case "Other":
-    default: return "bg-surface-hover text-ink-soft border-divider";
-  }
+// One calm, neutral style for every leave reason — the category text itself
+// carries the meaning; a rainbow of per-reason colours only added noise.
+function reasonBadgeClass(_reason: LeaveReason): string {
+  return "bg-surface-hover text-ink-soft border-divider";
 }
 
 const unresolvedCount = (l: LeaveItem) => l.conflicts.filter((c) => !c.resolved).length;
@@ -76,7 +70,6 @@ function QueueRow({ leave, active, onOpen }: { leave: PendingLeave; active: bool
       <span className="flex-1 min-w-0">
         <span className="flex items-center gap-2">
           <span className="text-sm font-bold text-ink truncate">{EMPLOYEE_NAME}</span>
-          <span className={`px-1.5 py-0.5 text-overline rounded-control border shrink-0 ${kindBadgeClass("Leave")}`}>Leave</span>
         </span>
         <span className="flex items-center gap-1.5 mt-1 text-xs text-ink-muted">
           <CalendarDays className="w-3.5 h-3.5 text-ink-muted shrink-0" />
