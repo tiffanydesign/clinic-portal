@@ -14,7 +14,7 @@ export function ReceptionOverview({ patient }: { patient: PatientRecord }) {
   const checkInPill = patient.checkIn === "Checked In" ? "success" : patient.checkIn === "Waiting" ? "warning" : "default";
 
   return (
-    <div className="p-4 max-w-4xl mx-auto space-y-6">
+    <div className="p-4 space-y-6">
       <Card title="Patient Summary">
         <div className="grid grid-cols-3 gap-4">
           <Field label="Name" value={patient.name} />

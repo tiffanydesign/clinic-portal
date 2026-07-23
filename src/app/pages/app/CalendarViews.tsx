@@ -44,7 +44,7 @@ export function AvailabilityList() {
   const navigate = useNavigate();
 
   return (
-    <div className="p-4 w-full max-w-5xl mx-auto h-full overflow-y-auto">
+    <div className="p-4 w-full h-full overflow-y-auto">
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-2xl font-bold text-ink">Calendar &gt; My Availability</h1>
@@ -55,10 +55,10 @@ export function AvailabilityList() {
       <div className="max-w-md">
         <div
           onClick={() => navigate("/calendar/my-availability/clinic")}
-          className="bg-surface border border-divider rounded-card p-6 cursor-pointer hover:border-border-strong hover:shadow-md transition-all shadow-sm group"
+          className="bg-surface border border-divider rounded-card p-4 cursor-pointer hover:border-border-strong hover:shadow-md transition-all shadow-sm group"
         >
           <div className="flex justify-between items-start mb-4">
-            <h3 className="text-lg font-bold text-ink group-hover:text-ink-soft">Clinic Availability</h3>
+            <h3 className="text-lg font-bold text-ink group-hover:text-ink-soft">My Availability</h3>
             <span className="px-2 py-1 bg-success/10 border border-success/30 text-success-ink text-overline rounded-full">Default</span>
           </div>
           <div className="space-y-2">

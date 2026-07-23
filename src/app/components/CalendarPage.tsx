@@ -62,7 +62,7 @@ export function CalendarPage() {
                   <div 
                     key={a.id}
                     onClick={() => setSelectedApptId(a.id)}
-                    className={`absolute left-2 right-2 p-2 border rounded-control cursor-pointer ${selectedApptId === a.id ? 'border-border-strong bg-surface-page ring-1 ring-info' : 'border-border-strong bg-surface hover:bg-surface-page'}`}
+                    className={`absolute left-2 right-2 p-2 border rounded-control cursor-pointer ${selectedApptId === a.id ? 'border-border-strong bg-surface-page ring-1 ring-info' : 'border-border-strong bg-surface hover:bg-surface-hover'}`}
                     style={{ top: '10px', height: '60px' }}
                   >
                     <div className="text-xs font-bold text-ink">{a.time} - {a.type}</div>
@@ -76,7 +76,7 @@ export function CalendarPage() {
                   <div 
                     key={a.id}
                     onClick={() => setSelectedApptId(a.id)}
-                    className={`absolute left-2 right-2 p-2 border rounded-control cursor-pointer ${selectedApptId === a.id ? 'border-border-strong bg-surface-page ring-1 ring-info' : 'border-border-strong bg-surface hover:bg-surface-page'}`}
+                    className={`absolute left-2 right-2 p-2 border rounded-control cursor-pointer ${selectedApptId === a.id ? 'border-border-strong bg-surface-page ring-1 ring-info' : 'border-border-strong bg-surface hover:bg-surface-hover'}`}
                     style={{ top: '75px', height: '60px' }}
                   >
                     <div className="text-xs font-bold text-ink">{a.time} - {a.type}</div>
@@ -90,7 +90,7 @@ export function CalendarPage() {
                   <div 
                     key={a.id}
                     onClick={() => setSelectedApptId(a.id)}
-                    className={`absolute left-2 right-2 p-2 border rounded-control cursor-pointer ${selectedApptId === a.id ? 'border-border-strong bg-surface-page ring-1 ring-info' : 'border-border-strong bg-surface hover:bg-surface-page'}`}
+                    className={`absolute left-2 right-2 p-2 border rounded-control cursor-pointer ${selectedApptId === a.id ? 'border-border-strong bg-surface-page ring-1 ring-info' : 'border-border-strong bg-surface hover:bg-surface-hover'}`}
                     style={{ top: '140px', height: '124px' }}
                   >
                     <div className="text-xs font-bold text-ink">{a.time} - {a.type}</div>
@@ -167,7 +167,7 @@ export function CalendarPage() {
                 {selectedPatient.paymentComplete ? (
                   <span className="text-sm font-bold text-ink-soft">Complete</span>
                 ) : (
-                  <button onClick={handleSendPayment} className="text-xs px-2 py-1 border border-border-strong rounded-control bg-surface hover:bg-surface-page text-ink-soft">
+                  <button onClick={handleSendPayment} className="text-xs px-2 py-1 border border-border-strong rounded-control bg-surface hover:bg-surface-hover text-ink-soft">
                     Start Transaction
                   </button>
                 )}
@@ -181,7 +181,7 @@ export function CalendarPage() {
                 {selectedPatient.formsSigned ? (
                   <span className="text-sm font-bold text-ink-soft">Signed</span>
                 ) : (
-                  <button onClick={handleSendForm} className="text-xs px-2 py-1 border border-border-strong rounded-control bg-surface hover:bg-surface-page text-ink-soft">
+                  <button onClick={handleSendForm} className="text-xs px-2 py-1 border border-border-strong rounded-control bg-surface hover:bg-surface-hover text-ink-soft">
                     Send Form
                   </button>
                 )}
@@ -204,11 +204,11 @@ export function CalendarPage() {
                   {selectedAppt.status === 'Checked In' ? 'Checked In' : 'Check In Patient'}
                 </button>
                 <div className="flex space-x-2">
-                  <button className="flex-1 py-2 border border-divider rounded-control text-sm font-medium bg-surface hover:bg-surface-page text-ink-soft">
+                  <button className="flex-1 py-2 border border-divider rounded-control text-sm font-medium bg-surface hover:bg-surface-hover text-ink-soft">
                     Reschedule
                   </button>
                   {role === 'Admin' && (
-                    <button className="flex-1 py-2 border border-divider rounded-control text-sm font-medium bg-surface hover:bg-surface-page text-ink-soft">
+                    <button className="flex-1 py-2 border border-divider rounded-control text-sm font-medium bg-surface hover:bg-surface-hover text-ink-soft">
                       Cancel
                     </button>
                   )}

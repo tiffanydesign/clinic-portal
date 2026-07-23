@@ -238,7 +238,7 @@ function StatStripItem({ stat, icon, iconTone, active }: StatProps) {
       onClick={onActivate}
       className={`flex-1 min-w-0 min-h-[52px] max-h-14 flex items-center gap-2.5 text-left px-4 py-2 border-b-2 transition-colors ${
         active ? "border-ink" : "border-transparent"
-      } ${onActivate ? "hover:bg-surface-page cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-info focus-visible:ring-inset" : ""}`}
+      } ${onActivate ? "hover:bg-surface-hover cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-info focus-visible:ring-inset" : ""}`}
     >
       {Icon && (
         <span className={`w-7 h-7 rounded-control flex items-center justify-center shrink-0 ${ICON_TONE_CLASS[iconTone ?? "slate"]}`}>

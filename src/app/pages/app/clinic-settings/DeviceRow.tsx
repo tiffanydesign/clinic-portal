@@ -24,7 +24,7 @@ export function DeviceRow({ view, onOpen }: { view: DeviceView; onOpen: (v: Devi
   };
 
   return (
-    <tr className={`transition-colors cursor-pointer ${view.retired ? "bg-surface-page/40 hover:bg-surface-page" : "hover:bg-surface-page/60"}`} onClick={() => onOpen(view)}>
+    <tr className={`transition-colors cursor-pointer ${view.retired ? "bg-surface-page/40 hover:bg-surface-hover" : "hover:bg-surface-hover/60"}`} onClick={() => onOpen(view)}>
       <td className="px-4 py-3.5">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-card bg-surface-hover flex items-center justify-center shrink-0">

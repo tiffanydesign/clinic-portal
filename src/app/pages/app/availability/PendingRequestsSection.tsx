@@ -39,22 +39,29 @@ function DecisionRow({ d }: { d: Decision }) {
   );
 }
 
-export function PendingRequestsSection({ pending, decisions, onWithdraw }: {
+// `variant="bare"` drops this section's own card chrome + heading — used when
+// a host (e.g. the Requests popup) already supplies a dialog title, so the
+// content never renders inside a redundant double heading/card.
+export function PendingRequestsSection({ pending, decisions, onWithdraw, variant = "card" }: {
   pending: PendingRequest[];
   decisions: Decision[];
   onWithdraw: (req: PendingRequest) => void;
+  variant?: "card" | "bare";
 }) {
   const [showDecisions, setShowDecisions] = useState(false);
   const recentDecisions = decisions.slice(0, 5);
+  const bare = variant === "bare";
 
   return (
-    <div className="bg-surface rounded-card p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <h3 className="text-base font-bold text-ink">Pending Requests</h3>
-        {pending.length > 0 && (
-          <span className="px-2 py-0.5 bg-warning/15 text-warning-ink text-label font-bold rounded-full">{pending.length}</span>
-        )}
-      </div>
+    <div className={bare ? "" : "bg-surface rounded-card p-4"}>
+      {!bare && (
+        <div className="flex items-center gap-2 mb-4">
+          <h3 className="text-base font-bold text-ink">Request Centre</h3>
+          {pending.length > 0 && (
+            <span className="px-2 py-0.5 bg-warning/15 text-warning-ink text-label font-bold rounded-full">{pending.length}</span>
+          )}
+        </div>
+      )}
 
       {pending.length === 0 ? (
         <p className="text-sm text-ink-muted italic mb-4">No pending requests.</p>

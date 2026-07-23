@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import {
   Search, ChevronDown, Download, Plus, MoreHorizontal, FileText, Phone, Mail, UserPlus, X, Filter, Check, ArrowRight,
-  Users, UserCheck, UserX, Clock, CalendarCheck, CalendarClock, FlaskConical, Activity, type LucideIcon,
+  Users, UserCheck, UserX, Clock, CalendarCheck, CalendarClock, FlaskConical, Activity, Flag, AlertTriangle, Eye, type LucideIcon,
 } from "lucide-react";
 import { Stat, StatStripGroup, type StatIconTone } from "../../components/stat";
 import { toast } from "sonner";
@@ -17,6 +17,7 @@ import { primaryApptForPatient } from "./dashboard/dashboardData";
 import { useAppointments } from "./dashboard/appointmentsStore";
 import { JourneyProgressChip } from "./dashboard/journey/JourneyProgress";
 import { MOCK_STAFF } from "./staff/staffData";
+import { Input } from "../../components/ui/input";
 
 export type { Patient };
 export { MOCK_PATIENTS };
@@ -35,6 +36,10 @@ type StripItem = {
   icon: LucideIcon;
   tone: StatIconTone;
   alert?: boolean;
+  // When set, the strip item becomes a quick-filter toggle for the table
+  // below (SaaS pattern: click "5 Results to Review" to filter to those 5).
+  onClick?: () => void;
+  active?: boolean;
 };
 
 function KpiStrip({ items }: { items: StripItem[] }) {
@@ -44,9 +49,10 @@ function KpiStrip({ items }: { items: StripItem[] }) {
         {items.map((s) => (
           <Stat
             key={s.id}
-            stat={{ id: s.id, label: s.label, kind: "count", variant: "strip", value: s.value, suffix: s.sub, alert: s.alert }}
+            stat={{ id: s.id, label: s.label, kind: "count", variant: "strip", value: s.value, suffix: s.sub, alert: s.alert, onClick: s.onClick }}
             icon={s.icon}
             iconTone={s.tone}
+            active={s.active}
           />
         ))}
       </StatStripGroup>
@@ -83,6 +89,9 @@ export function PatientsPage() {
   const [flagFilter, setFlagFilter] = useState("Flag: All");
   const [nextApptFilter, setNextApptFilter] = useState("Next Appt: All");
   const [journeyFilter, setJourneyFilter] = useState("Journey Status: All");
+  // Clinician quick-filter driven by the KPI strip: clicking a stat card
+  // ("Results to Review" / "Follow-ups Due") filters the table to those rows.
+  const [quickFilter, setQuickFilter] = useState<null | "review" | "followup">(null);
 
   // Filters based on Role. Reads the live registry (not the static
   // MOCK_PATIENTS array) so a patient registered a second ago is immediately
@@ -97,6 +106,16 @@ export function PatientsPage() {
 
   if (search) {
     patients = patients.filter(p => p.name.toLowerCase().includes(search.toLowerCase()) || p.patientId.toLowerCase().includes(search.toLowerCase()));
+  }
+
+  // KPI quick-filter (Clinician): the "Results to Review" / "Follow-ups Due"
+  // cards act as one-click filters onto the table below.
+  if (role === 'Clinician' && quickFilter) {
+    patients = patients.filter(p =>
+      quickFilter === 'review'
+        ? (p.reviewStatus === 'Results Pending' || p.reviewStatus === 'Awaiting Sign-off')
+        : p.reviewStatus === 'Follow-up Due'
+    );
   }
 
   const toggleSelectAll = () => {
@@ -129,7 +148,7 @@ export function PatientsPage() {
         </div>
         <div className="flex space-x-3">
           {role === 'Admin' && (
-            <button className="flex items-center px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-page transition-colors shadow-sm">
+            <button className="flex items-center px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover transition-colors shadow-sm">
               <Download className="w-4 h-4 mr-2 text-ink-muted" /> Export
             </button>
           )}
@@ -152,7 +171,7 @@ export function PatientsPage() {
       <div className="bg-surface border-b border-divider px-6 py-3 flex items-center shrink-0 space-x-4">
         <div className="relative w-[280px]">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, ID, email..." className="w-full pl-9 pr-3 py-2 border border-divider rounded-control text-sm outline-none focus:border-info bg-surface shadow-sm" />
+          <Input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, ID, email..." className="pl-9 focus:border-info shadow-sm" />
         </div>
         <FilterSelect value={statusFilter} onChange={setStatusFilter} options={["Status: All", "Active", "Inactive", "New", "Pending Onboarding"]} />
         <FilterSelect value={clinicianFilter} onChange={setClinicianFilter} options={CLINICIAN_NAME_OPTIONS} />
@@ -165,7 +184,7 @@ export function PatientsPage() {
       <div className="bg-surface border-b border-divider px-6 py-3 flex items-center shrink-0 space-x-4">
         <div className="relative w-[280px]">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, phone, appt..." className="w-full pl-9 pr-3 py-2 border border-divider rounded-control text-sm outline-none focus:border-info bg-surface shadow-sm" />
+          <Input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, phone, appt..." className="pl-9 focus:border-info shadow-sm" />
         </div>
         <div className="flex bg-surface-hover p-1 rounded-control mr-2">
           <button className="px-4 py-1 text-sm font-medium rounded-control text-ink-muted hover:text-ink-soft">All Patients</button>
@@ -181,7 +200,7 @@ export function PatientsPage() {
       <div className="bg-surface border-b border-divider px-6 py-3 flex items-center shrink-0 space-x-4">
         <div className="relative w-[280px]">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search my patients..." className="w-full pl-9 pr-3 py-2 border border-divider rounded-control text-sm outline-none focus:border-info bg-surface shadow-sm" />
+          <Input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search my patients..." className="pl-9 focus:border-info shadow-sm" />
         </div>
         <FilterSelect value={reviewFilter} onChange={setReviewFilter} options={["Review Status: All", "Results Pending Review", "Awaiting Sign-off"]} />
         <FilterSelect value={flagFilter} onChange={setFlagFilter} options={["Flag: All", "Urgent", "Follow-up"]} />
@@ -193,7 +212,7 @@ export function PatientsPage() {
       <div className="bg-surface border-b border-divider px-6 py-3 flex items-center shrink-0 space-x-4">
         <div className="relative w-[280px]">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
-          <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search my patients..." className="w-full pl-9 pr-3 py-2 border border-divider rounded-control text-sm outline-none focus:border-info bg-surface shadow-sm" />
+          <Input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search my patients..." className="pl-9 focus:border-info shadow-sm" />
         </div>
         <div className="flex bg-surface-hover p-1 rounded-control mr-2">
           <button className="px-4 py-1 text-sm font-bold rounded-control bg-surface text-ink shadow-sm">Today's Patients</button>
@@ -220,9 +239,9 @@ export function PatientsPage() {
     ]} />;
 
     if (role === 'Clinician') return <KpiStrip items={[
-      { id: "my-patients", value: String(patients.length), label: "My Patients", sub: "assigned to you", icon: Users, tone: "slate" },
-      { id: "results-to-review", value: "5", label: "Results to Review", sub: "2 urgent", icon: FlaskConical, tone: "red", alert: true },
-      { id: "follow-ups-due", value: "3", label: "Follow-ups Due", sub: "within next 7 days", icon: CalendarClock, tone: "blue" },
+      { id: "my-patients", value: String(patients.length), label: "My Patients", sub: "assigned to you", icon: Users, tone: "slate", onClick: () => setQuickFilter(null), active: quickFilter === null },
+      { id: "results-to-review", value: "5", label: "Results to Review", sub: "2 urgent", icon: FlaskConical, tone: "red", alert: true, onClick: () => setQuickFilter(q => q === "review" ? null : "review"), active: quickFilter === "review" },
+      { id: "follow-ups-due", value: "3", label: "Follow-ups Due", sub: "within next 7 days", icon: CalendarClock, tone: "blue", onClick: () => setQuickFilter(q => q === "followup" ? null : "followup"), active: quickFilter === "followup" },
     ]} />;
 
     if (role === 'Nurse') return <KpiStrip items={[
@@ -328,7 +347,7 @@ export function PatientsPage() {
                           <p className="mb-4">Nobody matches “{search}”.</p>
                           <button
                             onClick={() => openRegister(search)}
-                            className="inline-flex items-center gap-2 min-h-11 px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-page hover:border-border-strong transition-colors shadow-sm"
+                            className="inline-flex items-center gap-2 min-h-11 px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover hover:border-border-strong transition-colors shadow-sm"
                           >
                             <UserPlus className="w-4 h-4 text-ink-muted" /> Register “{search}” as new patient
                           </button>
@@ -343,7 +362,7 @@ export function PatientsPage() {
                   </tr>
                 ) : patients.map(p => {
                   const isSelected = selectedIds.has(p.id);
-                  let rowBg = "bg-surface hover:bg-surface-page";
+                  let rowBg = "bg-surface hover:bg-surface-hover";
                   if (isSelected) rowBg = "bg-surface-page";
 
                   // Reception visual cues
@@ -358,19 +377,19 @@ export function PatientsPage() {
                       className={`cursor-pointer group relative transition-colors ${rowBg}`}
                     >
                       {role === 'Admin' && (
-                        <td className="p-4 border-r border-divider sticky left-0 z-10 shadow-[1px_0_0_var(--border-strong)] bg-surface group-hover:bg-surface-page transition-colors w-[40px]" onClick={e => e.stopPropagation()}>
+                        <td className="p-4 border-r border-divider sticky left-0 z-10 shadow-[1px_0_0_var(--border-strong)] bg-surface group-hover:bg-surface-hover transition-colors w-[40px]" onClick={e => e.stopPropagation()}>
                           <input type="checkbox" checked={isSelected} onChange={(e) => toggleSelect(p.id, e as any)} className="rounded-control text-ink-soft focus:ring-info" />
                         </td>
                       )}
                       
-                      <td className={`p-4 border-r border-divider sticky z-10 shadow-[1px_0_0_var(--border-strong)] bg-surface group-hover:bg-surface-page transition-colors w-[180px] ${role === 'Admin' ? 'left-[40px]' : 'left-0'}`}>
+                      <td className={`p-4 border-r border-divider sticky z-10 shadow-[1px_0_0_var(--border-strong)] bg-surface group-hover:bg-surface-hover transition-colors w-[180px] ${role === 'Admin' ? 'left-[40px]' : 'left-0'}`}>
                         <div className="flex items-center">
                           <div className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-xs font-bold text-ink-soft shrink-0 mr-3">
                             {p.avatar}
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="text-sm font-bold text-ink truncate leading-tight group-hover:underline">{p.name}</div>
-                            <div className="text-label text-ink-muted">{p.patientId}</div>
+                            <div className="text-label text-ink-muted tabular-nums">{p.patientId}</div>
                           </div>
                         </div>
                       </td>
@@ -379,10 +398,10 @@ export function PatientsPage() {
                       {role === 'Admin' && (
                         <>
                           <td className="p-4">
-                            <div className="font-medium text-ink">{p.phone}</div>
+                            <div className="font-medium text-ink tabular-nums">{p.phone}</div>
                             <div className="text-label text-ink-muted">{p.email}</div>
                           </td>
-                          <td className="p-4 text-ink-soft font-medium">{ageSexLabel(p)}</td>
+                          <td className="p-4 text-ink-soft font-medium tabular-nums">{ageSexLabel(p)}</td>
                           <td className="p-4">
                             <span className={`px-2 py-0.5 text-label font-bold rounded-control
                               ${p.group === 'VIP' ? 'bg-warning/15 text-warning-ink' :
@@ -403,10 +422,10 @@ export function PatientsPage() {
                               {p.status}
                             </span>
                           </td>
-                          <td className={`p-4 ${p.lastVisit === 'Never' ? 'text-ink-muted italic' : 'text-ink-soft font-medium'}`}>{p.lastVisit}</td>
-                          <td className="p-4 text-ink-soft">{p.nextAppt || '—'}</td>
+                          <td className={`p-4 tabular-nums ${p.lastVisit === 'Never' ? 'text-ink-muted italic' : 'text-ink-soft font-medium'}`}>{p.lastVisit}</td>
+                          <td className="p-4 text-ink-soft tabular-nums">{p.nextAppt || '—'}</td>
                           <td className="p-4 text-center">
-                            <button onClick={(e) => { e.stopPropagation(); toast('Open actions menu'); }} className="p-2 text-ink-muted hover:text-ink hover:bg-surface-sunken rounded-control transition-colors">
+                            <button onClick={(e) => { e.stopPropagation(); toast('Open actions menu'); }} className="inline-flex items-center justify-center w-9 h-9 text-ink-muted hover:text-ink hover:bg-surface-sunken rounded-control transition-colors touch-extend">
                               <MoreHorizontal className="w-4 h-4" />
                             </button>
                           </td>
@@ -473,23 +492,32 @@ export function PatientsPage() {
                       {/* --- Clinician Cols --- */}
                       {role === 'Clinician' && (
                         <>
-                          <td className="p-4 text-ink-soft font-medium">{ageSexLabel(p)}</td>
+                          <td className="p-4 text-ink-soft font-medium tabular-nums">{ageSexLabel(p)}</td>
+                          {/* Not colour-only: each flag pairs a distinct outline icon
+                              (shape) with its tone, so colour-blind users still read it. */}
                           <td className="p-4 text-center" onClick={e => e.stopPropagation()}>
-                            {p.flag === 'Urgent' && <div className="w-5 h-5 rounded-full bg-danger/15 flex items-center justify-center cursor-pointer touch-extend"><div className="w-2.5 h-2.5 bg-danger rounded-full" /></div>}
-                            {p.flag === 'Follow-up' && <div className="w-5 h-5 rounded-full bg-warning/15 flex items-center justify-center cursor-pointer touch-extend"><div className="w-2.5 h-2.5 bg-warning rounded-full" /></div>}
-                            {p.flag === 'Watch' && <div className="w-5 h-5 rounded-full bg-warning/15 flex items-center justify-center cursor-pointer touch-extend"><div className="w-2.5 h-2.5 bg-warning rounded-full" /></div>}
-                            {p.flag === 'No flag' && <div className="w-5 h-5 rounded-full border-2 border-divider flex items-center justify-center cursor-pointer hover:border-border-strong touch-extend" />}
+                            {p.flag === 'Urgent' && <span title="Urgent" className="inline-flex items-center justify-center w-8 h-8 rounded-control text-danger-ink hover:bg-danger/10 cursor-pointer touch-extend"><AlertTriangle className="w-4 h-4" /></span>}
+                            {p.flag === 'Follow-up' && <span title="Follow-up" className="inline-flex items-center justify-center w-8 h-8 rounded-control text-warning-ink hover:bg-warning/10 cursor-pointer touch-extend"><Flag className="w-4 h-4" /></span>}
+                            {p.flag === 'Watch' && <span title="Watch" className="inline-flex items-center justify-center w-8 h-8 rounded-control text-warning-ink hover:bg-warning/10 cursor-pointer touch-extend"><Eye className="w-4 h-4" /></span>}
+                            {p.flag === 'No flag' && <span className="text-ink-muted">—</span>}
                           </td>
                           <td className="p-4">
-                            <span className={`px-2 py-0.5 text-overline rounded-control border
-                              ${p.reviewStatus === 'Results Pending' ? 'bg-info/10 text-info-ink border-info/30' :
-                                p.reviewStatus === 'Awaiting Sign-off' ? 'bg-warning/10 text-warning-ink border-warning/30' :
-                                p.reviewStatus === 'Follow-up Due' ? 'bg-special/10 text-special-ink border-special/30' :
-                                'bg-success/10 text-success-ink border-success/30'}`}>
-                              {p.reviewStatus}
-                            </span>
+                            {/* The normal/default "Up to Date" state must not consume
+                                attention: render it as the faintest plain grey text (no
+                                pill, no colour). Saturated status pills are reserved for
+                                the states a clinician must act on. */}
+                            {(p.reviewStatus === 'Results Pending' || p.reviewStatus === 'Awaiting Sign-off' || p.reviewStatus === 'Follow-up Due') ? (
+                              <span className={`px-2 py-0.5 text-overline rounded-control border
+                                ${p.reviewStatus === 'Results Pending' ? 'bg-info/10 text-info-ink border-info/30' :
+                                  p.reviewStatus === 'Awaiting Sign-off' ? 'bg-warning/10 text-warning-ink border-warning/30' :
+                                  'bg-special/10 text-special-ink border-special/30'}`}>
+                                {p.reviewStatus}
+                              </span>
+                            ) : (
+                              <span className="text-xs text-ink-muted">{p.reviewStatus}</span>
+                            )}
                           </td>
-                          <td className="p-4 text-ink-soft font-medium">{p.lastVisit}</td>
+                          <td className="p-4 text-ink-soft font-medium tabular-nums">{p.lastVisit}</td>
                           <td className="p-4">
                             {p.nextAppt ? (
                               <div>
@@ -499,7 +527,7 @@ export function PatientsPage() {
                             ) : <span className="text-ink-muted">—</span>}
                           </td>
                           <td className="p-4 text-center">
-                            <button onClick={(e) => { e.stopPropagation(); toast('Open actions menu'); }} className="p-2 text-ink-muted hover:text-ink hover:bg-surface-sunken rounded-control transition-colors">
+                            <button onClick={(e) => { e.stopPropagation(); toast('Open actions menu'); }} className="inline-flex items-center justify-center w-9 h-9 text-ink-muted hover:text-ink hover:bg-surface-sunken rounded-control transition-colors touch-extend">
                               <MoreHorizontal className="w-4 h-4" />
                             </button>
                           </td>

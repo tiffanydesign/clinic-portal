@@ -12,7 +12,7 @@ type WithdrawTarget = { id: string };
 // still pending, and what's already been decided and why. Reuses the exact
 // same store and section component the My Availability page's Request
 // Centre uses, so this can never show a different answer than that page.
-// Weekly Hours and Date Override apply instantly now, so the only thing
+// Weekly Hours and Blocked Time apply instantly now, so the only thing
 // that can ever be pending here is Leave.
 export function ClinicianRequestsPage() {
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ export function ClinicianRequestsPage() {
 
   return (
     <div className="h-full overflow-y-auto bg-surface-page">
-      <div className="px-6 py-6 border-b border-divider bg-surface flex items-center justify-between">
+      <div className="px-6 py-4 border-b border-divider bg-surface flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-ink">My Requests</h1>
           <p className="text-sm text-ink-muted mt-1">Availability changes you've submitted, and their approval status.</p>
@@ -42,7 +42,7 @@ export function ClinicianRequestsPage() {
         </button>
       </div>
 
-      <div className="p-4 max-w-2xl mx-auto">
+      <div className="p-4">
         <PendingRequestsSection
           pending={pending}
           decisions={store.decisions}

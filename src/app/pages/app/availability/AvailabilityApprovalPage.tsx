@@ -11,7 +11,7 @@ import {
 import { useAvailabilityStore, availabilityActions } from "./availabilityStore";
 import { RejectReasonModal } from "./RejectReasonModal";
 
-// Weekly Hours and Date Override both apply instantly now (see
+// Weekly Hours and Blocked Time both apply instantly now (see
 // availabilityStore.ts) — Leave is the only request kind that still needs a
 // real Admin decision, so this queue only ever shows Leave. Every pending
 // leave in the demo is submitted by the signed-in clinician.
@@ -61,7 +61,7 @@ function QueueRow({ leave, active, onOpen }: { leave: PendingLeave; active: bool
     <button
       onClick={onOpen}
       className={`group w-full text-left flex items-center gap-4 px-4 py-3.5 transition-colors ${
-        active ? "bg-surface-page" : "hover:bg-surface-page"
+        active ? "bg-surface-page" : "hover:bg-surface-hover"
       }`}
     >
       <span className="w-10 h-10 rounded-full bg-surface-sunken text-ink-soft flex items-center justify-center text-xs font-bold shrink-0">
@@ -101,7 +101,7 @@ function ConflictList({ conflicts, onResolve }: { conflicts: BookedAppt[]; onRes
           </div>
           {!c.resolved && (
             <div className="flex gap-2 mt-2">
-              <button onClick={() => { onResolve(i); toast.success("Appointment rescheduled (demo)."); }} className="px-2.5 py-1 text-label font-bold text-ink-soft border border-divider bg-surface rounded-control hover:bg-surface-page">Reschedule</button>
+              <button onClick={() => { onResolve(i); toast.success("Appointment rescheduled (demo)."); }} className="px-2.5 py-1 text-label font-bold text-ink-soft border border-divider bg-surface rounded-control hover:bg-surface-hover">Reschedule</button>
               <button onClick={() => { onResolve(i); toast.success("Appointment cancelled (demo)."); }} className="px-2.5 py-1 text-label font-bold text-danger-ink border border-danger/30 bg-surface rounded-control hover:bg-danger/10">Cancel</button>
             </div>
           )}
@@ -260,11 +260,11 @@ export function AvailabilityApprovalPage() {
   };
 
   return (
-    <div className="p-4 max-w-4xl mx-auto h-full overflow-y-auto">
+    <div className="p-4 h-full overflow-y-auto">
       {/* L1 — Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-ink">Approvals</h1>
-        <p className="text-sm text-ink-muted mt-1">Leave requests awaiting your decision. Weekly hours and date overrides apply instantly and never need approval.</p>
+        <p className="text-sm text-ink-muted mt-1">Leave requests awaiting your decision. Weekly hours and Blocked Time apply instantly and never need approval.</p>
       </div>
 
       {/* L2 — Overview */}

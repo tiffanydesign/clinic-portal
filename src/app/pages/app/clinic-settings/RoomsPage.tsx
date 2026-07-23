@@ -45,7 +45,7 @@ function RoomRow({ room, index, total, devices, onOpen, onEdit, onDeactivate, on
 }) {
   const inactive = room.status === "inactive";
   return (
-    <tr className={`transition-colors cursor-pointer ${inactive ? "bg-surface-page/40 hover:bg-surface-page" : "hover:bg-surface-page/60"}`} onClick={onOpen}>
+    <tr className={`transition-colors cursor-pointer ${inactive ? "bg-surface-page/40 hover:bg-surface-hover" : "hover:bg-surface-hover/60"}`} onClick={onOpen}>
       <td className="px-3 py-3.5 w-10" onClick={(e) => e.stopPropagation()}>
         <div className="flex flex-col">
           <button disabled={index === 0} onClick={() => reorderRoom(room.id, "up")} aria-label={`Move ${room.name} up`}

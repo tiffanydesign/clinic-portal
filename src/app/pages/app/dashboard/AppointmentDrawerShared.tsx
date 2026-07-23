@@ -197,7 +197,7 @@ export function SecondaryChip({ label, onClick, icon, danger }: {
     <button
       onClick={onClick}
       className={`px-3 py-1.5 text-xs font-bold rounded-full border transition-colors flex items-center gap-1.5 ${
-        danger ? "text-danger-ink border-danger/30 bg-danger/10 hover:bg-danger/15" : "text-ink-soft border-divider bg-surface hover:bg-surface-page"
+        danger ? "text-danger-ink border-danger/30 bg-danger/10 hover:bg-danger/15" : "text-ink-soft border-divider bg-surface hover:bg-surface-hover"
       }`}
     >
       {icon}{label}

@@ -101,7 +101,7 @@ export function UpNextPanel({
 
       <button
         onClick={() => setDrawerOpen(true)}
-        className="w-full flex items-center justify-between px-5 py-3 border-t border-divider text-xs font-bold text-ink-muted hover:bg-surface-page transition-colors rounded-b-2xl"
+        className="w-full flex items-center justify-between px-5 py-3 border-t border-divider text-xs font-bold text-ink-muted hover:bg-surface-hover transition-colors rounded-b-2xl"
       >
         <span>Completed today ({completed.length})</span>
         <ChevronRight className="w-3.5 h-3.5" />

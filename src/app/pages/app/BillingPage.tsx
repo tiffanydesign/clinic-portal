@@ -1,12 +1,55 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router";
-import { Search, ChevronDown, Download, MoreHorizontal, FileText, ArrowRight, CreditCard, Ticket, RefreshCcw, Calendar as CalendarIcon, CheckCircle2, AlertCircle, X } from "lucide-react";
+import { Search, ChevronDown, Download, MoreHorizontal, FileText, ArrowRight, CreditCard, Ticket, RefreshCcw, Calendar as CalendarIcon, CheckCircle2, AlertCircle, X, Wallet, Clock, TrendingUp } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAppContext } from "../../context/AppContext";
 import { FilterSelect } from "../../components/FilterSelect";
 import { MOCK_BILLING_DATA as MOCK_DATA } from "./billingData";
+import { Input } from "../../components/ui/input";
 
 const formatCurrency = (amount: number) => `₺${amount.toLocaleString()}`;
+
+// Compact summary KPI — a single tight row (icon chip + label / value /
+// meta) rather than the old tall p-4 card, so the four figures cost far less
+// vertical space and the table gets more of the iPad viewport. A semantic
+// icon + tone carries "what kind of number" at a glance; an optional accent
+// (green up-trend / red risk) rides on the meta line instead of a second row.
+const KPI_TONE: Record<"emerald" | "amber" | "blue" | "red", string> = {
+  emerald: "bg-success/10 text-success-ink",
+  amber: "bg-warning/10 text-warning-ink",
+  blue: "bg-info/10 text-info-ink",
+  red: "bg-danger/10 text-danger-ink",
+};
+
+function BillingKpi({ icon: Icon, tone, label, value, sub, accent }: {
+  icon: LucideIcon;
+  tone: keyof typeof KPI_TONE;
+  label: string;
+  value: string;
+  sub: string;
+  accent?: { text: string; tone: "red" | "green" };
+}) {
+  return (
+    <div className="bg-surface rounded-card border border-divider p-3 flex items-center gap-3 min-w-0">
+      <div className={`w-9 h-9 rounded-card flex items-center justify-center shrink-0 ${KPI_TONE[tone]}`}>
+        <Icon className="w-4 h-4" />
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="text-overline text-ink-muted leading-tight truncate">{label}</div>
+        <div className="text-2xl font-bold text-ink leading-tight tabular-nums">{value}</div>
+        <div className="text-xs text-ink-muted leading-tight truncate flex items-center gap-1.5 mt-0.5">
+          <span className="truncate">{sub}</span>
+          {accent && (
+            <span className={`font-bold shrink-0 ${accent.tone === "red" ? "text-danger-ink" : "text-success-ink"}`}>
+              {accent.text}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function BillingPage() {
   const { role } = useAppContext();
@@ -49,7 +92,7 @@ export function BillingPage() {
     <div className="flex flex-col min-h-full bg-surface-page">
 
       {/* Top Header Row */}
-      <div className="bg-surface border-b border-divider px-6 py-4 flex justify-between items-center shrink-0">
+      <div className="bg-surface border-b border-divider px-6 py-3 flex justify-between items-center shrink-0">
         <div>
           <h1 className="text-2xl font-bold text-ink">Billing</h1>
           <p className="text-sm text-ink-muted mt-1">
@@ -77,14 +120,16 @@ export function BillingPage() {
         )}
       </div>
 
-      {/* Toolbar Row */}
-      <div className="bg-surface border-b border-divider px-6 py-3 flex items-center justify-between shrink-0 space-x-4">
+      {/* Toolbar Row — all four filter controls share one language: same
+          height, border, radius and shadow as FilterSelect, so the search box,
+          date picker and segmented tabs read as a single control family. */}
+      <div className="bg-surface border-b border-divider px-6 py-2.5 flex items-center justify-between shrink-0 gap-4">
         <div className="relative w-[280px]">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
-          <input type="text" placeholder="Search ID or patient..." className="w-full pl-9 pr-3 py-2 border border-divider rounded-control text-sm outline-none focus:border-info bg-surface shadow-sm" />
+          <Input type="text" placeholder="Search ID or patient..." className="pl-9 shadow-sm hover:border-border-strong" />
         </div>
 
-        <div className="flex items-center space-x-3 flex-1">
+        <div className="flex items-center gap-3 flex-1">
           <FilterSelect
             value={statusFilter}
             onChange={setStatusFilter}
@@ -98,52 +143,29 @@ export function BillingPage() {
             options={["Method: All", "Card", "Voucher"]}
           />
 
-          <div className="flex items-center px-3 py-2 border border-divider rounded-control text-sm text-ink-soft bg-surface shadow-sm cursor-pointer hover:border-border-strong">
-            <CalendarIcon className="w-4 h-4 text-ink-muted mr-2" />
+          <button className="inline-flex items-center gap-2 px-3 py-1.5 border border-divider rounded-control text-sm text-ink-soft bg-surface shadow-sm transition-colors hover:border-border-strong">
+            <CalendarIcon className="w-4 h-4 text-ink-muted" />
             <span className="font-bold">1 Jul – 7 Jul 2026</span>
-          </div>
+          </button>
         </div>
 
-        <div className="flex bg-surface-hover p-1 rounded-control">
-          <button className="px-4 py-1 text-sm font-medium rounded-control text-ink-muted hover:text-ink-soft">All</button>
-          <button className="px-4 py-1 text-sm font-bold rounded-control bg-surface text-ink shadow-sm">Today</button>
-          <button className="px-4 py-1 text-sm font-medium rounded-control text-ink-muted hover:text-ink-soft">This Week</button>
+        <div className="inline-flex items-center bg-surface-hover border border-divider rounded-card p-0.5 shrink-0">
+          <button className="px-3 py-1.5 text-xs font-bold rounded-control text-ink-muted hover:text-ink-soft transition-colors">All</button>
+          <button className="px-3 py-1.5 text-xs font-bold rounded-control bg-surface text-ink-soft shadow-sm transition-all">Today</button>
+          <button className="px-3 py-1.5 text-xs font-bold rounded-control text-ink-muted hover:text-ink-soft transition-colors">This Week</button>
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="px-6 py-4 shrink-0 grid grid-cols-4 gap-6">
-        <div className="bg-surface rounded-card p-4">
-          <div className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Today's Collections</div>
-          <div className="text-3xl font-bold text-ink">₺12,400</div>
-          <div className="text-sm text-ink-muted mt-1 font-medium">8 payments received</div>
-        </div>
-        <div className="bg-surface rounded-card p-4">
-          <div className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Awaiting Payment</div>
-          <div className="text-3xl font-bold text-ink">3</div>
-          <div className="text-sm text-ink-muted mt-1 font-medium flex items-center justify-between">
-            ₺4,200 outstanding
-            <span className="text-xs text-danger-ink font-bold ml-2 truncate">2 due before check-in</span>
-          </div>
-        </div>
+      {/* KPI Cards — compact single-row stat strip. Column count tracks the
+          role so Reception's two cards fill the width instead of leaving two
+          empty grid cells. */}
+      <div className={`px-6 py-3 shrink-0 grid gap-3 ${isAdmin ? "grid-cols-4" : "grid-cols-2"}`}>
+        <BillingKpi icon={Wallet} tone="emerald" label="Today's Collections" value="₺12,400" sub="8 payments received" />
+        <BillingKpi icon={Clock} tone="amber" label="Awaiting Payment" value="3" sub="₺4,200 outstanding" accent={{ text: "2 due before check-in", tone: "red" }} />
         {isAdmin && (
           <>
-            <div className="bg-surface rounded-card p-4">
-              <div className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Monthly Revenue</div>
-              <div className="text-3xl font-bold text-ink">₺186,500</div>
-              <div className="flex items-center justify-between mt-1">
-                <span className="text-sm text-ink-muted font-medium">Jul 2026</span>
-                <span className="text-xs text-success-ink font-bold">↑ 8% vs Jun</span>
-              </div>
-            </div>
-            <div className="bg-surface rounded-card p-4">
-              <div className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Outstanding Balance</div>
-              <div className="text-3xl font-bold text-ink">₺24,800</div>
-              <div className="flex items-center justify-between mt-1">
-                <span className="text-sm text-ink-muted font-medium">across 14 patients</span>
-                <span className="text-xs text-danger-ink font-bold">3 overdue &gt; 30 days</span>
-              </div>
-            </div>
+            <BillingKpi icon={TrendingUp} tone="blue" label="Monthly Revenue" value="₺186,500" sub="Jul 2026" accent={{ text: "↑ 8% vs Jun", tone: "green" }} />
+            <BillingKpi icon={AlertCircle} tone="red" label="Outstanding Balance" value="₺24,800" sub="across 14 patients" accent={{ text: "3 overdue > 30 days", tone: "red" }} />
           </>
         )}
       </div>

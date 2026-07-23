@@ -53,7 +53,7 @@ export function ReceptionDashboardBody() {
             <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={() => setRegisterOpen(true)}
-                className="inline-flex items-center gap-2 h-9 px-3.5 rounded-control text-sm font-medium text-ink-soft border border-divider bg-surface hover:bg-surface-page hover:text-ink transition-colors"
+                className="inline-flex items-center gap-2 h-9 px-3.5 rounded-control text-sm font-medium text-ink-soft border border-divider bg-surface hover:bg-surface-hover hover:text-ink transition-colors"
               >
                 <UserPlus className="w-4 h-4" /> New Patient
               </button>

@@ -60,7 +60,7 @@ export function AdminPanels() {
               // Patient name is the single prominent element; the queue age
               // drops to a restrained tag on the secondary line rather than a
               // large red status competing with the name.
-              <button key={r.patient} onClick={() => nav("/patients/P-001/results")} className="w-full flex flex-col items-start gap-1 px-4 py-3 hover:bg-surface-page text-left">
+              <button key={r.patient} onClick={() => nav("/patients/P-001/results")} className="w-full flex flex-col items-start gap-1 px-4 py-3 hover:bg-surface-hover text-left">
                 <span className="text-sm font-semibold text-ink truncate w-full">{r.patient}</span>
                 <span className="flex items-center gap-2 min-w-0 w-full">
                   <span className="text-xs text-ink-muted truncate min-w-0">{r.test} · {r.doctor.replace("Dr. ", "")}</span>
@@ -90,7 +90,7 @@ export function AdminPanels() {
               // Name (interactive, in system blue) leads; the wait time moves
               // down to the secondary line and is coloured only when it crosses
               // the alert threshold — otherwise it stays neutral.
-              <button key={w.patient} onClick={() => nav("/patients")} className="w-full flex flex-col items-start gap-1 px-4 py-3 hover:bg-surface-page text-left">
+              <button key={w.patient} onClick={() => nav("/patients")} className="w-full flex flex-col items-start gap-1 px-4 py-3 hover:bg-surface-hover text-left">
                 <span className="text-sm font-semibold text-info-ink truncate w-full">{w.patient}</span>
                 <span className="text-xs text-ink-muted truncate w-full">
                   <span className={`font-semibold tabular-nums ${alert ? "text-danger-ink" : "text-ink-soft"}`}>{w.wait}m</span>

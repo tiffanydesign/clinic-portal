@@ -39,7 +39,7 @@ function ProgressBar({ done, total }: { done: number; total: number }) {
 function JourneyCard({ journey, patientId, showOpen }: { journey: Journey; patientId: string; showOpen: boolean }) {
   const navigate = useNavigate();
   return (
-    <div className="rounded-card bg-surface p-5 hover:bg-surface-page transition-colors">
+    <div className="rounded-card bg-surface p-5 border border-divider">
       <div className="flex items-start justify-between mb-4">
         <h3 className="text-sm font-bold text-ink">{journey.name}</h3>
         <StatusPill status={journey.status} type={journeyStatusPillType(journey.status)} />
@@ -64,7 +64,7 @@ function JourneyTableRow({ journey, patientId }: { journey: Journey; patientId: 
   const navigate = useNavigate();
   const { done, total } = journeyProgress(journey);
   return (
-    <tr onClick={() => navigate(`/patients/${patientId}/journeys/${journey.id}`)} className="hover:bg-surface-page cursor-pointer">
+    <tr onClick={() => navigate(`/patients/${patientId}/journeys/${journey.id}`)} className="hover:bg-surface-hover cursor-pointer">
       <td className="px-4 py-3 font-bold text-ink-soft">{journey.name}</td>
       <td className="px-4 py-3"><StatusPill status={journey.status} type={journeyStatusPillType(journey.status)} /></td>
       <td className="px-4 py-3 text-ink-soft">{journey.assignedClinician ?? "—"}</td>
@@ -88,7 +88,7 @@ export function JourneysTab() {
   // Nurse: card-based work queue. Clinician/Reception: compact read-oriented list.
   if (role === "Nurse" || (role !== "Admin" && view === "cards")) {
     return (
-      <div className="p-4 max-w-4xl mx-auto space-y-4">
+      <div className="p-4 space-y-4">
         {patient.journeys.map((j) => (
           <JourneyCard key={j.id} journey={j} patientId={patientId!} showOpen={role === "Nurse"} />
         ))}
@@ -97,7 +97,7 @@ export function JourneysTab() {
   }
 
   return (
-    <div className="p-4 max-w-6xl mx-auto">
+    <div className="p-4">
       {role === "Admin" && (
         <div className="flex justify-end mb-4">
           <div className="inline-flex bg-surface-hover rounded-control p-0.5 border border-divider">

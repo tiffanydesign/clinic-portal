@@ -90,7 +90,7 @@ export function ListView({ appts, onRowClick, selectedDate }: { appts: Appt[]; o
           </thead>
           <tbody className="divide-y divide-divider">
             {pageRows.map((a) => (
-              <tr key={a.id} onClick={() => onRowClick(a)} className="hover:bg-surface-page/80 cursor-pointer transition-colors">
+              <tr key={a.id} onClick={() => onRowClick(a)} className="hover:bg-surface-hover/80 cursor-pointer transition-colors">
                 <td className="px-4 py-3 text-ink-muted font-semibold whitespace-nowrap tabular-nums">{a.timeLabel.slice(0, 5)}</td>
                 <td className="px-4 py-3 font-semibold text-ink">{a.patient.name}</td>
                 <td className="px-4 py-3 text-ink-soft whitespace-nowrap">
@@ -118,9 +118,9 @@ export function ListView({ appts, onRowClick, selectedDate }: { appts: Appt[]; o
       <div className="p-3 border-t border-divider bg-surface-page/50 flex items-center justify-between shrink-0 text-sm">
         <span className="text-ink-muted font-medium">{filtered.length} appointment{filtered.length === 1 ? "" : "s"}</span>
         <div className="flex items-center gap-2">
-          <button disabled={page === 0} onClick={() => setPage((p) => p - 1)} className={`px-3 py-1.5 border rounded-control text-xs font-bold ${page === 0 ? "text-ink-muted border-divider cursor-not-allowed" : "text-ink-soft border-divider bg-surface hover:bg-surface-page shadow-sm"}`}>Prev</button>
+          <button disabled={page === 0} onClick={() => setPage((p) => p - 1)} className={`px-3 py-1.5 border rounded-control text-xs font-bold ${page === 0 ? "text-ink-muted border-divider cursor-not-allowed" : "text-ink-soft border-divider bg-surface hover:bg-surface-hover shadow-sm"}`}>Prev</button>
           <span className="text-ink-muted text-xs font-medium">Page {page + 1} of {pageCount}</span>
-          <button disabled={page >= pageCount - 1} onClick={() => setPage((p) => p + 1)} className={`px-3 py-1.5 border rounded-control text-xs font-bold ${page >= pageCount - 1 ? "text-ink-muted border-divider cursor-not-allowed" : "text-ink-soft border-divider bg-surface hover:bg-surface-page shadow-sm"}`}>Next</button>
+          <button disabled={page >= pageCount - 1} onClick={() => setPage((p) => p + 1)} className={`px-3 py-1.5 border rounded-control text-xs font-bold ${page >= pageCount - 1 ? "text-ink-muted border-divider cursor-not-allowed" : "text-ink-soft border-divider bg-surface hover:bg-surface-hover shadow-sm"}`}>Next</button>
         </div>
       </div>
     </div>

@@ -2,11 +2,10 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router";
 import { Video, ArrowRight, MapPin } from "lucide-react";
 import {
-  Appt, TODAY_SHORT, NOW_MINUTES, minToClock, apptStatusDotClass,
-  DAY_START_HOUR, DAY_END_HOUR, HOUR_PX, blockHeightPx, gapToNext, apptBlockClass,
+  Appt, ApptStatus, TODAY_SHORT, NOW_MINUTES, minToClock,
+  DAY_START_HOUR, DAY_END_HOUR, HOUR_PX, blockHeightPx, gapToNext,
 } from "./dashboardData";
 import { StatusPill } from "./DashboardShared";
-import { statusPillType } from "./dashboardData";
 import { videoJoinState } from "./clinicianDashboardData";
 import { JourneyProgressChip } from "./journey/JourneyProgress";
 
@@ -14,6 +13,29 @@ type ScheduleView = "list" | "calendar";
 
 function typeLabel(a: Appt): string {
   return a.type.replace(" (in-person)", "").replace(" (video)", "");
+}
+
+// Converges the shared five-hue ApptStatus palette to a calmer scheme for
+// THIS page only (Admin/Reception's clinic-wide calendar keeps the original
+// mapping via dashboardData's apptStatusDotClass/apptBlockClass) — routine
+// flow states (Booked/Arrived/Checked In/Completed/Cancelled) all read as
+// plain grey; colour is reserved for what's genuinely happening right now
+// (blue, matching ClinicianNowCard's "Now" accent) or needs the clinician's
+// attention (red, No Show only — same "exception colour" rule as Work
+// Queue's Overdue badge).
+function clinicianDotClass(status: ApptStatus): string {
+  if (status === "In Clinic") return "bg-info-ink animate-pulse";
+  if (status === "No Show") return "bg-danger";
+  return "bg-ink-muted/50";
+}
+function clinicianPillType(status: ApptStatus): "default" | "error" {
+  return status === "No Show" ? "error" : "default";
+}
+function clinicianBlockClass(status: ApptStatus): string {
+  if (status === "In Clinic") return "bg-info/10 border border-info/30";
+  if (status === "No Show") return "bg-danger/10 border border-dashed border-danger/30";
+  if (status === "Cancelled") return "bg-surface-page border border-divider line-through";
+  return "bg-surface border border-divider";
 }
 
 function StatusCell({ appt, isActive, hasActiveSession, onJoin }: {
@@ -24,16 +46,16 @@ function StatusCell({ appt, isActive, hasActiveSession, onJoin }: {
 }) {
   if (isActive) {
     return (
-      <span className="text-label font-bold text-warning-ink truncate block">
-        In Clinic · <JourneyProgressChip appt={appt} className="!text-warning-ink" />
+      <span className="text-label font-bold text-info-ink truncate block">
+        In Clinic · <JourneyProgressChip appt={appt} className="!text-info-ink" />
       </span>
     );
   }
   if (appt.status === "Completed" || appt.status === "Cancelled") {
-    return <StatusPill status={appt.status} type={statusPillType(appt.status)} />;
+    return <StatusPill status={appt.status} type={clinicianPillType(appt.status)} />;
   }
   if (appt.status === "No Show") {
-    return <StatusPill status={appt.status} type={statusPillType(appt.status)} />;
+    return <StatusPill status={appt.status} type={clinicianPillType(appt.status)} />;
   }
   if (appt.isVideo) {
     const gate = videoJoinState(appt, hasActiveSession);
@@ -52,7 +74,7 @@ function StatusCell({ appt, isActive, hasActiveSession, onJoin }: {
       </div>
     );
   }
-  return <StatusPill status={appt.status} type={statusPillType(appt.status)} />;
+  return <StatusPill status={appt.status} type={clinicianPillType(appt.status)} />;
 }
 
 function ScheduleRow({ appt, isActive, hasActiveSession, onOpen, onJoin }: {
@@ -66,11 +88,11 @@ function ScheduleRow({ appt, isActive, hasActiveSession, onOpen, onJoin }: {
   return (
     <div
       onClick={() => onOpen(appt.id)}
-      className={`px-4 py-3 cursor-pointer transition-colors ${isActive ? "bg-warning/10 hover:bg-warning/10" : "hover:bg-surface-page"}`}
+      className={`px-4 py-3 cursor-pointer transition-colors ${isActive ? "bg-info/5 hover:bg-info/5" : "hover:bg-surface-hover"}`}
     >
       <div className="flex items-center gap-3">
         <span className="text-xs font-bold text-ink-muted w-11 shrink-0 tabular-nums">{appt.timeLabel.slice(0, 5)}</span>
-        <span className={`w-2 h-2 rounded-full shrink-0 ${apptStatusDotClass(appt.status)}`} />
+        <span className={`w-2 h-2 rounded-full shrink-0 ${clinicianDotClass(appt.status)}`} />
         <div className={`min-w-0 flex-1 ${settled ? "opacity-60" : ""}`}>
           <div className={`text-data font-bold text-ink truncate ${appt.status === "Completed" ? "line-through" : ""}`}>{appt.patient.name}</div>
           <div className="text-xs text-ink-muted flex items-center gap-1 truncate">
@@ -146,10 +168,10 @@ function CalendarBlock({ appt, gapMin, isActive, onOpen }: { appt: Appt; gapMin?
     <button
       onClick={() => onOpen(appt.id)}
       style={{ top, height }}
-      className={`absolute left-1 right-1 px-2 py-1 text-left overflow-hidden hover:shadow-md hover:z-10 transition-shadow ${apptBlockClass(appt.status)} ${isActive ? "ring-2 ring-warning" : ""}`}
+      className={`absolute left-1 right-1 px-2 py-1 text-left overflow-hidden hover:shadow-md hover:z-10 transition-shadow rounded-card shadow-sm ${clinicianBlockClass(appt.status)} ${isActive ? "ring-2 ring-info" : ""}`}
     >
       <div className="flex items-center gap-1.5 min-w-0">
-        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${apptStatusDotClass(appt.status)}`} />
+        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${clinicianDotClass(appt.status)}`} />
         {appt.isVideo && <Video className="w-3 h-3 text-ink-muted shrink-0" />}
         <span className="text-label font-bold text-ink truncate">{appt.patient.name}</span>
       </div>
@@ -215,14 +237,19 @@ function ScheduleCalendarView({ appts, activeApptId, onOpen, scrollable }: {
   );
 }
 
+// Ghost/text buttons — no persistent track background, only a hover tint;
+// the active view is marked by a quiet underline (same idiom the Stat
+// family's T3 strip already uses for its own active-item indicator), not a
+// filled pill, so this tertiary control stays visually lighter than the
+// primary actions on the page.
 function ViewToggle({ view, onChange }: { view: ScheduleView; onChange: (v: ScheduleView) => void }) {
   return (
-    <div className="inline-flex bg-surface-hover p-0.5 rounded-card border border-divider shrink-0">
+    <div className="inline-flex items-center gap-3 shrink-0">
       {(["list", "calendar"] as ScheduleView[]).map((v) => (
         <button
           key={v}
           onClick={() => onChange(v)}
-          className={`px-2.5 py-1 text-label font-bold rounded-control transition-all capitalize ${view === v ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted hover:text-ink-soft"}`}
+          className={`px-1.5 py-1 text-label font-bold capitalize border-b-2 transition-colors ${view === v ? "text-ink border-ink" : "text-ink-muted border-transparent hover:text-ink-soft"}`}
         >
           {v}
         </button>

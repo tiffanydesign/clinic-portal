@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { getStaff } from "./staff/staffData";
+import { Input } from "../../components/ui/input";
 
 // --- Mock Data ---
 
@@ -108,13 +109,11 @@ function Pill({ tone = "neutral", icon, children }: { tone?: "green" | "neutral"
   );
 }
 
+// Thin pass-through over the shared Input — keeps this page's own call sites
+// (DataField-wrapped, label rendered externally) unchanged while retiring
+// the page-local raw <input> styling.
 function FlatInput({ className = "", ...props }: React.InputHTMLAttributes<HTMLInputElement>) {
-  return (
-    <input
-      className={`w-full rounded-control border border-divider px-3 py-1.5 text-sm text-ink outline-none focus:border-border-strong focus:ring-2 focus:ring-divider transition-colors ${className}`}
-      {...props}
-    />
-  );
+  return <Input className={className} {...props} />;
 }
 
 function FlatSelect({ className = "", children, ...props }: React.SelectHTMLAttributes<HTMLSelectElement>) {
@@ -262,10 +261,10 @@ export function ProfilePage() {
 
   return (
     <div className="bg-surface-page min-h-full">
-      <div className="w-full max-w-3xl mx-auto py-6 px-6 pb-6">
+      <div className="w-full py-6 px-6 pb-6">
 
         {/* SECTION 1 — User Profile */}
-        <FlatCard className="p-6">
+        <FlatCard className="p-4">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-4">
               <div
@@ -324,7 +323,7 @@ export function ProfilePage() {
         {/* SECTION 2 — Security */}
         <div className="mt-10">
           <SectionHeading>Security</SectionHeading>
-          <FlatCard className="p-6">
+          <FlatCard className="p-4">
             <div className="flex items-start justify-between gap-4 pb-6 border-b border-divider">
               <div>
                 <div className="text-sm font-medium text-ink">Two-Factor Authentication</div>
@@ -368,7 +367,7 @@ export function ProfilePage() {
         {/* SECTION 3 — Preferences */}
         <div className="mt-10">
           <SectionHeading>Preferences</SectionHeading>
-          <FlatCard className="p-6">
+          <FlatCard className="p-4">
             <div className="pb-6 border-b border-divider">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-xs font-semibold uppercase tracking-wider text-ink-muted">Locale & Formats</span>

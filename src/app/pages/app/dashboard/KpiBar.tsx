@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import {
-  Lock, X, Check, Settings2, CalendarClock, FileClock, UserCheck, Gauge, ScanLine, UserX,
+  Lock, Check, Settings2, CalendarClock, FileClock, UserCheck, Gauge, ScanLine, UserX,
   UserPlus, Clock, Users, BellRing, Activity, TestTube, FileSignature, DoorOpen,
   FileSearch, FileCheck2, Video, CalendarPlus,
 } from "lucide-react";
@@ -11,6 +11,8 @@ import { useAppContext } from "../../../context/AppContext";
 import { KPI_CONFIG, Kpi, metricKindLabel } from "./kpiData";
 import { Stat, type StatIconTone } from "../../../components/stat";
 import { TimeRange, useKpiRange, setKpiRange, RANGE_LABEL } from "./kpiRangeStore";
+import { Modal } from "../../../components/ui/modal";
+import { Button } from "../../../components/ui/button";
 
 // A small semantic icon+color per KPI — not a status/trend indicator (the
 // sparkline/delta already own that), just "what kind of thing is this
@@ -49,7 +51,7 @@ function RangeSwitcher({ range }: { range: TimeRange }) {
         <button
           key={r}
           onClick={() => setKpiRange(r)}
-          className={`px-3 py-1.5 text-xs font-bold rounded-control transition-all ${
+          className={`px-3 py-1.5 text-label font-bold rounded-control transition-all ${
             range === r ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted hover:text-ink-soft"
           }`}
         >
@@ -128,7 +130,7 @@ export function KpiControls({ kpi }: { kpi: KpiBarState }) {
       <RangeSwitcher range={kpi.range} />
       <button
         onClick={() => kpi.setCustomiseOpen(true)}
-        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-ink-soft border border-divider bg-surface rounded-control hover:bg-surface-page hover:border-border-strong transition-colors"
+        className="flex items-center gap-2 px-3 py-2 text-data font-medium text-ink-soft border border-divider bg-surface rounded-control hover:bg-surface-hover hover:border-border-strong transition-colors"
       >
         <Settings2 className="w-4 h-4" /> Customise KPIs
       </button>
@@ -195,101 +197,81 @@ function CustomiseModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-surface-sunken/30 backdrop-blur-sm flex items-center justify-center z-50 p-6" onClick={onClose}>
-      <div
-        className="bg-surface rounded-card shadow-2xl border border-divider w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="px-6 py-4 border-b border-divider flex justify-between items-center bg-surface-page shrink-0">
-          <div>
-            <h2 className="text-lg font-bold text-ink">Customise Your KPI Cards</h2>
-            <p className="text-sm text-ink-muted mt-0.5">
-              The first two cards are set by your clinic and cannot be changed. Choose two additional metrics below.
-            </p>
-          </div>
-          <button onClick={onClose} className="p-2 text-ink-muted hover:bg-surface-sunken rounded-full transition-colors">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-
-        <div className="px-6 pt-4 shrink-0">
-          <div className="text-xs text-ink-muted bg-surface-page border border-divider rounded-control px-3 py-2">
-            Live metrics always show current values regardless of the selected time range.
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-y-auto p-6 pt-4">
-          {/* Locked preview */}
-          <div className="mb-6">
-            <div className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-3">Default metrics (locked)</div>
-            <div className="grid grid-cols-2 gap-3">
-              {locked.map((kpi) => (
-                <div key={kpi.id} className="border border-divider rounded-control bg-surface-page p-3 flex items-center justify-between opacity-80">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-label font-bold text-ink-muted uppercase tracking-wider">{kpi.label}</span>
-                      <span className="px-1.5 py-0.5 rounded-control text-overline bg-surface-sunken text-ink-soft">
-                        {metricKindLabel(kpi.kind)}
-                      </span>
-                    </div>
-                    <div className="text-xl font-bold text-ink-soft mt-1">{kpi.byRange[range].value}</div>
-                  </div>
-                  <Lock className="w-4 h-4 text-ink-muted" />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Configurable choices */}
-          <div className="flex items-center justify-between mb-3">
-            <div className="text-xs font-bold text-ink-muted uppercase tracking-wider">Additional metrics</div>
-            <div className="text-xs font-medium text-ink-muted">{draft.length} / 2 selected</div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {pool.map((kpi) => {
-              const isSelected = draft.includes(kpi.id);
-              const isDisabled = !isSelected && atLimit;
-              return (
-                <button
-                  key={kpi.id}
-                  onClick={() => toggle(kpi.id)}
-                  disabled={isDisabled}
-                  className={`text-left border rounded-control p-3 transition-all relative
-                    ${isSelected ? "border-border-strong bg-surface-page ring-1 ring-divider" : isDisabled ? "border-divider bg-surface-page opacity-50 cursor-not-allowed" : "border-divider bg-surface hover:border-border-strong"}`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <div className="text-sm font-bold text-ink">{kpi.label}</div>
-                      <span className="px-1.5 py-0.5 rounded-control text-overline bg-surface-hover text-ink-muted">
-                        {metricKindLabel(kpi.kind)}
-                      </span>
-                    </div>
-                    <span
-                      className={`w-4 h-4 rounded-control border flex items-center justify-center shrink-0 mt-0.5 ${isSelected ? "bg-surface-sunken border-border-strong" : "border-divider bg-surface"}`}
-                    >
-                      {isSelected && <Check className="w-3 h-3 text-white" />}
-                    </span>
-                  </div>
-                  <div className="text-xs text-ink-muted mt-1 leading-snug">{kpi.desc}</div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="px-6 py-4 border-t border-divider flex justify-end gap-3 bg-surface-page shrink-0">
-          <button onClick={onClose} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">
-            Cancel
-          </button>
-          <button
-            onClick={() => onSave(draft)}
-            disabled={draft.length !== 2}
-            className={`px-6 py-2 rounded-control text-sm font-bold text-white transition-colors ${draft.length === 2 ? "bg-surface-sunken hover:bg-surface-sunken" : "bg-surface-sunken cursor-not-allowed"}`}
-          >
+    <Modal
+      open
+      onClose={onClose}
+      title="Customise Your KPI Cards"
+      subtitle="The first two cards are set by your clinic and cannot be changed. Choose two additional metrics below."
+      size="form"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button variant="primary" onClick={() => onSave(draft)} disabled={draft.length !== 2} disabledReason="Select exactly 2 additional metrics">
             Save
-          </button>
+          </Button>
+        </>
+      }
+    >
+      <div className="text-label text-ink-muted bg-surface-page border border-divider rounded-control px-3 py-2 mb-4">
+        Live metrics always show current values regardless of the selected time range.
+      </div>
+
+      {/* Locked preview */}
+      <div className="mb-6">
+        <div className="text-label font-bold text-ink-muted uppercase tracking-wider mb-3">Default metrics (locked)</div>
+        <div className="grid grid-cols-2 gap-3">
+          {locked.map((kpi) => (
+            <div key={kpi.id} className="border border-divider rounded-control bg-surface-page p-3 flex items-center justify-between opacity-80">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-label font-bold text-ink-muted uppercase tracking-wider">{kpi.label}</span>
+                  <span className="px-1.5 py-0.5 rounded-control text-overline bg-surface-sunken text-ink-soft">
+                    {metricKindLabel(kpi.kind)}
+                  </span>
+                </div>
+                <div className="text-xl font-bold text-ink-soft mt-1">{kpi.byRange[range].value}</div>
+              </div>
+              <Lock className="w-4 h-4 text-ink-muted" />
+            </div>
+          ))}
         </div>
       </div>
-    </div>
+
+      {/* Configurable choices */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="text-label font-bold text-ink-muted uppercase tracking-wider">Additional metrics</div>
+        <div className="text-label font-medium text-ink-muted">{draft.length} / 2 selected</div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        {pool.map((kpi) => {
+          const isSelected = draft.includes(kpi.id);
+          const isDisabled = !isSelected && atLimit;
+          return (
+            <button
+              key={kpi.id}
+              onClick={() => toggle(kpi.id)}
+              disabled={isDisabled}
+              className={`text-left border rounded-control p-3 transition-all relative
+                ${isSelected ? "border-border-strong bg-surface-page ring-1 ring-divider" : isDisabled ? "border-divider bg-surface-page opacity-50 cursor-not-allowed" : "border-divider bg-surface hover:border-border-strong"}`}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="text-data font-bold text-ink">{kpi.label}</div>
+                  <span className="px-1.5 py-0.5 rounded-control text-overline bg-surface-hover text-ink-muted">
+                    {metricKindLabel(kpi.kind)}
+                  </span>
+                </div>
+                <span
+                  className={`w-4 h-4 rounded-control border flex items-center justify-center shrink-0 mt-0.5 ${isSelected ? "bg-surface-sunken border-border-strong" : "border-divider bg-surface"}`}
+                >
+                  {isSelected && <Check className="w-3 h-3 text-white" />}
+                </span>
+              </div>
+              <div className="text-label text-ink-muted mt-1 leading-snug">{kpi.desc}</div>
+            </button>
+          );
+        })}
+      </div>
+    </Modal>
   );
 }

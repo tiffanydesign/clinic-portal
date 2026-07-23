@@ -62,7 +62,7 @@ export function MiniCalendar({ selectedDate, today, onSelectDate, hasApptsOn }: 
                   ? "text-ink-soft font-bold ring-1 ring-info"
                   : inMonth
                   ? "text-ink-soft hover:bg-surface-hover"
-                  : "text-ink-muted hover:bg-surface-page"
+                  : "text-ink-muted hover:bg-surface-hover"
               }`}
             >
               {d.getDate()}

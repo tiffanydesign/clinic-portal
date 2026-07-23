@@ -85,14 +85,14 @@ export function StaffDetailLayout({ children }: { children?: React.ReactNode }) 
           <div className="flex items-center space-x-3">
             <button
               onClick={() => toast("Edit profile (demo)")}
-              className="flex items-center px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-page transition-colors shadow-sm"
+              className="flex items-center px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover transition-colors shadow-sm"
             >
               <Pencil className="w-4 h-4 mr-2 text-ink-muted" /> Edit Profile
             </button>
             <div className="relative">
               <button
                 onClick={() => setShowMenu(!showMenu)}
-                className="p-2 border border-divider rounded-control text-ink-muted bg-surface hover:bg-surface-page transition-colors shadow-sm"
+                className="p-2 border border-divider rounded-control text-ink-muted bg-surface hover:bg-surface-hover transition-colors shadow-sm"
                 aria-label="More actions"
               >
                 <MoreHorizontal className="w-4 h-4" />
@@ -101,15 +101,15 @@ export function StaffDetailLayout({ children }: { children?: React.ReactNode }) 
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowMenu(false)} />
                   <div className="absolute right-0 top-full mt-1 w-52 bg-surface border border-divider rounded-card shadow-lg z-50 py-1">
-                    <button className="w-full text-left px-4 py-2 text-sm text-ink-soft hover:bg-surface-page" onClick={() => menuAction(`${staff.name} set On Leave (demo)`)}>Set On Leave</button>
+                    <button className="w-full text-left px-4 py-2 text-sm text-ink-soft hover:bg-surface-hover" onClick={() => menuAction(`${staff.name} set On Leave (demo)`)}>Set On Leave</button>
                     {isSelf ? (
                       <button disabled title="You cannot deactivate your own account" className="w-full text-left px-4 py-2 text-sm text-ink-muted cursor-not-allowed">Deactivate Account</button>
                     ) : (
                       <button className="w-full text-left px-4 py-2 text-sm text-danger-ink hover:bg-danger/10" onClick={() => menuAction(`${staff.name}'s account deactivated (demo)`)}>Deactivate Account</button>
                     )}
                     <div className="border-t border-divider my-1" />
-                    <button className="w-full text-left px-4 py-2 text-sm text-ink-soft hover:bg-surface-page" onClick={() => menuAction(`Password reset email sent to ${staff.email}`)}>Reset Password</button>
-                    <button className="w-full text-left px-4 py-2 text-sm text-ink-soft hover:bg-surface-page" onClick={() => menuAction(`Invitation resent to ${staff.email}`)}>Resend Invitation</button>
+                    <button className="w-full text-left px-4 py-2 text-sm text-ink-soft hover:bg-surface-hover" onClick={() => menuAction(`Password reset email sent to ${staff.email}`)}>Reset Password</button>
+                    <button className="w-full text-left px-4 py-2 text-sm text-ink-soft hover:bg-surface-hover" onClick={() => menuAction(`Invitation resent to ${staff.email}`)}>Resend Invitation</button>
                   </div>
                 </>
               )}

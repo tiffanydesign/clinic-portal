@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
+import { toast } from "sonner";
 import { addDays, endOfWeek, format, isSameDay, startOfWeek, subDays } from "date-fns";
 import { useAppContext } from "../../../context/AppContext";
 import { AppointmentDrawer, DrawerHandlers } from "../dashboard/AppointmentDrawer";
@@ -142,6 +143,13 @@ export function SchedulePage() {
   // MyScheduleView above), so there's no unprivileged path in here.
   const onEmptyClick = (colKey: string, startMin: number, at: { x: number; y: number }) => {
     if (!isAnchorDay) return; // no booking against a date the mock data doesn't model
+    // Hard block: the signed-in clinician's Blocked Time is off-limits for new
+    // bookings (upgrades the old soft "outside hours" signal, per v2).
+    if (!byRoom && colKey === CLINICIAN_SELF_ID) {
+      const dateStr = format(selectedDate, "d MMM yyyy");
+      const onBlocked = availability.blockedTime.some((b) => b.date === dateStr && startMin >= b.startMin && startMin < b.startMin + b.durationMin);
+      if (onBlocked) { toast.error("This time is blocked — no bookings can be made here."); return; }
+    }
     const colLabel = byRoom
       ? (activeRooms.find((r) => r.id === colKey)?.name ?? colKey)
       : (CLINICIANS.find((c) => c.id === colKey)?.name ?? colKey);

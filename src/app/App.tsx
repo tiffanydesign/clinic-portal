@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation, useNavigate, useParams, Link } from "react-router";
 import { AppProvider, useAppContext } from "./context/AppContext";
 import { Toaster, toast } from 'sonner';
+import { IS_DEMO_BUILD } from "./config/buildMode";
 
 // Auth
 import { LoginPage } from "./pages/auth/LoginPage";
@@ -75,6 +76,17 @@ function AppShellLayout({ children }: { children?: React.ReactNode }) {
 // Redirect helpers for nested default routes
 const RedirectTo = ({ to }: { to: string }) => <Navigate to={to} replace />;
 
+// Demo-build-only, tree-shaken route (see docs/superpowers/specs/
+// 2026-07-23-design-system-consolidation-design.md). The dynamic import()
+// target only becomes reachable when IS_DEMO_BUILD is a compile-time-true
+// constant, so npm run build:official (VITE_DEMO_BUILD=false) lets Rollup
+// fold this whole branch away and never emit the chunk at all.
+const DesignSystemPage = IS_DEMO_BUILD
+  ? React.lazy(() =>
+      import("./pages/demo/design-system/DesignSystemPage").then((m) => ({ default: m.DesignSystemPage }))
+    )
+  : null;
+
 // Param-aware redirect: /staff/:staffId -> /staff/:staffId/overview
 function StaffDetailRedirect() {
   const { staffId } = useParams();
@@ -102,6 +114,22 @@ export default function App() {
           {/* Patient-facing kiosk flow — deliberately outside AppShellLayout:
               no sidebar, no topbar, no role switcher, no RoleGuard. */}
           <Route path="/consent-sign/:apptId" element={<ConsentSignPage />} />
+          {/* Demo-build-only showcase — bare route (no AppShellLayout, no
+              sidebar, no RoleGuard), same "standalone page" precedent as
+              /consent-sign above. Reachable only from DemoControlsPill or a
+              direct URL, never linked from any role's sidebar. Fully
+              eliminated from npm run build:official (see DesignSystemPage
+              const above). */}
+          {IS_DEMO_BUILD && DesignSystemPage && (
+            <Route
+              path="/demo/design-system"
+              element={
+                <React.Suspense fallback={<div className="p-6 text-sm text-ink-muted">Loading…</div>}>
+                  <DesignSystemPage />
+                </React.Suspense>
+              }
+            />
+          )}
           <Route path="/site-map" element={<AppShellLayout><SiteMap /></AppShellLayout>} />
           <Route path="/dashboard" element={<AppShellLayout><Dashboard /></AppShellLayout>} />
           <Route path="/dashboard/appointment/:apptId" element={<AppShellLayout><Dashboard /></AppShellLayout>} />

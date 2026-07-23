@@ -18,10 +18,10 @@ function AdminActions({ patient }: { patient: PatientRecord }) {
   const [menuOpen, setMenuOpen] = useState(false);
   return (
     <div className="flex items-center gap-2 relative">
-      <button onClick={() => toast("Edit Patient (demo)")} className="px-4 py-2 bg-surface border border-divider rounded-control text-sm font-bold text-ink-soft hover:bg-surface-page shadow-sm transition-colors">
+      <button onClick={() => toast("Edit Patient (demo)")} className="px-4 py-2 bg-surface border border-divider rounded-control text-sm font-bold text-ink-soft hover:bg-surface-hover shadow-sm transition-colors">
         Edit Patient
       </button>
-      <button onClick={() => setMenuOpen((o) => !o)} className="p-2 border border-divider rounded-control text-ink-muted hover:bg-surface-page shadow-sm">
+      <button onClick={() => setMenuOpen((o) => !o)} className="p-2 border border-divider rounded-control text-ink-muted hover:bg-surface-hover shadow-sm">
         <MoreHorizontal className="w-4 h-4" />
       </button>
       {menuOpen && (
@@ -29,7 +29,7 @@ function AdminActions({ patient }: { patient: PatientRecord }) {
           <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
           <div className="absolute right-0 top-full mt-1 z-20 bg-surface border border-divider rounded-control shadow-lg py-1 w-48">
             {["Assign Staff", "Change Status", "Export Record"].map((label) => (
-              <button key={label} onClick={() => { toast(`${label} (demo)`); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm text-ink-soft hover:bg-surface-page">{label}</button>
+              <button key={label} onClick={() => { toast(`${label} (demo)`); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm text-ink-soft hover:bg-surface-hover">{label}</button>
             ))}
             <div className="border-t border-divider my-1" />
             <button onClick={() => { toast.error("Delete patient (demo)"); setMenuOpen(false); }} className="w-full text-left px-3 py-2 text-sm text-danger-ink hover:bg-danger/10">Delete</button>
@@ -44,7 +44,7 @@ function ReceptionActions() {
   const navigate = useNavigate();
   return (
     <div className="flex items-center gap-2">
-      <button onClick={() => toast("Contact patient (demo)")} className="px-4 py-2 bg-surface border border-divider rounded-control text-sm font-bold text-ink-soft hover:bg-surface-page shadow-sm transition-colors">
+      <button onClick={() => toast("Contact patient (demo)")} className="px-4 py-2 bg-surface border border-divider rounded-control text-sm font-bold text-ink-soft hover:bg-surface-hover shadow-sm transition-colors">
         Contact Patient
       </button>
       <button onClick={() => navigate("/calendar/schedule")} className="px-4 py-2 btn-primary rounded-control text-sm font-bold transition-colors">
@@ -62,7 +62,7 @@ function ClinicianActions({ flag, onSetFlag }: { flag: PatientRecord["flag"]; on
       <button onClick={() => toast.success("Consultation started (demo)")} className="px-4 py-2 btn-primary rounded-control text-sm font-bold transition-colors">
         Start Consultation
       </button>
-      <button onClick={() => setOpen((o) => !o)} title="Set flag" className="p-2 border border-divider rounded-control text-ink-muted hover:bg-surface-page shadow-sm">
+      <button onClick={() => setOpen((o) => !o)} title="Set flag" className="p-2 border border-divider rounded-control text-ink-muted hover:bg-surface-hover shadow-sm">
         <FlagIcon className="w-4 h-4" />
       </button>
       {open && (
@@ -70,7 +70,7 @@ function ClinicianActions({ flag, onSetFlag }: { flag: PatientRecord["flag"]; on
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
           <div className="absolute right-0 top-full mt-1 z-20 bg-surface border border-divider rounded-control shadow-lg py-1 w-40">
             {options.map((f) => (
-              <button key={f} onClick={() => { onSetFlag(f); setOpen(false); toast.success(`Flag set: ${f}`); }} className={`w-full text-left px-3 py-2 text-sm hover:bg-surface-page ${flag === f ? "font-bold text-ink-soft" : "text-ink-soft"}`}>{f}</button>
+              <button key={f} onClick={() => { onSetFlag(f); setOpen(false); toast.success(`Flag set: ${f}`); }} className={`w-full text-left px-3 py-2 text-sm hover:bg-surface-hover ${flag === f ? "font-bold text-ink-soft" : "text-ink-soft"}`}>{f}</button>
             ))}
           </div>
         </>

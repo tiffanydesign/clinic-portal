@@ -7,6 +7,8 @@ import {
 } from "./staffData";
 import { logAudit, AUDIT_ACTOR } from "../clinic-settings/auditStore";
 import { Stat } from "../../../components/stat";
+import { Modal } from "../../../components/ui/modal";
+import { Button } from "../../../components/ui/button";
 
 function InfoRow({ label, value, amber = false }: { label: string; value: React.ReactNode; amber?: boolean }) {
   return (
@@ -23,7 +25,7 @@ function SectionCard({
   title: string; action?: React.ReactNode; children: React.ReactNode; footer?: React.ReactNode;
 }) {
   return (
-    <div className="bg-surface rounded-card p-6">
+    <div className="bg-surface rounded-card p-4">
       <div className="flex justify-between items-center mb-3">
         <h3 className="text-base font-bold text-ink">{title}</h3>
         {action}
@@ -63,23 +65,20 @@ function ConfirmDialog({
   title: string; message: string; confirmLabel: string; onClose: () => void; onConfirm: () => void;
 }) {
   return (
-    <div className="fixed inset-0 bg-surface-sunken/40 backdrop-blur-sm flex items-center justify-center z-50" onClick={onClose}>
-      <div
-        className="bg-surface rounded-card shadow-2xl w-full max-w-md flex flex-col overflow-hidden animate-in fade-in zoom-in-95"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="px-6 py-4 border-b border-divider bg-surface-page">
-          <h2 className="text-lg font-bold text-ink">{title}</h2>
-        </div>
-        <div className="p-6">
-          <p className="text-sm text-ink-soft">{message}</p>
-        </div>
-        <div className="px-6 py-4 bg-surface-page border-t border-divider flex justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover transition-colors">Cancel</button>
-          <button onClick={() => { onConfirm(); onClose(); }} className="px-6 py-2 bg-danger-ink hover:bg-danger-ink text-white rounded-control text-sm font-bold transition-colors shadow-sm">{confirmLabel}</button>
-        </div>
-      </div>
-    </div>
+    <Modal
+      open
+      onClose={onClose}
+      title={title}
+      size="confirm"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button variant="destructive" onClick={() => { onConfirm(); onClose(); }}>{confirmLabel}</Button>
+        </>
+      }
+    >
+      <p className="text-body text-ink-soft">{message}</p>
+    </Modal>
   );
 }
 
@@ -227,7 +226,7 @@ export function StaffOverviewTab() {
           in the header above, so they don't repeat here. */}
       <SectionCard
         title="Profile Details"
-        action={<button onClick={() => toast("Edit profile details (demo)")} className="px-3 py-1.5 border border-divider rounded-control text-xs font-bold text-ink-soft bg-surface hover:bg-surface-page transition-colors">Edit</button>}
+        action={<button onClick={() => toast("Edit profile details (demo)")} className="px-3 py-1.5 border border-divider rounded-control text-xs font-bold text-ink-soft bg-surface hover:bg-surface-hover transition-colors">Edit</button>}
       >
         <div className="grid grid-cols-3 gap-x-6 gap-y-4">
           <Field label="Email" value={staff.email} />

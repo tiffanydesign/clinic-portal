@@ -55,7 +55,7 @@ export function JourneyProgressStrip({ steps, current, isDone, caption, onOpen, 
   return (
     <Wrapper
       onClick={onOpen}
-      className={`w-full text-left block ${onOpen ? "cursor-pointer hover:bg-surface-page rounded-card transition-colors" : ""} ${className}`}
+      className={`w-full text-left block ${onOpen ? "cursor-pointer hover:bg-surface-hover rounded-card transition-colors" : ""} ${className}`}
     >
       <div className="flex items-center gap-3 min-h-11">
         <div className="flex items-center gap-1 min-w-0 flex-1 text-xs text-ink-muted font-semibold truncate">

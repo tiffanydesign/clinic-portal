@@ -38,7 +38,7 @@ function LegendPopover() {
     <div className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className={`w-8 h-8 flex items-center justify-center rounded-card border transition-colors ${open ? "bg-surface-hover border-divider text-ink-soft" : "border-divider text-ink-muted bg-surface hover:bg-surface-page"}`}
+        className={`w-8 h-8 flex items-center justify-center rounded-card border transition-colors ${open ? "bg-surface-hover border-divider text-ink-soft" : "border-divider text-ink-muted bg-surface hover:bg-surface-hover"}`}
         title="Status legend"
       >
         <Info className="w-4 h-4" />
@@ -77,7 +77,7 @@ function ClinicianMultiSelect({ selected, onToggle }: { selected: Set<string>; o
             {CLINICIANS.map((c) => {
               const on = selected.size === 0 || selected.has(c.id);
               return (
-                <button key={c.id} onClick={() => onToggle(c.id)} className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-ink-soft hover:bg-surface-page text-left">
+                <button key={c.id} onClick={() => onToggle(c.id)} className="w-full flex items-center gap-2 px-3 py-1.5 text-sm text-ink-soft hover:bg-surface-hover text-left">
                   <span className={`w-4 h-4 rounded-control border flex items-center justify-center shrink-0 ${on ? "bg-surface-sunken border-border-strong" : "border-divider"}`}>{on && <Check className="w-3 h-3 text-white" />}</span>
                   <span className="truncate">{c.short}{c.onLeave ? " (leave)" : ""}</span>
                 </button>
@@ -145,7 +145,7 @@ function DatePickerPopover({ selectedDate, onPick }: { selectedDate: Date; onPic
                     key={day.toISOString()}
                     onClick={() => { onPick(day); setOpen(false); }}
                     className={`h-8 w-8 mx-auto flex items-center justify-center rounded-full text-xs font-semibold transition-colors relative ${
-                      isSelected ? "bg-ink text-white" : inMonth ? "text-ink-soft hover:bg-surface-hover" : "text-ink-muted hover:bg-surface-page"
+                      isSelected ? "bg-ink text-white" : inMonth ? "text-ink-soft hover:bg-surface-hover" : "text-ink-muted hover:bg-surface-hover"
                     }`}
                   >
                     {day.getDate()}
@@ -210,7 +210,7 @@ export function ScheduleToolbar({
             onClick={onToday}
             disabled={isToday}
             className={`px-3 py-2 border rounded-control text-xs font-bold shadow-sm transition-colors shrink-0 ${
-              isToday ? "border-divider text-ink-muted bg-surface-page cursor-not-allowed" : "border-divider text-ink-soft bg-surface hover:bg-surface-page"
+              isToday ? "border-divider text-ink-muted bg-surface-page cursor-not-allowed" : "border-divider text-ink-soft bg-surface hover:bg-surface-hover"
             }`}
           >
             Today

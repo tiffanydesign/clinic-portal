@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { FlaskConical, Map, X } from "lucide-react";
+import { FlaskConical, Map, Palette, X } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 
 // Reviewer-only affordances (Site Map, Demo Role switcher) used to live in
@@ -53,6 +53,14 @@ export function DemoControlsPill() {
           className="flex items-center gap-2 text-sm font-semibold text-ink-soft hover:text-ink"
         >
           <Map className="w-4 h-4" /> Site Map
+        </Link>
+
+        <Link
+          to="/demo/design-system"
+          onClick={() => setExpanded(false)}
+          className="flex items-center gap-2 text-sm font-semibold text-ink-soft hover:text-ink"
+        >
+          <Palette className="w-4 h-4" /> Design System
         </Link>
 
         <div>

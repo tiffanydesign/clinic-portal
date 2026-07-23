@@ -32,7 +32,7 @@ export function GlobalSearchResultsList({
             <button
               key={p.patientId}
               onClick={() => onSelectPatient(p)}
-              className={`w-full flex items-center gap-3 ${rowPad} text-left hover:bg-surface-page transition-colors rounded-card`}
+              className={`w-full flex items-center gap-3 ${rowPad} text-left hover:bg-surface-hover transition-colors rounded-card`}
             >
               <div className={`${avatarSize} rounded-full bg-surface-hover text-ink-soft flex items-center justify-center text-label font-bold shrink-0`}>{p.avatar}</div>
               <div className="min-w-0 flex-1">
@@ -50,7 +50,7 @@ export function GlobalSearchResultsList({
             <button
               key={s.id}
               onClick={() => onSelectStaff(s)}
-              className={`w-full flex items-center gap-3 ${rowPad} text-left hover:bg-surface-page transition-colors rounded-card`}
+              className={`w-full flex items-center gap-3 ${rowPad} text-left hover:bg-surface-hover transition-colors rounded-card`}
             >
               <div className={`${avatarSize} rounded-full bg-surface-sunken text-ink-soft flex items-center justify-center text-label font-bold shrink-0`}>{s.avatar}</div>
               <div className="min-w-0 flex-1">

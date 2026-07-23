@@ -58,7 +58,7 @@ function MenuItems({ staff, pos, onClose }: { staff: Staff; pos: { top: number; 
 
   const go = (path: string) => { onClose(); navigate(path); };
 
-  const itemCls = "w-full text-left px-4 py-2 text-sm text-ink-soft hover:bg-surface-page";
+  const itemCls = "w-full text-left px-4 py-2 text-sm text-ink-soft hover:bg-surface-hover";
 
   return (
     <div className="fixed w-48 bg-surface border border-divider rounded-card shadow-lg z-50 py-1" style={{ top: pos.top, left: pos.left }}>

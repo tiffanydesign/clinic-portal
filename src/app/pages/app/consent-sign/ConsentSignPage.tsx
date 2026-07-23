@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { useAppointments, signConsent } from "../dashboard/appointmentsStore";
 import { CONSENT_FORM_VERSIONS } from "../clinic-settings/consentFormData";
 import { SignatureCanvas, SignatureCanvasHandle } from "./SignatureCanvas";
+import { Modal } from "../../../components/ui/modal";
+import { Button } from "../../../components/ui/button";
 
 const ACTIVE_FORM = CONSENT_FORM_VERSIONS.find((v) => v.status === "active") ?? CONSENT_FORM_VERSIONS[0];
 
@@ -176,22 +178,14 @@ export function ConsentSignPage() {
       </div>
 
       {exitConfirmOpen && (
-        <div className="fixed inset-0 bg-surface-sunken/30 backdrop-blur-sm flex items-center justify-center z-[60]">
-          <div className="bg-surface rounded-card shadow-2xl border border-divider w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95">
-            <div className="px-6 py-5">
-              <h2 className="text-lg font-bold text-ink mb-2">Cancel signing?</h2>
-              <p className="text-sm text-ink-soft leading-relaxed">This will return to the dashboard without saving a signature.</p>
-            </div>
-            <div className="px-6 py-4 border-t border-divider flex justify-end space-x-3 bg-surface-page">
-              <button onClick={() => setExitConfirmOpen(false)} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover transition-colors">
-                Stay
-              </button>
-              <button onClick={handleExitConfirm} className="px-6 py-2 rounded-control text-sm font-bold text-white bg-danger-ink hover:bg-danger-ink transition-colors">
-                Cancel signing
-              </button>
-            </div>
-          </div>
-        </div>
+        <Modal open onClose={() => setExitConfirmOpen(false)} title="Cancel signing?" size="confirm"
+          footer={<>
+            <Button variant="secondary" onClick={() => setExitConfirmOpen(false)}>Stay</Button>
+            <Button variant="destructive" onClick={handleExitConfirm}>Cancel signing</Button>
+          </>}
+        >
+          <p className="text-body text-ink-soft leading-relaxed">This will return to the dashboard without saving a signature.</p>
+        </Modal>
       )}
     </div>
   );

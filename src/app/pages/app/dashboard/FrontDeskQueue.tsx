@@ -11,6 +11,8 @@ import {
   consentOk, paymentOk, isLate, isReadOnlyInClinic,
 } from "./receptionDashboardData";
 import { markArrived, checkIn, recordPayment } from "./appointmentsStore";
+import { Modal } from "../../../components/ui/modal";
+import { Button } from "../../../components/ui/button";
 
 // Video appointments never reach this queue at all (see groupFor in
 // receptionDashboardData.ts) — every row here is always in-person, so there's
@@ -58,22 +60,20 @@ function GatesRow({ appt }: { appt: Appt }) {
 
 function ConfirmCheckInModal({ appt, onCancel, onConfirm }: { appt: Appt; onCancel: () => void; onConfirm: () => void }) {
   return (
-    <div className="fixed inset-0 bg-surface-sunken/30 backdrop-blur-sm flex items-center justify-center z-[60]">
-      <div className="bg-surface rounded-card shadow-2xl border border-divider w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95">
-        <div className="px-6 py-5">
-          <h2 className="text-lg font-bold text-ink mb-2">Check in {appt.patient.name}?</h2>
-          <p className="text-sm text-ink-soft leading-relaxed">This will notify the nurse.</p>
-        </div>
-        <div className="px-6 py-4 border-t border-divider flex justify-end space-x-3 bg-surface-page">
-          <button onClick={onCancel} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover transition-colors">
-            Cancel
-          </button>
-          <button onClick={onConfirm} className="px-6 py-2 rounded-control text-sm font-bold text-white bg-success-ink hover:bg-success-ink transition-colors">
-            Check In
-          </button>
-        </div>
-      </div>
-    </div>
+    <Modal
+      open
+      onClose={onCancel}
+      title={`Check in ${appt.patient.name}?`}
+      size="confirm"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onCancel}>Cancel</Button>
+          <Button variant="primary" onClick={onConfirm} className="bg-success-ink hover:bg-success-ink">Check In</Button>
+        </>
+      }
+    >
+      <p className="text-body text-ink-soft leading-relaxed">This will notify the nurse.</p>
+    </Modal>
   );
 }
 
@@ -96,7 +96,7 @@ function ActionPill({ onClick, tone, icon, label }: {
   return (
     <button
       onClick={onClick}
-      className={`shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-xs font-bold border whitespace-nowrap transition-colors ${PILL_TONE[tone]}`}
+      className={`shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-label font-bold border whitespace-nowrap transition-colors ${PILL_TONE[tone]}`}
     >
       {icon}{label}
     </button>
@@ -160,7 +160,7 @@ function QueueRow({ appt, readOnly, selected, onOpen, onMarkArrived }: {
     >
       {/* Left: time + optional LATE badge */}
       <div className="w-11 shrink-0 flex flex-col items-start gap-1 pt-0.5">
-        <span className="text-sm font-bold text-ink-soft tabular-nums">{appt.timeLabel.slice(0, 5)}</span>
+        <span className="text-data font-bold text-ink-soft tabular-nums">{appt.timeLabel.slice(0, 5)}</span>
         {late && (
           <span className="inline-flex items-center gap-0.5 text-label font-extrabold text-danger-ink bg-danger/10 border border-danger/30 rounded-control px-1 py-0.5 leading-none">
             <Clock className="w-2.5 h-2.5" /> LATE
@@ -171,11 +171,11 @@ function QueueRow({ appt, readOnly, selected, onOpen, onMarkArrived }: {
       {/* Core: name + stacked details (+ gates for actionable rows) */}
       <button onClick={() => onOpen(appt.id)} className="flex-1 min-w-0 text-left">
         <div className="text-section font-bold text-ink leading-tight">{appt.patient.name}</div>
-        <div className="flex items-center gap-1.5 text-xs text-ink-muted mt-1.5">
+        <div className="flex items-center gap-1.5 text-label text-ink-muted mt-1.5">
           <MapPin className="w-3.5 h-3.5 shrink-0 text-ink-muted" />
           <span>{typeLabel(appt)} · {appt.room}</span>
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-ink-muted mt-1">
+        <div className="flex items-center gap-1.5 text-label text-ink-muted mt-1">
           <Stethoscope className="w-3.5 h-3.5 shrink-0 text-ink-muted" />
           <span>{appt.doctor}</span>
         </div>
@@ -239,7 +239,7 @@ function EmptyGroup({ group, unpaidOnly }: { group: QueueGroup; unpaidOnly?: boo
     : "No one in clinic right now.";
   return (
     <div className="flex items-center justify-center px-4 py-6">
-      <span className="text-sm text-ink-muted">{message}</span>
+      <span className="text-body text-ink-muted">{message}</span>
     </div>
   );
 }
@@ -324,13 +324,13 @@ export function FrontDeskQueue({ appts, tab, onTabChange, unpaidOnly = false, on
     <div className="h-full rounded-card bg-surface flex flex-col">
       <div className="border-b border-divider shrink-0">
         <div className="h-11 px-4 flex items-center gap-2">
-          <h3 className="font-bold text-ink text-sm">Front Desk Queue</h3>
+          <h3 className="font-bold text-ink text-section">Front Desk Queue</h3>
           {onAdd && (
             <button
               onClick={onAdd}
               title="Register patient"
               aria-label="Register patient"
-              className="w-8 h-8 flex items-center justify-center rounded-card border border-divider text-ink-soft hover:bg-surface-page hover:border-border-strong hover:text-ink-soft transition-colors shrink-0"
+              className="w-8 h-8 flex items-center justify-center rounded-card border border-divider text-ink-soft hover:bg-surface-hover hover:border-border-strong hover:text-ink-soft transition-colors shrink-0"
             >
               <Plus className="w-4 h-4" />
             </button>

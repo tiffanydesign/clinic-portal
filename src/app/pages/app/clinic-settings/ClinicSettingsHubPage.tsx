@@ -87,7 +87,7 @@ export function ClinicSettingsHubPage() {
         <p className="text-sm text-ink-muted mt-1">Configure templates and clinic-wide preferences</p>
       </div>
 
-      <div className="p-4 space-y-8 max-w-5xl">
+      <div className="p-4 space-y-8">
         {SETTINGS_CATEGORIES.map((category) => (
           <div key={category.name}>
             <h2 className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-3">{category.name}</h2>

@@ -27,11 +27,15 @@ type KindStyle = {
   tag: string;
 };
 
+// Category identity is carried by the icon SHAPE + label, not by hue: colour
+// on this page is reserved for STATUS (unread = blue, caught-up = green). Every
+// category therefore shares one calm neutral chip/tag, so the feed reads as a
+// quiet column instead of a scatter of purple/blue/amber/green blocks.
 const KIND_STYLE: Record<NotificationKind, KindStyle> = {
-  appointment: { icon: Calendar, iconColor: "text-special-ink", chipBg: "bg-special/10", tag: "bg-special/10 text-special-ink" },
-  result: { icon: FlaskConical, iconColor: "text-info-ink", chipBg: "bg-info/10", tag: "bg-info/10 text-info-ink" },
-  approval: { icon: ShieldCheck, iconColor: "text-warning-ink", chipBg: "bg-warning/10", tag: "bg-warning/10 text-warning-ink" },
-  payment: { icon: CreditCard, iconColor: "text-success-ink", chipBg: "bg-success/10", tag: "bg-success/10 text-success-ink" },
+  appointment: { icon: Calendar, iconColor: "text-ink-soft", chipBg: "bg-surface-hover", tag: "bg-surface-hover text-ink-soft" },
+  result: { icon: FlaskConical, iconColor: "text-ink-soft", chipBg: "bg-surface-hover", tag: "bg-surface-hover text-ink-soft" },
+  approval: { icon: ShieldCheck, iconColor: "text-ink-soft", chipBg: "bg-surface-hover", tag: "bg-surface-hover text-ink-soft" },
+  payment: { icon: CreditCard, iconColor: "text-ink-soft", chipBg: "bg-surface-hover", tag: "bg-surface-hover text-ink-soft" },
   system: { icon: Settings, iconColor: "text-ink-muted", chipBg: "bg-surface-hover", tag: "bg-surface-hover text-ink-soft" },
 };
 
@@ -60,10 +64,9 @@ function dayLabel(d: Date): string {
 // The count rides in the Stat family's T4 `pill` tier. It stays tone-neutral:
 // category identity is already carried by the tab's coloured icon, and an
 // amber/red count here would falsely read as an alarm.
-function ScopeTab({ label, icon: Icon, iconColor, unread, active, onClick }: {
+function ScopeTab({ label, icon: Icon, unread, active, onClick }: {
   label: string;
   icon: LucideIcon;
-  iconColor: string;
   unread: number;
   active: boolean;
   onClick: () => void;
@@ -75,7 +78,7 @@ function ScopeTab({ label, icon: Icon, iconColor, unread, active, onClick }: {
         active ? "text-ink border-ink" : "text-ink-muted border-transparent hover:text-ink-soft"
       }`}
     >
-      <Icon className={`w-4 h-4 ${active ? iconColor : "text-ink-muted"}`} />
+      <Icon className={`w-4 h-4 ${active ? "text-ink" : "text-ink-muted"}`} />
       {label}
       {unread > 0 && (
         <Stat
@@ -153,7 +156,7 @@ function DateFilterControl({
             <button
               key={p}
               onClick={() => { onSelectPreset(p); setMenuOpen(false); }}
-              className={`w-full text-left px-3 py-2.5 text-sm transition-colors ${preset === p ? "text-ink font-medium bg-surface-page" : "text-ink-soft hover:bg-surface-page"}`}
+              className={`w-full text-left px-3 py-2.5 text-sm transition-colors ${preset === p ? "text-ink font-medium bg-surface-page" : "text-ink-soft hover:bg-surface-hover"}`}
             >
               {p}
             </button>
@@ -161,7 +164,7 @@ function DateFilterControl({
           <div className="border-t border-divider my-1" />
           <button
             onClick={() => { setMenuOpen(false); setPickerOpen(true); }}
-            className={`w-full text-left px-3 py-2.5 text-sm transition-colors ${preset === "Custom range" ? "text-ink font-medium bg-surface-page" : "text-ink-soft hover:bg-surface-page"}`}
+            className={`w-full text-left px-3 py-2.5 text-sm transition-colors ${preset === "Custom range" ? "text-ink font-medium bg-surface-page" : "text-ink-soft hover:bg-surface-hover"}`}
           >
             Custom range…
           </button>
@@ -209,12 +212,12 @@ function FeedRow({ item, unread, menuOpen, onOpen, onToggleMenu, onMarkRead, onM
       tabIndex={0}
       onClick={onOpen}
       onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(); } }}
-      className={`group relative w-full flex items-center gap-3.5 pl-4 pr-1 py-3 min-h-14 border-b border-divider cursor-pointer transition-colors hover:bg-surface-page ${unread ? "bg-info/10" : "bg-transparent"}`}
+      className="group relative w-full flex items-center gap-3.5 pl-4 pr-1 py-3 min-h-14 border-b border-divider cursor-pointer transition-colors hover:bg-surface-hover"
     >
-      {/* Unread accent — canonical blue spine, distinct from category colour */}
-      {unread && <span className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-info-ink" aria-hidden />}
-      <span className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ring-1 ring-black/[0.03] ${style.chipBg}`}>
+      {/* Unread status — a small red dot on the icon (no blue row wash / spine) */}
+      <span className={`relative w-9 h-9 rounded-full flex items-center justify-center shrink-0 ring-1 ring-black/[0.03] ${style.chipBg}`}>
         <Icon className={`w-4 h-4 ${style.iconColor}`} />
+        {unread && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-info-ink ring-2 ring-surface" aria-hidden />}
       </span>
       <span className="flex-1 min-w-0">
         <span className={`text-sm block leading-snug ${unread ? "font-semibold text-ink" : "font-normal text-ink-soft"}`}>{item.text}</span>
@@ -235,7 +238,7 @@ function FeedRow({ item, unread, menuOpen, onOpen, onToggleMenu, onMarkRead, onM
           <div onClick={(e) => e.stopPropagation()} className="absolute right-0 top-full mt-1 w-40 bg-surface border border-divider rounded-card shadow-lg py-1 z-20">
             <button
               onClick={unread ? onMarkRead : onMarkUnread}
-              className="w-full text-left px-3 py-2.5 text-sm text-ink-soft hover:bg-surface-page"
+              className="w-full text-left px-3 py-2.5 text-sm text-ink-soft hover:bg-surface-hover"
             >
               Mark as {unread ? "read" : "unread"}
             </button>
@@ -395,51 +398,49 @@ export function NotificationsPage() {
           {unreadCount > 0 && (
             <button
               onClick={() => markAllRead(allItems.map((n) => n.id))}
-              className="inline-flex items-center gap-2 h-9 px-3.5 rounded-control text-sm font-medium text-ink-soft border border-divider bg-surface hover:bg-surface-page hover:text-ink transition-colors shrink-0"
+              className="inline-flex items-center gap-2 h-9 px-3.5 rounded-control text-sm font-medium text-ink-soft border border-divider bg-surface hover:bg-surface-hover hover:text-ink transition-colors shrink-0"
             >
               <CheckCheck className="w-4 h-4" /> Mark all as read
             </button>
           )}
         </div>
 
-        {/* L2 — Scope tabs, full-width underline separating nav from filters+feed below */}
-        <div className="mt-6 border-b border-divider">
+        {/* L2 — Scope tabs (left) share one row + underline with the two
+            filters (right): category nav and its filters read as a single
+            control band, and the feed panel below starts clean. */}
+        <div className="mt-6 border-b border-divider flex items-center justify-between gap-4">
           <nav className="flex items-center gap-6 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {visibleKinds.map((k) => (
               <ScopeTab
                 key={k}
                 label={k === "All" ? "All" : KIND_LABEL[k]}
                 icon={k === "All" ? Bell : KIND_STYLE[k].icon}
-                iconColor={k === "All" ? "text-ink-soft" : KIND_STYLE[k].iconColor}
                 unread={kindCounts[k].unread}
                 active={kindFilter === k}
                 onClick={() => setKindFilter(k)}
               />
             ))}
           </nav>
+          <div className="flex items-center gap-1 shrink-0">
+            <label className="flex items-center gap-2 h-11 px-1 text-sm text-ink-soft cursor-pointer select-none">
+              <ToggleSwitch checked={unreadOnly} onChange={() => setUnreadOnly((v) => !v)} />
+              Unread only
+            </label>
+            <DateFilterControl
+              preset={datePreset}
+              customRange={customRange}
+              onSelectPreset={setDatePreset}
+              onApplyCustom={(start, end) => { setCustomRange({ start, end }); setDatePreset("Custom range"); }}
+            />
+          </div>
         </div>
       </div>
 
-      <div className="mx-auto max-w-[880px] px-6 pb-6">
+      <div className="px-6 pb-6">
         {/* Feed panel — a white surface on the pale page, matching the app's
-            card-on-surface-page pattern (this page was previously a full-bleed
-            white background, out of step with every other page). */}
-        <div className="bg-surface rounded-card mt-4 px-4 pb-2">
-        {/* L3 — Filter bar, right-aligned, one visual layer below scope */}
-        <div className="flex items-center justify-end gap-2 pt-2 mb-2">
-          <label className="flex items-center gap-2 h-11 px-1 text-sm text-ink-soft cursor-pointer select-none">
-            <ToggleSwitch checked={unreadOnly} onChange={() => setUnreadOnly((v) => !v)} />
-            Unread only
-          </label>
-          <DateFilterControl
-            preset={datePreset}
-            customRange={customRange}
-            onSelectPreset={setDatePreset}
-            onApplyCustom={(start, end) => { setCustomRange({ start, end }); setDatePreset("Custom range"); }}
-          />
-        </div>
-
-        {/* L4 — Feed, no card wrapper, grouped by day */}
+            card-on-surface-page pattern. */}
+        <div className="bg-surface rounded-card mt-4 px-4 pt-2 pb-2">
+        {/* L3 — Feed, grouped by day (filters now live in the tab row above) */}
         {loading ? (
           <div>{Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)}</div>
         ) : allItems.length === 0 ? (
@@ -476,7 +477,7 @@ export function NotificationsPage() {
               <div className="flex justify-center pt-6">
                 <button
                   onClick={() => setVisibleCount((v) => v + PAGE_SIZE)}
-                  className="px-4 py-2 rounded-control text-sm font-medium text-ink-soft border border-divider hover:bg-surface-page transition-colors"
+                  className="px-4 py-2 rounded-control text-sm font-medium text-ink-soft border border-divider hover:bg-surface-hover transition-colors"
                 >
                   Load more
                 </button>

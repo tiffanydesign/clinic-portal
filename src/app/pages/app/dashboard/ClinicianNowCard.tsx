@@ -48,10 +48,10 @@ export function ClinicianNowCard({
         (() => {
           const a = activeAppt;
           return (
-            <div className="border border-warning/30 bg-warning/10 rounded-card shadow-sm p-5">
+            <div className="bg-surface border border-divider border-l-2 border-l-info rounded-card shadow-sm p-5">
               <div className="flex items-center gap-2 mb-3">
-                <span className="w-2 h-2 rounded-full bg-warning-ink animate-pulse" />
-                <span className="text-label font-bold text-warning-ink uppercase tracking-wider">Now</span>
+                <span className="w-2 h-2 rounded-full bg-info-ink animate-pulse" />
+                <span className="text-label font-bold text-info-ink uppercase tracking-wider">Now</span>
               </div>
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
@@ -74,7 +74,7 @@ export function ClinicianNowCard({
               <div className="flex items-center gap-2 mt-4">
                 <button
                   onClick={() => onOpenRecord(a.id)}
-                  className="px-4 py-2.5 border border-divider bg-surface text-ink-soft text-sm font-bold rounded-card hover:bg-surface-page transition-colors"
+                  className="px-4 py-2.5 border border-divider bg-surface text-ink-soft text-sm font-bold rounded-card hover:bg-surface-hover transition-colors"
                 >
                   Open Record
                 </button>
@@ -94,9 +94,9 @@ export function ClinicianNowCard({
           const gate = a.isVideo ? videoJoinState(a, false) : inPersonStartState(a);
           const actionLabel = a.isVideo ? "Join Call" : "Start";
           return (
-            <div className="border border-info/30 bg-info/10 rounded-card shadow-sm p-5">
+            <div className="bg-surface border border-divider rounded-card shadow-sm p-5">
               <div className="flex items-center gap-2 mb-3">
-                <span className="text-label font-bold text-info-ink uppercase tracking-wider">Up Next</span>
+                <span className="text-label font-bold text-ink-muted uppercase tracking-wider">Up Next</span>
               </div>
               <div className="min-w-0">
                 <h3 className="text-lg font-bold text-ink truncate">{a.patient.name}</h3>
@@ -117,7 +117,7 @@ export function ClinicianNowCard({
               <div className="flex items-center gap-2 mt-4">
                 <button
                   onClick={() => onOpenRecord(a.id)}
-                  className="px-4 py-2.5 border border-divider bg-surface text-ink-soft text-sm font-bold rounded-card hover:bg-surface-page transition-colors"
+                  className="px-4 py-2.5 border border-divider bg-surface text-ink-soft text-sm font-bold rounded-card hover:bg-surface-hover transition-colors"
                 >
                   Open Record
                 </button>

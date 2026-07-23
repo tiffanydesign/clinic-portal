@@ -12,6 +12,7 @@ import { addTerminal, updateTerminal } from "../paymentTerminalsStore";
 import { TERMINAL_MODELS } from "../paymentTerminalsData";
 import { useActiveRooms } from "./roomsStore";
 import { SettingsDrawer, Field, inputCls } from "./settingsUiShared";
+import { Input } from "../../../components/ui/input";
 
 const TYPE_OPTIONS: { v: DeviceType; label: string; icon: typeof ScanLine }[] = [
   { v: "Scan Device", label: "Scan Device", icon: ScanLine },
@@ -102,28 +103,28 @@ export function DeviceAddDrawer({ onClose }: { onClose: () => void }) {
               {TERMINAL_MODELS.map((m) => <option key={m}>{m}</option>)}
             </select>
           ) : (
-            <input type="text" value={model} onChange={(e) => setModel(e.target.value)} placeholder="e.g. Samsung QM43C" className={inputCls} />
+            <Input type="text" value={model} onChange={(e) => setModel(e.target.value)} placeholder="e.g. Samsung QM43C" />
           )}
         </Field>
 
         <Field label="Short Code" required hint={codeError ? undefined : `Unique across all devices · ${SHORT_CODE_HINT[type]}`} error={codeError}>
-          <input
+          <Input
             type="text"
             inputMode={isTerminal ? "numeric" : "text"}
             value={shortCode}
             onChange={(e) => setShortCode(isTerminal ? e.target.value.replace(/\D/g, "").slice(0, 4) : e.target.value.toUpperCase().slice(0, 12))}
             placeholder={isTerminal ? "e.g. 4471" : SHORT_CODE_HINT[type].replace("e.g. ", "")}
-            className={`${inputCls} font-mono tracking-widest`}
+            className="font-mono tracking-widest"
           />
         </Field>
 
         <Field label="Label" hint="Optional — defaults to the short code.">
-          <input type="text" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="e.g. Room 1 Display" className={inputCls} />
+          <Input type="text" value={label} onChange={(e) => setLabel(e.target.value)} placeholder="e.g. Room 1 Display" />
         </Field>
 
         {isTerminal && (
           <Field label="Assigned to (desk)" required>
-            <input type="text" value={desk} onChange={(e) => setDesk(e.target.value)} placeholder="e.g. Reception 5" className={inputCls} />
+            <Input type="text" value={desk} onChange={(e) => setDesk(e.target.value)} placeholder="e.g. Reception 5" />
           </Field>
         )}
 

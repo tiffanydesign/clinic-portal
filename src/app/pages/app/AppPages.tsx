@@ -145,7 +145,7 @@ export function SiteMap() {
       { path: "/timesheet", label: "Timesheet" },
       { path: "/approval", label: "Approvals" },
       { path: "/approval/REQ-1", label: "Approval Detail" },
-      { path: "/availability", label: "Availability" },
+      { path: "/availability", label: "Team Availability" },
     ]}
   ];
 

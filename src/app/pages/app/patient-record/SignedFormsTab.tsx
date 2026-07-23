@@ -13,7 +13,7 @@ export function SignedFormsTab() {
   }
 
   return (
-    <div className="p-4 max-w-5xl mx-auto">
+    <div className="p-4">
       <div className="rounded-card bg-surface overflow-hidden">
         <table className="w-full text-sm text-left">
           <thead className="bg-surface-page border-b border-divider text-ink-soft">
@@ -31,7 +31,7 @@ export function SignedFormsTab() {
             {patient.signedForms.map((f) => {
               const unsigned = f.status !== "Signed";
               return (
-                <tr key={f.id} className="hover:bg-surface-page">
+                <tr key={f.id} className="hover:bg-surface-hover">
                   <td className="px-4 py-3 font-medium text-ink">
                     <span className="flex items-center gap-2">
                       {unsigned && <AlertTriangle className="w-3.5 h-3.5 text-warning shrink-0" />}
@@ -49,7 +49,7 @@ export function SignedFormsTab() {
                         <button onClick={() => toast("Opening signed PDF (demo)")} className="px-2.5 py-1 text-xs font-bold text-ink-soft border border-divider bg-surface-page rounded-control hover:bg-surface-hover">View PDF</button>
                       )}
                       {role === "Admin" && f.status === "Signed" && (
-                        <button onClick={() => toast("Downloading PDF (demo)")} className="px-2.5 py-1 text-xs font-bold text-ink-soft border border-divider bg-surface rounded-control hover:bg-surface-page">Download</button>
+                        <button onClick={() => toast("Downloading PDF (demo)")} className="px-2.5 py-1 text-xs font-bold text-ink-soft border border-divider bg-surface rounded-control hover:bg-surface-hover">Download</button>
                       )}
                       {role === "Admin" && unsigned && (
                         <button onClick={() => toast("Form resent (demo)")} className="px-2.5 py-1 text-xs font-bold text-white bg-ink rounded-control hover:bg-surface-sunken">Resend Form</button>

@@ -26,7 +26,7 @@ export function AvailabilityFilter({
         ref={ref}
         onClick={() => setOpen((o) => !o)}
         className={`inline-flex items-center gap-1.5 min-h-[44px] px-3.5 rounded-card border text-sm font-bold transition-colors ${
-          active ? "border-divider bg-surface-page text-ink-soft" : "border-divider bg-surface text-ink-soft hover:bg-surface-page"
+          active ? "border-divider bg-surface-page text-ink-soft" : "border-divider bg-surface text-ink-soft hover:bg-surface-hover"
         }`}
       >
         <FilterIcon className="w-4 h-4" />
@@ -50,7 +50,7 @@ export function AvailabilityFilter({
                   return (
                     <label
                       key={o.value}
-                      className="flex items-center gap-2.5 px-2.5 py-2 min-h-[44px] rounded-card cursor-pointer hover:bg-surface-page"
+                      className="flex items-center gap-2.5 px-2.5 py-2 min-h-[44px] rounded-card cursor-pointer hover:bg-surface-hover"
                     >
                       <input
                         type="checkbox"

@@ -16,7 +16,7 @@ function LayerRow({ label, count, color, checked, onToggle, striped }: {
   return (
     <button
       onClick={onToggle}
-      className="w-full flex items-center gap-2.5 px-2 py-2 rounded-card hover:bg-surface-page transition-colors text-left group"
+      className="w-full flex items-center gap-2.5 px-2 py-2 rounded-card hover:bg-surface-hover transition-colors text-left group"
     >
       <span
         className={`w-4 h-4 rounded-control shrink-0 flex items-center justify-center border transition-colors ${

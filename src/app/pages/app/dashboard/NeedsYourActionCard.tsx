@@ -23,7 +23,7 @@ type Filter = "All" | ActionItemKind;
 function ActionRow({ item, onOpen }: { item: ActionItem; onOpen: () => void }) {
   const overdue = item.waitHours > 48;
   return (
-    <button onClick={onOpen} className="w-full flex items-start gap-3 px-4 py-4 hover:bg-surface-page text-left transition-colors">
+    <button onClick={onOpen} className="w-full flex items-start gap-3 px-4 py-4 hover:bg-surface-hover text-left transition-colors">
       <span className="min-w-0 flex-1">
         {/* Low-sat type chip: grey fill, grey text, one tiny colour dot. */}
         <span className="inline-flex items-center gap-1.5 px-2 py-0.5 text-overline rounded-control bg-surface-hover text-ink-soft">

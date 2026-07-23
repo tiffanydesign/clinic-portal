@@ -1,10 +1,13 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router";
-import { X, ArrowRight, ArrowLeft, UserPlus, CheckCircle2, AlertTriangle, CalendarPlus } from "lucide-react";
+import { ArrowRight, ArrowLeft, UserPlus, CheckCircle2, AlertTriangle, CalendarPlus } from "lucide-react";
 import { toast } from "sonner";
 import { Patient } from "../patientsData";
 import { createPatient, findByPhone, findByEmail, logDuplicateOverride, NewPatientInput } from "../patientsStore";
 import { DiscardDialog } from "../../../components/DiscardDialog";
+import { Modal } from "../../../components/ui/modal";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
 
 // The single Register Patient surface for the whole portal (Patients list,
 // Reception dashboard, and modal-over-modal from the booking flow).
@@ -22,15 +25,15 @@ import { DiscardDialog } from "../../../components/DiscardDialog";
 type Mode = "standalone" | "embedded";
 type Step = 1 | 2 | "done";
 
-const inputCls = "w-full px-3 py-2 border border-divider rounded-control text-sm outline-none focus:border-border-strong";
-const labelCls = "block text-xs font-bold text-ink-soft uppercase tracking-wider mb-2";
+const inputCls = "w-full px-3 py-2 border border-divider rounded-control text-data outline-none focus:border-border-strong bg-surface";
+const labelCls = "block text-label font-bold text-ink-soft uppercase tracking-wider mb-2";
 
 function StepDots({ step }: { step: 1 | 2 }) {
   const dot = (n: 1 | 2, label: string) => {
     const active = step === n;
     const done = step > n;
     return (
-      <div className={`flex items-center font-bold text-sm ${active || done ? "text-info-ink" : "text-ink-muted"}`}>
+      <div className={`flex items-center font-bold text-data ${active || done ? "text-info-ink" : "text-ink-muted"}`}>
         <div className={`w-6 h-6 rounded-full flex items-center justify-center mr-2 ${active || done ? "bg-info/15" : "bg-surface-hover"}`}>
           {done ? <CheckCircle2 className="w-3.5 h-3.5" /> : n}
         </div>
@@ -150,80 +153,93 @@ export function RegisterPatientModal({
   // --- success step (standalone only) ---
   if (step === "done" && created) {
     return (
-      <Shell onClose={onClose} title="Patient registered">
-        <div className="p-4 text-center">
+      <Modal
+        open
+        onClose={onClose}
+        title="Patient registered"
+        size="form"
+        footer={
+          <div className="flex justify-between gap-3 w-full">
+            <Button variant="secondary" onClick={() => { navigate(`/patients/${created.patientId}`); onClose(); }}>
+              View patient record
+            </Button>
+            <div className="flex gap-3">
+              <Button variant="ghost" onClick={onClose}>Done</Button>
+              <Button variant="primary" onClick={() => { onBookFirst?.(created); onClose(); }}>
+                <CalendarPlus className="w-4 h-4" /> Book first appointment
+              </Button>
+            </div>
+          </div>
+        }
+      >
+        <div className="text-center">
           <div className="w-12 h-12 rounded-full bg-success/10 flex items-center justify-center mx-auto mb-3">
             <CheckCircle2 className="w-6 h-6 text-success-ink" />
           </div>
-          <div className="text-base font-bold text-ink">{created.name}</div>
-          <div className="text-xs text-ink-muted mt-0.5">{created.patientId} · {created.phone || created.email}</div>
-          <p className="text-sm text-ink-muted mt-3">Registered and searchable in the patient list.</p>
+          <div className="text-section font-bold text-ink">{created.name}</div>
+          <div className="text-label text-ink-muted mt-0.5">{created.patientId} · {created.phone || created.email}</div>
+          <p className="text-body text-ink-muted mt-3">Registered and searchable in the patient list.</p>
         </div>
-        <div className="px-6 py-4 bg-surface-page border-t border-divider flex justify-between gap-3">
-          <button
-            onClick={() => { navigate(`/patients/${created.patientId}`); onClose(); }}
-            className="min-h-11 px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover transition-colors"
-          >
-            View patient record
-          </button>
-          <div className="flex gap-3">
-            <button onClick={onClose} className="min-h-11 px-4 py-2 text-sm font-bold text-ink-muted hover:text-ink transition-colors">
-              Done
-            </button>
-            <button
-              onClick={() => { onBookFirst?.(created); onClose(); }}
-              className="min-h-11 px-5 py-2 rounded-control text-sm font-bold text-white bg-ink hover:bg-surface-sunken transition-colors shadow-sm inline-flex items-center gap-2"
-            >
-              <CalendarPlus className="w-4 h-4" /> Book first appointment
-            </button>
-          </div>
-        </div>
-      </Shell>
+      </Modal>
     );
   }
 
   // --- duplicate gate ---
   if (duplicate) {
     return (
-      <Shell onClose={requestClose} title="Possible duplicate">
-        <div className="p-6">
-          <div className="flex gap-3 rounded-card border border-warning/30 bg-warning/10 p-4">
-            <AlertTriangle className="w-5 h-5 text-warning-ink shrink-0 mt-0.5" />
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-warning-ink">
-                A patient with this {duplicate.email.trim().toLowerCase() === email.trim().toLowerCase() ? "email address" : "phone number"} already exists: {duplicate.name} ({duplicate.patientId})
-              </p>
-              <p className="text-xs text-warning-ink/80 mt-1">{duplicate.phone} · {duplicate.email || "no email on file"}</p>
+      <Modal
+        open
+        onClose={requestClose}
+        title="Possible duplicate"
+        size="form"
+        footer={
+          <div className="flex justify-between gap-3 w-full">
+            <Button variant="ghost" onClick={() => setDuplicate(null)}>Back</Button>
+            <div className="flex gap-3">
+              <Button variant="secondary" onClick={() => { const d = duplicate; setDuplicate(null); commit(d); }}>Register anyway</Button>
+              <Button variant="primary" onClick={useExisting}>Use existing patient</Button>
             </div>
           </div>
-        </div>
-        <div className="px-6 py-4 bg-surface-page border-t border-divider flex justify-between gap-3">
-          <button onClick={() => setDuplicate(null)} className="min-h-11 px-4 py-2 text-sm font-bold text-ink-muted hover:text-ink">
-            Back
-          </button>
-          <div className="flex gap-3">
-            <button
-              onClick={() => { const d = duplicate; setDuplicate(null); commit(d); }}
-              className="min-h-11 px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover transition-colors"
-            >
-              Register anyway
-            </button>
-            <button
-              onClick={useExisting}
-              className="min-h-11 px-5 py-2 rounded-control text-sm font-bold text-white bg-ink hover:bg-surface-sunken transition-colors shadow-sm"
-            >
-              Use existing patient
-            </button>
+        }
+      >
+        <div className="flex gap-3 rounded-card border border-warning/30 bg-warning/10 p-4">
+          <AlertTriangle className="w-5 h-5 text-warning-ink shrink-0 mt-0.5" />
+          <div className="min-w-0">
+            <p className="text-body font-semibold text-warning-ink">
+              A patient with this {duplicate.email.trim().toLowerCase() === email.trim().toLowerCase() ? "email address" : "phone number"} already exists: {duplicate.name} ({duplicate.patientId})
+            </p>
+            <p className="text-label text-warning-ink/80 mt-1">{duplicate.phone} · {duplicate.email || "no email on file"}</p>
           </div>
         </div>
-      </Shell>
+      </Modal>
     );
   }
 
   // --- form ---
   return (
-    <Shell onClose={requestClose} title="New Patient">
-      <div className="p-6 space-y-6 overflow-y-auto">
+    <Modal
+      open
+      onClose={requestClose}
+      title="New Patient"
+      size="form"
+      footer={
+        <div className="flex justify-between gap-3 w-full">
+          {step === 2 ? (
+            <Button variant="ghost" onClick={() => setStep(1)}><ArrowLeft className="w-4 h-4" /> Back</Button>
+          ) : <span />}
+          {step === 1 ? (
+            <Button variant="primary" onClick={goStep2} disabled={!step1Valid} disabledReason="Enter first and last name">
+              Next Step <ArrowRight className="w-4 h-4" />
+            </Button>
+          ) : (
+            <Button variant="primary" onClick={submit} disabled={!step2Valid} disabledReason="Enter a valid email address">
+              <UserPlus className="w-4 h-4" /> Add Patient
+            </Button>
+          )}
+        </div>
+      }
+    >
+      <div className="space-y-6">
         <StepDots step={step as 1 | 2} />
 
         {step === 1 ? (
@@ -231,18 +247,18 @@ export function RegisterPatientModal({
             <div className="grid grid-cols-12 gap-4">
               <div className="col-span-3">
                 <label className={labelCls}>Title</label>
-                <select value={title} onChange={(e) => setTitle(e.target.value)} className={`${inputCls} bg-surface`}>
+                <select value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls}>
                   <option>Mr</option><option>Mrs</option><option>Ms</option><option>Dr</option>
                 </select>
               </div>
               <div className="col-span-4">
                 <label className={labelCls}>First Name <span className="text-danger-ink">*</span></label>
-                <input autoFocus value={firstName} onChange={(e) => setFirstName(e.target.value)} className={inputCls} />
+                <Input autoFocus value={firstName} onChange={(e) => setFirstName(e.target.value)} />
                 {errors.firstName && <p className="text-label text-danger-ink font-medium mt-1">{errors.firstName}</p>}
               </div>
               <div className="col-span-5">
                 <label className={labelCls}>Last Name <span className="text-danger-ink">*</span></label>
-                <input value={lastName} onChange={(e) => setLastName(e.target.value)} className={inputCls} />
+                <Input value={lastName} onChange={(e) => setLastName(e.target.value)} />
                 {errors.lastName && <p className="text-label text-danger-ink font-medium mt-1">{errors.lastName}</p>}
               </div>
             </div>
@@ -250,11 +266,11 @@ export function RegisterPatientModal({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={labelCls}>Date of Birth</label>
-                <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className={inputCls} />
+                <Input type="date" value={dob} onChange={(e) => setDob(e.target.value)} />
               </div>
               <div>
                 <label className={labelCls}>Sex</label>
-                <select value={sex} onChange={(e) => setSex(e.target.value as Patient["sex"])} className={`${inputCls} bg-surface`}>
+                <select value={sex} onChange={(e) => setSex(e.target.value as Patient["sex"])} className={inputCls}>
                   <option value="">Select sex…</option>
                   <option value="M">Male</option>
                   <option value="F">Female</option>
@@ -267,9 +283,9 @@ export function RegisterPatientModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className={labelCls}>Email <span className="text-danger-ink">*</span></label>
-              <input
+              <Input
                 autoFocus type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@example.com" className={inputCls}
+                placeholder="name@example.com"
               />
               {errors.email
                 ? <p className="text-label text-danger-ink font-medium mt-1">{errors.email}</p>
@@ -277,41 +293,12 @@ export function RegisterPatientModal({
             </div>
             <div>
               <label className={labelCls}>Mobile Phone</label>
-              <input
+              <Input
                 value={phone} onChange={(e) => setPhone(e.target.value)}
-                placeholder="+90 5XX XXX XXXX" className={inputCls}
+                placeholder="+90 5XX XXX XXXX"
               />
             </div>
           </div>
-        )}
-      </div>
-
-      <div className="px-6 py-4 bg-surface-page border-t border-divider flex justify-between gap-3">
-        {step === 2 ? (
-          <button onClick={() => setStep(1)} className="min-h-11 px-4 py-2 text-sm font-bold text-ink-muted hover:text-ink inline-flex items-center gap-1.5">
-            <ArrowLeft className="w-4 h-4" /> Back
-          </button>
-        ) : <span />}
-        {step === 1 ? (
-          <button
-            onClick={goStep2}
-            disabled={!step1Valid}
-            className={`min-h-11 px-5 py-2 rounded-control text-sm font-bold transition-colors shadow-sm inline-flex items-center gap-2 ${
-              step1Valid ? "bg-ink hover:bg-surface-sunken text-white" : "bg-surface-sunken text-ink-muted cursor-not-allowed"
-            }`}
-          >
-            Next Step <ArrowRight className="w-4 h-4" />
-          </button>
-        ) : (
-          <button
-            onClick={submit}
-            disabled={!step2Valid}
-            className={`min-h-11 px-5 py-2 rounded-control text-sm font-bold transition-colors shadow-sm inline-flex items-center gap-2 ${
-              step2Valid ? "bg-ink hover:bg-surface-sunken text-white" : "bg-surface-sunken text-ink-muted cursor-not-allowed"
-            }`}
-          >
-            <UserPlus className="w-4 h-4" /> Add Patient
-          </button>
         )}
       </div>
 
@@ -324,25 +311,6 @@ export function RegisterPatientModal({
           onDiscard={() => { setConfirmDiscard(false); onClose(); }}
         />
       )}
-    </Shell>
-  );
-}
-
-// z-[60] so this can sit over the booking modal (z-50) as a modal-over-modal
-// without the booking flow having to unmount — that's what preserves its
-// already-filled fields.
-function Shell({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
-  return (
-    <div className="fixed inset-0 bg-surface-sunken/40 backdrop-blur-sm flex items-center justify-center z-[60] p-6">
-      <div className="bg-surface rounded-card shadow-2xl w-full max-w-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in-95 max-h-[85vh]">
-        <div className="px-6 py-4 border-b border-divider flex justify-between items-center bg-surface-page shrink-0">
-          <h2 className="text-lg font-bold text-ink">{title}</h2>
-          <button onClick={onClose} className="p-1.5 text-ink-muted hover:text-ink-soft hover:bg-surface-sunken rounded-full transition-colors">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        {children}
-      </div>
-    </div>
+    </Modal>
   );
 }

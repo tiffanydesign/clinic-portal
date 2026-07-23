@@ -1,17 +1,18 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { Copy, Trash2, Plus, Edit2, ChevronLeft } from "lucide-react";
+import { Copy, Trash2, Plus, Edit2, ChevronLeft, AlertTriangle, ClipboardList } from "lucide-react";
 import { toast } from "sonner";
 import {
-  DAYS, WeekSchedule, Slot, OverrideItem, LeaveDuration, LeaveReason,
-  cloneSchedule, scheduleEquals, classifyWeekChange, classifyDateChange,
-  checkLeaveConflicts, ChangeDirection, BookedAppt,
+  DAYS, WeekSchedule, LeaveDuration, LeaveReason,
+  cloneSchedule, scheduleEquals, classifyWeekChange,
+  checkLeaveConflicts, ChangeDirection, BookedAppt, blockedTimeConflicts,
 } from "./availabilityData";
-import { useAvailabilityStore, availabilityActions, dayOfWeekForDate, getPendingRequests } from "./availabilityStore";
-import { PendingRequestsSection } from "./PendingRequestsSection";
-import { DateOverridesSection } from "./DateOverridesSection";
-import { LeaveRequestsSection } from "./LeaveRequestsSection";
-import { OverrideModal } from "./OverrideModal";
+import { useAvailabilityStore, availabilityActions, getPendingRequests } from "./availabilityStore";
+import { RequestCentreModal } from "./RequestCentreModal";
+import { BlockedTimeSection } from "./BlockedTimeSection";
+import { LeaveEntrySection } from "./LeaveEntrySection";
+import { AvailabilityPreview } from "./AvailabilityPreview";
+import { BlockedTimeModal } from "./BlockedTimeModal";
 import { LeaveRequestModal } from "./LeaveRequestModal";
 import { ConflictModal } from "./ConflictModal";
 import { WithdrawModal } from "./WithdrawModal";
@@ -32,9 +33,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: () => void 
 
 type ConflictContext =
   | { kind: "schedule"; conflicts: BookedAppt[] }
-  | { kind: "override-create"; conflicts: BookedAppt[]; date: string; slots: Slot[] }
-  | { kind: "override-edit"; conflicts: BookedAppt[]; id: string; slots: Slot[] }
-  | { kind: "override-delete"; conflicts: BookedAppt[]; id: string }
+  | { kind: "blocked-time"; conflicts: BookedAppt[]; date: string; startMin: number; durationMin: number; reason: string }
   | { kind: "leave"; conflicts: BookedAppt[]; dateFrom: string; dateTo: string; duration: LeaveDuration; reason: LeaveReason; reasonOther?: string };
 
 type WithdrawContext = { kind: "leave"; id: string };
@@ -43,7 +42,7 @@ export function AvailabilityEditorPage() {
   const navigate = useNavigate();
   const store = useAvailabilityStore();
 
-  const [title, setTitle] = useState("Clinic Availability");
+  const [title, setTitle] = useState("My Availability");
   const [isEditingTitle, setIsEditingTitle] = useState(false);
 
   // The draft is local until Save commits it to the store — Weekly Hours
@@ -75,8 +74,9 @@ export function AvailabilityEditorPage() {
 
   const [conflictModal, setConflictModal] = useState<ConflictContext | null>(null);
   const [withdrawModal, setWithdrawModal] = useState<WithdrawContext | null>(null);
-  const [overrideModalState, setOverrideModalState] = useState<{ editing?: OverrideItem } | null>(null);
+  const [blockedTimeModalOpen, setBlockedTimeModalOpen] = useState(false);
   const [leaveModalState, setLeaveModalState] = useState<{ initialDate?: string } | null>(null);
+  const [requestModalOpen, setRequestModalOpen] = useState(false);
 
   // --- weekly editor handlers ---
   const toggleDay = (day: string) => {
@@ -129,52 +129,38 @@ export function AvailabilityEditorPage() {
     }
   };
 
-  // --- Override create/edit — same instant-apply rule as Weekly Hours ---
-  const handleOverrideApply = (date: string, slots: Slot[]) => {
-    const editing = overrideModalState?.editing;
-    if (editing) {
-      const preview = classifyDateChange(editing.slots, true, slots, true, editing.date);
-      if (preview.direction === "Reducing" && preview.conflicts.length > 0) {
-        setConflictModal({ kind: "override-edit", conflicts: preview.conflicts, id: editing.id, slots });
-        return;
-      }
-      const res = availabilityActions.submitOverrideEdit(editing.id, slots);
-      if (!res.ok) { toast.error(res.error); return; }
-      toast.success("Availability updated.");
-      setOverrideModalState(null);
+  // --- Blocked Time — same instant-apply rule as Weekly Hours. A window that
+  // overlaps a booked appointment opens the blocking ConflictModal, which
+  // commits the block once every booking is resolved. Removing a block only
+  // frees time, so it never conflicts. ---
+  const handleBlockedTimeApply = (date: string, startMin: number, durationMin: number, reason: string) => {
+    const conflicts = blockedTimeConflicts(date, startMin, durationMin);
+    if (conflicts.length > 0) {
+      setConflictModal({ kind: "blocked-time", conflicts, date, startMin, durationMin, reason });
       return;
     }
-
-    const day = dayOfWeekForDate(date);
-    const template = store.savedSchedule[day];
-    const preview = classifyDateChange(template.slots, template.active, slots, true, date);
-    if (preview.direction === "Reducing" && preview.conflicts.length > 0) {
-      setConflictModal({ kind: "override-create", conflicts: preview.conflicts, date, slots });
-      return;
-    }
-    const res = availabilityActions.submitOverride(date, slots);
-    if (!res.ok) { toast.error(res.error); return; }
-    toast.success("Availability updated.");
-    setOverrideModalState(null);
+    availabilityActions.addBlockedTime(date, startMin, durationMin, reason);
+    toast.success("Blocked time added.");
+    setBlockedTimeModalOpen(false);
   };
 
-  const handleOverrideDelete = (o: OverrideItem) => {
-    const template = store.savedSchedule[o.dayOfWeek];
-    const preview = classifyDateChange(o.slots, true, template.slots, template.active, o.date);
-    if (preview.direction === "Reducing" && preview.conflicts.length > 0) {
-      setConflictModal({ kind: "override-delete", conflicts: preview.conflicts, id: o.id });
-      return;
-    }
-    availabilityActions.deleteOverride(o.id);
-    toast.success("Override removed.");
+  const handleRemoveBlockedTime = (id: string) => {
+    availabilityActions.removeBlockedTime(id);
+    toast.success("Blocked time removed.");
   };
 
   const handleRequestLeaveInstead = (date: string) => {
-    setOverrideModalState(null);
+    setBlockedTimeModalOpen(false);
     setLeaveModalState({ initialDate: date });
   };
 
   const handleSubmitLeave = (dateFrom: string, dateTo: string, duration: LeaveDuration, reason: LeaveReason, reasonOther: string | undefined) => {
+    // Checked first, before conflict-awareness, so a blocked submission never
+    // detours through the ConflictModal only to fail at the very end.
+    if (availabilityActions.hasPendingRequest()) {
+      toast.error("You already have a request pending approval. Withdraw it or wait for a decision before submitting a new one.");
+      return;
+    }
     if (availabilityActions.hasLeaveOverlap(dateFrom, dateTo)) {
       toast.error("You already have a leave request for this date.");
       return;
@@ -202,19 +188,10 @@ export function AvailabilityEditorPage() {
         setEvalResult({ isDirty: false, direction: "Same", conflicts: [] });
         toast.success("Availability updated.");
         break;
-      case "override-create": {
-        const res = availabilityActions.submitOverride(conflictModal.date, conflictModal.slots);
-        if (res.ok) { toast.success("Availability updated."); setOverrideModalState(null); }
-        break;
-      }
-      case "override-edit": {
-        const res = availabilityActions.submitOverrideEdit(conflictModal.id, conflictModal.slots);
-        if (res.ok) { toast.success("Availability updated."); setOverrideModalState(null); }
-        break;
-      }
-      case "override-delete":
-        availabilityActions.deleteOverride(conflictModal.id);
-        toast.success("Override removed.");
+      case "blocked-time":
+        availabilityActions.addBlockedTime(conflictModal.date, conflictModal.startMin, conflictModal.durationMin, conflictModal.reason);
+        toast.success("Blocked time added.");
+        setBlockedTimeModalOpen(false);
         break;
       case "leave": {
         const res = availabilityActions.submitLeave(conflictModal.dateFrom, conflictModal.dateTo, conflictModal.duration, conflictModal.reason, conflictModal.reasonOther);
@@ -234,7 +211,6 @@ export function AvailabilityEditorPage() {
   };
 
   const pending = useMemo(() => getPendingRequests(store), [store]);
-  const overridesForDialog = store.overrides.filter((o) => o.status !== "Rejected").map((o) => parseInt(o.date.split(" ")[0], 10));
 
   return (
     <div className="flex flex-col h-full bg-surface-page relative">
@@ -261,12 +237,36 @@ export function AvailabilityEditorPage() {
         </div>
 
         <div className="flex items-center space-x-4">
+          {/* Surfaced BEFORE the user clicks Save, not only after — so the
+              affected count is visible up front rather than a surprise
+              buried behind the modal. */}
+          {hasBlockingConflicts && (
+            <span className="flex items-center gap-1.5 text-xs font-bold text-danger-ink">
+              <AlertTriangle className="w-3.5 h-3.5" />
+              {evalResult.conflicts.length} booking{evalResult.conflicts.length === 1 ? "" : "s"} affected
+            </span>
+          )}
+          {/* Only place request status lives — one current request (Leave is
+              the only kind that can ever be Pending) + its decision history,
+              behind a popup rather than a permanent right-column card. */}
+          <button
+            onClick={() => setRequestModalOpen(true)}
+            className="relative inline-flex items-center gap-2 h-9 px-3.5 rounded-control text-sm font-medium text-ink-soft border border-divider bg-surface hover:bg-surface-hover transition-colors"
+          >
+            <ClipboardList className="w-4 h-4 text-ink-muted" /> Requests
+            {pending.length > 0 && (
+              <span className="inline-flex items-center justify-center min-w-4 h-4 px-1 rounded-full bg-warning-ink text-white text-overline font-bold tabular-nums">
+                {pending.length}
+              </span>
+            )}
+          </button>
           <div title="Default schedules cannot be deleted" className="cursor-not-allowed">
             <button disabled className="p-2 text-ink-muted border border-transparent rounded-control"><Trash2 className="w-5 h-5" /></button>
           </div>
           <button
             onClick={handleSaveClick}
             disabled={!evalResult.isDirty}
+            title={hasBlockingConflicts ? "Resolve affected bookings to save" : undefined}
             className={`px-6 py-2 font-bold text-sm rounded-control transition-colors ${
               !evalResult.isDirty ? "bg-surface-sunken text-ink-muted cursor-not-allowed" : "bg-ink text-white hover:bg-ink"
             }`}
@@ -286,9 +286,16 @@ export function AvailabilityEditorPage() {
 
       {/* Content Area */}
       <div className="flex-1 overflow-hidden flex">
-        {/* Left Side (65%) — weekly editor */}
-        <div className="w-[65%] h-full overflow-y-auto p-4 border-r border-divider bg-surface">
-          <div className="max-w-2xl mx-auto space-y-6">
+        {/* Left Side (55%) — Weekly Hours is the day-by-day editor and gets
+            the majority of the width to itself; the pale page shows through
+            around its card the same way the right column's cards sit. */}
+        <div className="w-[55%] h-full overflow-y-auto p-4 border-r border-divider bg-surface-page">
+          <div className="bg-surface rounded-card p-4">
+          <div className="flex items-center gap-2 mb-4">
+            <h3 className="text-base font-bold text-ink">Weekly Hours</h3>
+            <span className="px-2 py-0.5 bg-success/10 border border-success/30 text-success-ink text-overline rounded-full">Applies instantly</span>
+          </div>
+          <div className="space-y-6">
             {DAYS.map((day) => {
               const config = localSchedule[day];
               return (
@@ -333,34 +340,36 @@ export function AvailabilityEditorPage() {
               );
             })}
           </div>
+          </div>
         </div>
 
-        {/* Right Side (35%) */}
-        <div className="w-[35%] h-full overflow-y-auto bg-surface-page p-4 space-y-6">
-          <PendingRequestsSection
-            pending={pending}
-            decisions={store.decisions}
-            onWithdraw={(req) => setWithdrawModal({ kind: "leave", id: req.relatedId! })}
+        {/* Right Side (45%) — Blocked Time, the Leave entry point, and the
+            read-only Preview stack here; request STATUS lives only in the
+            Requests popup (top bar), never a permanent card on this side. */}
+        <div className="w-[45%] h-full overflow-y-auto bg-surface-page p-4 space-y-4">
+          <BlockedTimeSection
+            blocks={store.blockedTime}
+            onAdd={() => setBlockedTimeModalOpen(true)}
+            onRemove={handleRemoveBlockedTime}
           />
 
-          <DateOverridesSection
-            overrides={store.overrides}
-            onAdd={() => setOverrideModalState({})}
-            onEdit={(o) => setOverrideModalState({ editing: o })}
-            onDelete={handleOverrideDelete}
-          />
+          <LeaveEntrySection onNew={() => setLeaveModalState({})} hasPending={pending.length > 0} />
 
-          <LeaveRequestsSection leaves={store.leaves} onNew={() => setLeaveModalState({})} />
+          <AvailabilityPreview
+            savedSchedule={store.savedSchedule}
+            localSchedule={localSchedule}
+            blockedTime={store.blockedTime}
+            leaves={store.leaves}
+          />
         </div>
       </div>
 
-      {overrideModalState && (
-        <OverrideModal
-          onClose={() => setOverrideModalState(null)}
-          onApply={handleOverrideApply}
+      {blockedTimeModalOpen && (
+        <BlockedTimeModal
+          onClose={() => setBlockedTimeModalOpen(false)}
+          onApply={handleBlockedTimeApply}
           onRequestLeaveInstead={handleRequestLeaveInstead}
-          existingDates={overridesForDialog}
-          editing={overrideModalState.editing}
+          savedSchedule={store.savedSchedule}
         />
       )}
 
@@ -371,13 +380,22 @@ export function AvailabilityEditorPage() {
       {conflictModal && (
         <ConflictModal
           bookings={conflictModal.conflicts}
-          context={conflictModal.kind === "leave" ? "leave" : conflictModal.kind === "schedule" ? "schedule" : "override"}
+          context={conflictModal.kind === "leave" ? "leave" : conflictModal.kind === "schedule" ? "schedule" : "blocked-time"}
           onCancel={() => setConflictModal(null)}
           onConfirm={confirmConflict}
         />
       )}
 
       {withdrawModal && <WithdrawModal onCancel={() => setWithdrawModal(null)} onConfirm={confirmWithdraw} />}
+
+      {requestModalOpen && (
+        <RequestCentreModal
+          pending={pending}
+          decisions={store.decisions}
+          onWithdraw={(req) => { setRequestModalOpen(false); setWithdrawModal({ kind: "leave", id: req.relatedId! }); }}
+          onClose={() => setRequestModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { Link } from "react-router";
 import { RangeDatePicker } from "../../components/RangeDatePicker";
 import { format } from "date-fns";
 import { getStaff } from "./staff/staffData";
+import { Input } from "../../components/ui/input";
 
 // --- Types ---
 type Role = 'Clinician' | 'Nurse' | 'Receptionist';
@@ -230,7 +231,7 @@ export function TimesheetPage() {
         <div className="relative" ref={exportRef}>
           <button 
             onClick={() => setExportOpen(!exportOpen)}
-            className="flex items-center px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-page transition-colors shadow-sm"
+            className="flex items-center px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover transition-colors shadow-sm"
           >
             <Download className="w-4 h-4 mr-2 text-ink-muted" /> Export <ChevronDown className="w-4 h-4 ml-2 text-ink-muted" />
           </button>
@@ -283,13 +284,13 @@ export function TimesheetPage() {
                 <div className="p-3 border-b border-divider shrink-0">
                   <div className="relative">
                     <Search className="w-4 h-4 text-ink-muted absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input 
+                    <Input
                       autoFocus
-                      type="text" 
-                      placeholder="Search by name..." 
+                      type="text"
+                      placeholder="Search by name..."
                       value={search}
                       onChange={e => setSearch(e.target.value)}
-                      className="w-full pl-9 pr-4 py-2 border border-divider rounded-control text-sm outline-none focus:border-info"
+                      className="pl-9 pr-4 focus:border-info"
                     />
                   </div>
                 </div>
@@ -520,9 +521,9 @@ export function TimesheetPage() {
                       else if (rec.variance < 0) varColor = "text-danger-ink font-bold";
 
                       return (
-                        <tr key={`${staff.id}-${rec.id}`} className={`group hover:bg-surface-page transition-colors ${bgClass}`}>
+                        <tr key={`${staff.id}-${rec.id}`} className={`group hover:bg-surface-hover transition-colors ${bgClass}`}>
                           {/* Sticky Staff Col */}
-                          <td className={`p-4 border-r border-divider sticky left-0 z-10 shadow-[1px_0_0_var(--border-strong)] group-hover:bg-surface-page transition-colors ${isFirst ? 'bg-surface' : bgClass}`}>
+                          <td className={`p-4 border-r border-divider sticky left-0 z-10 shadow-[1px_0_0_var(--border-strong)] group-hover:bg-surface-hover transition-colors ${isFirst ? 'bg-surface' : bgClass}`}>
                             {isFirst && (
                               <div className="flex items-center">
                                 <div className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-xs font-bold text-ink-soft shrink-0 mr-3">
@@ -577,8 +578,8 @@ export function TimesheetPage() {
                     const varColor = ws.totalVariance > 0 ? "text-success-ink font-bold" : ws.totalVariance < 0 ? "text-danger-ink font-bold" : "text-ink-muted";
                     
                     return (
-                      <tr key={staff.id} className="hover:bg-surface-page transition-colors bg-surface group">
-                        <td className="p-4 border-r border-divider sticky left-0 z-10 bg-surface group-hover:bg-surface-page transition-colors shadow-[1px_0_0_var(--border-strong)]">
+                      <tr key={staff.id} className="hover:bg-surface-hover transition-colors bg-surface group">
+                        <td className="p-4 border-r border-divider sticky left-0 z-10 bg-surface group-hover:bg-surface-hover transition-colors shadow-[1px_0_0_var(--border-strong)]">
                           <div className="flex items-center">
                             <div className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-xs font-bold text-ink-soft shrink-0 mr-3">
                               {staff.avatar}

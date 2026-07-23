@@ -120,7 +120,7 @@ export function CalendarWidget({ onAdd }: { onAdd?: () => void } = {}) {
               onClick={onAdd}
               title="New booking"
               aria-label="New booking"
-              className="w-8 h-8 flex items-center justify-center rounded-card border border-divider text-ink-soft hover:bg-surface-page hover:border-border-strong hover:text-ink-soft transition-colors shrink-0"
+              className="w-8 h-8 flex items-center justify-center rounded-card border border-divider text-ink-soft hover:bg-surface-hover hover:border-border-strong hover:text-ink-soft transition-colors shrink-0"
             >
               <Plus className="w-4 h-4" />
             </button>

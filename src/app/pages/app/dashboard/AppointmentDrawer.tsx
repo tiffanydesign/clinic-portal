@@ -149,7 +149,7 @@ function PatientDetailsCollapsible({ patient }: { patient: Appt["patient"] }) {
     <div className="border-b border-divider">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full px-5 py-3 flex items-center justify-between text-xs font-bold text-ink-muted hover:bg-surface-page transition-colors"
+        className="w-full px-5 py-3 flex items-center justify-between text-xs font-bold text-ink-muted hover:bg-surface-hover transition-colors"
       >
         Patient Details
         <span className="text-ink-muted">{open ? "▾" : "▸"}</span>
@@ -197,7 +197,7 @@ function ReceptionInner({ appt }: { appt: Appt }) {
           {appt.forms.some((f) => f.status !== "Signed") && (
             <div className="flex gap-2 mt-3">
               <button onClick={() => toast("Signing request sent to reception iPad")} className="flex-1 px-3 py-2 bg-ink text-white text-xs font-bold rounded-control hover:bg-ink">Initialize Signing</button>
-              <button onClick={() => toast("Form sent to patient app")} className="flex-1 px-3 py-2 border border-divider bg-surface text-ink-soft text-xs font-bold rounded-control hover:bg-surface-page">Send Form</button>
+              <button onClick={() => toast("Form sent to patient app")} className="flex-1 px-3 py-2 border border-divider bg-surface text-ink-soft text-xs font-bold rounded-control hover:bg-surface-hover">Send Form</button>
             </div>
           )}
         </Block>
@@ -213,7 +213,7 @@ function ReceptionInner({ appt }: { appt: Appt }) {
           {appt.payment !== "Paid" && (
             <div className="flex gap-2 mt-2">
               <button onClick={() => toast("Transaction started on Terminal #1")} className="flex-1 px-3 py-2 bg-ink text-white text-xs font-bold rounded-control hover:bg-ink flex items-center justify-center gap-1.5"><CreditCard className="w-3.5 h-3.5" />Start Transaction</button>
-              <button onClick={() => toast("Payment link sent to patient")} className="flex-1 px-3 py-2 border border-divider bg-surface text-ink-soft text-xs font-bold rounded-control hover:bg-surface-page">Send Payment Link</button>
+              <button onClick={() => toast("Payment link sent to patient")} className="flex-1 px-3 py-2 border border-divider bg-surface text-ink-soft text-xs font-bold rounded-control hover:bg-surface-hover">Send Payment Link</button>
             </div>
           )}
         </Block>

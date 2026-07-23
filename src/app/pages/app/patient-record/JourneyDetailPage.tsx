@@ -67,15 +67,15 @@ function StepNode({ step, isLast, nurseControls, onMarkStarted, onMarkComplete, 
                     <button onClick={onMarkComplete} className="px-3 py-1.5 bg-success-ink text-white text-xs font-bold rounded-control hover:bg-success-ink">Mark as Complete</button>
                   )}
                   {(step.status === "Pending" || step.status === "In Progress") && (
-                    <button onClick={onSkip} className="px-3 py-1.5 border border-divider bg-surface text-ink-soft text-xs font-bold rounded-control hover:bg-surface-page flex items-center gap-1.5">
+                    <button onClick={onSkip} className="px-3 py-1.5 border border-divider bg-surface text-ink-soft text-xs font-bold rounded-control hover:bg-surface-hover flex items-center gap-1.5">
                       <SkipForward className="w-3.5 h-3.5" /> Skip
                     </button>
                   )}
-                  <button onClick={() => toast("Attachment upload (demo)")} className="px-3 py-1.5 border border-divider bg-surface text-ink-soft text-xs font-bold rounded-control hover:bg-surface-page flex items-center gap-1.5"><Paperclip className="w-3.5 h-3.5" /> Add Attachment</button>
+                  <button onClick={() => toast("Attachment upload (demo)")} className="px-3 py-1.5 border border-divider bg-surface text-ink-soft text-xs font-bold rounded-control hover:bg-surface-hover flex items-center gap-1.5"><Paperclip className="w-3.5 h-3.5" /> Add Attachment</button>
                 </div>
                 <div className="flex gap-2">
                   <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Add a note for this step…" className="flex-1 px-3 py-1.5 border border-divider rounded-control text-xs outline-none focus:border-border-strong bg-surface" />
-                  <button onClick={() => { if (note.trim()) { toast.success("Note added."); setNote(""); } }} className="px-3 py-1.5 border border-divider bg-surface text-ink-soft text-xs font-bold rounded-control hover:bg-surface-page">Add Note</button>
+                  <button onClick={() => { if (note.trim()) { toast.success("Note added."); setNote(""); } }} className="px-3 py-1.5 border border-divider bg-surface text-ink-soft text-xs font-bold rounded-control hover:bg-surface-hover">Add Note</button>
                 </div>
               </div>
             )}
@@ -110,7 +110,7 @@ export function JourneyDetailPage() {
   }));
 
   return (
-    <div className="p-4 max-w-3xl mx-auto">
+    <div className="p-4">
       <Link to={`/patients/${patientId}/journeys`} className="flex items-center text-sm font-bold text-ink-muted hover:text-ink mb-6 w-fit">
         <ChevronLeft className="w-4 h-4 mr-1" /> Back to Journeys
       </Link>

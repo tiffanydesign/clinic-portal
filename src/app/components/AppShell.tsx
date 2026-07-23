@@ -36,7 +36,7 @@ const NAV_ITEMS = {
     { label: "Dashboard", path: "/dashboard" },
     { label: "Calendar", path: "/calendar", children: [
       { label: "Schedule", path: "/calendar/schedule" },
-      { label: "Availability", path: "/calendar/availability" }
+      { label: "Team Availability", path: "/calendar/availability" }
     ]},
     { label: "Patients", path: "/patients" },
     { label: "Staff", path: "/staff" },
@@ -52,7 +52,7 @@ const NAV_ITEMS = {
     { label: "Dashboard", path: "/dashboard" },
     { label: "Calendar", path: "/calendar", children: [
       { label: "Schedule", path: "/calendar/schedule" },
-      { label: "Availability", path: "/calendar/availability" }
+      { label: "Team Availability", path: "/calendar/availability" }
     ]},
     { label: "Patients", path: "/patients" },
     { label: "Billing", path: "/billing" },
@@ -64,7 +64,7 @@ const NAV_ITEMS = {
     { label: "Calendar", path: "/calendar", children: [
       { label: "Schedule", path: "/calendar/schedule" },
       { label: "My Availability", path: "/calendar/my-availability" },
-      { label: "Availability", path: "/calendar/availability" }
+      { label: "Team Availability", path: "/calendar/availability" }
     ]},
     { label: "Patients", path: "/patients" },
     { label: "Notifications", path: "/notifications" },
@@ -75,7 +75,7 @@ const NAV_ITEMS = {
     { label: "Calendar", path: "/calendar", children: [
       { label: "Schedule", path: "/calendar/schedule" },
       { label: "My Availability", path: "/calendar/my-availability" },
-      { label: "Availability", path: "/calendar/availability" }
+      { label: "Team Availability", path: "/calendar/availability" }
     ]},
     { label: "Patients", path: "/patients" },
     { label: "Notifications", path: "/notifications" },
@@ -238,7 +238,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       setCalendarExpanded(!isInlineExpanded);
                     }}
                     {...longPressHandlers(item.label)}
-                    className={`w-full flex items-center rounded-card cursor-pointer transition-colors ${sidebarCollapsed ? "justify-center h-12" : "justify-between px-3 min-h-11 py-2.5"} text-sm font-medium ${isActive ? "bg-surface-hover text-ink" : "text-ink-soft hover:bg-surface-page"}`}
+                    className={`w-full flex items-center rounded-card cursor-pointer transition-colors ${sidebarCollapsed ? "justify-center h-12" : "justify-between px-3 min-h-11 py-2.5"} text-sm font-medium ${isActive ? "bg-surface-hover text-ink" : "text-ink-soft hover:bg-surface-hover"}`}
                   >
                     <span className="flex items-center gap-3 min-w-0">
                       <Icon className="w-[18px] h-[18px] shrink-0" />
@@ -276,7 +276,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                               key={child.label}
                               to={child.path}
                               onClick={() => setCalendarFlyoutOpen(false)}
-                              className={`flex items-center min-h-11 py-2.5 px-3 text-sm font-medium transition-colors ${isChildActive ? "bg-surface-hover text-ink" : "text-ink-soft hover:bg-surface-page"}`}
+                              className={`flex items-center min-h-11 py-2.5 px-3 text-sm font-medium transition-colors ${isChildActive ? "bg-surface-hover text-ink" : "text-ink-soft hover:bg-surface-hover"}`}
                             >
                               {child.label}
                             </Link>
@@ -294,7 +294,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 key={item.label}
                 to={item.path}
                 {...longPressHandlers(item.label)}
-                className={`w-full flex items-center gap-3 rounded-card transition-colors ${sidebarCollapsed ? "justify-center h-12" : "px-3 min-h-11 py-2.5"} text-sm font-medium ${isActive ? "bg-surface-hover text-ink" : "text-ink-soft hover:bg-surface-page"}`}
+                className={`w-full flex items-center gap-3 rounded-card transition-colors ${sidebarCollapsed ? "justify-center h-12" : "px-3 min-h-11 py-2.5"} text-sm font-medium ${isActive ? "bg-surface-hover text-ink" : "text-ink-soft hover:bg-surface-hover"}`}
               >
                 <span className="relative shrink-0">
                   <Icon className="w-[18px] h-[18px]" />
@@ -322,7 +322,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             to="/profile"
             title="Profile"
             {...longPressHandlers("Profile")}
-            className={`w-full flex items-center gap-3 hover:bg-surface-page transition-colors ${sidebarCollapsed ? "justify-center h-14" : "px-4 h-16"}`}
+            className={`w-full flex items-center gap-3 hover:bg-surface-hover transition-colors ${sidebarCollapsed ? "justify-center h-14" : "px-4 h-16"}`}
           >
             <div className="w-9 h-9 rounded-full bg-surface-sunken border border-divider flex items-center justify-center text-xs font-bold text-ink-soft shrink-0">
               {role.charAt(0)}

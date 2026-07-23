@@ -1,8 +1,12 @@
 import React, { useMemo, useState } from "react";
 import { addDays, format } from "date-fns";
-import { X, AlertTriangle, UserPlus } from "lucide-react";
+import { AlertTriangle, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
+import { Modal } from "../../../components/ui/modal";
+import { Button } from "../../../components/ui/button";
+import { Input } from "../../../components/ui/input";
+import { Textarea } from "../../../components/ui/textarea";
 import { FilterSelect } from "../../../components/FilterSelect";
 import { ClinicianAvailabilitySelect } from "./ClinicianAvailabilitySelect";
 import { usePatients, toApptPatient } from "../patientsStore";
@@ -15,31 +19,24 @@ import {
   hasClinicianConflict, hasRoomConflict, hasNurseConflict, DAY_START_HOUR, DAY_END_HOUR,
 } from "./scheduleData";
 
-// Shared modal chrome (matches the portal's existing dialog language).
+// Shared modal chrome — thin wrapper over the shared Modal. The three width
+// strings this shim's consumers pass ("max-w-sm"/"max-w-md"/default
+// "max-w-lg") converge onto Modal's two tiers: the default (richer forms)
+// maps to "form", the two narrower confirm-style dialogs map to "confirm".
 export function ModalShell({ title, subtitle, onClose, children, footer, width = "max-w-lg" }: {
   title: string; subtitle?: string; onClose: () => void; children: React.ReactNode; footer: React.ReactNode; width?: string;
 }) {
   return (
-    <div className="fixed inset-0 bg-surface-sunken/30 backdrop-blur-sm flex items-center justify-center z-50 p-6" onClick={onClose}>
-      <div className={`bg-surface rounded-card shadow-2xl border border-divider w-full ${width} max-h-[88vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95`} onClick={(e) => e.stopPropagation()}>
-        <div className="px-6 py-4 border-b border-divider flex justify-between items-start bg-surface-page shrink-0">
-          <div>
-            <h2 className="text-lg font-bold text-ink">{title}</h2>
-            {subtitle && <p className="text-sm text-ink-muted mt-0.5">{subtitle}</p>}
-          </div>
-          <button onClick={onClose} className="p-2 text-ink-muted hover:bg-surface-sunken rounded-full transition-colors"><X className="w-5 h-5" /></button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-6">{children}</div>
-        <div className="px-6 py-4 border-t border-divider flex justify-end gap-3 bg-surface-page shrink-0">{footer}</div>
-      </div>
-    </div>
+    <Modal open onClose={onClose} title={title} subtitle={subtitle} size={width === "max-w-lg" ? "form" : "confirm"} footer={footer}>
+      {children}
+    </Modal>
   );
 }
 
 export function Field({ label, children, required }: { label: string; children: React.ReactNode; required?: boolean }) {
   return (
     <div>
-      <label className="block text-xs font-bold text-ink-soft uppercase tracking-wider mb-1.5">{label}{required && <span className="text-danger-ink"> *</span>}</label>
+      <label className="block text-label font-bold text-ink-soft uppercase tracking-wider mb-1.5">{label}{required && <span className="text-danger-ink"> *</span>}</label>
       {children}
     </div>
   );
@@ -201,21 +198,21 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
       onClose={requestClose}
       footer={
         <>
-          <button onClick={requestClose} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
-          <button onClick={create} disabled={!canCreate} className={`px-6 py-2 rounded-control text-sm font-bold text-white ${canCreate ? "bg-surface-sunken hover:bg-surface-sunken" : "bg-surface-sunken cursor-not-allowed"}`}>Create Appointment</button>
+          <Button variant="secondary" onClick={requestClose}>Cancel</Button>
+          <Button variant="primary" onClick={create} disabled={!canCreate} disabledReason="Select a patient and an available time slot">Create Appointment</Button>
         </>
       }
     >
       <div className="space-y-4">
         <Field label="Patient" required>
-          <input list="patient-list" value={patientName} onChange={(e) => setPatientName(e.target.value)} placeholder="Search name or ID…" className={inputCls} />
+          <Input list="patient-list" value={patientName} onChange={(e) => setPatientName(e.target.value)} placeholder="Search name or ID…" />
           <datalist id="patient-list">{PATIENTS.map((p) => <option key={p.name} value={p.name} />)}</datalist>
           {/* Opens over this modal (never navigates away) so the booking context
               and every filled field survive; on success the new patient is
               selected here automatically. */}
           <button
             onClick={() => setRegisterOpen(true)}
-            className="mt-1.5 min-h-11 text-xs font-bold text-ink-soft hover:underline flex items-center gap-1"
+            className="mt-1.5 min-h-11 text-label font-bold text-ink-soft hover:underline flex items-center gap-1"
           >
             <UserPlus className="w-3.5 h-3.5" /> Register new patient
           </button>
@@ -272,10 +269,10 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
           </Field>
         </div>
 
-        <Field label="Notes"><textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} className={inputCls} placeholder="Optional…" /></Field>
+        <Field label="Notes"><Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Optional…" /></Field>
 
         {availableTimeOptions.length === 0 && (
-          <div className="flex items-center gap-2 bg-warning/10 border border-warning/30 text-warning-ink text-xs font-medium rounded-control px-3 py-2">
+          <div className="flex items-center gap-2 bg-warning/10 border border-warning/30 text-warning-ink text-label font-medium rounded-control px-3 py-2">
             <AlertTriangle className="w-4 h-4 shrink-0" /> No available time slots on this date for this appointment type — try another date.
           </div>
         )}
@@ -332,20 +329,20 @@ export function BlockTimeModal({ onClose, onCreate, doctorId }: { onClose: () =>
       onClose={onClose}
       footer={
         <>
-          <button onClick={onClose} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
-          <button onClick={submit} disabled={!valid} className={`px-6 py-2 rounded-control text-sm font-bold text-white ${valid ? "bg-surface-sunken hover:bg-surface-sunken" : "bg-surface-sunken cursor-not-allowed"}`}>Block Time</button>
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button variant="primary" onClick={submit} disabled={!valid} disabledReason="End time must be after start time">Block Time</Button>
         </>
       }
     >
       <div className="space-y-4">
-        <Field label="Date"><input value="3 Jul 2026" readOnly className={`${inputCls} bg-surface-page`} /></Field>
+        <Field label="Date"><Input value="3 Jul 2026" readOnly className="bg-surface-page" /></Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Start Time"><FilterSelect value={start} onChange={setStart} options={TIME_OPTIONS} className="w-full" /></Field>
           <Field label="End Time"><FilterSelect value={end} onChange={setEnd} options={TIME_OPTIONS} className="w-full" /></Field>
         </div>
         <Field label="Reason"><FilterSelect value={reason} onChange={setReason} options={BLOCK_REASONS} className="w-full" /></Field>
-        <Field label="Note"><textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} className={inputCls} placeholder="Optional…" /></Field>
-        {!valid && <p className="text-xs text-danger-ink font-medium">End time must be after start time.</p>}
+        <Field label="Note"><Textarea value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder="Optional…" /></Field>
+        {!valid && <p className="text-label text-danger-ink font-medium">End time must be after start time.</p>}
       </div>
     </ModalShell>
   );

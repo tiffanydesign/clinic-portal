@@ -38,7 +38,7 @@ export function MyScheduleMonthGrid({ viewMonth, selectedDate, today, countFor, 
               key={d.toISOString()}
               onClick={() => onSelectDay(d)}
               className={`flex flex-col items-start p-2 border-b border-r border-divider min-h-0 min-w-0 transition-colors text-left ${
-                isSelected ? "bg-surface-page" : "hover:bg-surface-page"
+                isSelected ? "bg-surface-page" : "hover:bg-surface-hover"
               } ${!inMonth ? "bg-surface-page/40" : ""}`}
             >
               <span

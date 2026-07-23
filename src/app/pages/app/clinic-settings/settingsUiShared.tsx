@@ -2,9 +2,12 @@
 // drawer shell, a portal overflow menu (escapes table overflow), a centered
 // confirm dialog, and form field primitives — all matching the portal's
 // existing dialog language (solid surfaces, slate accents, 8pt rhythm).
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { X, MoreHorizontal, LucideIcon } from "lucide-react";
+import { MoreHorizontal, LucideIcon } from "lucide-react";
+import { Drawer } from "../../../components/ui/drawer";
+import { Modal } from "../../../components/ui/modal";
+import { Button } from "../../../components/ui/button";
 
 export const inputCls =
   "w-full px-3 py-2 border border-divider rounded-card text-sm text-ink bg-surface outline-none focus:border-border-strong focus:ring-2 focus:ring-divider transition-shadow";
@@ -29,47 +32,15 @@ export function Field({ label, required, hint, error, children }: {
   );
 }
 
-// Right-side drawer. Solid content surface (clinical data never behind glass);
-// only the scrim is translucent. Slides in, with a reduced-motion fallback.
-export function SettingsDrawer({ title, subtitle, onClose, children, footer, width = 480 }: {
-  title: string; subtitle?: string; onClose: () => void; children: React.ReactNode; footer?: React.ReactNode; width?: number;
+// Right-side drawer for the Rooms & Devices admin family — thin wrapper over
+// the shared Drawer (lg tier: these forms are richer than a quick sm panel).
+export function SettingsDrawer({ title, subtitle, onClose, children, footer }: {
+  title: string; subtitle?: string; onClose: () => void; children: React.ReactNode; footer?: React.ReactNode;
 }) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
-
   return (
-    <div className="fixed inset-0 z-50 flex justify-end">
-      <div
-        className="absolute inset-0 bg-surface-sunken/40 backdrop-blur-sm animate-in fade-in motion-reduce:animate-none"
-        onClick={onClose}
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        className="relative h-full bg-surface shadow-2xl flex flex-col animate-in slide-in-from-right-8 fade-in duration-200 motion-reduce:animate-none max-w-[92vw]"
-        style={{ width }}
-      >
-        <div className="px-6 py-4 border-b border-divider flex justify-between items-start bg-surface-page shrink-0">
-          <div className="min-w-0">
-            <h2 className="text-lg font-bold text-ink truncate">{title}</h2>
-            {subtitle && <p className="text-sm text-ink-muted mt-0.5 truncate">{subtitle}</p>}
-          </div>
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            className="p-2 -mr-1 text-ink-muted hover:bg-surface-sunken rounded-full transition-colors shrink-0"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        <div className="flex-1 overflow-y-auto p-6">{children}</div>
-        {footer && <div className="px-6 py-4 border-t border-divider flex justify-end gap-3 bg-surface-page shrink-0">{footer}</div>}
-      </div>
-    </div>
+    <Drawer open onClose={onClose} title={title} subtitle={subtitle} width="lg" footer={footer}>
+      {children}
+    </Drawer>
   );
 }
 
@@ -135,7 +106,7 @@ export function OverflowMenu({ items, ariaLabel }: { items: OverflowItem[]; aria
                       ? "text-ink-muted cursor-not-allowed"
                       : it.danger
                       ? "text-danger-ink hover:bg-danger/10"
-                      : "text-ink-soft hover:bg-surface-page"
+                      : "text-ink-soft hover:bg-surface-hover"
                   }`}
                 >
                   {Icon && <Icon className="w-4 h-4 shrink-0" />}
@@ -156,23 +127,20 @@ export function ConfirmDialog({ title, body, confirmLabel, danger, onCancel, onC
   title: string; body: React.ReactNode; confirmLabel: string; danger?: boolean; onCancel: () => void; onConfirm: () => void;
 }) {
   return (
-    <div className="fixed inset-0 bg-surface-sunken/40 backdrop-blur-sm flex items-center justify-center z-[60] p-6" onClick={onCancel}>
-      <div className="bg-surface rounded-card shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 motion-reduce:animate-none" onClick={(e) => e.stopPropagation()}>
-        <div className="p-6">
-          <h2 className="text-base font-bold text-ink mb-1.5">{title}</h2>
-          <div className="text-sm text-ink-muted leading-relaxed">{body}</div>
-        </div>
-        <div className="px-6 py-4 bg-surface-page border-t border-divider flex justify-end gap-3">
-          <button onClick={onCancel} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">Cancel</button>
-          <button
-            onClick={onConfirm}
-            className={`px-5 py-2 rounded-control text-sm font-bold text-white transition-colors ${danger ? "bg-danger-ink hover:bg-danger-ink" : "bg-surface-sunken hover:bg-surface-sunken"}`}
-          >
-            {confirmLabel}
-          </button>
-        </div>
-      </div>
-    </div>
+    <Modal
+      open
+      onClose={onCancel}
+      title={title}
+      size="confirm"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onCancel}>Cancel</Button>
+          <Button variant={danger ? "destructive" : "primary"} onClick={onConfirm}>{confirmLabel}</Button>
+        </>
+      }
+    >
+      <div className="text-body text-ink-muted leading-relaxed">{body}</div>
+    </Modal>
   );
 }
 

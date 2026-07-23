@@ -8,9 +8,9 @@
 
 import { useSyncExternalStore } from "react";
 import {
-  DAYS, WeekSchedule, Slot, BookedAppt, BlockedTime,
-  buildDefaultSchedule, checkLeaveConflicts, OverrideItem, LeaveItem, LeaveDuration, LeaveReason,
-  PendingRequest, Decision, fmtSlots,
+  DAYS, WeekSchedule, BookedAppt, BlockedTime,
+  buildDefaultSchedule, checkLeaveConflicts, LeaveItem, LeaveDuration, LeaveReason,
+  PendingRequest, Decision, fmtSlots, minToLabel,
 } from "./availabilityData";
 
 export type { BlockedTime } from "./availabilityData";
@@ -33,7 +33,6 @@ type State = {
   savedSchedule: WeekSchedule;
   savedTimezone: string;
   scheduleChangeLog: ScheduleChangeLogItem[];
-  overrides: OverrideItem[];
   leaves: LeaveItem[];
   decisions: Decision[];
   blockedTime: BlockedTime[];
@@ -47,16 +46,16 @@ function initialState(): State {
     scheduleChangeLog: [
       { id: "SCL-1", summary: "Wednesday: Unavailable", at: "2h ago" },
     ],
-    overrides: [
-      { id: "OV-1", date: "15 Jul 2026", dayOfWeek: "Wednesday", slots: [{ start: "10:00am", end: "2:00pm" }], status: "Approved" },
-    ],
+    // Only ONE Leave request may be Pending at a time (see hasPendingRequest /
+    // submitLeave below), so the demo seed keeps exactly one — the rest are
+    // already-decided history for the Request modal's "Recent decisions" list.
     leaves: [
       // An already-approved full day inside the demo week, so the My Schedule
       // availability layer shows a real leave block (Thu 2 Jul 2026).
       { id: "LV-0", dateFrom: "2 Jul 2026", dateTo: "2 Jul 2026", duration: "Full Day", reason: "Conference / Training", status: "Approved", conflicts: [], submittedAt: "1w ago" },
-      { id: "LV-1", dateFrom: "22 Jul 2026", dateTo: "24 Jul 2026", duration: "Full Day", reason: "Annual Leave", status: "Pending", conflicts: [], submittedAt: "1d ago" },
+      { id: "LV-1", dateFrom: "22 Jul 2026", dateTo: "24 Jul 2026", duration: "Full Day", reason: "Annual Leave", status: "Rejected", conflicts: [], submittedAt: "1d ago", rejectionReason: "Clinic is short-staffed that week" },
       { id: "LV-2", dateFrom: "2 Aug 2026", dateTo: "2 Aug 2026", duration: "Full Day", reason: "Sick Leave", status: "Pending", conflicts: [], submittedAt: "5h ago" },
-      { id: "LV-3", dateFrom: "10 Aug 2026", dateTo: "12 Aug 2026", duration: "Full Day", reason: "Conference / Training", status: "Pending", conflicts: [], submittedAt: "3d ago" },
+      { id: "LV-3", dateFrom: "10 Aug 2026", dateTo: "12 Aug 2026", duration: "Full Day", reason: "Conference / Training", status: "Approved", conflicts: [], submittedAt: "3d ago" },
     ],
     // Read-only Blocked Time inside the demo week (Wed 1 Jul + Fri 3 Jul 2026).
     // BT-2 sits in Dr. Reis's real 14:00–15:00 gap today (between the video
@@ -69,8 +68,10 @@ function initialState(): State {
       { id: "BT-2", date: "3 Jul 2026", startMin: 14 * 60, durationMin: 60, reason: "Admin & report notes" },
     ],
     decisions: [
-      { id: "DEC-1", kind: "Date Override", summary: "8 Jul: 9:00am–1:00pm", result: "Approved", by: ADMIN_NAME, at: "3 Jul" },
-      { id: "DEC-2", kind: "Leave", summary: "5 Jul: Full Day – Personal", result: "Rejected", by: ADMIN_NAME, at: "2 Jul", rejectionReason: "Insufficient staffing that week" },
+      { id: "DEC-1", kind: "Leave", summary: "10 Aug–12 Aug 2026: Full Day – Conference / Training", result: "Approved", by: ADMIN_NAME, at: "2d ago" },
+      { id: "DEC-2", kind: "Leave", summary: "22 Jul–24 Jul 2026: Full Day – Annual Leave", result: "Rejected", by: ADMIN_NAME, at: "20h ago", rejectionReason: "Clinic is short-staffed that week" },
+      { id: "DEC-3", kind: "Leave", summary: "5 Jun: Full Day — Personal", result: "Approved", by: ADMIN_NAME, at: "1 Jun" },
+      { id: "DEC-4", kind: "Leave", summary: "5 Jul: Full Day – Personal", result: "Rejected", by: ADMIN_NAME, at: "2 Jul", rejectionReason: "Insufficient staffing that week" },
     ],
   };
 }
@@ -112,31 +113,33 @@ export function summarizeSchedule(saved: WeekSchedule, draft: WeekSchedule, save
   return parts.length ? parts.join(" · ") : "No changes";
 }
 
-// --- overrides ---
-// Date overrides, like Weekly Hours, never require Admin approval — the
-// editor forces conflict resolution (ConflictModal) before calling these,
-// so by the time they're called the change is safe to apply directly.
-function submitOverride(date: string, slots: Slot[]): { ok: true } | { ok: false; error: string } {
-  const existing = state.overrides.find((o) => o.date === date && o.status !== "Rejected");
-  if (existing) return { ok: false, error: "This date already has an override." };
-
-  const dayOfWeek = dayOfWeekForDate(date);
-  set((s) => ({ overrides: [...s.overrides, { id: nextId("OV"), date, dayOfWeek, slots, status: "Approved" }] }));
-  return { ok: true };
+// --- blocked time (one-off carve-out) ---
+// Like Weekly Hours, Blocked Time applies instantly and never needs Admin
+// approval — the editor forces any conflicting booking to be resolved
+// (ConflictModal) before calling addBlockedTime, so it is safe to apply
+// directly. It leaves a read-only trail Admin sees as a system notification,
+// and (per SchedulePage) hard-blocks new bookings over the window.
+function addBlockedTime(date: string, startMin: number, durationMin: number, reason: string) {
+  const summary = `Blocked ${date}, ${minToLabel(startMin)}–${minToLabel(startMin + durationMin)} — ${reason}`;
+  set((s) => ({
+    blockedTime: [...s.blockedTime, { id: nextId("BT"), date, startMin, durationMin, reason }],
+    scheduleChangeLog: [{ id: nextId("SCL"), summary, at: "Just now" }, ...s.scheduleChangeLog],
+  }));
 }
 
-function submitOverrideEdit(id: string, slots: Slot[]): { ok: true } | { ok: false; error: string } {
-  const existing = state.overrides.find((o) => o.id === id);
-  if (!existing) return { ok: false, error: "Override not found." };
-  set((s) => ({ overrides: s.overrides.map((o) => (o.id === id ? { ...o, slots, status: "Approved", pendingAction: undefined, conflicts: undefined } : o)) }));
-  return { ok: true };
-}
-
-function deleteOverride(id: string) {
-  set((s) => ({ overrides: s.overrides.filter((o) => o.id !== id) }));
+// Removing a block only frees time (expands availability) — never conflicts.
+function removeBlockedTime(id: string) {
+  set((s) => ({ blockedTime: s.blockedTime.filter((b) => b.id !== id) }));
 }
 
 // --- leave ---
+// Only one Leave request may be Pending at a time — submitting a new one
+// while a decision is outstanding must Withdraw or wait first. Checked
+// independently of, and before, the date-overlap check below.
+function hasPendingRequest(): boolean {
+  return state.leaves.some((l) => l.status === "Pending");
+}
+
 // Pure pre-check so the page can decide whether to show the (non-blocking)
 // conflict-awareness modal before actually committing the request.
 function hasLeaveOverlap(dateFrom: string, dateTo: string): boolean {
@@ -144,6 +147,7 @@ function hasLeaveOverlap(dateFrom: string, dateTo: string): boolean {
 }
 
 function submitLeave(dateFrom: string, dateTo: string, duration: LeaveDuration, reason: LeaveReason, reasonOther?: string): { ok: true; conflicts: BookedAppt[] } | { ok: false; error: string } {
+  if (hasPendingRequest()) return { ok: false, error: "You already have a request pending approval. Withdraw it or wait for a decision before submitting a new one." };
   if (hasLeaveOverlap(dateFrom, dateTo)) return { ok: false, error: "You already have a leave request for this date." };
 
   const conflicts = checkLeaveConflicts(dateFrom, dateTo, duration);
@@ -169,9 +173,9 @@ function decideLeave(id: string, result: "Approved" | "Rejected", rejectionReaso
 
 // resolve/unresolve an individual conflicting booking on a pending Leave
 // request (Admin-side "Reschedule"/"Cancel" shortcut in Approval Center).
-// Weekly Hours and Date Override conflicts are resolved locally in the
+// Weekly Hours and Blocked Time conflicts are resolved locally in the
 // editor's ConflictModal before they ever reach the store — see
-// directSaveSchedule / submitOverride*.
+// directSaveSchedule / addBlockedTime.
 function resolveConflict(id: string, bookingIndex: number) {
   set((s) => ({
     leaves: s.leaves.map((l) => (l.id === id ? { ...l, conflicts: l.conflicts.map((c, i) => (i === bookingIndex ? { ...c, resolved: true } : c)) } : l)),
@@ -180,7 +184,7 @@ function resolveConflict(id: string, bookingIndex: number) {
 
 // --- derived: aggregated pending list for the staff-facing section ---
 // Leave is the only kind that can ever be Pending here — Weekly Hours and
-// Date Override both apply instantly (see directSaveSchedule / submitOverride*).
+// Blocked Time both apply instantly (see directSaveSchedule / addBlockedTime).
 export function getPendingRequests(s: State): PendingRequest[] {
   const out: PendingRequest[] = [];
   s.leaves.filter((l) => l.status === "Pending").forEach((l) => {
@@ -198,8 +202,8 @@ export function getPendingRequests(s: State): PendingRequest[] {
 
 export const availabilityActions = {
   directSaveSchedule,
-  submitOverride, submitOverrideEdit, deleteOverride,
-  hasLeaveOverlap, submitLeave, withdrawLeave, decideLeave,
+  addBlockedTime, removeBlockedTime,
+  hasPendingRequest, hasLeaveOverlap, submitLeave, withdrawLeave, decideLeave,
   resolveConflict,
 };
 

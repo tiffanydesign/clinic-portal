@@ -22,7 +22,11 @@ export function AuthLayout({ children }: { children: React.ReactNode }) {
 
         {/* Compact header (below lg) */}
         <div className="flex items-center gap-2 z-10 lg:hidden">
-          <LogoMark className="w-7 h-7 text-white" />
+          <div className="h-7 w-[43px] overflow-hidden shrink-0">
+            <div className="scale-[0.547] origin-top-left">
+              <Logo property1="small" property2="mono" />
+            </div>
+          </div>
           <span className="font-bold tracking-tight">Phenome Portal</span>
         </div>
 

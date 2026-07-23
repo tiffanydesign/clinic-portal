@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router";
-import { X } from "lucide-react";
 import { toast } from "sonner";
 import {
   BarChart, Bar, XAxis, YAxis, LineChart, Line, ReferenceLine,
@@ -11,6 +10,9 @@ import {
   APPOINTMENT_DISTRIBUTION, WEEKLY_TREND, CAPACITY_THRESHOLD, OTHER_CLINICIANS,
 } from "./staffData";
 import { FilterSelect } from "../../../components/FilterSelect";
+import { Modal } from "../../../components/ui/modal";
+import { Button } from "../../../components/ui/button";
+import { Textarea } from "../../../components/ui/textarea";
 
 const nearCapacity = WEEKLY_TREND.some((w) => w.appointments >= CAPACITY_THRESHOLD - 1);
 
@@ -61,7 +63,7 @@ export function StaffWorkloadTab() {
 
       {/* Charts */}
       <div className="grid grid-cols-[55fr_45fr] gap-6">
-        <div className="bg-surface rounded-card p-6">
+        <div className="bg-surface rounded-card p-4">
           <h3 className="text-base font-bold text-ink mb-1">Appointment Distribution</h3>
           <p className="text-xs text-ink-muted mb-4">Appointments by type · {range.toLowerCase()}</p>
           <ResponsiveContainer width="100%" height={240}>
@@ -76,7 +78,7 @@ export function StaffWorkloadTab() {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-surface rounded-card p-6">
+        <div className="bg-surface rounded-card p-4">
           <h3 className="text-base font-bold text-ink mb-1">Weekly Trend</h3>
           <p className="text-xs text-ink-muted mb-4">Appointments per week · past 8 weeks</p>
           <ResponsiveContainer width="100%" height={240}>
@@ -132,7 +134,7 @@ export function StaffWorkloadTab() {
                 <tr
                   key={p.name}
                   onClick={() => setSelected(isSelected ? null : p)}
-                  className={`cursor-pointer transition-colors ${isSelected ? "bg-surface-hover" : "hover:bg-surface-page"}`}
+                  className={`cursor-pointer transition-colors ${isSelected ? "bg-surface-hover" : "hover:bg-surface-hover"}`}
                 >
                   <td className="px-6 py-3">
                     <button
@@ -195,33 +197,34 @@ function ReassignModal({ patient, fromClinician, onClose, onDone }: { patient: A
   };
 
   return (
-    <div className="fixed inset-0 bg-surface-sunken/40 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-surface rounded-card shadow-2xl w-full max-w-md flex flex-col overflow-hidden animate-in fade-in zoom-in-95">
-        <div className="px-6 py-4 border-b border-divider flex justify-between items-center bg-surface-page">
-          <h2 className="text-lg font-bold text-ink">Reassign Patient</h2>
-          <button onClick={onClose} className="p-1.5 text-ink-muted hover:text-ink-soft hover:bg-surface-sunken rounded-full transition-colors"><X className="w-5 h-5" /></button>
+    <Modal
+      open
+      onClose={onClose}
+      title="Reassign Patient"
+      size="confirm"
+      footer={
+        <>
+          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button variant="primary" onClick={handleConfirm}>Confirm Reassignment</Button>
+        </>
+      }
+    >
+      <div className="space-y-5">
+        <p className="text-body text-ink-soft">
+          Move <span className="font-bold text-ink">{patient.name}</span> from <span className="font-bold text-ink">{fromClinician}</span> to another clinician.
+        </p>
+        <div>
+          <label className="block text-label font-bold text-ink-soft uppercase tracking-wider mb-2">Target Clinician <span className="text-danger-ink">*</span></label>
+          <select value={target} onChange={(e) => setTarget(e.target.value)} className="w-full px-3 py-2 border border-divider rounded-control text-data outline-none focus:border-border-strong bg-surface">
+            <option value="" disabled>Select clinician...</option>
+            {OTHER_CLINICIANS.map((c) => <option key={c}>{c}</option>)}
+          </select>
         </div>
-        <div className="p-6 space-y-5">
-          <p className="text-sm text-ink-soft">
-            Move <span className="font-bold text-ink">{patient.name}</span> from <span className="font-bold text-ink">{fromClinician}</span> to another clinician.
-          </p>
-          <div>
-            <label className="block text-xs font-bold text-ink-soft uppercase tracking-wider mb-2">Target Clinician <span className="text-danger-ink">*</span></label>
-            <select value={target} onChange={(e) => setTarget(e.target.value)} className="w-full px-3 py-2 border border-divider rounded-control text-sm outline-none focus:border-border-strong bg-surface">
-              <option value="" disabled>Select clinician...</option>
-              {OTHER_CLINICIANS.map((c) => <option key={c}>{c}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-ink-soft uppercase tracking-wider mb-2">Reason <span className="text-danger-ink">*</span></label>
-            <textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={3} placeholder="e.g. Balancing workload across the team..." className="w-full px-3 py-2 border border-divider rounded-control text-sm outline-none focus:border-border-strong resize-none" />
-          </div>
-        </div>
-        <div className="px-6 py-4 bg-surface-page border-t border-divider flex justify-end space-x-3">
-          <button onClick={onClose} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover transition-colors">Cancel</button>
-          <button onClick={handleConfirm} className="px-6 py-2 btn-primary rounded-control text-sm font-bold transition-colors shadow-sm">Confirm Reassignment</button>
+        <div>
+          <label className="block text-label font-bold text-ink-soft uppercase tracking-wider mb-2">Reason <span className="text-danger-ink">*</span></label>
+          <Textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={3} placeholder="e.g. Balancing workload across the team..." className="resize-none" />
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

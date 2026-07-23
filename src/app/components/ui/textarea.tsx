@@ -1,18 +1,37 @@
 import * as React from "react";
 
-import { cn } from "./utils";
+export type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
+  label?: string;
+  error?: string;
+};
 
-function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
-  return (
-    <textarea
-      data-slot="textarea"
-      className={cn(
-        "resize-none border-input placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 flex field-sizing-content min-h-16 w-full rounded-md border bg-input-background px-3 py-2 text-base transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-        className,
-      )}
-      {...props}
-    />
-  );
-}
-
-export { Textarea };
+// Same label-on-top/error/disabled contract as Input (see input.tsx) —
+// the two must always look like one family, never diverge independently.
+export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
+  ({ label, error, className = "", id, disabled, rows = 3, ...props }, ref) => {
+    const taId = id ?? React.useId();
+    return (
+      <div className="flex flex-col">
+        {label && (
+          <label htmlFor={taId} className="text-label font-medium text-ink-soft mb-1">
+            {label}
+          </label>
+        )}
+        <textarea
+          ref={ref}
+          id={taId}
+          rows={rows}
+          disabled={disabled}
+          aria-invalid={!!error}
+          className={`px-3 py-2 rounded-control border text-data bg-surface outline-none transition-colors resize-y
+            ${error ? "border-danger focus:ring-2 focus:ring-danger/40" : "border-divider focus:ring-2 focus:ring-info/40 focus:border-border-strong"}
+            ${disabled ? "bg-surface-sunken text-ink-muted cursor-not-allowed" : "text-ink"}
+            ${className}`}
+          {...props}
+        />
+        {error && <p className="text-label text-danger-ink mt-1">{error}</p>}
+      </div>
+    );
+  }
+);
+Textarea.displayName = "Textarea";

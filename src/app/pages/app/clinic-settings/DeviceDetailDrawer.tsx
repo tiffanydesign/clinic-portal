@@ -11,6 +11,8 @@ import { updateTerminal, removeTerminal, getPendingTransactions } from "../payme
 import { useActiveRooms } from "./roomsStore";
 import { SettingsDrawer, Field, inputCls, Pill, ConfirmDialog } from "./settingsUiShared";
 import { ActivitySection } from "./ActivitySection";
+import { Input } from "../../../components/ui/input";
+import { Textarea } from "../../../components/ui/textarea";
 
 const TYPE_ICON: Record<string, LucideIcon> = { "Scan Device": ScanLine, TV: Tv, "Payment Terminal": CreditCard };
 
@@ -149,11 +151,11 @@ export function DeviceDetailDrawer({ view, onClose }: { view: DeviceView; onClos
           {view.addedBy && <KV label="Added by" value={`${view.addedBy}${view.addedOn ? ` · ${view.addedOn}` : ""}`} />}
         </div>
 
-        <Field label="Label"><input type="text" value={label} onChange={(e) => setLabel(e.target.value)} className={inputCls} /></Field>
+        <Field label="Label"><Input type="text" value={label} onChange={(e) => setLabel(e.target.value)} /></Field>
         {isTerminal ? (
-          <Field label="Assigned to (desk)"><input type="text" value={desk} onChange={(e) => setDesk(e.target.value)} className={inputCls} /></Field>
+          <Field label="Assigned to (desk)"><Input type="text" value={desk} onChange={(e) => setDesk(e.target.value)} /></Field>
         ) : (
-          <Field label="Notes"><textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Optional…" className={inputCls} /></Field>
+          <Field label="Notes"><Textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={2} placeholder="Optional…" /></Field>
         )}
 
         <div className="pt-2 border-t border-divider">

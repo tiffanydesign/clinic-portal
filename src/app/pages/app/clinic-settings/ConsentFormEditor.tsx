@@ -142,7 +142,7 @@ export function ConsentFormEditor({
         </div>
         <button
           onClick={addSection}
-          className="flex items-center gap-1.5 mt-3 px-3 py-2 text-xs font-bold text-ink-soft border border-dashed border-divider rounded-control hover:bg-surface-page transition-colors"
+          className="flex items-center gap-1.5 mt-3 px-3 py-2 text-xs font-bold text-ink-soft border border-dashed border-divider rounded-control hover:bg-surface-hover transition-colors"
         >
           <Plus className="w-3.5 h-3.5" /> Add Section
         </button>

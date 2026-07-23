@@ -14,6 +14,7 @@ import { StaffRowMenu } from "./StaffRowMenu";
 import { AddStaffModal } from "./AddStaffModal";
 import { ImportStaffModal } from "./ImportStaffModal";
 import { FilterSelect } from "../../../components/FilterSelect";
+import { Input } from "../../../components/ui/input";
 
 type SortKey = "name" | "patients" | "workload" | "joined";
 
@@ -144,13 +145,13 @@ export function StaffListPage() {
             <div className="absolute right-0 top-full mt-1 w-52 bg-surface border border-divider rounded-card shadow-lg z-50 py-1" onMouseLeave={() => setShowAddMenu(false)}>
               <button
                 onClick={() => { setShowAddMenu(false); setShowAddModal(true); }}
-                className="w-full flex items-center gap-2.5 text-left px-4 py-2 text-sm text-ink-soft hover:bg-surface-page"
+                className="w-full flex items-center gap-2.5 text-left px-4 py-2 text-sm text-ink-soft hover:bg-surface-hover"
               >
                 <UserPlus className="w-4 h-4 text-ink-muted" /> Add Individually
               </button>
               <button
                 onClick={() => { setShowAddMenu(false); setShowImportModal(true); }}
-                className="w-full flex items-center gap-2.5 text-left px-4 py-2 text-sm text-ink-soft hover:bg-surface-page"
+                className="w-full flex items-center gap-2.5 text-left px-4 py-2 text-sm text-ink-soft hover:bg-surface-hover"
               >
                 <Upload className="w-4 h-4 text-ink-muted" /> Import from File
               </button>
@@ -215,10 +216,10 @@ export function StaffListPage() {
       <div className="bg-surface border-y border-divider px-6 py-3 flex items-center shrink-0 space-x-4">
         <div className="relative w-[280px]">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
-          <input
+          <Input
             type="text" value={search} onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by name, email, or employee ID..."
-            className="w-full pl-9 pr-3 py-1.5 border border-divider rounded-control text-sm outline-none focus:border-border-strong bg-surface shadow-sm"
+            className="pl-9 shadow-sm"
           />
         </div>
 
@@ -233,7 +234,7 @@ export function StaffListPage() {
           {showRoleMenu && (
             <div className="absolute left-0 top-full mt-1 w-48 bg-surface border border-divider rounded-card shadow-lg z-50 py-1" onMouseLeave={() => setShowRoleMenu(false)}>
               {ROLE_OPTIONS.map((r) => (
-                <label key={r} className="flex items-center px-4 py-2 text-sm text-ink-soft hover:bg-surface-page cursor-pointer">
+                <label key={r} className="flex items-center px-4 py-2 text-sm text-ink-soft hover:bg-surface-hover cursor-pointer">
                   <input type="checkbox" checked={roleFilter.has(r)} onChange={() => toggleRoleFilter(r)} className="rounded-control text-ink-soft focus:ring-info mr-2.5" />
                   {r}
                 </label>
@@ -335,9 +336,9 @@ function StaffRow({ staff: s, onOpen }: { staff: Staff; onOpen: () => void }) {
   const overCapacity = s.workload !== null && s.workload > 85;
 
   return (
-    <tr onClick={onOpen} className="cursor-pointer group relative transition-colors bg-surface hover:bg-surface-page">
+    <tr onClick={onOpen} className="cursor-pointer group relative transition-colors bg-surface hover:bg-surface-hover">
       {overCapacity && <td className="absolute left-0 top-0 bottom-0 w-[3px] bg-danger-ink z-40" />}
-      <td className="p-4 border-r border-divider sticky left-0 z-10 shadow-[1px_0_0_var(--border-strong)] bg-surface group-hover:bg-surface-page transition-colors w-[200px]">
+      <td className="p-4 border-r border-divider sticky left-0 z-10 shadow-[1px_0_0_var(--border-strong)] bg-surface group-hover:bg-surface-hover transition-colors w-[200px]">
         <div className="flex items-center">
           <div className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-xs font-bold text-ink-soft shrink-0 mr-3">{s.avatar}</div>
           <div className="min-w-0 flex-1">

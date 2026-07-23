@@ -81,15 +81,15 @@ export function AvailabilityPage() {
       <div className="px-6 py-3.5 border-b border-divider flex items-center justify-between gap-4 shrink-0 bg-surface flex-wrap">
         <div className="flex items-center gap-3">
           <div className="flex items-center bg-surface border border-divider rounded-full shadow-sm">
-            <button className="pl-3 pr-2 py-2 hover:bg-surface-page rounded-l-full text-ink-muted hover:text-ink-soft transition-colors">
+            <button className="pl-3 pr-2 py-2 hover:bg-surface-hover rounded-l-full text-ink-muted hover:text-ink-soft transition-colors">
               <ChevronLeft className="w-4 h-4" />
             </button>
             <span className="px-3 text-sm font-bold text-ink whitespace-nowrap tabular-nums">30 Jun – 6 Jul 2026</span>
-            <button className="pl-2 pr-3 py-2 hover:bg-surface-page rounded-r-full text-ink-muted hover:text-ink-soft transition-colors">
+            <button className="pl-2 pr-3 py-2 hover:bg-surface-hover rounded-r-full text-ink-muted hover:text-ink-soft transition-colors">
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
-          <button className="px-4 py-2 text-sm font-bold text-ink-soft border border-divider bg-surface rounded-full shadow-sm hover:bg-surface-page transition-colors">
+          <button className="px-4 py-2 text-sm font-bold text-ink-soft border border-divider bg-surface rounded-full shadow-sm hover:bg-surface-hover transition-colors">
             Today
           </button>
 

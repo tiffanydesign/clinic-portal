@@ -150,13 +150,13 @@ export function MyScheduleView({
                 <PanelLeftOpen className="w-5 h-5" />
               </button>
             )}
-            <button onClick={goToday} className="px-3 py-1.5 text-sm font-bold text-ink-soft border border-divider rounded-card hover:bg-surface-page transition-colors">Today</button>
+            <button onClick={goToday} className="px-3 py-1.5 text-data font-bold text-ink-soft border border-divider rounded-card hover:bg-surface-hover transition-colors">Today</button>
             <div className="flex items-center">
               <button onClick={() => page(-1)} aria-label="Previous" className="p-1.5 text-ink-muted hover:text-ink-soft hover:bg-surface-hover rounded-control transition-colors"><ChevronLeft className="w-5 h-5" /></button>
               <button onClick={() => page(1)} aria-label="Next" className="p-1.5 text-ink-muted hover:text-ink-soft hover:bg-surface-hover rounded-control transition-colors"><ChevronRight className="w-5 h-5" /></button>
             </div>
             <div className="relative">
-              <button onClick={() => setPickerOpen((o) => !o)} className="text-base font-bold text-ink hover:text-ink-soft px-2 py-1 rounded-control hover:bg-surface-page transition-colors">
+              <button onClick={() => setPickerOpen((o) => !o)} className="text-section font-bold text-ink hover:text-ink-soft px-2 py-1 rounded-control hover:bg-surface-hover transition-colors">
                 {title}
               </button>
               {pickerOpen && (
@@ -171,7 +171,7 @@ export function MyScheduleView({
           </div>
           <div className="inline-flex bg-surface-hover rounded-card p-0.5 border border-divider">
             {viewOptions.map((v) => (
-              <button key={v} onClick={() => setView(v)} className={`px-3 py-1.5 text-xs font-bold rounded-control capitalize transition-colors ${view === v ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted hover:text-ink-soft"}`}>{v}</button>
+              <button key={v} onClick={() => setView(v)} className={`px-3 py-1.5 text-label font-bold rounded-control capitalize transition-colors ${view === v ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted hover:text-ink-soft"}`}>{v}</button>
             ))}
           </div>
         </div>
@@ -204,8 +204,8 @@ export function MyScheduleView({
               {totalVisible === 0 && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <div className="text-center bg-surface/80 rounded-card px-6 py-4">
-                    <p className="text-sm font-bold text-ink-muted">No appointments this {view}</p>
-                    <p className="text-xs text-ink-muted mt-1">{search ? "No patients match your search." : "Nothing scheduled in this range."}</p>
+                    <p className="text-data font-bold text-ink-muted">No appointments this {view}</p>
+                    <p className="text-label text-ink-muted mt-1">{search ? "No patients match your search." : "Nothing scheduled in this range."}</p>
                   </div>
                 </div>
               )}
@@ -232,13 +232,13 @@ export function MyScheduleView({
         <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-surface-sunken/40 backdrop-blur-sm p-4" onClick={() => setQuick(null)}>
           <div className="bg-surface rounded-card shadow-2xl w-full max-w-xs overflow-hidden animate-in fade-in zoom-in-95 motion-reduce:animate-none" onClick={(e) => e.stopPropagation()}>
             <div className="px-4 py-3 border-b border-divider">
-              <div className="text-sm font-bold text-ink">{quick.patient.name}</div>
-              <div className="text-xs text-ink-muted">{quick.timeLabel}</div>
+              <div className="text-data font-bold text-ink">{quick.patient.name}</div>
+              <div className="text-label text-ink-muted">{quick.timeLabel}</div>
             </div>
-            <button onClick={() => { const a = quick; setQuick(null); openAppt(a); }} className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold text-ink-soft hover:bg-surface-page transition-colors">
+            <button onClick={() => { const a = quick; setQuick(null); openAppt(a); }} className="w-full flex items-center gap-2.5 px-4 py-3 text-data font-semibold text-ink-soft hover:bg-surface-hover transition-colors">
               <PanelRightOpen className="w-4 h-4 text-ink-muted" /> View in drawer
             </button>
-            <button onClick={() => { const r = quick.patient.route; setQuick(null); navigate(r); }} className="w-full flex items-center gap-2.5 px-4 py-3 text-sm font-semibold text-ink-soft hover:bg-surface-page transition-colors border-t border-divider">
+            <button onClick={() => { const r = quick.patient.route; setQuick(null); navigate(r); }} className="w-full flex items-center gap-2.5 px-4 py-3 text-data font-semibold text-ink-soft hover:bg-surface-hover transition-colors border-t border-divider">
               <FileText className="w-4 h-4 text-ink-muted" /> Open patient record
             </button>
           </div>

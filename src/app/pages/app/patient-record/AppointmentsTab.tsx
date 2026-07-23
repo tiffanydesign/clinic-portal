@@ -35,7 +35,7 @@ function ApptTable({ title, appts, expandable, editable, action }: {
           <tbody className="divide-y divide-divider">
             {appts.map((a) => (
               <React.Fragment key={a.id}>
-                <tr onClick={() => expandable && setExpandedId((id) => (id === a.id ? null : a.id))} className={expandable ? "hover:bg-surface-page cursor-pointer" : ""}>
+                <tr onClick={() => expandable && setExpandedId((id) => (id === a.id ? null : a.id))} className={expandable ? "hover:bg-surface-hover cursor-pointer" : ""}>
                   <td className="px-4 py-3 font-medium text-ink">{a.dateLabel}</td>
                   <td className="px-4 py-3 text-ink-soft"><span className="flex items-center gap-1.5">{a.isVideo ? <Video className="w-3.5 h-3.5 text-ink-muted" /> : <MapPin className="w-3.5 h-3.5 text-ink-muted" />}{a.type}</span></td>
                   <td className="px-4 py-3 text-ink-soft">{a.clinician}</td>
@@ -109,7 +109,7 @@ export function AppointmentsTab() {
   const expandable = role === "Admin" || role === "Clinician";
 
   return (
-    <div className="p-4 max-w-5xl mx-auto space-y-6">
+    <div className="p-4 space-y-6">
       <ApptTable
         title="Upcoming Appointments"
         appts={patient.appointmentsUpcoming}

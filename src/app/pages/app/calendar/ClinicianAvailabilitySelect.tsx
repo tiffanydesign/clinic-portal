@@ -46,7 +46,7 @@ export function ClinicianAvailabilitySelect({
                   aria-disabled={!o.available}
                   onClick={() => { if (o.available) { onChange(o.id); setOpen(false); } }}
                   className={`w-full flex items-center gap-2 px-3 py-2 text-sm text-left rounded-control mx-1 transition-colors
-                    ${o.available ? "text-ink-soft hover:bg-surface-page cursor-pointer" : "text-ink-muted cursor-not-allowed"}
+                    ${o.available ? "text-ink-soft hover:bg-surface-hover cursor-pointer" : "text-ink-muted cursor-not-allowed"}
                     ${isSelected ? "font-bold text-ink-soft bg-surface-page" : ""}`}
                   style={{ width: "calc(100% - 8px)" }}
                 >

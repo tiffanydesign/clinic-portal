@@ -14,7 +14,7 @@ function AlertRow({ label, severity }: { label: string; severity: "critical" | "
 
 export function ClinicianOverview({ patient }: { patient: PatientRecord }) {
   return (
-    <div className="p-4 grid grid-cols-2 gap-6 max-w-6xl mx-auto">
+    <div className="p-4 grid grid-cols-2 gap-6">
       {/* left column */}
       <div className="space-y-6">
         <Card title="Patient Summary">

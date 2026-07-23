@@ -38,7 +38,7 @@ export function scheduleEquals(a: WeekSchedule, b: WeekSchedule): boolean {
 export type BookedAppt = { date: string; dayOfWeek: string; time: string; patient: string; type: string; resolved?: boolean };
 
 // Note: 8 Jul and 15 Jul 2026 both fall on a Wednesday (verified against real
-// calendar math, matching the July date picker grid used in OverrideModal).
+// calendar math, matching the July date picker grid formerly used for date overrides).
 export const BOOKED_APPOINTMENTS: BookedAppt[] = [
   { date: "8 Jul 2026", dayOfWeek: "Wednesday", time: "10:00am", patient: "Ece Yıldırım", type: "Body Scan" },
   { date: "15 Jul 2026", dayOfWeek: "Wednesday", time: "11:00am", patient: "Tarkan Solmaz", type: "Consultation" },
@@ -156,14 +156,35 @@ export function classifyWeekChange(oldSchedule: WeekSchedule, newSchedule: WeekS
   return { direction, conflicts };
 }
 
-// --- single-date change classification + conflicts (overrides) ---
-export function classifyDateChange(oldSlots: Slot[], oldActive: boolean, newSlots: Slot[], newActive: boolean, date: string): { direction: ChangeDirection; conflicts: BookedAppt[] } {
-  const oldRanges = oldActive ? mergeRanges(oldSlots.map((s) => [timeToMinutes(s.start), timeToMinutes(s.end)] as Range)) : [];
-  const newRanges = newActive ? mergeRanges(newSlots.map((s) => [timeToMinutes(s.start), timeToMinutes(s.end)] as Range)) : [];
-  const direction = classifyRanges(oldRanges, newRanges);
-  const removed = subtractRanges(oldRanges, newRanges);
-  const conflicts = removed.length === 0 ? [] : BOOKED_APPOINTMENTS.filter((b) => b.date === date && isPointCovered(removed, timeToMinutes(b.time)));
-  return { direction, conflicts };
+// --- Blocked Time (carve a one-off block out of a normal working day) ---
+export type BlockedReason = "Training" | "External meeting" | "Personal" | "Other";
+export const BLOCKED_REASONS: BlockedReason[] = ["Training", "External meeting", "Personal", "Other"];
+
+// Inverse of timeToMinutes: 750 -> "12:30pm". Used to render Blocked Time ranges.
+export function minToLabel(min: number): string {
+  const h24 = Math.floor(min / 60);
+  const m = min % 60;
+  const ap = h24 >= 12 ? "pm" : "am";
+  let h = h24 % 12;
+  if (h === 0) h = 12;
+  return `${h}:${m.toString().padStart(2, "0")}${ap}`;
+}
+
+// Booked appointments overlapping a proposed blocked window on a given date.
+// Hard gate: the block cannot be saved until each of these is resolved.
+export function blockedTimeConflicts(date: string, startMin: number, durationMin: number): BookedAppt[] {
+  const end = startMin + durationMin;
+  return BOOKED_APPOINTMENTS.filter((b) => b.date === date && (() => { const t = timeToMinutes(b.time); return t >= startMin && t < end; })());
+}
+
+// True when the proposed block spans the entire working range of that weekday —
+// the signal to nudge the user toward Leave instead of a full-day Blocked Time.
+export function blockCoversWholeDay(schedule: WeekSchedule, dayOfWeek: string, startMin: number, durationMin: number): boolean {
+  const day = schedule[dayOfWeek];
+  if (!day || !day.active) return false;
+  const work = mergeRanges(day.slots.map((s) => [timeToMinutes(s.start), timeToMinutes(s.end)] as Range));
+  if (work.length === 0) return false;
+  return startMin <= work[0][0] && startMin + durationMin >= work[work.length - 1][1];
 }
 
 // leave always requires approval; conflicts are informational only
@@ -178,21 +199,7 @@ export function checkLeaveConflicts(dateFrom: string, dateTo: string, duration: 
   });
 }
 
-// --- domain types for overrides / leave / pending / decisions ---
-export type OverrideStatus = "Approved" | "Pending" | "Rejected";
-export type OverridePendingAction = "create" | "edit" | "delete";
-export type OverrideItem = {
-  id: string;
-  date: string;
-  dayOfWeek: string;
-  slots: Slot[];
-  status: OverrideStatus;
-  pendingAction?: OverridePendingAction;
-  conflicts?: BookedAppt[];
-  submittedAt?: string;
-  rejectionReason?: string;
-};
-
+// --- domain types for leave / pending / decisions ---
 export type LeaveDuration = "Full Day" | "Morning" | "Afternoon";
 export type LeaveReason = "Annual Leave" | "Sick Leave" | "Conference / Training" | "Personal" | "Other";
 export const LEAVE_REASONS: LeaveReason[] = ["Annual Leave", "Sick Leave", "Conference / Training", "Personal", "Other"];
@@ -210,14 +217,14 @@ export type LeaveItem = {
   rejectionReason?: string;
 };
 
-export type PendingKind = "Schedule Change" | "Date Override" | "Leave";
+export type PendingKind = "Schedule Change" | "Blocked Time" | "Leave";
 export type PendingRequest = {
   id: string;
   kind: PendingKind;
   summary: string;
   submittedAt: string;
   conflicts: BookedAppt[];
-  relatedId?: string; // OverrideItem.id or LeaveItem.id; absent for the single schedule request
+  relatedId?: string; // LeaveItem.id; absent for the single schedule request
 };
 
 export type DecisionResult = "Approved" | "Rejected";
@@ -231,16 +238,7 @@ export type Decision = {
   rejectionReason?: string;
 };
 
-export function overrideStatusPillClass(status: OverrideStatus | LeaveStatus): string {
-  switch (status) {
-    case "Approved": return "bg-success/10 text-success-ink border-success/30";
-    case "Pending": return "bg-warning/10 text-warning-ink border-warning/30";
-    case "Rejected": return "bg-danger/10 text-danger-ink border-danger/30";
-    default: return "bg-surface-page text-ink-muted border-divider";
-  }
-}
-
-// One neutral style for every kind — the label text ("Leave", "Date Override",
+// One neutral style for every kind — the label text ("Leave", "Blocked Time",
 // "Schedule Change") says what it is; per-kind colours were visual noise.
 export function kindBadgeClass(_kind: PendingKind): string {
   return "bg-surface-hover text-ink-soft border-divider";
@@ -248,4 +246,26 @@ export function kindBadgeClass(_kind: PendingKind): string {
 
 export function leaveDateLabel(l: Pick<LeaveItem, "dateFrom" | "dateTo">): string {
   return l.dateFrom === l.dateTo ? l.dateFrom : `${l.dateFrom.split(" ").slice(0, 2).join(" ")}–${l.dateTo}`;
+}
+
+// --- Availability Preview: date-scoped lookups (own tiny date compare, not
+// date-fns — mirrors the rest of this file's plain-string date convention) ---
+const PREVIEW_MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+function parseDateStr(s: string): number {
+  const [d, mon, y] = s.split(" ");
+  return new Date(parseInt(y, 10), PREVIEW_MONTHS.indexOf(mon), parseInt(d, 10)).getTime();
+}
+function dateWithinRange(dateStr: string, from: string, to: string): boolean {
+  const t = parseDateStr(dateStr);
+  return t >= parseDateStr(from) && t <= parseDateStr(to);
+}
+
+export function blockedTimeForDate(date: string, blocked: BlockedTime[]): BlockedTime[] {
+  return blocked.filter((b) => b.date === date);
+}
+
+// Any non-Rejected leave covering this date (Approved or Pending) — the
+// Preview renders each status differently (solid grey vs dashed + pill).
+export function leaveForDate(date: string, leaves: LeaveItem[]): LeaveItem | null {
+  return leaves.find((l) => l.status !== "Rejected" && (l.dateFrom === date || l.dateTo === date || dateWithinRange(date, l.dateFrom, l.dateTo))) ?? null;
 }

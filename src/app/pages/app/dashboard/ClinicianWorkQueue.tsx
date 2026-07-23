@@ -5,7 +5,7 @@ import { CLINICIAN_REVIEW_QUEUE, QueueItem } from "./clinicianDashboardData";
 
 function QueueRow({ item, onAction }: { item: QueueItem; onAction: () => void }) {
   return (
-    <div className="flex items-center justify-between px-4 py-2.5 hover:bg-surface-page gap-2">
+    <div className="flex items-center justify-between px-4 py-2.5 hover:bg-surface-hover gap-2">
       <div className="min-w-0">
         <div className="text-sm font-medium text-ink truncate">{item.patient}</div>
         <div className="text-xs text-ink-muted flex items-center gap-1.5">

@@ -343,7 +343,7 @@ function FeedbackDrawer({ item, onClose, newNote, setNewNote, onAddNote, onUpdat
         <button
           onClick={() => onToggleFlag(item.id)}
           className={`flex items-center px-4 py-2 text-sm font-bold rounded-card transition-colors border shrink-0
-            ${item.flagged ? "bg-warning/10 text-warning-ink border-warning/30" : "bg-surface text-ink-soft border-divider hover:bg-surface-page"}`}
+            ${item.flagged ? "bg-warning/10 text-warning-ink border-warning/30" : "bg-surface text-ink-soft border-divider hover:bg-surface-hover"}`}
         >
           <Flag className={`w-4 h-4 mr-2 ${item.flagged ? "fill-current" : ""}`} />
           {item.flagged ? "Flagged" : "Flag"}
@@ -356,13 +356,13 @@ function FeedbackDrawer({ item, onClose, newNote, setNewNote, onAddNote, onUpdat
                 Mark Addressed
               </button>
             )}
-            <a href={item.reviewUrl} target="_blank" rel="noreferrer" className="flex items-center px-4 py-2 border border-divider bg-surface text-ink-soft rounded-control text-sm font-bold hover:bg-surface-page transition-colors">
+            <a href={item.reviewUrl} target="_blank" rel="noreferrer" className="flex items-center px-4 py-2 border border-divider bg-surface text-ink-soft rounded-control text-sm font-bold hover:bg-surface-hover transition-colors">
               Reply on Google <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
             </a>
           </div>
         ) : (
           <div className="flex space-x-3">
-            <button onClick={() => onUpdateStatus(item.id, "Archived")} className="px-4 py-2 bg-surface border border-divider text-ink-soft rounded-control text-sm font-bold hover:bg-surface-page transition-colors">
+            <button onClick={() => onUpdateStatus(item.id, "Archived")} className="px-4 py-2 bg-surface border border-divider text-ink-soft rounded-control text-sm font-bold hover:bg-surface-hover transition-colors">
               Archive
             </button>
             {["New", "In Review"].includes(item.status) && (
@@ -474,10 +474,10 @@ export function FeedbackAdminPage() {
             <p className="text-sm text-ink-muted mt-1">Patient and staff feedback records</p>
           </div>
           <div className="flex items-center space-x-3">
-            <button onClick={handleExport} className="flex items-center px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft hover:bg-surface-page transition-colors shadow-sm">
+            <button onClick={handleExport} className="flex items-center px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft hover:bg-surface-hover transition-colors shadow-sm">
               <Download className="w-4 h-4 mr-2 text-ink-muted" /> Export
             </button>
-            <button className="p-2 border border-divider rounded-control text-ink-muted hover:bg-surface-page hover:text-ink-soft transition-colors shadow-sm">
+            <button className="p-2 border border-divider rounded-control text-ink-muted hover:bg-surface-hover hover:text-ink-soft transition-colors shadow-sm">
               <Settings className="w-5 h-5" />
             </button>
           </div>

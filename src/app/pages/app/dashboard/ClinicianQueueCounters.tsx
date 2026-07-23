@@ -30,7 +30,7 @@ export function ClinicianQueueCounters({
       <Stat
         stat={{
           id: "results-to-review",
-          label: "Results to Review",
+          label: "Results",
           kind: "count",
           variant: "strip",
           value: String(CLINICIAN_REVIEW_QUEUE.length),
@@ -46,7 +46,7 @@ export function ClinicianQueueCounters({
       <Stat
         stat={{
           id: "awaiting-sign-off",
-          label: "Awaiting Sign-off",
+          label: "Sign-off",
           kind: "count",
           variant: "strip",
           value: String(CLINICIAN_SIGNOFF_QUEUE.length),
@@ -58,7 +58,7 @@ export function ClinicianQueueCounters({
       <Stat
         stat={{
           id: "todays-patients",
-          label: "Today's Patients",
+          label: "Patients",
           kind: "count",
           variant: "strip",
           value: String(todaysCount),

@@ -133,6 +133,26 @@
   --phenome-blue-200: #A9B5D9;
   --phenome-blue-100: #E6E9F2;
 
+  /* Clinician/person IDENTITY colours — distinguishes WHO (calendar event
+     ownership, avatar rings) never WHAT STATE something is in. Do not mix
+     with --status-*: a green identity swatch must never be read as
+     "success". Placeholder palette (low-saturation, mutually distinct, no
+     overlap with any --status-* hex) — swap for the real brand swatch set
+     when available. */
+  --identity-1: #6B8CBE; /* soft indigo-blue */
+  --identity-2: #C98A9A; /* soft rose */
+  --identity-3: #7FA98E; /* soft sage green */
+  --identity-4: #C9A56B; /* soft ochre */
+  --identity-5: #9B87B5; /* soft mauve */
+  --identity-6: #6BB0AE; /* soft teal */
+  --identity-7: #B58A6B; /* soft terracotta */
+  --identity-8: #8E97B5; /* soft slate-blue */
+
+  /* RESTRICTED: gradients are for the auth/brand/marketing surface (login,
+     logo, the "Frosted Premium" hero) ONLY — never on data or operational
+     UI (dashboards, tables, forms, buttons, progress bars). Business pages
+     use flat Phenome Blue / semantic status colours instead. Enforced by
+     scripts/check-tokens.sh's gradient-in-business-page rule. */
   --gradient-brand: linear-gradient(135deg, #30B0CD 0%, #2394CC 48%, #2E74B2 100%);
   --gradient-vitality: linear-gradient(135deg, #269381 0%, #1F8697 49%, #085E98 100%);
 
@@ -184,17 +204,20 @@
   /* --- 2. TYPOGRAPHY (6 tiers + 2 KPI; compact line-heights) --------
      Each token is the tier's font-size; line-height + weight are applied
      by the matching helper class (see @layer components below) so a tier
-     is used as one class, e.g. class="text-body". */
-  --text-page-title: 22px;  /* page title (former H1/H2)  — 1.25 / 600 */
-  --text-section:    15px;  /* card / section heading     — 1.3  / 600 */
-  --text-body:       14px;  /* body copy, form values     — 1.4  / 400 */
-  --text-data:       13px;  /* table rows, list subrows   — 1.35 / 400 */
-  --text-label:      12px;  /* form labels, minor caption — 1.2  / 500 */
-  --text-overline:   11px;  /* uppercase group heads, KPI title — 1.2 / 600, ls .06em */
+     is used as one class, e.g. class="text-body". Sized for comfortable
+     iPad-distance reading (raised from the original compact pass, which
+     read too small at arm's length — --text-body in particular sat below
+     iPadOS's own 17px Body role with no equivalent named step). */
+  --text-page-title: 24px;  /* page title (former H1/H2)  — 1.25 / 600 */
+  --text-section:    16px;  /* card / section heading     — 1.3  / 600 */
+  --text-body:       16px;  /* body copy, form values     — 1.4  / 400 */
+  --text-data:       14px;  /* table rows, list subrows   — 1.35 / 400 */
+  --text-label:      13px;  /* form labels, minor caption — 1.2  / 500 */
+  --text-overline:   12px;  /* uppercase group heads, KPI title — 1.2 / 600, ls .06em */
 
   /* KPI numerals — folded in from KPI_CARD_SPEC (tabular-nums, 600) */
-  --kpi-value-lg: 28px;     /* regular KPI card value */
-  --kpi-value-sm: 20px;     /* compact KPI strip value */
+  --kpi-value-lg: 30px;     /* regular KPI card value */
+  --kpi-value-sm: 22px;     /* compact KPI strip value */
 
   /* --- 3. COLORS (converged; aliases over existing v2 ramp) ---------
      Semantic status (already defined above, listed for reference):
@@ -213,6 +236,15 @@
      WCAG. Each ink below clears 4.5:1 on white, on /10 and on /15 tints.
      Rule: bg/border/dot -> --status-*, text -> --status-*-ink.
      (KPI_CARD_SPEC already called for this: "amber 用深档 #B45309 级".) */
+  /* ONE COLOUR, ONE MEANING — never reuse a status hue for anything else:
+       success  (green)  -> a positive/cleared outcome only
+       warning  (amber)  -> needs attention soon, not yet urgent
+       danger   (red)    -> STRICTLY blocked / overdue / needs the clinician
+                            to act right now — never decorative
+       info     (blue)   -> neutral "in progress / active now"
+       special  (purple) -> a distinct category marker (e.g. Leave requests)
+     Routine/expected states (Booked, Active, Completed, etc.) get NO
+     colour — plain grey/ink. Colour is spent only on the exceptions above. */
   --status-success-ink: #177245;  /* 5.95 white · 5.27 on /15 */
   --status-warning-ink: #8F4E05;  /* 6.44 white · 5.82 on /15 · 6.0 on /10 — deepened from #A15C07 (borderline 4.3-4.8 once tints composite over off-white rows) */
   --status-danger-ink:  #B91C1C;  /* 6.47 white · 5.28 on /15 */
@@ -283,6 +315,17 @@
   --color-special-ink: var(--status-special-ink);
   /* brand (D-5): auth ramp unifies onto the existing phenome-blue scale */
   --color-brand-ink: var(--phenome-blue-900); /* #0A1E57 dark navy */
+  /* Identity colours — bg-identity-1..8 (avatar rings, calendar-event
+     ownership dots). See the --identity-1..8 definitions for the "never
+     mix with status colour" rule. */
+  --color-identity-1: var(--identity-1);
+  --color-identity-2: var(--identity-2);
+  --color-identity-3: var(--identity-3);
+  --color-identity-4: var(--identity-4);
+  --color-identity-5: var(--identity-5);
+  --color-identity-6: var(--identity-6);
+  --color-identity-7: var(--identity-7);
+  --color-identity-8: var(--identity-8);
   /* radius (2-tier) — the ONE canonical container radius lives here, so
      every `rounded-card` panel/card/modal shares it and can never drift.
      Bumped to 16px (was --radius-md 12px) to match the approved container
