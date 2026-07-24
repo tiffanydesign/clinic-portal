@@ -164,60 +164,8 @@ export function StaffListPage() {
         </div>
       </div>
 
-      {/* Roster summary — Stat family T3 `strip`. Clicking a segment drives the
-          existing role / availability filters rather than navigating away. */}
-      <div className="px-4 py-4 shrink-0">
-        <StatStripGroup>
-          <Stat
-            stat={{ id: "total-staff", label: "Total Staff", kind: "count", variant: "strip",
-                    value: String(allStaff.length), onClick: clearRosterFilters }}
-            icon={Users}
-            active={roleFilter.size === 0 && todayFilter === "All"}
-            compact
-          />
-          {ROLE_GROUP_ORDER.map((role) => {
-            const count = allStaff.filter((s) => s.role === role).length;
-            if (count === 0) return null;
-            const label = count === 1 ? ROLE_GROUP_LABEL[role].replace(/s$/, "") : ROLE_GROUP_LABEL[role];
-            return (
-              <Stat
-                key={role}
-                stat={{ id: `role-${role}`, label, kind: "count", variant: "strip",
-                        value: String(count), onClick: () => showOnlyRole(role) }}
-                icon={ROLE_META[role].icon}
-                active={roleFilter.size === 1 && roleFilter.has(role)}
-                compact
-              />
-            );
-          })}
-          <Stat
-            stat={{ id: "on-duty", label: "On Duty", kind: "count", variant: "strip",
-                    value: String(onDuty), onClick: () => setTodayFilter("On Duty") }}
-            icon={UserCheck}
-            active={todayFilter === "On Duty"}
-            compact
-          />
-          <Stat
-            stat={{ id: "off-today", label: "Off", kind: "count", variant: "strip",
-                    value: String(offToday), onClick: () => setTodayFilter("Off Today") }}
-            icon={Moon}
-            active={todayFilter === "Off Today"}
-            compact
-          />
-          {onLeave > 0 && (
-            <Stat
-              stat={{ id: "on-leave", label: "On Leave", kind: "count", variant: "strip",
-                      value: String(onLeave), onClick: () => setTodayFilter("On Leave") }}
-              icon={Plane}
-              active={todayFilter === "On Leave"}
-              compact
-            />
-          )}
-        </StatStripGroup>
-      </div>
-
-      {/* Toolbar */}
-      <div className="bg-surface border-y border-divider px-4 py-3 flex items-center shrink-0 space-x-4">
+      {/* Toolbar — search first, same order as Patients. */}
+      <div className="bg-surface border-b border-divider px-4 py-3 flex items-center shrink-0 space-x-4">
         <div className="relative w-[280px]">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
           <Input
@@ -272,9 +220,63 @@ export function StaffListPage() {
         <div className="flex-1" />
       </div>
 
+      {/* Roster summary — Stat family T3 `strip`, full icon+tone treatment
+          (same as Patients' KPI strip below its own toolbar) rather than the
+          narrow-sidebar `compact` variant: this strip runs the full content
+          width, so it gets the same colour-chip-per-segment richness. */}
+      <div className="px-4 py-4 shrink-0">
+        <StatStripGroup>
+          <Stat
+            stat={{ id: "total-staff", label: "Total Staff", kind: "count", variant: "strip",
+                    value: String(allStaff.length), onClick: clearRosterFilters }}
+            icon={Users}
+            iconTone="slate"
+            active={roleFilter.size === 0 && todayFilter === "All"}
+          />
+          {ROLE_GROUP_ORDER.map((role) => {
+            const count = allStaff.filter((s) => s.role === role).length;
+            if (count === 0) return null;
+            const label = count === 1 ? ROLE_GROUP_LABEL[role].replace(/s$/, "") : ROLE_GROUP_LABEL[role];
+            return (
+              <Stat
+                key={role}
+                stat={{ id: `role-${role}`, label, kind: "count", variant: "strip",
+                        value: String(count), onClick: () => showOnlyRole(role) }}
+                icon={ROLE_META[role].icon}
+                iconTone={ROLE_META[role].tone}
+                active={roleFilter.size === 1 && roleFilter.has(role)}
+              />
+            );
+          })}
+          <Stat
+            stat={{ id: "on-duty", label: "On Duty", kind: "count", variant: "strip",
+                    value: String(onDuty), onClick: () => setTodayFilter("On Duty") }}
+            icon={UserCheck}
+            iconTone="emerald"
+            active={todayFilter === "On Duty"}
+          />
+          <Stat
+            stat={{ id: "off-today", label: "Off", kind: "count", variant: "strip",
+                    value: String(offToday), onClick: () => setTodayFilter("Off Today") }}
+            icon={Moon}
+            iconTone="slate"
+            active={todayFilter === "Off Today"}
+          />
+          {onLeave > 0 && (
+            <Stat
+              stat={{ id: "on-leave", label: "On Leave", kind: "count", variant: "strip",
+                      value: String(onLeave), onClick: () => setTodayFilter("On Leave") }}
+              icon={Plane}
+              iconTone="amber"
+              active={todayFilter === "On Leave"}
+            />
+          )}
+        </StatStripGroup>
+      </div>
+
       {/* Body — border-t + pt-5/pb-5 (--page-padding-y, 20px) matches
           BillingPage's table-card inset so the card reads as a distinct
-          framed surface, not flush with the toolbar above it. */}
+          framed surface, not flush with the KPI row. */}
       <div className="px-4 pb-4 border-t border-divider pt-4 flex flex-col">
         <div className="bg-surface border border-divider rounded-card overflow-hidden flex flex-col shadow-sm">
             <div className="relative">
@@ -301,7 +303,7 @@ export function StaffListPage() {
                   )}
                   {groups.map(({ role, members }) => (
                     <React.Fragment key={role}>
-                      <tr className="bg-surface-page/80 cursor-pointer hover:bg-surface-hover transition-colors" onClick={() => toggleGroup(role)}>
+                      <tr className="bg-surface-hover cursor-pointer hover:bg-surface-sunken transition-colors" onClick={() => toggleGroup(role)}>
                         <td colSpan={7} className="px-4 py-2 sticky left-0">
                           <span className="flex items-center text-xs font-bold text-ink-soft uppercase tracking-wider">
                             {collapsed.has(role) ? <ChevronRight className="w-3.5 h-3.5 mr-1.5" /> : <ChevronDown className="w-3.5 h-3.5 mr-1.5" />}
