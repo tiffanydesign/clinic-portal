@@ -58,7 +58,7 @@
 | Delta | 12px / 500 / 语义色 + ↑↓→ 箭头 | 箭头与颜色必须同时出现 |
 | Supporting | 12px / 400 / muted | informational 均值无箭头无色 |
 | Status/LIVE 徽标 | 10px / 600 / uppercase pill | 紧跟 Title 行，不占独立行 |
-| Icon | 20px（regular）/ 16px（compact），secondary 色 | 仅 Metric variant 可用，置于 Title 左 |
+| Icon | 24px（regular，v3 spacing pass 由 20px 上调）/ 16px（compact），secondary 色 | 仅 Metric variant 可用，置于 Title 左 |
 | Timestamp | 并入 Supporting（"as of 09:14"） | 仅 Live 需要时显示 |
 
 ---
@@ -72,7 +72,7 @@
 │ TITLE ●LIVE 🔒            ╱╲╱╲╱  spark     │  ← 行1：title+徽标 | 右上 spark
 │ 1,284 ₺                   ↑ 3 vs last Fri  │  ← 行2：大数字    | 右下 delta
 └────────────────────────────────────────────┘
-   高 88–96px · padding 16px · 左右两区 space-between
+   高 104–128px（v3 spacing pass由88–96px上调，容纳12px title→value间距）· padding 16px · 左右两区 space-between
 ```
 
 - **左区**（主信息，左对齐）：Title 行（含徽标）→ Primary value；
@@ -137,12 +137,12 @@
 /* Shape & space */
 --kpi-radius: 12px;
 --kpi-pad: 16px;
---kpi-gap-row: 4px;      /* title 与数字之间 */
+--kpi-gap-row: 12px;     /* title 与数字之间（v3 由4px上调） */
 --kpi-gap-card: 16px;    /* 卡间 */
 --kpi-elevation: none;   /* hover/press: 0 2px 8px rgba(16,33,75,.08) 仅限可点卡 */
 
 /* Icon */
---kpi-icon: 20px;  --kpi-icon-sm: 16px;
+--kpi-icon: 24px;  --kpi-icon-sm: 16px;  /* regular icon 24px, v3 由20px上调 */
 ```
 
 ---

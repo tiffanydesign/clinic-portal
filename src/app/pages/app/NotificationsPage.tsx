@@ -13,6 +13,7 @@ import { Skeleton } from "../../components/ui/skeleton";
 import { NotificationItem, NotificationKind, KIND_LABEL, notificationDate, MOCK_TODAY } from "./notificationsData";
 import { useNotificationItems } from "./notificationsSelectors";
 import { useReadIds, markRead, markAllRead, markUnread } from "./notificationsStore";
+import { PAGE_TITLE_CLASS } from "../../components/PageTitleIcon";
 
 const KIND_FILTERS: ("All" | NotificationKind)[] = ["All", "appointment", "result", "approval", "payment", "system"];
 
@@ -366,49 +367,51 @@ export function NotificationsPage() {
   };
 
   return (
-    <div className="h-full overflow-y-auto bg-surface-page">
-      <div className="px-6 pt-4">
-        {/* L1 — Header */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3.5 min-w-0">
-            <span className="relative w-11 h-11 rounded-card bg-surface-sunken text-ink-soft flex items-center justify-center shrink-0">
-              <Bell className="w-5 h-5" />
-              {unreadCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 flex items-center justify-center rounded-full bg-info-ink text-white text-label font-bold ring-2 ring-white tabular-nums">
-                  {unreadCount > 99 ? "99+" : unreadCount}
+    <div className="h-full flex flex-col bg-surface-page">
+      {/* L1 — Header: same fixed bar (bg-surface, border-b, px-4 py-4) every
+          other top-level page uses, so the icon+title sit at one consistent
+          position/height across the app. */}
+      <div className="bg-surface border-b border-divider px-4 py-4 flex items-center justify-between gap-4 shrink-0">
+        <div className="flex items-center gap-4 min-w-0">
+          <span className="relative w-11 h-11 rounded-card bg-[color:var(--phenome-blue-500)]/10 text-[color:var(--phenome-blue-500)] flex items-center justify-center shrink-0">
+            <Bell className="w-5 h-5" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 flex items-center justify-center rounded-full bg-[color:var(--phenome-blue-400)] text-white text-label font-bold ring-2 ring-white tabular-nums">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
+          </span>
+          <div className="min-w-0">
+            <h1 className={`${PAGE_TITLE_CLASS} leading-tight`}>Notifications</h1>
+            <div className="mt-1">
+              {unreadCount > 0 ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--phenome-blue-400)]/10 text-[color:var(--phenome-blue-400)] px-2.5 py-0.5 text-xs font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[color:var(--phenome-blue-400)]" />
+                  {unreadCount} unread
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 text-sm text-success-ink font-medium">
+                  <CheckCircle2 className="w-4 h-4" /> You're all caught up
                 </span>
               )}
-            </span>
-            <div className="min-w-0">
-              <h1 className="text-2xl font-semibold text-ink leading-tight">Notifications</h1>
-              <div className="mt-1">
-                {unreadCount > 0 ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-info/10 text-info-ink px-2.5 py-0.5 text-xs font-semibold">
-                    <span className="w-1.5 h-1.5 rounded-full bg-info-ink" />
-                    {unreadCount} unread
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1.5 text-sm text-success-ink font-medium">
-                    <CheckCircle2 className="w-4 h-4" /> You're all caught up
-                  </span>
-                )}
-              </div>
             </div>
           </div>
-          {unreadCount > 0 && (
-            <button
-              onClick={() => markAllRead(allItems.map((n) => n.id))}
-              className="inline-flex items-center gap-2 h-9 px-3.5 rounded-control text-sm font-medium text-ink-soft border border-divider bg-surface hover:bg-surface-hover hover:text-ink transition-colors shrink-0"
-            >
-              <CheckCheck className="w-4 h-4" /> Mark all as read
-            </button>
-          )}
         </div>
+        {unreadCount > 0 && (
+          <button
+            onClick={() => markAllRead(allItems.map((n) => n.id))}
+            className="inline-flex items-center gap-2 h-9 px-3.5 rounded-control text-sm font-medium text-ink-soft border border-divider bg-surface hover:bg-surface-hover hover:text-ink transition-colors shrink-0"
+          >
+            <CheckCheck className="w-4 h-4" /> Mark all as read
+          </button>
+        )}
+      </div>
 
+      <div className="flex-1 overflow-y-auto px-4 pt-4">
         {/* L2 — Scope tabs (left) share one row + underline with the two
             filters (right): category nav and its filters read as a single
             control band, and the feed panel below starts clean. */}
-        <div className="mt-6 border-b border-divider flex items-center justify-between gap-4">
+        <div className="border-b border-divider flex items-center justify-between gap-4">
           <nav className="flex items-center gap-6 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {visibleKinds.map((k) => (
               <ScopeTab
@@ -436,7 +439,7 @@ export function NotificationsPage() {
         </div>
       </div>
 
-      <div className="px-6 pb-6">
+      <div className="px-4 pb-4">
         {/* Feed panel — a white surface on the pale page, matching the app's
             card-on-surface-page pattern. */}
         <div className="bg-surface rounded-card mt-4 px-4 pt-2 pb-2">

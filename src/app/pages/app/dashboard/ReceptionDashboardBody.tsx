@@ -11,6 +11,7 @@ import { CalendarWidget } from "./CalendarWidget";
 import { useKpiBar, KpiControls, KpiCards } from "./KpiBar";
 import { FrontDeskQueue } from "./FrontDeskQueue";
 import { QueueGroup } from "./receptionDashboardData";
+import { PAGE_TITLE_CLASS } from "../../../components/PageTitleIcon";
 
 // Reads/writes the shared appointmentsStore rather than local overrides, so
 // a check-in here and a nurse checkout on the Nurse dashboard actually agree
@@ -38,7 +39,7 @@ export function ReceptionDashboardBody() {
     <div className="h-full flex flex-col overflow-y-auto overflow-x-hidden bg-surface-page">
       {/* Header — same layout as Admin's dashboard: greeting + date on the
           left, KPI range/customise controls on the right of that same row. */}
-      <div className="px-6 pt-6">
+      <div className="px-4 pt-6">
         <div className="flex items-center justify-between gap-4 mb-3 flex-wrap">
           {/* Greeting + the two front-desk quick actions sit together on the
               left; KPI range/customise controls stay on the far right. Buttons
@@ -47,7 +48,7 @@ export function ReceptionDashboardBody() {
               secondary. Wraps gracefully at narrow iPad widths. */}
           <div className="flex items-center gap-x-4 gap-y-2 flex-wrap min-w-0">
             <div className="shrink-0">
-              <h1 className="text-2xl font-bold text-ink whitespace-nowrap">Good morning, {ROLE_GREETING.Reception}</h1>
+              <h1 className={`${PAGE_TITLE_CLASS} whitespace-nowrap`}>Good morning, {ROLE_GREETING.Reception}</h1>
               <p className="text-sm text-ink-muted mt-1 whitespace-nowrap">{TODAY_LABEL} · Istanbul Clinic</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
@@ -75,7 +76,7 @@ export function ReceptionDashboardBody() {
           panels start at the row's top edge, so their headers line up; each
           header owns a small "+" quick-add. The calendar shows its full
           08:00-19:00 day and the page itself scrolls the rest. */}
-      <div className="shrink-0 flex gap-5 px-6 py-3">
+      <div className="shrink-0 flex gap-5 px-4 py-4">
         {/* overflow-x-clip contains only CalendarWidget's horizontal bleed —
             it's designed for a full-width row (Admin's dashboard), so at this
             narrower shared-row width its 7 columns want to be wider than the
@@ -83,17 +84,19 @@ export function ReceptionDashboardBody() {
             never clipped. */}
         <div className="flex-1 min-w-0 flex flex-col overflow-x-clip">
           <div className="shrink-0">
-            <CalendarWidget onAdd={() => setBookingOpen(true)} />
+            <CalendarWidget />
           </div>
         </div>
 
-        <div className="w-[420px] shrink-0 flex flex-col">
+        {/* Column ratio 70:30 (was a fixed 420px, ~60:40) — matches
+            DashboardPage's Admin layout ratio change; min-width floor keeps
+            the queue list from getting uncomfortably narrow. */}
+        <div className="w-[30%] min-w-[320px] shrink-0 flex flex-col">
           <FrontDeskQueue
             appts={appts}
             tab={tab}
             onTabChange={setTab}
             onOpen={(id) => navigate(`/dashboard/appointment/${id}`)}
-            onAdd={() => setRegisterOpen(true)}
           />
         </div>
       </div>

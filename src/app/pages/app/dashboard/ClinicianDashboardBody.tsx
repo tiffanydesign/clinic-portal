@@ -43,8 +43,8 @@ export function ClinicianDashboardBody() {
   const startOrJoin = (id: string) => setOverrides((prev) => ({ ...prev, [id]: "In Clinic" }));
 
   return (
-    <div className="px-6 py-4 flex gap-4 h-[700px]">
-      <div className="w-[55%] min-w-0 flex flex-col gap-4 h-full">
+    <div className="px-4 py-4 flex gap-3 h-[700px]">
+      <div className="w-[55%] min-w-0 flex flex-col gap-3 h-full">
         <ClinicianNowCard
           activeAppt={activeAppt}
           upNextAppt={upNextAppt}
@@ -57,7 +57,7 @@ export function ClinicianDashboardBody() {
         </div>
       </div>
 
-      <div className="w-[45%] min-w-0 h-full flex flex-col gap-4">
+      <div className="w-[45%] min-w-0 h-full flex flex-col gap-3">
         <ClinicianQueueCounters
           todaysCount={todaysAppts.length}
           nextTimeLabel={nextTimeLabel}

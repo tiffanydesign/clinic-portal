@@ -8,7 +8,7 @@ export type InputProps = React.InputHTMLAttributes<HTMLInputElement> & {
 // The ONE Input implementation for the whole app — label sits on top (12px,
 // 4px gap below it), never inline/floating: the most robust layout for
 // narrow iPad-portrait columns and long Turkish-language labels that don't
-// fit beside a control. Visual height is --control-h (38px); disabled and
+// fit beside a control. Visual height is --control-h (40px); disabled and
 // error states are baked in here so no call site improvises its own.
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, className = "", id, disabled, ...props }, ref) => {

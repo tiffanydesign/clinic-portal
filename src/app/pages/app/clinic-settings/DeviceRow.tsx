@@ -25,7 +25,7 @@ export function DeviceRow({ view, onOpen }: { view: DeviceView; onOpen: (v: Devi
 
   return (
     <tr className={`transition-colors cursor-pointer ${view.retired ? "bg-surface-page/40 hover:bg-surface-hover" : "hover:bg-surface-hover/60"}`} onClick={() => onOpen(view)}>
-      <td className="px-4 py-3.5">
+      <td className="px-3 py-2.5">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-card bg-surface-hover flex items-center justify-center shrink-0">
             <Icon className="w-4 h-4 text-ink-soft" />
@@ -36,10 +36,10 @@ export function DeviceRow({ view, onOpen }: { view: DeviceView; onOpen: (v: Devi
           </div>
         </div>
       </td>
-      <td className="px-4 py-3.5 text-sm text-ink-soft whitespace-nowrap">{view.model}</td>
-      <td className="px-4 py-3.5 text-sm text-ink-muted font-mono tracking-wide whitespace-nowrap">{view.shortCode}</td>
-      <td className="px-4 py-3.5 text-sm text-ink-soft whitespace-nowrap">{view.type}</td>
-      <td className="px-4 py-3.5" onClick={(e) => e.stopPropagation()}>
+      <td className="px-3 py-2.5 text-sm text-ink-soft whitespace-nowrap">{view.model}</td>
+      <td className="px-3 py-2.5 text-sm text-ink-muted font-mono tracking-wide whitespace-nowrap">{view.shortCode}</td>
+      <td className="px-3 py-2.5 text-sm text-ink-soft whitespace-nowrap">{view.type}</td>
+      <td className="px-3 py-2.5" onClick={(e) => e.stopPropagation()}>
         <select
           value={roomValue}
           disabled={view.retired}
@@ -50,13 +50,13 @@ export function DeviceRow({ view, onOpen }: { view: DeviceView; onOpen: (v: Devi
           {rooms.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
         </select>
       </td>
-      <td className="px-4 py-3.5 whitespace-nowrap">
+      <td className="px-3 py-2.5 whitespace-nowrap">
         <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-bold border ${meta.chip}`}>
           <span className={`w-1.5 h-1.5 rounded-full ${meta.dot}`} /> {meta.label}
         </span>
       </td>
-      <td className="px-4 py-3.5 text-sm text-ink-muted whitespace-nowrap">{view.lastSeen}</td>
-      <td className="px-3 py-3.5 text-right" onClick={(e) => e.stopPropagation()}>
+      <td className="px-3 py-2.5 text-sm text-ink-muted whitespace-nowrap">{view.lastSeen}</td>
+      <td className="px-3 py-2.5 text-right" onClick={(e) => e.stopPropagation()}>
         <OverflowMenu
           ariaLabel={`Actions for ${view.label}`}
           items={

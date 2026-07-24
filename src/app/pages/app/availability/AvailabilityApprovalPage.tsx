@@ -10,6 +10,7 @@ import {
 } from "./availabilityData";
 import { useAvailabilityStore, availabilityActions } from "./availabilityStore";
 import { RejectReasonModal } from "./RejectReasonModal";
+import { PageTitleIcon, PAGE_TITLE_CLASS } from "../../../components/PageTitleIcon";
 
 // Weekly Hours and Blocked Time both apply instantly now (see
 // availabilityStore.ts) — Leave is the only request kind that still needs a
@@ -260,13 +261,19 @@ export function AvailabilityApprovalPage() {
   };
 
   return (
-    <div className="p-4 h-full overflow-y-auto">
-      {/* L1 — Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-ink">Approvals</h1>
-        <p className="text-sm text-ink-muted mt-1">Leave requests awaiting your decision. Weekly hours and Blocked Time apply instantly and never need approval.</p>
+    <div className="h-full flex flex-col">
+      {/* L1 — Header: same fixed bar (bg-surface, border-b, px-4 py-4) every
+          other top-level page uses, so the icon+title sit at one consistent
+          position/height across the app. */}
+      <div className="bg-surface border-b border-divider px-4 py-4 flex items-center gap-4 shrink-0">
+        <PageTitleIcon icon={ClipboardList} />
+        <div>
+          <h1 className={PAGE_TITLE_CLASS}>Approvals</h1>
+          <p className="text-sm text-ink-muted mt-1">Leave requests awaiting your decision. Weekly hours and Blocked Time apply instantly and never need approval.</p>
+        </div>
       </div>
 
+      <div className="flex-1 overflow-y-auto px-4 py-4">
       {/* L2 — Overview */}
       <div className="grid grid-cols-3 divide-x divide-divider bg-surface rounded-card mb-6">
         <OverviewTile icon={Inbox} value={awaiting} label="Awaiting decision" iconClass="bg-warning/10 text-warning-ink" />
@@ -321,6 +328,7 @@ export function AvailabilityApprovalPage() {
           </div>
         </div>
       )}
+      </div>
 
       {/* Detail drawer */}
       {selected && (

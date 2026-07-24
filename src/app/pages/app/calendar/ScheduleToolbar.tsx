@@ -1,12 +1,11 @@
 import React, { useRef, useState } from "react";
-import { ChevronLeft, ChevronRight, CalendarDays, CalendarPlus, Plus, Check, Info, SlidersHorizontal } from "lucide-react";
+import { ChevronLeft, ChevronRight, CalendarDays, CalendarPlus, Plus, Check, SlidersHorizontal } from "lucide-react";
 import { addDays, addMonths, format, isSameDay, startOfMonth, startOfWeek, subMonths } from "date-fns";
 import type { Role } from "../../../context/AppContext";
 import { CLINICIANS, useSchedulableRooms, APPT_TYPES, ANCHOR_DATE } from "./scheduleData";
 import { FilterSelect } from "../../../components/FilterSelect";
 import { FloatingPopover } from "../../../components/glass/FloatingPopover";
 
-export type View = "day" | "week";
 export type Mode = "calendar" | "list";
 export type Grouping = "staff" | "room";
 
@@ -16,48 +15,6 @@ function Segmented<T extends string>({ value, options, onChange }: { value: T; o
       {options.map((o) => (
         <button key={o.v} onClick={() => onChange(o.v)} className={`px-3 py-1.5 text-xs font-bold rounded-control transition-all ${value === o.v ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted hover:text-ink-soft"}`}>{o.label}</button>
       ))}
-    </div>
-  );
-}
-
-const LEGEND: { label: string; cls: string }[] = [
-  { label: "Booked", cls: "bg-info-ink" },
-  { label: "Arrived", cls: "bg-warning-ink" },
-  { label: "Checked In", cls: "bg-success-ink" },
-  { label: "In Clinic", cls: "bg-warning-ink" },
-  { label: "Completed", cls: "bg-ink-muted" },
-  { label: "No Show", cls: "border-2 border-dashed border-danger bg-transparent" },
-  { label: "Cancelled", cls: "bg-surface-sunken" },
-];
-
-// iPad has no reliable hover, so the legend lives behind a tap target (ⓘ)
-// rather than sitting permanently on the toolbar as a row of loose squares.
-function LegendPopover() {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className={`w-8 h-8 flex items-center justify-center rounded-card border transition-colors ${open ? "bg-surface-hover border-divider text-ink-soft" : "border-divider text-ink-muted bg-surface hover:bg-surface-hover"}`}
-        title="Status legend"
-      >
-        <Info className="w-4 h-4" />
-      </button>
-      {open && (
-        <>
-          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-2 z-20 bg-surface border border-divider rounded-card shadow-lg p-3 w-48">
-            <div className="text-label font-bold text-ink-muted uppercase tracking-wider mb-2 px-1">Status legend</div>
-            <div className="space-y-1.5">
-              {LEGEND.map((l) => (
-                <div key={l.label} className="flex items-center gap-2 px-1 text-xs text-ink-soft">
-                  <span className={`w-2.5 h-2.5 rounded-full shrink-0 ${l.cls}`} /> {l.label}
-                </div>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
     </div>
   );
 }
@@ -163,7 +120,7 @@ function DatePickerPopover({ selectedDate, onPick }: { selectedDate: Date; onPic
 
 export function ScheduleToolbar({
   role, dateLabel, selectedDate, onPrev, onNext, onToday, onPickDate, disableCreate,
-  view, setView, mode, setMode, grouping, setGrouping,
+  mode, setMode, grouping, setGrouping,
   clinicianFilter, toggleClinician, room, setRoom, type, setType,
   overlay, setOverlay, onNew, onBlock,
 }: {
@@ -172,7 +129,6 @@ export function ScheduleToolbar({
   selectedDate: Date;
   onPrev: () => void; onNext: () => void; onToday: () => void; onPickDate: (d: Date) => void;
   disableCreate?: boolean;
-  view: View; setView: (v: View) => void;
   mode: Mode; setMode: (m: Mode) => void;
   grouping: Grouping; setGrouping: (g: Grouping) => void;
   clinicianFilter: Set<string>; toggleClinician: (id: string) => void;
@@ -182,7 +138,6 @@ export function ScheduleToolbar({
   onNew: () => void; onBlock: () => void;
 }) {
   const rooms = useSchedulableRooms();
-  const hasWeek = role === "Admin" || role === "Clinician";
   const hasListToggle = role === "Admin" || role === "Reception";
   const isList = mode === "list";
   const filtersActive = clinicianFilter.size > 0 || room !== "" || type !== "";
@@ -222,17 +177,12 @@ export function ScheduleToolbar({
             {hasListToggle && (
               <Segmented value={mode} options={[{ v: "calendar", label: "Calendar" }, { v: "list", label: "List" }]} onChange={setMode} />
             )}
-            {/* contextual sub-options of Calendar mode — trail the primary toggle,
+            {/* Admin's By Staff / By Room grouping — trails the primary toggle,
                 separated by a divider that reads "primary | contextual" */}
-            {!isList && hasWeek && (
+            {!isList && role === "Admin" && (
               <>
                 {hasListToggle && <span className="h-6 w-px bg-surface-sunken mx-0.5" aria-hidden />}
-                {hasWeek && (
-                  <Segmented value={view} options={[{ v: "day", label: "Day" }, { v: "week", label: "Week" }]} onChange={setView} />
-                )}
-                {role === "Admin" && view === "day" && (
-                  <Segmented value={grouping} options={[{ v: "staff", label: "By Staff" }, { v: "room", label: "By Room" }]} onChange={setGrouping} />
-                )}
+                <Segmented value={grouping} options={[{ v: "staff", label: "By Staff" }, { v: "room", label: "By Room" }]} onChange={setGrouping} />
               </>
             )}
           </div>
@@ -247,7 +197,6 @@ export function ScheduleToolbar({
               Show clinic overlay
             </label>
           )}
-          <LegendPopover />
           {/* Admin + Reception only — Nurse/Clinician get no booking entry anywhere. */}
           {(role === "Admin" || role === "Reception") && (
             <button

@@ -123,11 +123,11 @@ export function StaffOverviewTab() {
   };
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="px-4 py-4 space-y-5">
       {/* Stat Tiles — the page's first-paint answer to "how loaded is this
           person, and is anything backing up". Results Awaiting is the only
           number on this whole page allowed to turn amber. */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-3">
         <StatTile id="assigned-patients" label="Assigned Patients" value={isClinical ? staff.patients : "—"} onClick={isClinical ? goPatients : undefined} />
         <StatTile id="active-journeys" label="Active Journeys" value={isClinical ? (snapshot?.activeJourneys ?? 0) : "—"} onClick={isClinical ? goPatients : undefined} />
         <StatTile id="upcoming-7-days" label="Upcoming 7 Days" value={isClinical ? (snapshot?.upcoming7Days ?? 0) : "—"} onClick={isClinical ? goSchedule : undefined} />
@@ -144,7 +144,7 @@ export function StaffOverviewTab() {
         )}
       </div>
 
-      <div className="grid grid-cols-[55fr_45fr] gap-6 items-start">
+      <div className="grid grid-cols-[55fr_45fr] gap-5 items-start">
         {/* This Month — Activity (Clinician only) + Attendance (everyone) */}
         <SectionCard
           title="This Month"

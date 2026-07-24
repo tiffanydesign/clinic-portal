@@ -1,19 +1,18 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import { toast } from "sonner";
-import { addDays, endOfWeek, format, isSameDay, startOfWeek, subDays } from "date-fns";
+import { format, isSameDay, subDays, addDays } from "date-fns";
 import { useAppContext } from "../../../context/AppContext";
 import { AppointmentDrawer, DrawerHandlers } from "../dashboard/AppointmentDrawer";
-import { ScheduleToolbar, View, Mode, Grouping } from "./ScheduleToolbar";
+import { ScheduleToolbar, Mode, Grouping } from "./ScheduleToolbar";
 import { DayGrid, GridColumn, PlacedAppt, PlacedBlock } from "./DayGrid";
-import { WeekGrid } from "./WeekGrid";
 import { ListView } from "./ListView";
 import { NewAppointmentModal, BlockTimeModal } from "./CreateModals";
 import { EditAppointmentModal, ReassignModal, RescheduleModal, CancelModal, ConfirmDialog } from "./EditModals";
 import { MyScheduleView } from "./MyScheduleView";
 import {
   APPTS, Appt, ApptOverride, TimeBlock, CLINICIANS, useSchedulableRooms, CLINICIAN_SELF_ID,
-  NURSE_SELF_NAME, ANCHOR_DATE, applyOverride, buildWeek, minToClock,
+  NURSE_SELF_NAME, ANCHOR_DATE, applyOverride, minToClock,
 } from "./scheduleData";
 import { EmptySlotPopover, type EmptySlotTarget } from "./EmptySlotPopover";
 import { useAppointments, addAppointment } from "../dashboard/appointmentsStore";
@@ -46,7 +45,6 @@ export function SchedulePage() {
   // source of truth for changes after that.
   const [searchParams] = useSearchParams();
 
-  const [view, setView] = useState<View>("day");
   const [mode, setMode] = useState<Mode>("calendar");
   const [grouping, setGrouping] = useState<Grouping>(searchParams.get("grouping") === "room" ? "room" : "staff");
   // ?clinician=<doctorId> (see the Staff Overview page's "Upcoming 7 Days"
@@ -59,15 +57,12 @@ export function SchedulePage() {
   const [overlay, setOverlay] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(ANCHOR_DATE);
 
-  // Only the anchor day (and its containing week) has real mock appointments
-  // — any other date is a genuinely empty schedule, not fabricated data.
+  // Only the anchor day has real mock appointments — any other date is a
+  // genuinely empty schedule, not fabricated data.
   const isAnchorDay = isSameDay(selectedDate, ANCHOR_DATE);
-  const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 1 });
-  const isAnchorWeek = isSameDay(weekStart, startOfWeek(ANCHOR_DATE, { weekStartsOn: 1 }));
 
-  const goPrev = () => setSelectedDate((d) => (view === "week" ? subDays(d, 7) : subDays(d, 1)));
-  const goNext = () => setSelectedDate((d) => (view === "week" ? addDays(d, 7) : addDays(d, 1)));
+  const goPrev = () => setSelectedDate((d) => subDays(d, 1));
+  const goNext = () => setSelectedDate((d) => addDays(d, 1));
   const goToday = () => setSelectedDate(ANCHOR_DATE);
 
   const [overrides, setOverrides] = useState<Record<string, ApptOverride>>({});
@@ -268,12 +263,9 @@ export function SchedulePage() {
     );
   }
 
-  const dateLabel = view === "week"
-    ? `${format(weekStart, "d MMM")} – ${format(weekEnd, "d MMM yyyy")}`
-    : format(selectedDate, "EEE, d MMM yyyy");
+  const dateLabel = format(selectedDate, "EEE, d MMM yyyy");
   // Nurse/Clinician already returned above (MyScheduleView), so only Admin and
-  // Reception reach this point — Reception is day-only, Admin keeps its choice.
-  const effView: View = role === "Reception" ? "day" : view;
+  // Reception reach this point.
   const isList = (role === "Admin" || role === "Reception") && mode === "list";
 
   return (
@@ -287,7 +279,6 @@ export function SchedulePage() {
         onToday={goToday}
         onPickDate={setSelectedDate}
         disableCreate={!isAnchorDay}
-        view={effView} setView={setView}
         mode={mode} setMode={setMode}
         grouping={grouping} setGrouping={setGrouping}
         clinicianFilter={clinicianFilter}
@@ -304,17 +295,9 @@ export function SchedulePage() {
         onBlock={() => setModal({ kind: "block" })}
       />
 
-      <div className="flex-1 min-h-0 px-6 py-4 bg-surface-page/80">
+      <div className="flex-1 min-h-0 px-4 py-4 bg-surface-page/80">
         {isList ? (
           <ListView appts={scoped} onRowClick={openAppt} selectedDate={selectedDate} />
-        ) : effView === "week" ? (
-          // Clinician returned above (MyScheduleView), so this grid is only
-          // ever Admin's — buildWeek is never self-scoped here.
-          <WeekGrid
-            weekStart={weekStart}
-            weekAppts={isAnchorWeek ? buildWeek(null) : []}
-            onApptClick={openAppt}
-          />
         ) : (
           <DayGrid
             columns={columns}

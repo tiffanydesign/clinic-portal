@@ -110,7 +110,7 @@ export function JourneyDetailPage() {
   }));
 
   return (
-    <div className="p-4">
+    <div className="px-4 py-4">
       <Link to={`/patients/${patientId}/journeys`} className="flex items-center text-sm font-bold text-ink-muted hover:text-ink mb-6 w-fit">
         <ChevronLeft className="w-4 h-4 mr-1" /> Back to Journeys
       </Link>

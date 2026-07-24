@@ -266,7 +266,14 @@ export function RegisterPatientModal({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={labelCls}>Date of Birth</label>
-                <Input type="date" value={dob} onChange={(e) => setDob(e.target.value)} />
+                {/* Plain text, not type="date": a native date input's empty-state
+                    placeholder (and its lang="en-US") is dictated by the
+                    browser/OS locale in Chromium — the "年/月/日" placeholder
+                    this was showing is the same Chromium quirk that ignores
+                    both the HTML lang attribute and the `placeholder` HTML
+                    attribute for that control. A plain text field is the only
+                    way to guarantee the English placeholder actually shows. */}
+                <Input type="text" placeholder="MM/DD/YYYY" value={dob} onChange={(e) => setDob(e.target.value)} />
               </div>
               <div>
                 <label className={labelCls}>Sex</label>

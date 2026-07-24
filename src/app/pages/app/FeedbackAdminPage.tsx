@@ -12,6 +12,7 @@ import {
 } from "./feedbackData";
 import { useFeedbackList, changeStatus, toggleFlag, addInternalNote } from "./feedbackStore";
 import { FilterSelect } from "../../components/FilterSelect";
+import { PageTitleIcon, PAGE_TITLE_CLASS } from "../../components/PageTitleIcon";
 
 const SOURCE_OPTIONS = ["All Sources", "Patient", "Clinician", "Nurse", "Receptionist", "Google Review"];
 const TYPE_OPTIONS = ["All Types", "Visit Feedback", "Complaint", "Suggestion", "System Issue", "Incident Report", "Compliment", "Other"];
@@ -111,7 +112,7 @@ function FeedbackCard({ item, compact, isSelected, onClick }: {
       <h3 className="flex-1 min-w-0 text-sm font-bold text-ink truncate">{item.title}</h3>
 
       {item.rating && (
-        <div className="flex text-warning-ink shrink-0">
+        <div className="flex text-warning shrink-0">
           {[1, 2, 3, 4, 5].map((s) => <Star key={s} className={`w-3.5 h-3.5 ${s <= item.rating! ? "fill-current" : "text-ink-muted"}`} />)}
         </div>
       )}
@@ -270,7 +271,7 @@ function FeedbackDrawer({ item, onClose, newNote, setNewNote, onAddNote, onUpdat
             <div className="mb-6">
               <div className="flex items-center mb-2">
                 <div className="text-sm font-bold text-ink-soft mr-3">{isGoogle ? "Google Rating" : "Overall Rating"}</div>
-                <div className="flex text-warning-ink">
+                <div className="flex text-warning">
                   {[1, 2, 3, 4, 5].map((s) => <Star key={s} className={`w-4 h-4 ${s <= item.rating! ? "fill-current" : "text-ink-muted"}`} />)}
                 </div>
                 <span className="text-sm font-bold text-ink ml-2">{item.rating}/5</span>
@@ -279,11 +280,11 @@ function FeedbackDrawer({ item, onClose, newNote, setNewNote, onAddNote, onUpdat
                 <div className="bg-surface-page p-3 rounded-control border border-divider space-y-2">
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-ink-soft font-medium">Facility Cleanliness</span>
-                    <div className="flex text-warning-ink">{[1, 2, 3, 4, 5].map((s) => <Star key={s} className="w-3 h-3 fill-current" />)}</div>
+                    <div className="flex text-warning">{[1, 2, 3, 4, 5].map((s) => <Star key={s} className="w-3 h-3 fill-current" />)}</div>
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-ink-soft font-medium">Wait Time</span>
-                    <div className="flex text-warning-ink">{[1, 2, 3, 4, 5].map((s) => <Star key={s} className={`w-3 h-3 ${s <= 3 ? "fill-current" : "text-ink-muted"}`} />)}</div>
+                    <div className="flex text-warning">{[1, 2, 3, 4, 5].map((s) => <Star key={s} className={`w-3 h-3 ${s <= 3 ? "fill-current" : "text-ink-muted"}`} />)}</div>
                   </div>
                 </div>
               )}
@@ -470,10 +471,13 @@ export function FeedbackAdminPage() {
 
       {/* Header & Toolbar */}
       <div className="shrink-0 bg-surface border-b border-divider">
-        <div className="flex justify-between items-center px-6 py-4 border-b border-divider">
-          <div>
-            <h1 className="text-2xl font-bold text-ink">Feedback</h1>
-            <p className="text-sm text-ink-muted mt-1">Patient and staff feedback records</p>
+        <div className="flex justify-between items-center px-4 py-4 border-b border-divider">
+          <div className="flex items-center gap-4">
+            <PageTitleIcon icon={MessageSquare} />
+            <div>
+              <h1 className={PAGE_TITLE_CLASS}>Feedback</h1>
+              <p className="text-sm text-ink-muted mt-1">Patient and staff feedback records</p>
+            </div>
           </div>
           <div className="flex items-center space-x-3">
             <button onClick={handleExport} className="flex items-center px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft hover:bg-surface-hover transition-colors shadow-sm">
@@ -555,7 +559,7 @@ export function FeedbackAdminPage() {
           />
           <StatSegment
             tile="bg-warning/10"
-            icon={<Star className="w-[18px] h-[18px] text-warning-ink fill-current" />}
+            icon={<Star className="w-[18px] h-[18px] text-warning fill-current" />}
             label="Avg. Rating"
             value="4.3"
             grow="flex-[0.9]"
@@ -590,7 +594,7 @@ export function FeedbackAdminPage() {
             icon={<GoogleG className="w-[18px] h-[18px]" />}
             label="Google Rating"
             value={googleAvg.toFixed(1)}
-            valueAffix={<Star className="w-4 h-4 text-warning-ink fill-current self-center" />}
+            valueAffix={<Star className="w-4 h-4 text-warning fill-current self-center" />}
             sub={`${googleItems.length} Google reviews`}
           />
         </div>

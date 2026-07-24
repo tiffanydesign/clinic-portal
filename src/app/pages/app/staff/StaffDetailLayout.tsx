@@ -15,7 +15,7 @@ export function StaffDetailLayout({ children }: { children?: React.ReactNode }) 
 
   if (!staff) {
     return (
-      <div className="p-4">
+      <div className="px-4 py-4">
         <Link to="/staff" className="text-sm text-ink-muted hover:underline mb-4 inline-block">← Staff Management</Link>
         <h1 className="text-2xl font-bold text-ink mb-2">Staff member not found</h1>
         <p className="text-sm text-ink-muted">No staff member with ID “{staffId}”.</p>
@@ -39,12 +39,12 @@ export function StaffDetailLayout({ children }: { children?: React.ReactNode }) 
   return (
     <div className="flex flex-col h-full bg-surface-page overflow-hidden">
       {/* Identity header — fixed, does not scroll */}
-      <div className="bg-surface border-b border-divider px-6 pt-5 pb-0 shrink-0">
+      <div className="bg-surface border-b border-divider px-4 pt-4 pb-0 shrink-0">
         <Link to="/staff" className="flex items-center text-sm text-ink-muted hover:text-ink hover:underline mb-4 w-max">
           <ArrowLeft className="w-4 h-4 mr-1.5" /> Staff Management
         </Link>
 
-        <div className="flex justify-between items-start pb-5">
+        <div className="flex justify-between items-start pb-4">
           <div className="flex items-center">
             <button
               onClick={() => toast("Change photo (demo)")}

@@ -13,21 +13,21 @@ const BRAND: Swatch[] = [
 ];
 
 const SEMANTIC: Swatch[] = [
-  { name: "Success", className: "bg-success", hex: "#34C759", usage: "Positive/cleared outcome ONLY" },
-  { name: "Success ink", className: "bg-success-ink", hex: "#177245", usage: "Text on success tint" },
-  { name: "Warning", className: "bg-warning", hex: "#F5A623", usage: "Needs attention soon" },
-  { name: "Warning ink", className: "bg-warning-ink", hex: "#8F4E05", usage: "Text on warning tint" },
-  { name: "Danger", className: "bg-danger", hex: "#FF383C", usage: "Blocked / overdue ONLY" },
-  { name: "Danger ink", className: "bg-danger-ink", hex: "#B91C1C", usage: "Text on danger tint" },
-  { name: "Info", className: "bg-info", hex: "#2394CC", usage: "Neutral in-progress / active now" },
-  { name: "Info ink", className: "bg-info-ink", hex: "#12658F", usage: "Text on info tint" },
-  { name: "Special", className: "bg-special", hex: "#2D6CEB", usage: "Distinct category marker (deep cobalt — kept apart from Info's cyan-blue)" },
-  { name: "Special ink", className: "bg-special-ink", hex: "#164FBE", usage: "Text on special tint" },
-  { name: "Success fill", className: "bg-success-fill", hex: "#00943e", usage: "Icon-circle / progress-segment fill, non-text only" },
-  { name: "Warning fill", className: "bg-warning-fill", hex: "#ba6d00", usage: "Icon-circle / progress-segment fill, non-text only" },
-  { name: "Danger fill", className: "bg-danger-fill", hex: "#ff0008", usage: "Icon-circle / progress-segment fill, non-text only" },
-  { name: "Info fill", className: "bg-info-fill", hex: "#0083e0", usage: "Icon-circle / progress-segment fill, non-text only" },
-  { name: "Special fill", className: "bg-special-fill", hex: "#1A7CF0", usage: "Icon-circle / progress-segment fill, non-text only" },
+  { name: "Success", className: "bg-success", hex: "#70D332", usage: "Positive/cleared outcome ONLY" },
+  { name: "Success ink", className: "bg-success-ink", hex: "#417e1b", usage: "Text on success tint" },
+  { name: "Warning", className: "bg-warning", hex: "#FFB600", usage: "Needs attention soon" },
+  { name: "Warning ink", className: "bg-warning-ink", hex: "#8f6600", usage: "Text on warning tint" },
+  { name: "Danger", className: "bg-danger", hex: "#FF4B2B", usage: "Blocked / overdue ONLY" },
+  { name: "Danger ink", className: "bg-danger-ink", hex: "#db2100", usage: "Text on danger tint" },
+  { name: "Info", className: "bg-info", hex: "#508CFC", usage: "Neutral in-progress / active now" },
+  { name: "Info ink", className: "bg-info-ink", hex: "#045afb", usage: "Text on info tint" },
+  { name: "Special", className: "bg-special", hex: "#3366FF", usage: "Distinct category marker (reuses reference palette's Brand Primary — kept apart from Info by being deeper/more saturated)" },
+  { name: "Special ink", className: "bg-special-ink", hex: "#0040ff", usage: "Text on special tint" },
+  { name: "Success fill", className: "bg-success-fill", hex: "#509b21", usage: "Icon-circle / progress-segment fill, non-text only" },
+  { name: "Warning fill", className: "bg-warning-fill", hex: "#b27f00", usage: "Icon-circle / progress-segment fill, non-text only" },
+  { name: "Danger fill", className: "bg-danger-fill", hex: "#ff3c1a", usage: "Icon-circle / progress-segment fill, non-text only" },
+  { name: "Info fill", className: "bg-info-fill", hex: "#1d6bfb", usage: "Icon-circle / progress-segment fill, non-text only" },
+  { name: "Special fill", className: "bg-special-fill", hex: "#1a53ff", usage: "Icon-circle / progress-segment fill, non-text only" },
 ];
 
 const SURFACE: Swatch[] = [

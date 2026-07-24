@@ -15,6 +15,7 @@ import { UpNextPanel } from "./UpNextPanel";
 import { MyPatientsTodayCard } from "./MyPatientsTodayCard";
 import { nurseCheckOutByName, nurseMarkPatientArrived, useAppointments } from "./appointmentsStore";
 import { NURSE_SELF_NAME } from "../calendar/scheduleData";
+import { PAGE_TITLE_CLASS } from "../../../components/PageTitleIcon";
 
 const DEMO_MOMENTS: DemoMoment[] = ["day-start", "mid-shift", "day-wrap"];
 
@@ -157,10 +158,10 @@ export function NurseDashboardPage() {
     // including Today's Schedule which renders the full day inline with no
     // nested scrollbar of its own (see ClinicianScheduleList's `scrollable`).
     <div className="bg-surface-page">
-      <div className="px-6 pt-6">
+      <div className="px-4 pt-6">
         <div className="flex items-start justify-between gap-4 mb-3">
           <div>
-            <h1 className="text-2xl font-bold text-ink">Good morning, {ROLE_GREETING.Nurse}</h1>
+            <h1 className={PAGE_TITLE_CLASS}>Good morning, {ROLE_GREETING.Nurse}</h1>
             <p className="text-sm text-ink-muted mt-1">{TODAY_LABEL} · Istanbul Clinic</p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
@@ -169,7 +170,7 @@ export function NurseDashboardPage() {
         </div>
       </div>
 
-      <div className="flex items-start gap-6 px-6 pt-4 pb-6">
+      <div className="flex items-start gap-5 px-4 py-4">
         <div className="flex-1 min-w-0">
           {identity ? (
             <PatientJourneySection

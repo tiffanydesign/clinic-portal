@@ -177,7 +177,7 @@ export function MyScheduleView({
         </div>
 
         {/* grid */}
-        <div className="flex-1 min-h-0 p-4 relative" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+        <div className="flex-1 min-h-0 pl-0 pr-4 py-4 relative" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
           {view === "month" ? (
             <MyScheduleMonthGrid
               viewMonth={startOfMonth(selectedDate)}

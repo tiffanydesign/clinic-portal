@@ -18,9 +18,9 @@ export function AdminOverview({ patient }: { patient: PatientRecord }) {
   const navigate = useNavigate();
 
   return (
-    <div className="p-4 grid grid-cols-2 gap-6">
+    <div className="px-4 py-4 grid grid-cols-2 gap-5">
       {/* left column */}
-      <div className="space-y-6">
+      <div className="space-y-3">
         <Card title="Patient Summary">
           <div className="grid grid-cols-2 gap-4">
             <Field label="Registered" value={patient.registeredDate} />
@@ -63,7 +63,7 @@ export function AdminOverview({ patient }: { patient: PatientRecord }) {
       </div>
 
       {/* right column */}
-      <div className="space-y-6">
+      <div className="space-y-3">
         <Card title="Assigned Team" action={<button onClick={() => toast("Reassign (demo)")} className="text-xs font-bold text-ink-soft hover:underline">Reassign</button>}>
           <div className="grid grid-cols-2 gap-3">
             <div className="border border-divider rounded-control p-3 flex items-center gap-2.5">

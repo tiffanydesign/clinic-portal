@@ -65,13 +65,13 @@ function JourneyTableRow({ journey, patientId }: { journey: Journey; patientId: 
   const { done, total } = journeyProgress(journey);
   return (
     <tr onClick={() => navigate(`/patients/${patientId}/journeys/${journey.id}`)} className="hover:bg-surface-hover cursor-pointer">
-      <td className="px-4 py-3 font-bold text-ink-soft">{journey.name}</td>
-      <td className="px-4 py-3"><StatusPill status={journey.status} type={journeyStatusPillType(journey.status)} /></td>
-      <td className="px-4 py-3 text-ink-soft">{journey.assignedClinician ?? "—"}</td>
-      <td className="px-4 py-3 text-ink-soft">{journey.assignedNurse ?? "—"}</td>
-      <td className="px-4 py-3 text-ink-soft">{journey.startedAt ?? "—"}</td>
-      <td className="px-4 py-3 text-ink-soft">{journey.completedAt ?? "—"}</td>
-      <td className="px-4 py-3 w-40"><ProgressBar done={done} total={total} /></td>
+      <td className="px-3 py-2.5 font-bold text-ink-soft">{journey.name}</td>
+      <td className="px-3 py-2.5"><StatusPill status={journey.status} type={journeyStatusPillType(journey.status)} /></td>
+      <td className="px-3 py-2.5 text-ink-soft">{journey.assignedClinician ?? "—"}</td>
+      <td className="px-3 py-2.5 text-ink-soft">{journey.assignedNurse ?? "—"}</td>
+      <td className="px-3 py-2.5 text-ink-soft">{journey.startedAt ?? "—"}</td>
+      <td className="px-3 py-2.5 text-ink-soft">{journey.completedAt ?? "—"}</td>
+      <td className="px-3 py-2.5 w-40"><ProgressBar done={done} total={total} /></td>
     </tr>
   );
 }
@@ -82,13 +82,13 @@ export function JourneysTab() {
   const [view, setView] = useState<"cards" | "table">(role === "Admin" ? "table" : "cards");
 
   if (patient.journeys.length === 0) {
-    return <div className="p-4 text-center text-ink-muted italic">No journeys started yet.</div>;
+    return <div className="px-4 py-4 text-center text-ink-muted italic">No journeys started yet.</div>;
   }
 
   // Nurse: card-based work queue. Clinician/Reception: compact read-oriented list.
   if (role === "Nurse" || (role !== "Admin" && view === "cards")) {
     return (
-      <div className="p-4 space-y-4">
+      <div className="px-4 py-4 space-y-3">
         {patient.journeys.map((j) => (
           <JourneyCard key={j.id} journey={j} patientId={patientId!} showOpen={role === "Nurse"} />
         ))}
@@ -97,7 +97,7 @@ export function JourneysTab() {
   }
 
   return (
-    <div className="p-4">
+    <div className="px-4 py-4">
       {role === "Admin" && (
         <div className="flex justify-end mb-4">
           <div className="inline-flex bg-surface-hover rounded-control p-0.5 border border-divider">
@@ -112,13 +112,13 @@ export function JourneysTab() {
           <table className="w-full text-sm text-left">
             <thead className="bg-surface-page border-b border-divider text-ink-soft">
               <tr>
-                <th className="px-4 py-3 font-semibold">Journey</th>
-                <th className="px-4 py-3 font-semibold">Status</th>
-                <th className="px-4 py-3 font-semibold">Clinician</th>
-                <th className="px-4 py-3 font-semibold">Nurse</th>
-                <th className="px-4 py-3 font-semibold">Started</th>
-                <th className="px-4 py-3 font-semibold">Completed</th>
-                <th className="px-4 py-3 font-semibold">Progress</th>
+                <th className="px-3 py-2.5 font-semibold">Journey</th>
+                <th className="px-3 py-2.5 font-semibold">Status</th>
+                <th className="px-3 py-2.5 font-semibold">Clinician</th>
+                <th className="px-3 py-2.5 font-semibold">Nurse</th>
+                <th className="px-3 py-2.5 font-semibold">Started</th>
+                <th className="px-3 py-2.5 font-semibold">Completed</th>
+                <th className="px-3 py-2.5 font-semibold">Progress</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-divider">
@@ -127,7 +127,7 @@ export function JourneysTab() {
           </table>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {patient.journeys.map((j) => <JourneyCard key={j.id} journey={j} patientId={patientId!} showOpen={role === "Admin"} />)}
         </div>
       )}

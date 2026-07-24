@@ -29,7 +29,7 @@ export function StaffWorkloadTab() {
   const utilColor = workloadColor(utilisation);
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="px-4 py-4 space-y-5">
       {/* Heading */}
       <div className="flex justify-between items-start">
         <div>
@@ -40,7 +40,7 @@ export function StaffWorkloadTab() {
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-3 gap-3">
         <div className="bg-surface rounded-card p-5">
           <div className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-2">Patient Load</div>
           <div className="text-3xl font-bold text-ink">{staff.patients ?? 0} <span className="text-lg font-medium text-ink-muted">patients</span></div>
@@ -62,7 +62,7 @@ export function StaffWorkloadTab() {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-[55fr_45fr] gap-6">
+      <div className="grid grid-cols-[55fr_45fr] gap-5">
         <div className="bg-surface rounded-card p-4">
           <h3 className="text-base font-bold text-ink mb-1">Appointment Distribution</h3>
           <p className="text-xs text-ink-muted mb-4">Appointments by type · {range.toLowerCase()}</p>

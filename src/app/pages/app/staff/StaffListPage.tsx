@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router";
 import {
   Search, Plus, Upload, UserPlus, ChevronDown, ChevronRight, ArrowUpDown,
-  Users, Stethoscope, HeartPulse, Headset, ShieldCheck, UserCheck, Moon, Plane,
+  Users, Stethoscope, HeartPulse, Headset, ShieldCheck, UserCheck, Moon, Plane, UserCog,
   type LucideIcon,
 } from "lucide-react";
 import { Stat, StatStripGroup, type StatIconTone } from "../../../components/stat";
@@ -15,6 +15,7 @@ import { AddStaffModal } from "./AddStaffModal";
 import { ImportStaffModal } from "./ImportStaffModal";
 import { FilterSelect } from "../../../components/FilterSelect";
 import { Input } from "../../../components/ui/input";
+import { PageTitleIcon, PAGE_TITLE_CLASS } from "../../../components/PageTitleIcon";
 
 type SortKey = "name" | "patients" | "workload" | "joined";
 
@@ -129,17 +130,20 @@ export function StaffListPage() {
   return (
     <div className="flex flex-col min-h-full bg-surface-page">
       {/* Header */}
-      <div className="bg-surface border-b border-divider px-6 py-5 flex justify-between items-center shrink-0">
-        <div>
-          <h1 className="text-2xl font-bold text-ink">Staff Management</h1>
-          <p className="text-sm text-ink-muted mt-1">Manage clinic staff, roles, permissions, and workload</p>
+      <div className="bg-surface border-b border-divider px-4 py-4 flex justify-between items-center shrink-0">
+        <div className="flex items-center gap-4">
+          <PageTitleIcon icon={UserCog} />
+          <div>
+            <h1 className={PAGE_TITLE_CLASS}>Staff Management</h1>
+            <p className="text-sm text-ink-muted mt-1">Manage clinic staff, roles, permissions, and workload</p>
+          </div>
         </div>
         <div className="relative">
           <button
             onClick={() => setShowAddMenu(!showAddMenu)}
-            className="flex items-center px-4 py-2 btn-primary rounded-control text-sm font-bold transition-colors"
+            className="inline-flex items-center gap-2 h-9 px-3.5 btn-primary rounded-control text-sm font-bold transition-colors"
           >
-            <Plus className="w-4 h-4 mr-2" /> Add Staff <ChevronDown className="w-3.5 h-3.5 ml-2" />
+            <Plus className="w-4 h-4" /> Add Staff <ChevronDown className="w-3.5 h-3.5" />
           </button>
           {showAddMenu && (
             <div className="absolute right-0 top-full mt-1 w-52 bg-surface border border-divider rounded-card shadow-lg z-50 py-1" onMouseLeave={() => setShowAddMenu(false)}>
@@ -162,13 +166,12 @@ export function StaffListPage() {
 
       {/* Roster summary — Stat family T3 `strip`. Clicking a segment drives the
           existing role / availability filters rather than navigating away. */}
-      <div className="px-6 py-4 shrink-0">
+      <div className="px-4 py-4 shrink-0">
         <StatStripGroup>
           <Stat
             stat={{ id: "total-staff", label: "Total Staff", kind: "count", variant: "strip",
                     value: String(allStaff.length), onClick: clearRosterFilters }}
             icon={Users}
-            iconTone="slate"
             active={roleFilter.size === 0 && todayFilter === "All"}
             compact
           />
@@ -182,7 +185,6 @@ export function StaffListPage() {
                 stat={{ id: `role-${role}`, label, kind: "count", variant: "strip",
                         value: String(count), onClick: () => showOnlyRole(role) }}
                 icon={ROLE_META[role].icon}
-                iconTone={ROLE_META[role].tone}
                 active={roleFilter.size === 1 && roleFilter.has(role)}
                 compact
               />
@@ -192,7 +194,6 @@ export function StaffListPage() {
             stat={{ id: "on-duty", label: "On Duty", kind: "count", variant: "strip",
                     value: String(onDuty), onClick: () => setTodayFilter("On Duty") }}
             icon={UserCheck}
-            iconTone="emerald"
             active={todayFilter === "On Duty"}
             compact
           />
@@ -200,7 +201,6 @@ export function StaffListPage() {
             stat={{ id: "off-today", label: "Off", kind: "count", variant: "strip",
                     value: String(offToday), onClick: () => setTodayFilter("Off Today") }}
             icon={Moon}
-            iconTone="slate"
             active={todayFilter === "Off Today"}
             compact
           />
@@ -209,7 +209,6 @@ export function StaffListPage() {
               stat={{ id: "on-leave", label: "On Leave", kind: "count", variant: "strip",
                       value: String(onLeave), onClick: () => setTodayFilter("On Leave") }}
               icon={Plane}
-              iconTone="amber"
               active={todayFilter === "On Leave"}
               compact
             />
@@ -218,7 +217,7 @@ export function StaffListPage() {
       </div>
 
       {/* Toolbar */}
-      <div className="bg-surface border-y border-divider px-6 py-3 flex items-center shrink-0 space-x-4">
+      <div className="bg-surface border-y border-divider px-4 py-3 flex items-center shrink-0 space-x-4">
         <div className="relative w-[280px]">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
           <Input
@@ -273,11 +272,13 @@ export function StaffListPage() {
         <div className="flex-1" />
       </div>
 
-      {/* Body */}
-      <div className="px-6 py-5 pb-4 flex flex-col">
+      {/* Body — border-t + pt-5/pb-5 (--page-padding-y, 20px) matches
+          BillingPage's table-card inset so the card reads as a distinct
+          framed surface, not flush with the toolbar above it. */}
+      <div className="px-4 pb-4 border-t border-divider pt-4 flex flex-col">
         <div className="bg-surface border border-divider rounded-card overflow-hidden flex flex-col shadow-sm">
             <div className="relative">
-              <table className="w-full text-left border-collapse text-sm whitespace-nowrap">
+              <table className="w-full text-left border-collapse text-sm whitespace-nowrap [&_th]:!px-3 [&_td]:!px-3 [&_th]:!py-2.5 [&_td]:!py-2.5">
                 <thead className="bg-surface-page sticky top-0 z-30 shadow-[0_1px_0_var(--border-strong)]">
                   <tr>
                     <SortableTh label="Staff" k="name" className="sticky left-0 z-40 bg-surface-page w-[200px] shadow-[1px_0_0_var(--border-strong)]" />

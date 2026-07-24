@@ -24,24 +24,24 @@ function ApptTable({ title, appts, expandable, editable, action }: {
         <table className="w-full text-sm text-left">
           <thead className="bg-surface-page border-b border-divider text-ink-soft">
             <tr>
-              <th className="px-4 py-2.5 font-semibold">Date / Time</th>
-              <th className="px-4 py-2.5 font-semibold">Type</th>
-              <th className="px-4 py-2.5 font-semibold">Clinician</th>
-              <th className="px-4 py-2.5 font-semibold">Room</th>
-              <th className="px-4 py-2.5 font-semibold">Status</th>
-              <th className="px-4 py-2.5 font-semibold text-right">Actions</th>
+              <th className="px-3 py-2.5 font-semibold">Date / Time</th>
+              <th className="px-3 py-2.5 font-semibold">Type</th>
+              <th className="px-3 py-2.5 font-semibold">Clinician</th>
+              <th className="px-3 py-2.5 font-semibold">Room</th>
+              <th className="px-3 py-2.5 font-semibold">Status</th>
+              <th className="px-3 py-2.5 font-semibold text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-divider">
             {appts.map((a) => (
               <React.Fragment key={a.id}>
                 <tr onClick={() => expandable && setExpandedId((id) => (id === a.id ? null : a.id))} className={expandable ? "hover:bg-surface-hover cursor-pointer" : ""}>
-                  <td className="px-4 py-3 font-medium text-ink">{a.dateLabel}</td>
-                  <td className="px-4 py-3 text-ink-soft"><span className="flex items-center gap-1.5">{a.isVideo ? <Video className="w-3.5 h-3.5 text-ink-muted" /> : <MapPin className="w-3.5 h-3.5 text-ink-muted" />}{a.type}</span></td>
-                  <td className="px-4 py-3 text-ink-soft">{a.clinician}</td>
-                  <td className="px-4 py-3 text-ink-soft">{roomName(a.room)}</td>
-                  <td className="px-4 py-3"><StatusPill status={a.status} type={statusPillType(a.status as any)} /></td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-3 py-2.5 font-medium text-ink">{a.dateLabel}</td>
+                  <td className="px-3 py-2.5 text-ink-soft"><span className="flex items-center gap-1.5">{a.isVideo ? <Video className="w-3.5 h-3.5 text-ink-muted" /> : <MapPin className="w-3.5 h-3.5 text-ink-muted" />}{a.type}</span></td>
+                  <td className="px-3 py-2.5 text-ink-soft">{a.clinician}</td>
+                  <td className="px-3 py-2.5 text-ink-soft">{roomName(a.room)}</td>
+                  <td className="px-3 py-2.5"><StatusPill status={a.status} type={statusPillType(a.status as any)} /></td>
+                  <td className="px-3 py-2.5 text-right">
                     <div className="flex justify-end items-center gap-2">
                       {editable && (
                         <>
@@ -55,7 +55,7 @@ function ApptTable({ title, appts, expandable, editable, action }: {
                 </tr>
                 {expandable && expandedId === a.id && (
                   <tr>
-                    <td colSpan={6} className="px-4 py-3 bg-surface-page text-xs text-ink-muted">
+                    <td colSpan={6} className="px-3 py-2.5 bg-surface-page text-xs text-ink-muted">
                       <div className="flex gap-4">
                         <button onClick={() => toast("Opening results (demo)")} className="font-bold text-ink-soft hover:underline">View Results</button>
                         <button onClick={() => toast("Opening notes (demo)")} className="font-bold text-ink-soft hover:underline">View Notes</button>
@@ -99,7 +99,7 @@ export function AppointmentsTab() {
 
   if (role === "Nurse") {
     return (
-      <div className="p-4">
+      <div className="px-4 py-4">
         <NurseTodayCard appt={patient.appointmentsUpcoming.find((a) => a.dateLabel.startsWith("3 Jul"))} />
       </div>
     );
@@ -109,7 +109,7 @@ export function AppointmentsTab() {
   const expandable = role === "Admin" || role === "Clinician";
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="px-4 py-4 space-y-3">
       <ApptTable
         title="Upcoming Appointments"
         appts={patient.appointmentsUpcoming}

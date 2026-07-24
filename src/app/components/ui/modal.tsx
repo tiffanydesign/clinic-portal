@@ -41,13 +41,13 @@ export function Modal({ open, onClose, title, subtitle, size = "confirm", childr
       onClick={onClose}
     >
       <div
-        className={`bg-surface rounded-card shadow-2xl border border-divider w-full ${SIZE_CLASS[size]} max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95`}
+        className={`bg-surface rounded-dialog shadow-2xl border border-divider w-full ${SIZE_CLASS[size]} max-h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95`}
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label={title}
       >
-        <div className="px-4 py-3 border-b border-divider flex items-start justify-between shrink-0 bg-surface-page gap-3">
+        <div className="px-6 pt-6 pb-4 border-b border-divider flex items-start justify-between shrink-0 bg-surface-page gap-3">
           <div className="min-w-0">
             <h2 className="text-section font-bold text-ink truncate">{title}</h2>
             {subtitle && <p className="text-label text-ink-muted mt-0.5 truncate">{subtitle}</p>}
@@ -60,8 +60,8 @@ export function Modal({ open, onClose, title, subtitle, size = "confirm", childr
             <X className="w-4 h-4" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto p-4">{children}</div>
-        {footer && <div className="p-4 border-t border-divider bg-surface-page shrink-0">{footer}</div>}
+        <div className="flex-1 overflow-y-auto p-6">{children}</div>
+        {footer && <div className="px-6 pt-4 pb-6 border-t border-divider bg-surface-page shrink-0 flex justify-end gap-2">{footer}</div>}
       </div>
     </div>
   );

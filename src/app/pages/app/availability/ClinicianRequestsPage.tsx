@@ -29,7 +29,7 @@ export function ClinicianRequestsPage() {
 
   return (
     <div className="h-full overflow-y-auto bg-surface-page">
-      <div className="px-6 py-4 border-b border-divider bg-surface flex items-center justify-between">
+      <div className="px-4 py-4 border-b border-divider bg-surface flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-ink">My Requests</h1>
           <p className="text-sm text-ink-muted mt-1">Availability changes you've submitted, and their approval status.</p>
@@ -42,7 +42,7 @@ export function ClinicianRequestsPage() {
         </button>
       </div>
 
-      <div className="p-4">
+      <div className="px-4 py-4">
         <PendingRequestsSection
           pending={pending}
           decisions={store.decisions}

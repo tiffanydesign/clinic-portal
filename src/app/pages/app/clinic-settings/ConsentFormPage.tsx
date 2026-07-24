@@ -188,7 +188,7 @@ export function ConsentFormPage() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-surface">
-      <div className="px-6 py-6 border-b border-divider shrink-0 flex justify-between items-start bg-surface">
+      <div className="px-4 py-4 border-b border-divider shrink-0 flex justify-between items-start bg-surface">
         <div>
           <div className="flex items-center gap-1.5 text-xs font-medium text-ink-muted mb-2">
             <Link to="/clinic-settings" className="hover:text-ink-soft hover:underline">Clinic Settings</Link>
@@ -208,7 +208,7 @@ export function ConsentFormPage() {
         </div>
       </div>
 
-      <div className="px-6 py-3 border-b border-divider flex justify-between items-center bg-surface-page/60 shrink-0">
+      <div className="px-4 py-3 border-b border-divider flex justify-between items-center bg-surface-page/60 shrink-0">
         {isEditing ? (
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-bold text-ink-soft bg-surface-hover rounded-control">
             <Pencil className="w-4 h-4" /> Editing
@@ -242,7 +242,7 @@ export function ConsentFormPage() {
       </div>
 
       {isEditing && (
-        <div className="px-6 py-4 border-t border-divider bg-surface flex justify-between items-center shrink-0">
+        <div className="px-4 py-4 border-t border-divider bg-surface flex justify-between items-center shrink-0">
           <button onClick={handleCancelClick} className="px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover">
             Cancel
           </button>

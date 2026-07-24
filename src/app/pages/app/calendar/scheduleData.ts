@@ -5,15 +5,18 @@
 
 import {
   APPTS, Appt, ApptType, DAY_START_HOUR, DAY_END_HOUR, HOUR_PX, NOW_MINUTES,
-  apptBlockClass, apptStatusDotClass, apptTextClass, blockHeightPx, gapToNext, statusPillType,
+  apptBlockClass, apptMicroPillClass, apptStatusDotClass, blockHeightPx, gapToNext, statusPillType,
+  clusterColumnByHour, equalDivisionTop, equalDivisionHeight,
 } from "../dashboard/dashboardData";
 import { MOCK_STAFF } from "../staff/staffData";
 
 export {
   APPTS, DAY_START_HOUR, DAY_END_HOUR, HOUR_PX, NOW_MINUTES,
-  apptBlockClass, apptStatusDotClass, apptTextClass, blockHeightPx, gapToNext, statusPillType,
+  apptBlockClass, apptMicroPillClass, apptStatusDotClass, blockHeightPx, gapToNext, statusPillType,
+  clusterColumnByHour, equalDivisionTop, equalDivisionHeight,
 };
 export type { Appt, ApptType };
+export type { OverflowGroup, VisibleItem } from "../dashboard/dashboardData";
 
 export const CLINICIAN_SELF_ID = "EMP-003"; // signed-in clinician (Dr. Ebru Reis)
 export const NURSE_SELF_NAME = "Berna Koç"; // signed-in nurse
@@ -133,32 +136,3 @@ export function hasNurseConflict(list: Appt[], nurseName: string, startMin: numb
 // but only this anchor day/week has real appointments — every other date
 // renders as a legitimately empty schedule rather than fabricating data.
 export const ANCHOR_DATE = new Date(2026, 6, 3); // Fri 3 Jul 2026
-
-// --- week distribution (Mon–Sun of the current week; today = Fri 3 Jul 2026) ---
-export const WEEK_DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-export const WEEK_DATES = ["30 Jun", "1 Jul", "2 Jul", "3 Jul", "4 Jul", "5 Jul", "6 Jul"];
-export const TODAY_WEEK_INDEX = 4; // Friday
-
-// Spread the mock appointments across the week for the Week view. Today (Fri)
-// keeps the full set; other days get a representative subset at shifted times.
-export type WeekAppt = Appt & { dayIndex: number };
-
-function shift(a: Appt, dayIndex: number, deltaMin: number, idSuffix: string): WeekAppt {
-  const startMin = a.startMin + deltaMin;
-  return { ...a, id: `${a.id}${idSuffix}`, startMin, timeLabel: fmtRange(startMin, a.durationMin), dayIndex };
-}
-
-export function buildWeek(selfOnly: string | null): WeekAppt[] {
-  const base = selfOnly ? APPTS.filter((a) => a.doctorId === selfOnly) : APPTS;
-  const out: WeekAppt[] = [];
-  // Today (Friday) — full set
-  base.forEach((a) => out.push({ ...a, dayIndex: TODAY_WEEK_INDEX }));
-  // Monday & Tuesday & Wednesday & Thursday — subsets
-  const pick = (idx: number[], day: number, delta: number, suffix: string) =>
-    idx.forEach((i) => base[i % base.length] && out.push(shift(base[i % base.length], day, delta, suffix)));
-  pick([0, 2, 5], 0, 30, "-mo");
-  pick([1, 4, 7], 1, -30, "-tu");
-  pick([3, 6], 2, 60, "-we");
-  pick([0, 5, 8, 9], 3, 15, "-th");
-  return out;
-}

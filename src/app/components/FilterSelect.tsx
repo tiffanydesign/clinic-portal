@@ -42,7 +42,7 @@ export function FilterSelect({
       disabled={disabled}
     >
       <SelectPrimitive.Trigger
-        className={`inline-flex items-center justify-between gap-2 px-3 py-1.5 border border-divider rounded-control text-sm text-ink-soft bg-surface shadow-sm outline-none transition-colors hover:border-border-strong focus:border-border-strong data-[state=open]:border-border-strong disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-divider ${className ?? ""}`}
+        className={`inline-flex items-center justify-between gap-2 h-[var(--control-h)] px-3 border border-divider rounded-control text-sm text-ink-soft bg-surface shadow-sm outline-none transition-colors hover:border-border-strong focus:border-border-strong data-[state=open]:border-border-strong disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:border-divider ${className ?? ""}`}
       >
         <SelectPrimitive.Value placeholder={placeholder} />
         <SelectPrimitive.Icon asChild>

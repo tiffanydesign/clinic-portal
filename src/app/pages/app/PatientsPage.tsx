@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import {
-  Search, ChevronDown, Download, Plus, MoreHorizontal, FileText, Phone, Mail, UserPlus, X, Filter, Check, ArrowRight,
+  Search, ChevronDown, Download, Plus, FileText, Phone, Mail, UserPlus, X, Filter, Check, ArrowRight,
   Users, UserCheck, UserX, Clock, CalendarCheck, CalendarClock, FlaskConical, Activity, Flag, AlertTriangle, Eye, type LucideIcon,
 } from "lucide-react";
 import { Stat, StatStripGroup, type StatIconTone } from "../../components/stat";
@@ -18,6 +18,7 @@ import { useAppointments } from "./dashboard/appointmentsStore";
 import { JourneyProgressChip } from "./dashboard/journey/JourneyProgress";
 import { MOCK_STAFF } from "./staff/staffData";
 import { Input } from "../../components/ui/input";
+import { PageTitleIcon, PAGE_TITLE_CLASS } from "../../components/PageTitleIcon";
 
 export type { Patient };
 export { MOCK_PATIENTS };
@@ -44,7 +45,7 @@ type StripItem = {
 
 function KpiStrip({ items }: { items: StripItem[] }) {
   return (
-    <div className="px-6 py-4 shrink-0">
+    <div className="px-4 py-4 shrink-0">
       <StatStripGroup>
         {items.map((s) => (
           <Stat
@@ -141,10 +142,13 @@ export function PatientsPage() {
     const t = titles[role];
 
     return (
-      <div className="bg-surface border-b border-divider px-6 py-4 flex justify-between items-center shrink-0">
-        <div>
-          <h1 className="text-page-title text-ink">{t.title}</h1>
-          <p className="text-sm text-ink-muted mt-1">{t.sub}</p>
+      <div className="bg-surface border-b border-divider px-4 py-4 flex justify-between items-center shrink-0">
+        <div className="flex items-center gap-4">
+          <PageTitleIcon icon={Users} />
+          <div>
+            <h1 className={PAGE_TITLE_CLASS}>{t.title}</h1>
+            <p className="text-sm text-ink-muted mt-1">{t.sub}</p>
+          </div>
         </div>
         <div className="flex space-x-3">
           {role === 'Admin' && (
@@ -156,9 +160,9 @@ export function PatientsPage() {
           {(role === 'Admin' || role === 'Reception') && (
             <button
               onClick={() => openRegister()}
-              className="flex items-center min-h-11 px-4 py-2 btn-primary rounded-control text-sm font-bold transition-colors shadow-sm"
+              className="inline-flex items-center gap-2 h-9 px-3.5 btn-primary rounded-control text-sm font-bold transition-colors"
             >
-              <UserPlus className="w-4 h-4 mr-2" /> New Patient
+              <UserPlus className="w-4 h-4" /> New Patient
             </button>
           )}
         </div>
@@ -168,7 +172,7 @@ export function PatientsPage() {
 
   const Toolbar = () => {
     if (role === 'Admin') return (
-      <div className="bg-surface border-b border-divider px-6 py-3 flex items-center shrink-0 space-x-4">
+      <div className="bg-surface border-b border-divider px-4 py-3 flex items-center shrink-0 space-x-4">
         <div className="relative w-[280px]">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
           <Input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, ID, email..." className="pl-9 focus:border-info shadow-sm" />
@@ -181,7 +185,7 @@ export function PatientsPage() {
     );
 
     if (role === 'Reception') return (
-      <div className="bg-surface border-b border-divider px-6 py-3 flex items-center shrink-0 space-x-4">
+      <div className="bg-surface border-b border-divider px-4 py-3 flex items-center shrink-0 space-x-4">
         <div className="relative w-[280px]">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
           <Input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search name, phone, appt..." className="pl-9 focus:border-info shadow-sm" />
@@ -197,7 +201,7 @@ export function PatientsPage() {
     );
 
     if (role === 'Clinician') return (
-      <div className="bg-surface border-b border-divider px-6 py-3 flex items-center shrink-0 space-x-4">
+      <div className="bg-surface border-b border-divider px-4 py-3 flex items-center shrink-0 space-x-4">
         <div className="relative w-[280px]">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
           <Input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search my patients..." className="pl-9 focus:border-info shadow-sm" />
@@ -209,7 +213,7 @@ export function PatientsPage() {
     );
 
     if (role === 'Nurse') return (
-      <div className="bg-surface border-b border-divider px-6 py-3 flex items-center shrink-0 space-x-4">
+      <div className="bg-surface border-b border-divider px-4 py-3 flex items-center shrink-0 space-x-4">
         <div className="relative w-[280px]">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
           <Input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search my patients..." className="pl-9 focus:border-info shadow-sm" />
@@ -259,8 +263,11 @@ export function PatientsPage() {
       <KPICards />
 
       {/* Table Area — grows with content; the page (AppShell) is the only
-          scroll surface, so the card never grows its own inner scrollbar. */}
-      <div className="px-6 pb-4 flex flex-col relative">
+          scroll surface, so the card never grows its own inner scrollbar.
+          border-t + pt-5/pb-5 (--page-padding-y, 20px) matches BillingPage's
+          table-card inset so the card reads as a distinct framed surface,
+          not flush with the KPI row. */}
+      <div className="px-4 pb-4 border-t border-divider pt-4 flex flex-col relative">
         <div className="bg-surface border border-divider rounded-card shadow-sm overflow-hidden flex flex-col relative">
           
           {/* Bulk Actions Bar (Admin only) */}
@@ -278,7 +285,7 @@ export function PatientsPage() {
           )}
 
           <div className="relative">
-            <table className="w-full text-left border-collapse text-sm [&_th]:!px-3 [&_td]:!px-3">
+            <table className="w-full text-left border-collapse text-sm [&_th]:!px-3 [&_td]:!px-3 [&_th]:!py-2.5 [&_td]:!py-2.5">
               <thead className="bg-surface-page sticky top-0 z-30 shadow-[0_1px_0_var(--border-strong)]">
                 <tr>
                   {role === 'Admin' && <th className="p-4 w-[40px] border-b border-divider sticky left-0 z-40 bg-surface-page shadow-[1px_0_0_var(--border-strong)]"><input type="checkbox" onChange={toggleSelectAll} checked={selectedIds.size === patients.length && patients.length > 0} className="rounded-control text-ink-soft focus:ring-info" /></th>}
@@ -294,7 +301,6 @@ export function PatientsPage() {
                       <th className="p-4 font-bold text-ink-soft border-b border-divider">Status</th>
                       <th className="p-4 font-bold text-ink-soft border-b border-divider">Last Visit</th>
                       <th className="p-4 font-bold text-ink-soft border-b border-divider">Next Appt</th>
-                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-center">Actions</th>
                     </>
                   )}
 
@@ -307,7 +313,6 @@ export function PatientsPage() {
                       <th className="p-4 font-bold text-ink-soft border-b border-divider">Payment</th>
                       <th className="p-4 font-bold text-ink-soft border-b border-divider">Check-in</th>
                       <th className="p-4 font-bold text-ink-soft border-b border-divider">Journey</th>
-                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-center w-[120px]">Actions</th>
                     </>
                   )}
 
@@ -318,7 +323,6 @@ export function PatientsPage() {
                       <th className="p-4 font-bold text-ink-soft border-b border-divider">Review Status</th>
                       <th className="p-4 font-bold text-ink-soft border-b border-divider">Last Visit</th>
                       <th className="p-4 font-bold text-ink-soft border-b border-divider">Next Appt</th>
-                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-center">Actions</th>
                     </>
                   )}
 
@@ -329,7 +333,6 @@ export function PatientsPage() {
                       <th className="p-4 font-bold text-ink-soft border-b border-divider">Journey</th>
                       <th className="p-4 font-bold text-ink-soft border-b border-divider">Waiting Since</th>
                       <th className="p-4 font-bold text-ink-soft border-b border-divider">Room</th>
-                      <th className="p-4 font-bold text-ink-soft border-b border-divider text-center w-[100px]">Actions</th>
                     </>
                   )}
                 </tr>
@@ -347,7 +350,7 @@ export function PatientsPage() {
                           <p className="mb-4">Nobody matches “{search}”.</p>
                           <button
                             onClick={() => openRegister(search)}
-                            className="inline-flex items-center gap-2 min-h-11 px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover hover:border-border-strong transition-colors shadow-sm"
+                            className="inline-flex items-center gap-2 px-4 py-2 border border-divider rounded-control text-sm font-bold text-ink-soft bg-surface hover:bg-surface-hover hover:border-border-strong transition-colors shadow-sm"
                           >
                             <UserPlus className="w-4 h-4 text-ink-muted" /> Register “{search}” as new patient
                           </button>
@@ -365,10 +368,9 @@ export function PatientsPage() {
                   let rowBg = "bg-surface hover:bg-surface-hover";
                   if (isSelected) rowBg = "bg-surface-page";
 
-                  // Reception visual cues
+                  // Reception visual cue: today's appointment date shown in the
+                  // Today's Appt column (see below) — no longer a distinct row tint.
                   const isTodayRec = role === 'Reception' && p.nextAppt?.includes("3 Jul");
-                  const hasIssueRec = role === 'Reception' && isTodayRec && (p.consent !== 'Signed' || p.payment === 'Unpaid');
-                  if (isTodayRec && hasIssueRec) rowBg = "bg-danger/5 hover:bg-danger/10";
 
                   return (
                     <tr 
@@ -424,11 +426,6 @@ export function PatientsPage() {
                           </td>
                           <td className={`p-4 tabular-nums ${p.lastVisit === 'Never' ? 'text-ink-muted italic' : 'text-ink-soft font-medium'}`}>{p.lastVisit}</td>
                           <td className="p-4 text-ink-soft tabular-nums">{p.nextAppt || '—'}</td>
-                          <td className="p-4 text-center">
-                            <button onClick={(e) => { e.stopPropagation(); toast('Open actions menu'); }} className="inline-flex items-center justify-center w-9 h-9 text-ink-muted hover:text-ink hover:bg-surface-sunken rounded-control transition-colors touch-extend">
-                              <MoreHorizontal className="w-4 h-4" />
-                            </button>
-                          </td>
                         </>
                       )}
 
@@ -474,18 +471,6 @@ export function PatientsPage() {
                               <div className="text-xs text-ink-soft font-medium">Consent → <span className="font-bold text-ink">{p.journeyStep}</span></div>
                             ) : <span className="text-ink-muted">—</span>}
                           </td>
-                          <td className="p-4 text-center">
-                            {p.checkIn === 'Waiting' && p.consent === 'Signed' && p.payment === 'Paid' && (
-                              <button onClick={e => { e.stopPropagation(); toast('Checked in'); }} className="px-3 py-2 bg-success-ink text-white text-overline rounded-control shadow-sm hover:opacity-90 touch-extend">Check In</button>
-                            )}
-                            {p.checkIn === 'Waiting' && (p.consent !== 'Signed' || p.payment !== 'Paid') && (
-                              <button onClick={e => e.stopPropagation()} className="px-3 py-2 bg-surface-sunken text-ink-muted text-overline rounded-control cursor-not-allowed" title="Complete consent and payment first">Check In</button>
-                            )}
-                            {p.checkIn === 'Checked In' && (
-                              <button onClick={e => { e.stopPropagation(); toast('Checked out'); }} className="px-3 py-2 bg-info-ink text-white text-overline rounded-control shadow-sm hover:opacity-90 touch-extend">Check Out</button>
-                            )}
-                            {p.checkIn !== 'Waiting' && p.checkIn !== 'Checked In' && <span className="text-ink-muted">—</span>}
-                          </td>
                         </>
                       )}
 
@@ -526,11 +511,6 @@ export function PatientsPage() {
                               </div>
                             ) : <span className="text-ink-muted">—</span>}
                           </td>
-                          <td className="p-4 text-center">
-                            <button onClick={(e) => { e.stopPropagation(); toast('Open actions menu'); }} className="inline-flex items-center justify-center w-9 h-9 text-ink-muted hover:text-ink hover:bg-surface-sunken rounded-control transition-colors touch-extend">
-                              <MoreHorizontal className="w-4 h-4" />
-                            </button>
-                          </td>
                         </>
                       )}
 
@@ -547,9 +527,6 @@ export function PatientsPage() {
                           </td>
                           <td className="p-4 font-bold text-warning-ink">12 min</td>
                           <td className="p-4 text-ink-soft font-medium">Room 3</td>
-                          <td className="p-4 text-center">
-                            <button onClick={e => { e.stopPropagation(); toast('Action clicked'); }} className="px-3 py-2 btn-primary text-overline rounded-control shadow-sm touch-extend">Continue</button>
-                          </td>
                         </>
                       )}
                     </tr>

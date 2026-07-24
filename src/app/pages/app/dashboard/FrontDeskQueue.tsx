@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { CreditCard, MapPin, CheckCircle2, XCircle, Clock, Stethoscope, LogIn, Plus } from "lucide-react";
+import { CreditCard, MapPin, XCircle, Clock, Stethoscope, LogIn } from "lucide-react";
 import { toast } from "sonner";
 import { Appt } from "./dashboardData";
 import { JourneyProgressChip } from "./journey/JourneyProgress";
@@ -21,39 +21,34 @@ function typeLabel(a: Appt): string {
   return a.type.replace(" (in-person)", "").replace(" (video)", "");
 }
 
-// Small unified gate badge — one consistent pill for each of the two gates
-// (payment, consent), green ✓ when cleared and red ✗ when still blocking.
-// The two together read as a compact status pair, never a duplicate.
-function GateBadge({ ok, label, amount }: { ok: boolean; label: string; amount?: string }) {
-  const cls = ok
-    ? "bg-success/10 border-success/30 text-success-ink"
-    : "bg-danger/10 border-danger/30 text-danger-ink";
+// A single FAILING gate only — a cleared gate is never rendered at all (see
+// GatesRow below), so this no longer needs an "ok" branch. Plain text + a
+// small icon, never a bordered/tinted chip: a gate is information to glance
+// at, not a control to press, so it must never read as a button candidate
+// next to the row's real ActionPill.
+function GateBadge({ label, amount }: { label: string; amount?: string }) {
   return (
-    <span className={`inline-flex items-center gap-1 text-label font-bold px-2 py-1 rounded-control border whitespace-nowrap ${cls}`}>
-      {ok ? <CheckCircle2 className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
-      {label}{!ok && amount ? ` ${amount}` : ""}
+    <span className="inline-flex items-center gap-1 text-label font-bold text-danger-ink whitespace-nowrap">
+      <XCircle className="w-3.5 h-3.5 shrink-0" /> {label}{amount ? ` ${amount}` : ""}
     </span>
   );
 }
 
-// Exactly one badge per gate — a cleared patient collapses to a single green
-// "Ready" pill; anyone still blocked shows their payment + consent state as
-// two distinct pills, never the same gate twice.
+// Only the gates still blocking check-in get a badge at all — a cleared
+// gate simply disappears (no third "Ready to check in" state either: once
+// both clear, the row's own ActionPill already becomes "Check In", which
+// already announces readiness on its own). `flex-nowrap` keeps 1-2 badges
+// on a single row; `overflow-hidden` is the safety net if the rare
+// both-failing case still can't fit at the narrowest column width.
 function GatesRow({ appt }: { appt: Appt }) {
   if (appt.status === "Booked") return null; // not arrived yet — nothing to gate
-  const cOk = consentOk(appt);
-  const pOk = paymentOk(appt);
-  if (cOk && pOk) {
-    return (
-      <span className="inline-flex items-center gap-1.5 text-label font-bold px-2 py-1 rounded-control border bg-success/10 border-success/30 text-success-ink whitespace-nowrap">
-        <CheckCircle2 className="w-3.5 h-3.5" /> Ready to check in
-      </span>
-    );
-  }
+  const failing: { key: string; label: string; amount?: string }[] = [];
+  if (!paymentOk(appt)) failing.push({ key: "payment", label: "Payment", amount: appt.balance });
+  if (!consentOk(appt)) failing.push({ key: "consent", label: "Consent" });
+  if (failing.length === 0) return null;
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      <GateBadge ok={pOk} label="Payment" amount={appt.balance} />
-      <GateBadge ok={cOk} label="Consent" />
+    <div className="flex flex-nowrap items-center gap-3 overflow-hidden">
+      {failing.map((g) => <GateBadge key={g.key} label={g.label} amount={g.amount} />)}
     </div>
   );
 }
@@ -77,52 +72,63 @@ function ConfirmCheckInModal({ appt, onCancel, onConfirm }: { appt: Appt; onCanc
   );
 }
 
-// One compact pill shape for every action in this column — same height,
-// same rounded-full form, same soft tint treatment as the row's own gate
-// badges (GateBadge, "Ready to check in" above). Only the accent color
-// tells the four actions apart, so Take Payment / Sign Consent / Check In /
-// Mark Arrived read as one consistent control language instead of three
-// heavyweight solid buttons next to one lightweight badge.
+// Soft tint + border, exactly the calendar grid's own STATUS_STYLE language
+// (bg-{tone}/10, border-{tone}/30, text-{tone}-ink, a resting shadow for
+// depth — see apptBlockClass in dashboardData.ts) rather than an opaque
+// solid fill: the row's action now reads as "the same visual family as an
+// appointment block", still unmistakably distinct from GateBadge's plain
+// text above (this has an edge and a fill, GateBadge has neither) without
+// resorting to a heavy, saturated button colour. Semantic tone stays per
+// action (payment/consent/check-in/arrived already carry distinct meaning
+// elsewhere in the product's "one colour, one meaning" law).
 const PILL_TONE: Record<"blue" | "amber" | "emerald" | "sky", string> = {
-  blue: "bg-info/15 text-info-ink border-info/30 hover:bg-info",
-  amber: "bg-warning/15 text-warning-ink border-warning/30 hover:bg-warning",
-  emerald: "bg-success/15 text-success-ink border-success/30 hover:bg-success",
-  sky: "bg-info/15 text-info-ink border-info/30 hover:bg-info",
+  blue: "bg-info/10 border-info/30 text-info-ink hover:bg-info/20",
+  amber: "bg-warning/10 border-warning/30 text-warning-ink hover:bg-warning/20",
+  emerald: "bg-success/10 border-success/30 text-success-ink hover:bg-success/20",
+  sky: "bg-info/10 border-info/30 text-info-ink hover:bg-info/20",
 };
 
-function ActionPill({ onClick, tone, icon, label }: {
-  onClick: () => void; tone: keyof typeof PILL_TONE; icon?: React.ReactNode; label: string;
+// `fullWidth`: the row's CTA now sits on its own bottom bar (never sharing
+// a line with the name/doctor/room info column — a narrow ~320-380px
+// sidebar column genuinely can't fit both), so the button gets the whole
+// card's width and a taller h-11 (44px) touch target instead of squeezing
+// into a shrink-0 slot beside the info text.
+function ActionPill({ onClick, tone, icon, label, fullWidth }: {
+  onClick: () => void; tone: keyof typeof PILL_TONE; icon?: React.ReactNode; label: string; fullWidth?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
-      className={`shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-full text-label font-bold border whitespace-nowrap transition-colors ${PILL_TONE[tone]}`}
+      className={`inline-flex items-center justify-center gap-1.5 px-4 rounded-full border text-label font-bold whitespace-nowrap shadow-[0_1px_2px_rgba(15,23,42,0.06)] transition-colors touch-extend ${
+        fullWidth ? "w-full h-11" : "shrink-0 h-9"
+      } ${PILL_TONE[tone]}`}
     >
       {icon}{label}
     </button>
   );
 }
 
-function ActionCell({ appt, onSignConsent, onTakePayment, onCheckIn, onMarkArrived }: {
+function ActionCell({ appt, onSignConsent, onTakePayment, onCheckIn, onMarkArrived, fullWidth }: {
   appt: Appt;
   onSignConsent: () => void;
   onTakePayment: () => void;
   onCheckIn: () => void;
   onMarkArrived: () => void;
+  fullWidth?: boolean;
 }) {
   const action = primaryActionFor(appt);
 
   if (action.kind === "take-payment") {
-    return <ActionPill onClick={onTakePayment} tone="blue" icon={<CreditCard className="w-3.5 h-3.5" />} label="Take Payment" />;
+    return <ActionPill fullWidth={fullWidth} onClick={onTakePayment} tone="blue" icon={<CreditCard className="w-3.5 h-3.5" />} label="Take Payment" />;
   }
   if (action.kind === "sign-consent") {
-    return <ActionPill onClick={onSignConsent} tone="amber" label="Sign Consent" />;
+    return <ActionPill fullWidth={fullWidth} onClick={onSignConsent} tone="amber" label="Sign Consent" />;
   }
   if (action.kind === "check-in") {
-    return <ActionPill onClick={onCheckIn} tone="emerald" label="Check In" />;
+    return <ActionPill fullWidth={fullWidth} onClick={onCheckIn} tone="emerald" label="Check In" />;
   }
   if (action.kind === "mark-arrived") {
-    return <ActionPill onClick={onMarkArrived} tone="sky" icon={<LogIn className="w-3.5 h-3.5" />} label="Mark Arrived" />;
+    return <ActionPill fullWidth={fullWidth} onClick={onMarkArrived} tone="sky" icon={<LogIn className="w-3.5 h-3.5" />} label="Mark Arrived" />;
   }
   return null;
 }
@@ -148,52 +154,66 @@ function QueueRow({ appt, readOnly, selected, onOpen, onMarkArrived }: {
   }, [selected]);
 
   return (
-    // One standardized card per row: consistent padding, rounded-control corners,
-    // time on the left, patient + stacked details in the middle, the single
-    // next-step control vertically centered on the right. A just-arrived
+    // Card is a vertical stack, not a 3-way horizontal split: [time + info]
+    // on top, a full-width CTA bar below (when actionable). A ~320-380px
+    // sidebar column can't fit a doctor name, room, AND a pill button on one
+    // line without crushing the middle column into word-wrap — see the
+    // truncate/min-w-0 on every detail line below, which is what actually
+    // stops "Dr. Emre Yalçın" from wrapping onto 3 lines. A just-arrived
     // selection gets a blue ring; everything else is a plain white card.
     <div
       ref={rowRef}
-      className={`rounded-card border px-3.5 py-3 flex items-center gap-3 transition-colors animate-in fade-in duration-200 ${
+      className={`rounded-card border px-3.5 py-3 flex flex-col gap-3 transition-colors animate-in fade-in duration-200 ${
         selected ? "border-info ring-2 ring-info bg-info/10" : "border-divider bg-surface hover:border-divider"
       }`}
     >
-      {/* Left: time + optional LATE badge */}
-      <div className="w-11 shrink-0 flex flex-col items-start gap-1 pt-0.5">
-        <span className="text-data font-bold text-ink-soft tabular-nums">{appt.timeLabel.slice(0, 5)}</span>
-        {late && (
-          <span className="inline-flex items-center gap-0.5 text-label font-extrabold text-danger-ink bg-danger/10 border border-danger/30 rounded-control px-1 py-0.5 leading-none">
-            <Clock className="w-2.5 h-2.5" /> LATE
+      <div className="flex items-start gap-3 min-w-0">
+        {/* Left: time — late is carried by the small clock glyph alone
+            (amber), not a separate LATE chip and not the time text itself,
+            which stays the row's normal ink colour either way. */}
+        <div className="w-11 shrink-0 flex flex-col items-start pt-0.5">
+          <span className="inline-flex items-center gap-1 text-data font-bold tabular-nums text-ink-soft">
+            {late && <Clock className="w-3 h-3 shrink-0 text-warning-ink" />}
+            {appt.timeLabel.slice(0, 5)}
           </span>
-        )}
+        </div>
+
+        {/* Core: name + stacked details (+ gates for actionable rows).
+            flex-1 min-w-0 lets this column actually shrink; every line
+            inside it is `min-w-0 truncate` on its own too — a flex child's
+            default min-width is its content's min-content size, which for
+            text is "as wide as the longest unbreakable word", not zero, so
+            without this a squeezed name/doctor line word-wraps instead of
+            clipping (this was the exact "Dr. / Emre / Yalçın" 3-line bug). */}
+        <button onClick={() => onOpen(appt.id)} className="flex-1 min-w-0 text-left">
+          <div className="text-label font-bold text-ink leading-tight truncate">{appt.patient.name}</div>
+          <div className="flex items-center gap-1.5 min-w-0 text-label text-ink-muted mt-1.5">
+            <MapPin className="w-3.5 h-3.5 shrink-0 text-ink-muted" />
+            <span className="min-w-0 truncate">{typeLabel(appt)} · {appt.room}</span>
+          </div>
+          <div className="flex items-center gap-1.5 min-w-0 text-label text-ink-muted mt-1">
+            <Stethoscope className="w-3.5 h-3.5 shrink-0 text-ink-muted" />
+            <span className="min-w-0 truncate">{appt.doctor}</span>
+          </div>
+          {readOnly ? (
+            <div className="inline-flex items-center gap-1.5 mt-2 max-w-full text-label font-bold px-2 py-1 rounded-control border bg-surface-page border-divider text-ink-muted whitespace-nowrap overflow-hidden">
+              <span className="w-1.5 h-1.5 rounded-full bg-warning shrink-0" /> In clinic ·{" "}
+              <JourneyProgressChip appt={appt} />
+            </div>
+          ) : (
+            <div className="mt-2">
+              <GatesRow appt={appt} />
+            </div>
+          )}
+        </button>
       </div>
 
-      {/* Core: name + stacked details (+ gates for actionable rows) */}
-      <button onClick={() => onOpen(appt.id)} className="flex-1 min-w-0 text-left">
-        <div className="text-section font-bold text-ink leading-tight">{appt.patient.name}</div>
-        <div className="flex items-center gap-1.5 text-label text-ink-muted mt-1.5">
-          <MapPin className="w-3.5 h-3.5 shrink-0 text-ink-muted" />
-          <span>{typeLabel(appt)} · {appt.room}</span>
-        </div>
-        <div className="flex items-center gap-1.5 text-label text-ink-muted mt-1">
-          <Stethoscope className="w-3.5 h-3.5 shrink-0 text-ink-muted" />
-          <span>{appt.doctor}</span>
-        </div>
-        {readOnly ? (
-          <div className="inline-flex items-center gap-1.5 mt-2 text-label font-bold px-2 py-1 rounded-control border bg-surface-page border-divider text-ink-muted whitespace-nowrap">
-            <span className="w-1.5 h-1.5 rounded-full bg-warning" /> In clinic ·{" "}
-            <JourneyProgressChip appt={appt} />
-          </div>
-        ) : (
-          <div className="mt-2">
-            <GatesRow appt={appt} />
-          </div>
-        )}
-      </button>
-
-      {/* Right: single next-step control */}
+      {/* Bottom: single next-step control, full width — a taller (h-11,
+          44px) touch target than a shrink-0 slot beside the info column
+          could ever give it. */}
       {!readOnly && (
         <ActionCell
+          fullWidth
           appt={appt}
           onSignConsent={() => navigate(`/consent-sign/${appt.id}`)}
           onTakePayment={() => setTransactionOpen(true)}
@@ -272,15 +292,19 @@ function QueueList({ group, appts, unpaidOnly, selectedId, onOpen, onMarkArrived
   );
 }
 
-// Queue-group count rides in the Stat family's T4 `pill` tier — the tab
-// supplies the visible label, the pill supplies the number.
+// Queue-group count rides in the Stat family's T4 `pill` tier, sitting to
+// the right of the label on the same line — the tab supplies the visible
+// label, the pill supplies the number. `min-w-0` + `truncate` on the label
+// span (missing in an earlier inline version, which is what let four tabs
+// force this ~320px column wider than its card) let the label itself clip
+// with an ellipsis under pressure instead of the row ever overflowing.
 function QueueTab({ label, count, active, onClick }: { label: string; count: number; active: boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className={`flex-1 px-2.5 py-1.5 text-label font-bold rounded-control transition-all whitespace-nowrap text-center inline-flex items-center justify-center gap-1.5 ${active ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted hover:text-ink-soft"}`}
+      className={`flex-1 min-w-0 px-2 py-1.5 rounded-control transition-all flex items-center justify-center gap-1.5 ${active ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted hover:text-ink-soft"}`}
     >
-      {label}
+      <span className="min-w-0 truncate text-label font-bold">{label}</span>
       <Stat stat={{ id: `queue-${label}`, label, kind: "count", variant: "pill", value: String(count) }} />
     </button>
   );
@@ -296,13 +320,12 @@ function QueueTab({ label, count, active, onClick }: { label: string; count: num
 // the tab auto-switches there and the just-arrived row is selected (blue
 // ring + scrolled into view), landing the front desk on their next step
 // without hunting for the patient again.
-export function FrontDeskQueue({ appts, tab, onTabChange, unpaidOnly = false, onOpen, onAdd }: {
+export function FrontDeskQueue({ appts, tab, onTabChange, unpaidOnly = false, onOpen }: {
   appts: Appt[];
   tab: QueueGroup;
   onTabChange: (g: QueueGroup) => void;
   unpaidOnly?: boolean;
   onOpen: (id: string) => void;
-  onAdd?: () => void;
 }) {
   const grouped = groupQueue(appts);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -325,16 +348,6 @@ export function FrontDeskQueue({ appts, tab, onTabChange, unpaidOnly = false, on
       <div className="border-b border-divider shrink-0">
         <div className="h-11 px-4 flex items-center gap-2">
           <h3 className="font-bold text-ink text-section">Front Desk Queue</h3>
-          {onAdd && (
-            <button
-              onClick={onAdd}
-              title="Register patient"
-              aria-label="Register patient"
-              className="w-8 h-8 flex items-center justify-center rounded-card border border-divider text-ink-soft hover:bg-surface-hover hover:border-border-strong hover:text-ink-soft transition-colors shrink-0"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-          )}
         </div>
         <div className="px-3 pb-3">
           <div className="flex bg-surface-hover p-0.5 rounded-card border border-divider">

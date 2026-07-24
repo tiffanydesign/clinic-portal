@@ -215,7 +215,7 @@ export function AvailabilityEditorPage() {
   return (
     <div className="flex flex-col h-full bg-surface-page relative">
       {/* Top Bar */}
-      <div className="bg-surface border-b border-divider px-6 py-4 flex justify-between items-center shrink-0">
+      <div className="bg-surface border-b border-divider px-4 py-4 flex justify-between items-center shrink-0">
         <div className="flex items-center">
           <button onClick={handleBack} className="p-2 mr-2 text-ink-muted hover:text-ink rounded-control hover:bg-surface-hover transition-colors">
             <ChevronLeft className="w-5 h-5" />
@@ -278,7 +278,7 @@ export function AvailabilityEditorPage() {
 
       {/* Unsaved changes banner */}
       {evalResult.isDirty && (
-        <div className="bg-warning/10 border-b border-warning/30 px-6 py-2 flex items-center gap-3 shrink-0">
+        <div className="bg-warning/10 border-b border-warning/30 px-4 py-2 flex items-center gap-3 shrink-0">
           <p className="text-xs text-warning-ink font-medium">Unsaved changes</p>
           <button onClick={handleDiscard} className="text-xs font-bold text-warning-ink hover:underline">Discard</button>
         </div>
@@ -289,7 +289,7 @@ export function AvailabilityEditorPage() {
         {/* Left Side (55%) — Weekly Hours is the day-by-day editor and gets
             the majority of the width to itself; the pale page shows through
             around its card the same way the right column's cards sit. */}
-        <div className="w-[55%] h-full overflow-y-auto p-4 border-r border-divider bg-surface-page">
+        <div className="w-[55%] h-full overflow-y-auto px-4 py-4 border-r border-divider bg-surface-page">
           <div className="bg-surface rounded-card p-4">
           <div className="flex items-center gap-2 mb-4">
             <h3 className="text-base font-bold text-ink">Weekly Hours</h3>
@@ -346,7 +346,7 @@ export function AvailabilityEditorPage() {
         {/* Right Side (45%) — Blocked Time, the Leave entry point, and the
             read-only Preview stack here; request STATUS lives only in the
             Requests popup (top bar), never a permanent card on this side. */}
-        <div className="w-[45%] h-full overflow-y-auto bg-surface-page p-4 space-y-4">
+        <div className="w-[45%] h-full overflow-y-auto bg-surface-page px-4 py-4 space-y-3">
           <BlockedTimeSection
             blocks={store.blockedTime}
             onAdd={() => setBlockedTimeModalOpen(true)}

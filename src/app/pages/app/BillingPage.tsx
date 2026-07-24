@@ -7,6 +7,7 @@ import { useAppContext } from "../../context/AppContext";
 import { FilterSelect } from "../../components/FilterSelect";
 import { MOCK_BILLING_DATA as MOCK_DATA } from "./billingData";
 import { Input } from "../../components/ui/input";
+import { PageTitleIcon, PAGE_TITLE_CLASS } from "../../components/PageTitleIcon";
 
 const formatCurrency = (amount: number) => `₺${amount.toLocaleString()}`;
 
@@ -31,14 +32,14 @@ function BillingKpi({ icon: Icon, tone, label, value, sub, accent }: {
   accent?: { text: string; tone: "red" | "green" };
 }) {
   return (
-    <div className="bg-surface rounded-card border border-divider shadow-sm p-3 flex items-center gap-3 min-w-0">
+    <div className="bg-surface rounded-card border border-divider shadow-sm p-4 flex items-center gap-3 min-w-0">
       <div className={`w-9 h-9 rounded-card flex items-center justify-center shrink-0 ${KPI_TONE[tone]}`}>
-        <Icon className="w-4 h-4" />
+        <Icon className="w-6 h-6" />
       </div>
       <div className="min-w-0 flex-1">
         <div className="text-overline text-ink-muted leading-tight truncate">{label}</div>
-        <div className="text-2xl font-bold text-ink leading-tight tabular-nums">{value}</div>
-        <div className="text-xs text-ink-muted leading-tight truncate flex items-center gap-1.5 mt-0.5">
+        <div className="text-2xl font-bold text-ink leading-tight tabular-nums mt-3">{value}</div>
+        <div className="text-xs text-ink-muted leading-tight truncate flex items-center gap-2 mt-3">
           <span className="truncate">{sub}</span>
           {accent && (
             <span className={`font-bold shrink-0 ${accent.tone === "red" ? "text-danger-ink" : "text-success-ink"}`}>
@@ -92,12 +93,15 @@ export function BillingPage() {
     <div className="flex flex-col min-h-full bg-surface-page">
 
       {/* Top Header Row */}
-      <div className="bg-surface border-b border-divider px-6 py-3 flex justify-between items-center shrink-0">
-        <div>
-          <h1 className="text-2xl font-bold text-ink">Billing</h1>
-          <p className="text-sm text-ink-muted mt-1">
-            {isAdmin ? "Payment oversight and reconciliation" : "Patient payments and transactions"}
-          </p>
+      <div className="bg-surface border-b border-divider px-4 py-4 flex justify-between items-center shrink-0">
+        <div className="flex items-center gap-4">
+          <PageTitleIcon icon={CreditCard} />
+          <div>
+            <h1 className={PAGE_TITLE_CLASS}>Billing</h1>
+            <p className="text-sm text-ink-muted mt-1">
+              {isAdmin ? "Payment oversight and reconciliation" : "Patient payments and transactions"}
+            </p>
+          </div>
         </div>
 
         {isAdmin && (
@@ -123,7 +127,7 @@ export function BillingPage() {
       {/* Toolbar Row — all four filter controls share one language: same
           height, border, radius and shadow as FilterSelect, so the search box,
           date picker and segmented tabs read as a single control family. */}
-      <div className="bg-surface border-b border-divider px-6 py-2.5 flex items-center justify-between shrink-0 gap-4">
+      <div className="bg-surface border-b border-divider px-4 py-2.5 flex items-center justify-between shrink-0 gap-4">
         <div className="relative w-[280px]">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-ink-muted" />
           <Input type="text" placeholder="Search ID or patient..." className="pl-9 shadow-sm hover:border-border-strong" />
@@ -159,7 +163,7 @@ export function BillingPage() {
       {/* KPI Cards — compact single-row stat strip. Column count tracks the
           role so Reception's two cards fill the width instead of leaving two
           empty grid cells. */}
-      <div className={`px-6 py-3 shrink-0 grid gap-3 ${isAdmin ? "grid-cols-4" : "grid-cols-2"}`}>
+      <div className={`px-4 py-3 shrink-0 grid gap-3 ${isAdmin ? "grid-cols-4" : "grid-cols-2"}`}>
         <BillingKpi icon={Wallet} tone="emerald" label="Today's Collections" value="₺12,400" sub="8 payments received" />
         <BillingKpi icon={Clock} tone="amber" label="Awaiting Payment" value="3" sub="₺4,200 total" accent={{ text: "2 due before check-in", tone: "red" }} />
         {isAdmin && (
@@ -170,16 +174,17 @@ export function BillingPage() {
         )}
       </div>
 
-      {/* Main Layout — px-6 pb-6 inset + rounded-card wrapper, matching the
-          same table-card pattern PatientsPage/StaffListPage already use,
-          instead of running the table edge-to-edge with no page padding. */}
-      <div className="px-6 pb-6 border-t border-divider pt-6">
+      {/* Main Layout — px-6 pb-5/pt-5 (--page-padding-y, 20px) inset +
+          rounded-card wrapper, matching the same table-card pattern
+          PatientsPage/StaffListPage already use, instead of running the
+          table edge-to-edge with no page padding. */}
+      <div className="px-4 pb-4 border-t border-divider pt-4">
       <div className="flex items-stretch rounded-card border border-divider shadow-sm overflow-hidden">
 
         {/* Left Table (Flex remaining width) */}
         <div className="flex-1 border-r border-divider bg-surface flex flex-col min-w-0">
           <div className="relative">
-            <table className="w-full text-left border-collapse text-sm [&_th]:!px-3 [&_td]:!px-3">
+            <table className="w-full text-left border-collapse text-sm [&_th]:!px-3 [&_td]:!px-3 [&_th]:!py-2.5 [&_td]:!py-2.5">
               <thead className="bg-surface-page sticky top-0 z-20 shadow-[0_1px_0_var(--border-strong)]">
                 <tr>
                   <th className="p-4 font-bold text-ink-soft border-b border-divider sticky left-0 z-30 bg-surface-page w-[200px] shadow-[1px_0_0_var(--border-strong)] cursor-pointer hover:bg-surface-hover">Patient</th>
@@ -368,7 +373,7 @@ export function BillingPage() {
               {/* Payment History */}
               <div className="p-4">
                 <h4 className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-4">Payment History</h4>
-                <div className="space-y-4 relative">
+                <div className="space-y-3 relative">
                   <div className="absolute left-3 top-2 bottom-2 w-px bg-surface-sunken"></div>
 
                   {selectedRecord.paidAmount > 0 ? (

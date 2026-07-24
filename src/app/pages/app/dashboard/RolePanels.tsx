@@ -87,11 +87,12 @@ export function AdminPanels() {
             const alert = w.wait >= WAIT_ALERT_MIN;
             const step = w.step.replace("Waiting for ", "");
             return (
-              // Name (interactive, in system blue) leads; the wait time moves
-              // down to the secondary line and is coloured only when it crosses
+              // Name leads in the same plain ink as every other list in this
+              // dashboard (Results Queue included); the wait time moves down
+              // to the secondary line and is coloured only when it crosses
               // the alert threshold — otherwise it stays neutral.
               <button key={w.patient} onClick={() => nav("/patients")} className="w-full flex flex-col items-start gap-1 px-4 py-3 hover:bg-surface-hover text-left">
-                <span className="text-sm font-semibold text-info-ink truncate w-full">{w.patient}</span>
+                <span className="text-sm font-semibold text-ink truncate w-full">{w.patient}</span>
                 <span className="text-xs text-ink-muted truncate w-full">
                   <span className={`font-semibold tabular-nums ${alert ? "text-danger-ink" : "text-ink-soft"}`}>{w.wait}m</span>
                   {" waiting · "}{step}{" · in at "}{w.checkIn}{" · "}{w.nurse}

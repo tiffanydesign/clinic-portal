@@ -24,7 +24,10 @@ import { Sparkline, DeltaLine, AnimatedNumber } from "./trend";
 //      meaning alone — always paired with an icon, arrow, dot or text.
 //
 // Height budgets (measured against these classes):
-//   card <=96px · tile <=72px · strip <=56px · pill inline
+//   card <=128px · tile <=72px · strip <=56px · pill inline
+// (card budget widened 96->128px in the 2026-07-24 v3 spacing pass: KPI
+// padding 16px all sides, 24px icon, 12px title->value gap per the new
+// KPI Card spec — see KPI_CARD_SPEC.md.)
 //
 // -----------------------------------------------------------------------------
 // Examples
@@ -147,26 +150,26 @@ function StatCard({ stat, range = "today", locked, clickable, icon, iconTone, on
   return (
     <button
       onClick={interactive ? () => onOpen?.(stat.route) : undefined}
-      className={`text-left rounded-control bg-surface px-4 py-2.5 min-h-[88px] max-h-24 flex flex-col gap-1.5 relative transition-all ${
+      className={`text-left rounded-control bg-surface p-4 min-h-[104px] max-h-32 flex flex-col gap-2 relative transition-all ${
         interactive ? "hover:shadow-sm cursor-pointer" : "cursor-default"
       }`}
     >
       <div className="flex items-center gap-3">
         {Icon && (
           <div className={`w-9 h-9 rounded-card flex items-center justify-center shrink-0 ${ICON_TONE_CLASS[iconTone ?? "blue"]}`}>
-            <Icon className="w-4 h-4" />
+            <Icon className="w-6 h-6" />
           </div>
         )}
 
-        <div className="flex-1 min-w-0 flex flex-col gap-1">
+        <div className="flex-1 min-w-0 flex flex-col gap-3">
           <span className="text-overline leading-tight truncate">{label}</span>
           <div className="kpi-value-lg font-semibold text-ink leading-none">
             <AnimatedNumber value={rv.value} />
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-1.5 shrink-0">
-          <div className="flex items-center gap-1.5">
+        <div className="flex flex-col items-end gap-2 shrink-0">
+          <div className="flex items-center gap-2">
             <span
               className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-control text-overline shrink-0 ${
                 isLive ? "bg-success/10 text-success-ink" : "bg-surface-hover text-ink-soft"

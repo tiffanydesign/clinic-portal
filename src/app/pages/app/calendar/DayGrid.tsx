@@ -1,18 +1,61 @@
 import React, { useRef, useState } from "react";
 import { Video } from "lucide-react";
+import { FloatingPopover } from "../../../components/glass/FloatingPopover";
 import {
-  Appt, TimeBlock, DAY_START_HOUR, DAY_END_HOUR, HOUR_PX, NOW_MINUTES,
-  apptBlockClass, apptStatusDotClass, blockHeightPx, gapToNext, minToClock,
+  Appt, TimeBlock, DAY_START_HOUR, DAY_END_HOUR, NOW_MINUTES,
+  apptBlockClass, apptMicroPillClass, apptStatusDotClass, blockHeightPx, gapToNext, minToClock,
+  clusterColumnByHour, equalDivisionTop, equalDivisionHeight, OverflowGroup, VisibleItem,
 } from "./scheduleData";
 
 export type GridColumn = { key: string; title: string; sub?: string; avatar?: string; count?: number; muted?: boolean };
 export type PlacedAppt = { appt: Appt; colKey: string; overlay?: boolean };
 export type PlacedBlock = { block: TimeBlock; colKey: string };
 
+// The full Schedule page gets its own, taller hour row (180px vs the
+// Dashboard "Today's Schedule" widget's compact 90px) specifically so a
+// packed Scan/Sample hour can show up to MAX_VISIBLE_PER_HOUR (6) real
+// blocks at a readable size — this override is local to this file, the
+// Dashboard widget keeps importing the shared (shorter) HOUR_PX unchanged.
+const HOUR_PX = 180;
+
+// A column's own appointment list renders individually up to this many per
+// clock hour; crossing it switches that whole hour to a stacked
+// micro-pill list (Apple Calendar-style) instead of time-positioned blocks
+// (see clusterColumnByHour in dashboardData.ts) — a densely-booked
+// Scan/Sample room can run 4-6 real visits an hour, and rendering each as
+// its own absolutely-positioned block both reads as noise and lets
+// blockHeightPx's legibility floor push the last one's bottom edge past the
+// hour it belongs to.
+const MAX_VISIBLE_PER_HOUR = 6;
+// Inside a dense hour's micro-pill stack, show at most this many pills
+// before folding the rest into a "+N" line — sized so 3 pills (18px + 2px
+// gap each) plus the "+N" caption still fit inside one HOUR_PX row.
+const MAX_PILLS_PER_HOUR = 3;
+const PILL_HEIGHT = 18;
+const PILL_GAP = 2;
+
 const SNAP = 15; // minutes
 const snap = (min: number) => Math.round(min / SNAP) * SNAP;
 const MIN_MIN = DAY_START_HOUR * 60;
 const MAX_MIN = DAY_END_HOUR * 60;
+
+// Micro-pill (Apple Calendar-style): status dot + name only — no time, no
+// service type, no duration. Tonal background (apptMicroPillClass — same
+// bg-{status}/10 tint the full block uses, no border) keeps it visually
+// quiet next to the section's real, time-positioned blocks. Text never
+// wraps and clips hard (no ellipsis) at narrow column widths, per spec.
+function MicroPill({ appt, onClick }: { appt: Appt; onClick: () => void }) {
+  return (
+    <button
+      onClick={(e) => { e.stopPropagation(); onClick(); }}
+      style={{ height: PILL_HEIGHT }}
+      className={`w-full shrink-0 flex items-center gap-1 px-1.5 rounded-full overflow-hidden whitespace-nowrap text-left hover:brightness-95 transition-[filter] ${apptMicroPillClass(appt.status)}`}
+    >
+      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${apptStatusDotClass(appt.status)}`} />
+      <span className="text-micro text-ink truncate">{appt.patient.name}</span>
+    </button>
+  );
+}
 
 export function DayGrid({
   columns, placed, blocks = [], editable = false, allowReassign = false, allowResize = false,
@@ -41,6 +84,12 @@ export function DayGrid({
   const [drag, setDrag] = useState<{ id: string; startMin: number; colKey: string } | null>(null);
   const [resize, setResize] = useState<{ id: string; durationMin: number } | null>(null);
   const moved = useRef(false);
+
+  // Aggregate-block popover — one open at a time, identified by column +
+  // hour so it's unambiguous which block it belongs to across every
+  // column's own independent clustering.
+  const [openOverflow, setOpenOverflow] = useState<{ colKey: string; hourStartMin: number } | null>(null);
+  const overflowAnchorRef = useRef<HTMLButtonElement>(null);
 
   const pointerToMin = (clientY: number) => {
     const rect = contentRef.current!.getBoundingClientRect();
@@ -120,13 +169,13 @@ export function DayGrid({
             <div className="flex items-center justify-center gap-1.5">
               {c.avatar && <span className="w-6 h-6 rounded-full bg-surface ring-1 ring-divider text-ink-soft text-label font-bold flex items-center justify-center shrink-0 shadow-sm">{c.avatar}</span>}
               <span className="text-xs font-bold text-ink-soft truncate">{c.title}</span>
+              {c.count !== undefined && (
+                <span className="shrink-0 w-5 h-5 flex items-center justify-center rounded-full bg-[color:var(--phenome-blue-500)]/10 text-[color:var(--phenome-blue-500)] text-label font-bold tabular-nums">
+                  {c.count}
+                </span>
+              )}
             </div>
             {c.sub && <div className="text-label text-ink-muted truncate mt-0.5">{c.sub}</div>}
-            {c.count !== undefined && (
-              <span className="inline-block mt-1 px-1.5 py-0.5 rounded-full bg-surface-hover text-label font-bold text-ink-muted tabular-nums">
-                {c.count} appt{c.count === 1 ? "" : "s"}
-              </span>
-            )}
           </div>
         ))}
       </div>
@@ -173,6 +222,32 @@ export function DayGrid({
             <div className="flex h-full">
               {columns.map((col) => {
                 const colItems = placed.filter((p) => p.colKey === col.key);
+                // The actively dragged/resized item always renders as its own
+                // visible block at its live position, regardless of which
+                // hour bucket it clusters into at rest — folding the very
+                // item the user is mid-drag on into the micro-pill stack
+                // would be a jarring disappearance.
+                const activeId = drag?.id ?? resize?.id ?? null;
+                const clusterInput = activeId ? colItems.filter((p) => p.appt.id !== activeId) : colItems;
+                const activeItem = activeId ? colItems.find((p) => p.appt.id === activeId) ?? null : null;
+                // A dragged/resized item is excluded from clustering (see above)
+                // and rendered as its own always-fallback entry (bucketSize 1),
+                // so it never gets pulled into another hour's equal-division sizing.
+                const activeVisible: VisibleItem<PlacedAppt> | null = activeItem
+                  ? { item: activeItem, bucketSize: 1, bucketIndex: 0, hourStartMin: 0 }
+                  : null;
+                const { visible, overflow } = clusterColumnByHour(clusterInput, (p) => p.appt.startMin, MAX_VISIBLE_PER_HOUR);
+                // Ceiling timeline for gapToNext: every visible block's neighbor,
+                // PLUS a pseudo-boundary at each overflow group's hour end — so a
+                // visible block followed by a hidden cluster is capped at the
+                // hour's own end instead of the legibility floor pushing its
+                // bottom edge past it (the exact bug this feature fixes). Only
+                // matters for a lone (bucketSize 1) item's natural-duration sizing.
+                const timeline = [
+                  ...visible.map((v) => ({ startMin: v.item.appt.startMin })),
+                  ...overflow.map((g) => ({ startMin: g.hourStartMin + 60 })),
+                  ...(activeItem ? [{ startMin: activeItem.appt.startMin }] : []),
+                ];
                 return (
                 <div key={col.key} className="flex-1 relative border-l border-divider" onClick={(e) => colBackgroundClick(e, col.key)}>
                   {/* blocked time */}
@@ -187,15 +262,28 @@ export function DayGrid({
                     );
                   })}
 
-                  {/* appointments */}
-                  {colItems.map((p) => {
+                  {/* appointments — capped to MAX_VISIBLE_PER_HOUR full blocks
+                      per clock hour; crossing that renders the whole hour as
+                      a micro-pill stack instead (see below). A packed hour
+                      (bucketSize > 1) divides HOUR_PX evenly across its items
+                      instead of sizing each by its own real duration — the
+                      exact fix for a 4-item hour looking nothing like a
+                      3-item one; a lone item (bucketSize 1) keeps its natural
+                      duration-based size so it can still span past its hour. */}
+                  {[...visible, ...(activeVisible ? [activeVisible] : [])].map((v) => {
+                    const p = v.item;
                     const isDragging = drag?.id === p.appt.id;
                     const isResizing = resize?.id === p.appt.id;
+                    const dense = v.bucketSize > 1 && !isDragging && !isResizing;
                     const startMin = isDragging ? drag!.startMin : p.appt.startMin;
                     const durationMin = isResizing ? resize!.durationMin : p.appt.durationMin;
-                    const top = ((startMin - MIN_MIN) / 60) * HOUR_PX;
-                    const gapMin = isDragging || isResizing ? undefined : gapToNext(colItems.map((o) => o.appt), startMin);
-                    const height = blockHeightPx(durationMin, gapMin);
+                    const gapMin = isDragging || isResizing ? undefined : gapToNext(timeline, startMin);
+                    const top = dense
+                      ? equalDivisionTop(v.hourStartMin, v.bucketIndex, v.bucketSize, HOUR_PX)
+                      : ((startMin - MIN_MIN) / 60) * HOUR_PX;
+                    const height = dense
+                      ? equalDivisionHeight(v.bucketSize, HOUR_PX)
+                      : blockHeightPx(durationMin, gapMin, 30, HOUR_PX);
                     const showDetail = height >= 36;
                     if (p.overlay) {
                       return (
@@ -226,10 +314,86 @@ export function DayGrid({
                       </div>
                     );
                   })}
+
+                  {/* Micro-pill stack (Apple Calendar-style) — a dense hour
+                      renders as a vertical flex column of up to
+                      MAX_PILLS_PER_HOUR compact pills instead of
+                      time-positioned blocks; anything past that folds into a
+                      quiet "+N" caption. The stack's own container still
+                      spans the FULL hour (never sized off item count), so
+                      the grid keeps one uniform rectangle per hour. */}
+                  {overflow.map((group) => {
+                    const top = ((group.hourStartMin - MIN_MIN) / 60) * HOUR_PX;
+                    const height = HOUR_PX - 2;
+                    const visiblePills = group.items.slice(0, MAX_PILLS_PER_HOUR);
+                    const hiddenCount = group.items.length - visiblePills.length;
+                    const isOpen = openOverflow?.colKey === col.key && openOverflow?.hourStartMin === group.hourStartMin;
+                    return (
+                      <div
+                        key={`overflow-${group.hourStartMin}`}
+                        style={{ top, height }}
+                        className="absolute left-0.5 right-0.5 flex flex-col pt-0.5"
+                      >
+                        <div className="flex flex-col" style={{ gap: PILL_GAP }}>
+                          {visiblePills.map((p) => (
+                            <MicroPill key={p.appt.id} appt={p.appt} onClick={() => onApptClick(p.appt, p.overlay)} />
+                          ))}
+                        </div>
+                        {hiddenCount > 0 && (
+                          <button
+                            ref={isOpen ? overflowAnchorRef : undefined}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              overflowAnchorRef.current = e.currentTarget;
+                              setOpenOverflow(isOpen ? null : { colKey: col.key, hourStartMin: group.hourStartMin });
+                            }}
+                            className={`text-micro text-ink-muted text-center mt-0.5 ${isOpen ? "underline" : ""}`}
+                          >
+                            +{hiddenCount}
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
                 );
               })}
             </div>
+
+            {openOverflow && (() => {
+              const group = [...columns].flatMap((col) =>
+                col.key === openOverflow.colKey
+                  ? clusterColumnByHour(
+                      placed.filter((p) => p.colKey === col.key),
+                      (p) => p.appt.startMin,
+                      MAX_VISIBLE_PER_HOUR
+                    ).overflow.filter((g) => g.hourStartMin === openOverflow.hourStartMin)
+                  : []
+              )[0];
+              if (!group) return null;
+              return (
+                <FloatingPopover anchorRef={overflowAnchorRef} onClose={() => setOpenOverflow(null)}>
+                  <div className="w-64 bg-surface border border-divider rounded-card shadow-xl py-1.5 max-h-72 overflow-y-auto">
+                    <div className="px-3 pb-1.5 text-label font-bold text-ink-muted uppercase tracking-wider">
+                      {minToClock(openOverflow.hourStartMin)}–{minToClock(openOverflow.hourStartMin + 60)} · {group.items.length} appointments
+                    </div>
+                    {group.items.map((p) => (
+                      <button
+                        key={p.appt.id}
+                        onClick={() => { onApptClick(p.appt, p.overlay); setOpenOverflow(null); }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-left hover:bg-surface-hover transition-colors"
+                      >
+                        <span className="w-11 shrink-0 text-label font-semibold text-ink-muted tabular-nums">{minToClock(p.appt.startMin)}</span>
+                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${apptStatusDotClass(p.appt.status)}`} />
+                        {p.appt.isVideo && <Video className="w-3.5 h-3.5 text-ink-muted shrink-0" />}
+                        <span className="min-w-0 flex-1 text-sm font-bold text-ink truncate">{p.appt.patient.name}</span>
+                        <span className="shrink-0 text-label text-ink-muted">{p.appt.durationMin}m</span>
+                      </button>
+                    ))}
+                  </div>
+                </FloatingPopover>
+              );
+            })()}
           </div>
         </div>
       </div>

@@ -41,7 +41,7 @@ export function Drawer({ open, onClose, title, subtitle, width = "sm", children,
         className="absolute top-0 right-0 h-full bg-surface border-l border-divider shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
         style={{ width: WIDTH_PX[width] }}
       >
-        <div className="px-4 py-3 border-b border-divider flex items-start justify-between shrink-0 bg-surface-page gap-3">
+        <div className="px-5 py-4 border-b border-divider flex items-start justify-between shrink-0 bg-surface-page gap-3">
           <div className="min-w-0">
             <h2 className="text-section font-bold text-ink truncate">{title}</h2>
             {subtitle && <p className="text-label text-ink-muted mt-0.5 truncate">{subtitle}</p>}
@@ -54,8 +54,8 @@ export function Drawer({ open, onClose, title, subtitle, width = "sm", children,
             <X className="w-4 h-4" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto p-4">{children}</div>
-        {footer && <div className="p-4 border-t border-divider bg-surface-page shrink-0">{footer}</div>}
+        <div className="flex-1 overflow-y-auto p-5">{children}</div>
+        {footer && <div className="px-5 py-4 border-t border-divider bg-surface-page shrink-0 flex justify-end gap-2">{footer}</div>}
       </div>
     </div>
   );

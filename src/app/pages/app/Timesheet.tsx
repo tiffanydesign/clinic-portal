@@ -11,6 +11,7 @@ import { RangeDatePicker } from "../../components/RangeDatePicker";
 import { format } from "date-fns";
 import { getStaff } from "./staff/staffData";
 import { Input } from "../../components/ui/input";
+import { PageTitleIcon, PAGE_TITLE_CLASS } from "../../components/PageTitleIcon";
 
 // --- Types ---
 type Role = 'Clinician' | 'Nurse' | 'Receptionist';
@@ -217,13 +218,11 @@ export function TimesheetPage() {
     <div className="flex flex-col h-full bg-surface-page">
 
       {/* Top Header Row */}
-      <div className="bg-surface border-b border-divider px-6 py-4 flex justify-between items-center shrink-0">
+      <div className="bg-surface border-b border-divider px-4 py-4 flex justify-between items-center shrink-0">
         <div className="flex items-center gap-4">
-          <span className="w-11 h-11 rounded-card bg-surface-sunken text-ink flex items-center justify-center shrink-0">
-            <Clock className="w-5 h-5" />
-          </span>
+          <PageTitleIcon icon={Clock} />
           <div>
-            <h1 className="text-2xl font-bold text-ink leading-tight">Timesheet</h1>
+            <h1 className={`${PAGE_TITLE_CLASS} leading-tight`}>Timesheet</h1>
             <p className="text-sm text-ink-muted mt-1">Staff working hours and attendance records</p>
           </div>
         </div>
@@ -247,7 +246,7 @@ export function TimesheetPage() {
       </div>
 
       {/* Toolbar Row */}
-      <div className="bg-surface border-b border-divider px-6 py-3 flex items-center justify-between shrink-0">
+      <div className="bg-surface border-b border-divider px-4 py-3 flex items-center justify-between shrink-0">
         <div className="flex items-center space-x-4">
           
           {/* Staff Picker */}
@@ -427,7 +426,7 @@ export function TimesheetPage() {
           the aggregation block above from the existing ALL_STAFF records; the
           Stat components never derive a value themselves. */}
       {selectedStaff.length > 0 && (
-        <div className="px-6 py-4 shrink-0">
+        <div className="px-4 py-4 shrink-0">
           <StatStripGroup>
             <Stat
               stat={{ id: "scheduled", label: "Scheduled", kind: "count", variant: "strip",
@@ -459,7 +458,7 @@ export function TimesheetPage() {
       )}
 
       {/* Data Table Area */}
-      <div className="flex-1 overflow-hidden px-6 pb-6 flex flex-col min-h-0 relative">
+      <div className="flex-1 overflow-hidden px-4 pb-4 flex flex-col min-h-0 relative">
         {selectedStaff.length === 0 ? (
           <div className="flex-1 bg-surface rounded-card flex flex-col items-center justify-center py-6">
             <div className="w-14 h-14 bg-surface-hover rounded-full flex items-center justify-center mb-4">
@@ -474,7 +473,7 @@ export function TimesheetPage() {
         ) : (
           <div className="flex-1 bg-surface border border-divider rounded-card shadow-sm overflow-hidden flex flex-col relative">
             <div className="flex-1 overflow-auto relative">
-              <table className="w-full text-left border-collapse text-sm whitespace-nowrap">
+              <table className="w-full text-left border-collapse text-sm whitespace-nowrap [&_th]:!px-3 [&_td]:!px-3 [&_th]:!py-2.5 [&_td]:!py-2.5">
                 <thead className="bg-surface-page sticky top-0 z-20 shadow-[0_1px_0_var(--border-strong)]">
                   {view === 'Daily' ? (
                     <tr>

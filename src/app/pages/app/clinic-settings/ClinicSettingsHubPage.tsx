@@ -1,9 +1,10 @@
 import React from "react";
 import { useNavigate } from "react-router";
-import { ShieldCheck, DoorOpen, MonitorSmartphone, LucideIcon } from "lucide-react";
+import { ShieldCheck, DoorOpen, MonitorSmartphone, Settings, LucideIcon } from "lucide-react";
 import { SETTINGS_CATEGORIES, SettingsModule } from "./clinicSettingsHubData";
 import { useRooms } from "./roomsStore";
 import { useDeviceViews } from "./deviceView";
+import { PageTitleIcon, PAGE_TITLE_CLASS } from "../../../components/PageTitleIcon";
 
 // One icon per module name — deliberately keyed by name rather than a data
 // field, since lucide's icon set has no single "module icon id" concept and
@@ -82,16 +83,19 @@ export function ClinicSettingsHubPage() {
 
   return (
     <div className="h-full overflow-y-auto bg-surface-page">
-      <div className="px-6 py-6 border-b border-divider bg-surface">
-        <h1 className="text-2xl font-bold text-ink">Clinic Settings</h1>
-        <p className="text-sm text-ink-muted mt-1">Configure templates and clinic-wide preferences</p>
+      <div className="px-4 py-4 border-b border-divider bg-surface flex items-center gap-4">
+        <PageTitleIcon icon={Settings} />
+        <div>
+          <h1 className={PAGE_TITLE_CLASS}>Clinic Settings</h1>
+          <p className="text-sm text-ink-muted mt-1">Configure templates and clinic-wide preferences</p>
+        </div>
       </div>
 
-      <div className="p-4 space-y-8">
+      <div className="px-4 py-4 space-y-5">
         {SETTINGS_CATEGORIES.map((category) => (
           <div key={category.name}>
             <h2 className="text-xs font-bold text-ink-muted uppercase tracking-wider mb-3">{category.name}</h2>
-            <div className="grid gap-4" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(260px, 300px))" }}>
+            <div className="grid gap-3" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(260px, 300px))" }}>
               {category.modules.map((module) => (
                 <ModuleCard key={module.name} module={module} meta={META[module.name]} />
               ))}

@@ -60,7 +60,7 @@ export function DesignSystemCards() {
       </div>
 
       <h3 className="text-section text-ink-soft mb-2">Table rows — two heights</h3>
-      <p className="text-label text-ink-muted mb-2 px-0.5">Ban: no third row-height at a call site — actionable rows are --row-h (48px), read-only rows are --row-h-dense (40px).</p>
+      <p className="text-label text-ink-muted mb-2 px-0.5">Ban: no third row-height at a call site — actionable rows are --row-h / --table-row (44px, v4: was 48px), read-only rows are --row-h-dense (40px). Cell padding: 12px horizontal, 10px vertical (v4: was 16px/12px), same for header and body cells.</p>
       <div className="bg-surface rounded-card border border-divider overflow-hidden mb-6">
         <div className="flex items-center px-4 border-b border-divider" style={{ height: "var(--row-h)" }}>
           <span className="text-sm font-bold text-ink flex-1">Actionable row</span>

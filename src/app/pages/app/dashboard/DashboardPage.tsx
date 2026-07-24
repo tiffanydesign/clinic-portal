@@ -1,6 +1,7 @@
 import React from "react";
 import { useParams } from "react-router";
 import { useAppContext } from "../../../context/AppContext";
+import { PAGE_TITLE_CLASS } from "../../../components/PageTitleIcon";
 import { useKpiBar, KpiControls, KpiCards } from "./KpiBar";
 import { CalendarWidget } from "./CalendarWidget";
 import { AppointmentDrawer } from "./AppointmentDrawer";
@@ -35,7 +36,7 @@ export function DashboardPage() {
     <div className="bg-surface-page">
       {/* Header — part of the normal page flow, so the whole page (including
           this) scrolls together rather than pinning under a fixed header. */}
-      <div className="px-6 pt-6">
+      <div className="px-4 pt-6">
         <div className="flex items-center justify-between gap-4 mb-3 flex-wrap">
           {/* Greeting + the two front-desk quick actions (New Patient / New
               Booking) sit together on the left; the KPI range/customise
@@ -43,7 +44,7 @@ export function DashboardPage() {
               widths. Clinician gets its own plain live counters instead. */}
           <div className="flex items-center gap-x-4 gap-y-2 flex-wrap min-w-0">
             <div className="shrink-0">
-              <h1 className="text-2xl font-bold text-ink whitespace-nowrap">Good morning, {ROLE_GREETING[role]}</h1>
+              <h1 className={`${PAGE_TITLE_CLASS} whitespace-nowrap`}>Good morning, {ROLE_GREETING[role]}</h1>
               <p className="text-sm text-ink-muted mt-1 whitespace-nowrap">{TODAY_LABEL} · Istanbul Clinic</p>
             </div>
             {role === "Admin" && <DashboardQuickActions />}
@@ -64,8 +65,8 @@ export function DashboardPage() {
            Tier 2 (below): Results Queue + Waiting Room + Recent Activity —
            the three monitoring cards packed into ONE height-matched row so
            Admin scans the clinic's live state without scrolling the page. */
-        <div className="px-6 py-4 space-y-4">
-          <div className="flex gap-4">
+        <div className="px-4 py-4 space-y-3">
+          <div className="flex gap-3">
             {/* The inner `shrink-0` wrapper (not `h-full` directly on a
                 stretched flex-1 parent) is what lets CalendarWidget's own
                 `h-full` degrade to its natural content height instead of a
@@ -75,12 +76,17 @@ export function DashboardPage() {
             <div className="flex-1 min-w-0 flex flex-col">
               <div className="shrink-0"><CalendarWidget /></div>
             </div>
-            <div className="w-[420px] shrink-0"><NeedsYourActionCard /></div>
+            {/* Column ratio 70:30 (was a fixed 420px, ~60:40) — the schedule
+                grid is the page's primary content and was starved of width
+                by an oversized fixed-width action column; a min-width floor
+                keeps the action list from ever getting uncomfortably narrow
+                on smaller viewports. */}
+            <div className="w-[30%] min-w-[320px] shrink-0"><NeedsYourActionCard /></div>
           </div>
           {/* Fixed-height row: each card is flex-1 (equal thirds) and scrolls
               its own body — Recent Activity is expanded here since it now owns
               a full column rather than a collapsed strip beneath the pair. */}
-          <div className="flex gap-4 h-72">
+          <div className="flex gap-3 h-72">
             <AdminPanels />
             <ActivityFeed className="flex-1 min-w-0" />
           </div>

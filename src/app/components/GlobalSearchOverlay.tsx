@@ -56,7 +56,7 @@ export function GlobalSearchOverlay({ onClose }: { onClose: () => void }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search patients, staff…"
-            className="w-full h-14 pl-4 pr-4 text-base outline-none"
+            className="w-full h-14 pl-12 pr-4 text-base outline-none"
           />
           <button
             onClick={onClose}

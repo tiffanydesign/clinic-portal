@@ -7,7 +7,7 @@ export { NotificationsPage } from "./NotificationsPage";
 
 export function SkeletonPage({ title, children }: { title: string, children: React.ReactNode }) {
   return (
-    <div className="p-4 w-full h-full flex flex-col">
+    <div className="px-4 py-4 w-full h-full flex flex-col">
       <h1 className="text-2xl font-bold text-ink mb-2">{title}</h1>
       <p className="text-sm text-ink-muted mb-8 italic">Detailed content in a later pass</p>
       <div className="flex-1">

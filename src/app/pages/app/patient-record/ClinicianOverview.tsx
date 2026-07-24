@@ -14,9 +14,9 @@ function AlertRow({ label, severity }: { label: string; severity: "critical" | "
 
 export function ClinicianOverview({ patient }: { patient: PatientRecord }) {
   return (
-    <div className="p-4 grid grid-cols-2 gap-6">
+    <div className="px-4 py-4 grid grid-cols-2 gap-5">
       {/* left column */}
-      <div className="space-y-6">
+      <div className="space-y-3">
         <Card title="Patient Summary">
           <div className="grid grid-cols-2 gap-4">
             <Field label="Age / Sex" value={`${patient.age} · ${patient.sex}`} />
@@ -56,7 +56,7 @@ export function ClinicianOverview({ patient }: { patient: PatientRecord }) {
       </div>
 
       {/* right column */}
-      <div className="space-y-6">
+      <div className="space-y-3">
         <Card title="Assigned Team">
           <div className="grid grid-cols-2 gap-3">
             <div className="border border-divider rounded-control p-3">

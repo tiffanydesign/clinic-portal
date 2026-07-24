@@ -8,17 +8,15 @@ import { DesignSystemSpacing } from "./DesignSystemSpacing";
 import { DesignSystemLayout } from "./DesignSystemLayout";
 import { DesignSystemControls } from "./DesignSystemControls";
 import { DesignSystemCards } from "./DesignSystemCards";
-import { DesignSystemLegacy } from "./DesignSystemLegacy";
 
 const SECTIONS = [
   { id: "logo", label: "Logo" },
   { id: "colors", label: "Colors" },
   { id: "typography", label: "Typography" },
-  { id: "spacing", label: "Spacing / Radius" },
+  { id: "spacing", label: "Spacing / Radius / Height" },
   { id: "layout", label: "Page Layout" },
   { id: "controls", label: "Controls" },
   { id: "cards", label: "Cards" },
-  { id: "legacy", label: "Legacy inventory" },
 ];
 
 // The living, single-source-of-truth showcase of the frozen design tokens
@@ -57,7 +55,6 @@ export function DesignSystemPage() {
           <DesignSystemLayout />
           <DesignSystemControls />
           <DesignSystemCards />
-          <DesignSystemLegacy />
         </div>
       </div>
     </div>

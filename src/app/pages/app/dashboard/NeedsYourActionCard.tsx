@@ -1,6 +1,5 @@
 import React, { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
-import { AlertCircle } from "lucide-react";
 import { Section } from "./DashboardShared";
 import { Stat } from "../../../components/stat";
 import { useAvailabilityStore, getPendingRequests } from "../availability/availabilityStore";
@@ -46,13 +45,14 @@ function ActionRow({ item, onOpen }: { item: ActionItem; onOpen: () => void }) {
           <span className="block text-xs font-normal text-ink-muted mt-0.5 truncate">{item.detail}</span>
         )}
       </span>
-      {/* Wait meta stays quiet: muted grey, or slightly darker grey + a small
-          red alert glyph once overdue — no full-width red text. */}
+      {/* Wait meta — same low-sat pill Results Queue uses for its own overdue
+          badge (grey fill/grey text, or red fill/red text + a tiny dot past
+          the alert threshold), so both dashboard queues age-flag identically. */}
       <span
-        className={`shrink-0 inline-flex items-center gap-1 text-xs font-medium mt-0.5 ${overdue ? "text-ink-soft" : "text-ink-muted"}`}
+        className={`shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 rounded-control text-overline mt-0.5 ${overdue ? "bg-danger/10 text-danger-ink" : "bg-surface-hover text-ink-muted"}`}
         title={overdue ? "Overdue — waiting more than 48h" : undefined}
       >
-        {overdue && <AlertCircle className="w-3.5 h-3.5 text-danger shrink-0" aria-hidden />}
+        {overdue && <span className="w-1.5 h-1.5 rounded-full bg-danger" aria-hidden />}
         {item.waitLabel}
       </span>
     </button>

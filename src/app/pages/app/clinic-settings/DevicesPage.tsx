@@ -32,17 +32,17 @@ function DeviceTable({ views, onOpen }: { views: DeviceView[]; onOpen: (v: Devic
   return (
     <div className="border border-divider rounded-card overflow-hidden shadow-sm">
       <div>
-        <table className="w-full text-left [&_th]:!px-2 [&_td]:!px-2">
+        <table className="w-full text-left">
           <thead className="bg-surface-page">
             <tr className="text-xs font-bold text-ink-muted uppercase tracking-wider">
-              <th className="px-4 py-3 border-b border-divider">Device</th>
-              <th className="px-4 py-3 border-b border-divider">Model</th>
-              <th className="px-4 py-3 border-b border-divider">Short Code</th>
-              <th className="px-4 py-3 border-b border-divider">Type</th>
-              <th className="px-4 py-3 border-b border-divider">Assigned Room</th>
-              <th className="px-4 py-3 border-b border-divider">Status</th>
-              <th className="px-4 py-3 border-b border-divider">Last Seen</th>
-              <th className="px-3 py-3 border-b border-divider text-right">Actions</th>
+              <th className="px-3 py-2.5 border-b border-divider">Device</th>
+              <th className="px-3 py-2.5 border-b border-divider">Model</th>
+              <th className="px-3 py-2.5 border-b border-divider">Short Code</th>
+              <th className="px-3 py-2.5 border-b border-divider">Type</th>
+              <th className="px-3 py-2.5 border-b border-divider">Assigned Room</th>
+              <th className="px-3 py-2.5 border-b border-divider">Status</th>
+              <th className="px-3 py-2.5 border-b border-divider">Last Seen</th>
+              <th className="px-3 py-2.5 border-b border-divider text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-divider bg-surface">
@@ -113,7 +113,7 @@ export function DevicesPage() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-surface">
-      <div className="px-6 py-6 border-b border-divider shrink-0 flex justify-between items-start bg-surface">
+      <div className="px-4 py-4 border-b border-divider shrink-0 flex justify-between items-start bg-surface">
         <div>
           <div className="flex items-center gap-1.5 text-xs font-medium text-ink-muted mb-2">
             <Link to="/clinic-settings" className="hover:text-ink-soft hover:underline">Clinic Settings</Link>
@@ -132,7 +132,7 @@ export function DevicesPage() {
       </div>
 
       {/* Filters */}
-      <div className="px-6 py-3 border-b border-divider bg-surface-page/60 shrink-0 flex items-center justify-between gap-4 flex-wrap">
+      <div className="px-4 py-3 border-b border-divider bg-surface-page/60 shrink-0 flex items-center justify-between gap-4 flex-wrap">
         <div className="inline-flex bg-surface-hover rounded-card p-0.5 border border-divider">
           {TYPE_TABS.map((t) => (
             <button
@@ -157,7 +157,7 @@ export function DevicesPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto px-4 py-4">
         {state === "loading" ? (
           <LoadingState />
         ) : state === "error" ? (
@@ -170,7 +170,7 @@ export function DevicesPage() {
             cta={status !== "retired" && <button onClick={() => setShowAdd(true)} className="px-6 py-3 btn-primary rounded-control text-base font-bold transition-colors">Add a device</button>}
           />
         ) : groups ? (
-          <div className="space-y-6">
+          <div className="space-y-5">
             {groups.map((g) => (
               <div key={g.key}>
                 <div className="flex items-center gap-2 mb-2.5">

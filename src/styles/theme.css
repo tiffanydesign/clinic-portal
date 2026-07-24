@@ -161,11 +161,20 @@
   --gradient-brand: linear-gradient(135deg, #30B0CD 0%, #2394CC 48%, #2E74B2 100%);
   --gradient-vitality: linear-gradient(135deg, #269381 0%, #1F8697 49%, #085E98 100%);
 
-  --status-success: #34C759;
-  --status-warning: #F5A623;
-  --status-danger: #FF383C;
-  --status-info: #2394CC;
-  --status-special: #2D6CEB; /* deep cobalt blue — was purple #CB30E0; kept a distinct hue/saturation from --status-info so the two remain tellable apart when shown side by side (e.g. staff role tags) */
+  /* Semantic palette v2 (2026-07-24) — replaces the entire prior ramp with
+     the Eva Design System reference palette the user supplied. Every base/
+     ink/fill value below was swapped; nothing here is additive. Special has
+     no equivalent in that reference (only Success/Info/Warning/Danger are
+     defined there) — by explicit user choice it now reuses the reference's
+     own Brand Primary (#3366FF), which preserves the original relationship
+     ("Special is a deeper, more saturated blue than Info") without
+     inventing an unreviewed hue; this does NOT touch the app's own
+     --phenome-blue-* brand ramp used by buttons. */
+  --status-success: #70D332;
+  --status-warning: #FFB600;
+  --status-danger: #FF4B2B;
+  --status-info: #508CFC;
+  --status-special: #3366FF; /* reference palette's Brand Primary, reused per user's explicit pick — kept distinct from --status-info by being deeper/more saturated, same relationship the old cobalt/cyan-blue pair had */
 
   --ink-900: #10214B;
   --ink-600: #4A5578;
@@ -182,31 +191,46 @@
 }
 
 /* ====================================================================
-   FROZEN COMPACT TOKENS — iPad-first (Design Token Freeze, Step 1)
+   DESIGN TOKENS v3 — full 10-step scale (Token Revision, Step 2)
    --------------------------------------------------------------------
-   Single source of truth for the portal migration. Additive only:
-   nothing above is renamed. The existing Phenome v2 semantic colors
-   (--status-*, --ink-*, --surface-page, --divider, --shadow-*) are the
-   base; the aliases below give them the names the mapping table uses.
+   Single source of truth for the portal. Additive only: nothing above
+   is renamed. The existing Phenome v2 semantic colors (--status-*,
+   --ink-*, --surface-page, --divider, --shadow-*) are the base; the
+   aliases below give them the names the mapping table uses.
+
+   v3 supersedes the earlier 5-step "Frozen Compact" spacing scale and
+   2-tier radius with a full 10-step spacing scale and 4-tier radius,
+   per the 2026-07-24 spacing/rhythm pass. Existing --space-1/2/3/4/6
+   keep their original pixel values unchanged (nothing that already
+   matched needed to move) — --space-0/5/7/8/9 are new.
 
    USAGE LAW (enforced by scripts/check-tokens.sh):
    1. No hardcoded hex / rgb() in component code — use a token.
    2. No arbitrary Tailwind values: text-[Npx], p-[Npx], gap-[Npx]...
-   3. Component-internal padding MUST NOT exceed --space-4 (16px).
-      --space-6 (24px) and larger belong to the PAGE LAYOUT layer only
-      (gaps between sections, page gutters) — never inside a card/control.
-   4. Visual control height may be 38px, but every tappable element's
-      real hit area MUST be >= 44x44px. Use .touch-extend (defined below).
+      every spacing value must be one of --space-0..9 below.
+   3. Default component-internal padding is --space-4 (16px); a "large"
+      card/panel tier may use --space-5 (20px). --space-6 (24px) and
+      above belong to the PAGE LAYOUT layer (section gaps, page
+      gutters) — never inside a card/control.
+   4. Visual control height is --control-md (40px) by default; every
+      tappable element's real hit area MUST still be >= 44x44px. Use
+      .touch-extend (defined below) for any control visually smaller
+      than that.
    ==================================================================== */
 :root {
-  /* --- 1. SPACING (compact 8pt subset; 5 steps) --------------------- */
+  /* --- 1. SPACING (full 10-step scale) ------------------------------ */
+  --space-0: 0px;
   --space-1: 4px;   /* micro: label<->input, icon<->text */
-  --space-2: 8px;   /* default gap inside a component */
-  --space-3: 12px;  /* card inner padding, gap between form fields */
-  --space-4: 16px;  /* gap between cards, MAX component-internal padding */
-  --space-6: 24px;  /* PAGE LEVEL ONLY: section gaps, page gutters */
+  --space-2: 8px;   /* default gap inside a component, icon<->text */
+  --space-3: 12px;  /* card inner padding (dense), gap between form fields */
+  --space-4: 16px;  /* default card padding, gap between cards */
+  --space-5: 20px;  /* large card padding, page top/bottom padding, drawer padding */
+  --space-6: 24px;  /* page horizontal padding, section gaps, dialog padding */
+  --space-7: 32px;  /* large section gaps */
+  --space-8: 40px;  /* rare — large layout gaps */
+  --space-9: 48px;  /* rare — largest layout gaps */
 
-  /* --- 2. TYPOGRAPHY (6 tiers + 2 KPI; compact line-heights) --------
+  /* --- 2. TYPOGRAPHY (7 tiers + 2 KPI; compact line-heights) --------
      Each token is the tier's font-size; line-height + weight are applied
      by the matching helper class (see @layer components below) so a tier
      is used as one class, e.g. class="text-body". Sized for comfortable
@@ -219,6 +243,16 @@
   --text-data:       14px;  /* table rows, list subrows   — 1.35 / 400 */
   --text-label:      13px;  /* form labels, minor caption — 1.2  / 500 */
   --text-overline:   12px;  /* uppercase group heads, KPI title — 1.2 / 600, ls .06em */
+  /* Micro tier (2026-07-24): the calendar's dense-hour micro-pill stack is
+     the one surface genuinely too small for even --text-overline (12px) —
+     a stack of 3-4 pills has to fit inside a single 90px hour row. Added as
+     a proper documented token (not an arbitrary text-[Npx], which
+     check-tokens.sh's rule 2 bans) precisely so this stays inside the same
+     token law as every other tier. font-weight bumped to 600 (semibold, not
+     the tier's usual 400/500) specifically because the self-hosted open
+     font (TeX Gyre Heros) reads soft/fuzzy at sub-12px sizes at regular
+     weight — semibold keeps the glyph edges crisp at this size. */
+  --text-micro:      11px;  /* calendar micro-pill labels ONLY — 1.15 / 600 */
 
   /* KPI numerals — folded in from KPI_CARD_SPEC (tabular-nums, 600) */
   --kpi-value-lg: 30px;     /* regular KPI card value */
@@ -250,11 +284,11 @@
        special  (cobalt blue, distinct from info) -> a distinct category marker (e.g. Leave requests)
      Routine/expected states (Booked, Active, Completed, etc.) get NO
      colour — plain grey/ink. Colour is spent only on the exceptions above. */
-  --status-success-ink: #177245;  /* 5.95 white · 5.27 on /15 */
-  --status-warning-ink: #8F4E05;  /* 6.44 white · 5.82 on /15 · 6.0 on /10 — deepened from #A15C07 (borderline 4.3-4.8 once tints composite over off-white rows) */
-  --status-danger-ink:  #B91C1C;  /* 6.47 white · 5.28 on /15 */
-  --status-info-ink:    #12658F;  /* 6.39 white · 5.42 on /15 */
-  --status-special-ink: #164FBE;  /* 7.25 white · 5.95 on /15 */
+  --status-success-ink: #417e1b;  /* 4.97 white · 4.60 surface-page — darkened from new base #70D332 (only 1.90 on white) via HSL-lightness reduction until both floors cleared */
+  --status-warning-ink: #8f6600;  /* 5.16 white · 4.77 surface-page — darkened from new base #FFB600 (1.76 on white) */
+  --status-danger-ink:  #db2100;  /* 4.97 white · 4.59 surface-page — darkened from new base #FF4B2B (3.34 on white) */
+  --status-info-ink:    #045afb;  /* 5.44 white · 5.03 surface-page — darkened from new base #508CFC (3.23 on white) */
+  --status-special-ink: #0040ff;  /* 6.61 white · 6.11 surface-page — darkened from new base #3366FF (4.68 on white) */
 
   /* D-11: a THIRD status tier, for small non-text fills only — icon-circle
      backgrounds behind a white glyph, thin progress-bar segments, live dots.
@@ -269,11 +303,11 @@
      than -ink, never used where a text label or icon needs the 4.5:1 tier.
      Rule: icon-circle fill / progress segment / live dot -> --status-*-fill.
      Button label, body text, badge text -> --status-*-ink (unchanged). */
-  --status-success-fill: #00943e;  /* 3.96 white · 3.66 surface-page */
-  --status-warning-fill: #ba6d00;  /* 3.98 white · 3.68 surface-page */
-  --status-danger-fill:  #ff0008;  /* 4.00 white · 3.70 surface-page */
-  --status-info-fill:    #0083e0;  /* 3.95 white · 3.65 surface-page */
-  --status-special-fill: #1A7CF0;  /* 4.05 white · 3.75 surface-page */
+  --status-success-fill: #509b21;  /* 3.47 white · 3.21 surface-page */
+  --status-warning-fill: #b27f00;  /* 3.54 white · 3.28 surface-page */
+  --status-danger-fill:  #ff3c1a;  /* 3.55 white · 3.28 surface-page */
+  --status-info-fill:    #1d6bfb;  /* 4.62 white · 4.27 surface-page */
+  --status-special-fill: #1a53ff;  /* 5.64 white · 5.21 surface-page */
   --surface-page:   #F4F6FB;                 /* (re-stated; matches v2) page bg */
   --surface-card:   #FFFFFF;                 /* card / panel surface */
   /* --divider (rgba(32,58,133,.08)) already defined above — default borders. */
@@ -287,19 +321,32 @@
      into the background rather than competing with it. */
   --grid-line:      rgba(32, 58, 133, 0.05);
 
-  /* --- 4. RADIUS (2 tiers; rounded-full stays for pills/avatars) ----
+  /* --- 4. RADIUS (4 tiers; rounded-full stays for pills/avatars) ----
      NOTE: distinct from Tailwind's inlined `rounded-sm/md` utilities
      (which resolve to 6px/8px via --radius). Use these via
      rounded-[var(--radius-sm)] or in CSS; migration will map classes. */
-  --radius-sm: 8px;   /* inputs, buttons, chips */
-  --radius-md: 12px;  /* cards, modals, drawers */
+  --radius-sm: 8px;   /* small controls: chips, small badges */
+  --radius-md: 10px;  /* buttons, inputs, selects */
+  --radius-lg: 12px;  /* cards, panels */
+  --radius-xl: 16px;  /* dialogs / modals */
 
-  /* --- 5. CONTROL HEIGHTS + TOUCH (iPad hard constraints) ----------- */
-  --control-h:      38px;   /* input / select / button visual height */
-  --control-h-sm:   32px;   /* dense inline control (inside tables) */
-  --row-h:          48px;   /* actionable list row */
+  /* --- 5. CONTROL HEIGHTS + TOUCH (iPad hard constraints) -----------
+     control-sm/md/lg are the documented v3 names (see Design System ->
+     Spacing/Radius); --control-h/-h-sm/-h-lg are the underlying CSS
+     custom properties every component already references — same
+     values, kept so no call site needs renaming. */
+  --control-sm:     36px;   /* secondary button, icon button */
+  --control-md:     40px;   /* input / select / search — Input/Select unchanged in v4 */
+  --control-lg:     40px;   /* v4: sidebar menu row 44px -> 40px */
+  --button-h:       36px;   /* v4: primary button 40px -> 36px (Input/Select stay 40px) */
+  --table-row:      44px;   /* v4: table row 48px -> 44px */
+  --control-h:      var(--control-md); /* input / select visual height */
+  --control-h-sm:   var(--control-sm); /* secondary button / dense inline control */
+  --control-h-lg:   var(--control-lg);
+  --row-h:          var(--table-row);  /* actionable list row */
   --row-h-dense:    40px;   /* read-only list row */
-  --touch-target:   44px;   /* minimum hit area — NON-NEGOTIABLE */
+  --touch-target:   44px;   /* minimum hit area — NON-NEGOTIABLE; a control visually
+                                shorter than this (36/40px) MUST use .touch-extend. */
 
   /* --- ELEVATION (2 states) ----------------------------------------- */
   --shadow-none: none;                              /* default for cards */
@@ -356,13 +403,39 @@
   --color-identity-6: var(--identity-6);
   --color-identity-7: var(--identity-7);
   --color-identity-8: var(--identity-8);
-  /* radius (2-tier) — the ONE canonical container radius lives here, so
-     every `rounded-card` panel/card/modal shares it and can never drift.
-     Bumped to 16px (was --radius-md 12px) to match the approved container
-     look; kept as a literal so it does NOT change shadcn's `rounded-md`
-     (inputs/buttons stay tighter via --radius-control / --radius-md). */
-  --radius-control: var(--radius-sm);        /* rounded-control (8px)  — buttons, inputs, chips */
-  --radius-card: 16px;                        /* rounded-card    (16px) — cards, panels, modals  */
+  /* radius (4-tier, v3) — the ONE canonical container radius per role
+     lives here, so every `rounded-*` panel/card/modal shares it and can
+     never drift. v3 revision: cards moved 16px -> 12px (--radius-lg) and
+     buttons/inputs moved 8px -> 10px (--radius-md) to match the new
+     4-tier scale; dialogs get their own 16px tier (--radius-xl) so a
+     modal still reads as the more elevated surface. Kept as literals so
+     none of this changes shadcn's own `rounded-md` scale. */
+  --radius-control: var(--radius-md);        /* rounded-control (10px) — buttons, inputs, selects */
+  --radius-card: var(--radius-lg);            /* rounded-card    (12px) — cards, panels            */
+  --radius-dialog: var(--radius-xl);          /* rounded-dialog  (16px) — modals, drawers           */
+  --radius-chip: var(--radius-sm);            /* rounded-chip    (8px)  — small controls, badges   */
+
+  /* layout (v4 — compaction pass, 2026-07-24) — page shell + sidebar
+     constants, documented on the Design System's Spacing/Radius page.
+     v4 tightens v3's page-level values after a user review found the
+     page gutters, sidebar gap and section gaps still read too loose on
+     iPad: page padding 24->16, sidebar 260->248, sidebar-content gap
+     16->8, grid gutter unchanged at 16->12, card gap 16->12, section
+     gap 24->20 (a new --section-gap-lg keeps 24 for the rare larger
+     separation). Card padding (16/20) and header->section spacing (16)
+     are deliberately UNCHANGED — the user confirmed card padding should
+     not drop to avoid crowding. */
+  --sidebar-width: 248px;
+  --page-padding-x: var(--space-4);    /* 16px (was 24px) */
+  --page-padding-y: var(--space-4);    /* 16px (was 20px) */
+  --content-gap: var(--space-2);       /* 8px (was 16px) — sidebar -> content */
+  --card-padding: var(--space-4);      /* 16px — unchanged by design */
+  --card-padding-lg: var(--space-5);   /* 20px — unchanged */
+  --header-to-section: var(--space-4); /* 16px — header bar -> first section */
+  --section-gap: var(--space-5);       /* 20px (was 24px) */
+  --section-gap-lg: var(--space-6);    /* 24px — rare, larger section break */
+  --card-gap: var(--space-3);          /* 12px (was 16px) */
+  --grid-gutter: var(--space-3);       /* 12px (was 16px) */
 
   /* typeface (unified): TeX Gyre Heros is the ONE typeface for the whole
      portal — an open, libre Helvetica/Arial-metric clone self-hosted in
@@ -428,19 +501,33 @@
     font-size: var(--text-overline); line-height: 1.2; font-weight: 600;
     letter-spacing: normal;
   }
+  /* Calendar micro-pill labels ONLY — see --text-micro's own comment above
+     for why this exists as a token instead of an arbitrary text-[11px]. */
+  .text-micro      { font-size: var(--text-micro); line-height: 1.15; font-weight: 600; }
   .kpi-value-lg { font-size: var(--kpi-value-lg); line-height: 1.1; font-weight: 600; font-variant-numeric: tabular-nums; }
   .kpi-value-sm { font-size: var(--kpi-value-sm); line-height: 1.1; font-weight: 600; font-variant-numeric: tabular-nums; }
 
   /* Primary action button (D-5/D-7): the one primary affordance. Solid brand
      navy — NO gradient (gradients removed portal-wide) — replacing ad-hoc
-     bg-slate-600/700 primaries. Keep it rare: one primary per view. */
+     bg-slate-600/700 primaries. Keep it rare: one primary per view.
+     State direction (2026-07-24 revision v3): rest state is blue-500 (a
+     deeper, more muted resting tone); hover moves UP to blue-400 — the
+     ramp's main/most-saturated brand blue — so hovering visibly "wakes up"
+     the button into its full-strength colour. No separate active/pressed
+     colour — hover already carries the "interactive" cue, so pressing just
+     holds the hover fill rather than shifting to a third tone. Contrast
+     (white text): blue-500 10.5:1, blue-400 6.5:1 — both comfortably clear
+     4.5:1 WCAG AA, unlike the v1 revision's blue-300 rest state (~3.6:1,
+     reverted for that reason). Disabled is handled by Button.tsx's own grey
+     fill (never a dimmed brand colour); Loading keeps the rest fill (never
+     dims) and shows a spinner instead, since "working" is not the same
+     state as "unavailable". */
   .btn-primary {
-    background-color: var(--phenome-blue-400);
+    background-color: var(--phenome-blue-500);
     color: #fff;
     border: none;
   }
-  .btn-primary:hover { background-color: var(--phenome-blue-500); }
-  .btn-primary:active { background-color: var(--phenome-blue-500); filter: brightness(0.97); }
+  .btn-primary:hover { background-color: var(--phenome-blue-400); }
 
   /* Hit-area extender: keep a control's visual box small (e.g. 32/38px)
      while guaranteeing a >=44x44px tap target. Center a transparent

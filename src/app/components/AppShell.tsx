@@ -169,7 +169,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen w-screen min-w-[1024px] bg-surface text-ink font-sans overflow-hidden">
-      <div className={`${sidebarCollapsed ? "w-16" : "w-60"} bg-surface border-r border-divider flex flex-col shrink-0 transition-[width] duration-200 ease-out`}>
+      <div className={`${sidebarCollapsed ? "w-16" : "w-[var(--sidebar-width)]"} bg-surface border-r border-divider flex flex-col shrink-0 transition-[width] duration-200 ease-out`}>
         {/* Brand + collapse toggle. Collapsed: the logo mark doubles as the
             expand affordance, so a 64px rail isn't split between mark + button. */}
         <div className={`h-16 flex items-center border-b border-divider shrink-0 ${sidebarCollapsed ? "justify-center px-2" : "justify-between px-4"}`}>
@@ -219,7 +219,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
 
         {/* Primary navigation */}
-        <div className="flex-1 overflow-y-auto py-2 px-2 space-y-0.5">
+        <div className="flex-1 overflow-y-auto py-2 px-4 space-y-1">
           {mainNav.map(item => {
             const isActive = location.pathname.startsWith(item.path);
             const Icon = NAV_ICON[item.path] ?? LayoutDashboard;
@@ -238,7 +238,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                       setCalendarExpanded(!isInlineExpanded);
                     }}
                     {...longPressHandlers(item.label)}
-                    className={`w-full flex items-center rounded-card cursor-pointer transition-colors ${sidebarCollapsed ? "justify-center h-12" : "justify-between px-3 min-h-11 py-2.5"} text-sm font-medium ${isActive ? "bg-surface-hover text-ink" : "text-ink-soft hover:bg-surface-hover"}`}
+                    className={`w-full flex items-center rounded-card cursor-pointer transition-colors ${sidebarCollapsed ? "justify-center h-12" : "justify-between px-3 min-h-10 py-2.5"} text-sm font-medium ${isActive ? "bg-surface-hover text-ink" : "text-ink-soft hover:bg-surface-hover"}`}
                   >
                     <span className="flex items-center gap-3 min-w-0">
                       <Icon className="w-[18px] h-[18px] shrink-0" />
@@ -255,7 +255,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                           <Link
                             key={child.label}
                             to={child.path}
-                            className={`flex items-center pl-4 pr-3 min-h-11 py-2.5 rounded-card text-sm font-medium transition-colors ${isChildActive ? "bg-surface-sunken text-ink" : "text-ink-muted hover:bg-surface-hover hover:text-ink-soft"}`}
+                            className={`flex items-center pl-4 pr-3 min-h-10 py-2.5 rounded-card text-sm font-medium transition-colors ${isChildActive ? "bg-surface-sunken text-ink" : "text-ink-muted hover:bg-surface-hover hover:text-ink-soft"}`}
                           >
                             <span className="w-1 h-1 rounded-full bg-ink-muted mr-2 shrink-0"></span>
                             {child.label}
@@ -276,7 +276,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                               key={child.label}
                               to={child.path}
                               onClick={() => setCalendarFlyoutOpen(false)}
-                              className={`flex items-center min-h-11 py-2.5 px-3 text-sm font-medium transition-colors ${isChildActive ? "bg-surface-hover text-ink" : "text-ink-soft hover:bg-surface-hover"}`}
+                              className={`flex items-center min-h-10 py-2.5 px-3 text-sm font-medium transition-colors ${isChildActive ? "bg-surface-hover text-ink" : "text-ink-soft hover:bg-surface-hover"}`}
                             >
                               {child.label}
                             </Link>
@@ -294,7 +294,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 key={item.label}
                 to={item.path}
                 {...longPressHandlers(item.label)}
-                className={`w-full flex items-center gap-3 rounded-card transition-colors ${sidebarCollapsed ? "justify-center h-12" : "px-3 min-h-11 py-2.5"} text-sm font-medium ${isActive ? "bg-surface-hover text-ink" : "text-ink-soft hover:bg-surface-hover"}`}
+                className={`w-full flex items-center gap-3 rounded-card transition-colors ${sidebarCollapsed ? "justify-center h-12" : "px-3 min-h-10 py-2.5"} text-sm font-medium ${isActive ? "bg-surface-hover text-ink" : "text-ink-soft hover:bg-surface-hover"}`}
               >
                 <span className="relative shrink-0">
                   <Icon className="w-[18px] h-[18px]" />

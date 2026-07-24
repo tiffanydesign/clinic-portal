@@ -18,19 +18,16 @@ export function MyPatientsTodayCard({ scheduled, inProgress, done }: { scheduled
         <Stat
           stat={{ id: "scheduled", label: "Scheduled", kind: "count", variant: "strip", value: String(scheduled) }}
           icon={CalendarClock}
-          iconTone="slate"
           compact
         />
         <Stat
           stat={{ id: "in-progress", label: "In progress", kind: "count", variant: "strip", value: String(inProgress) }}
           icon={Activity}
-          iconTone="blue"
           compact
         />
         <Stat
           stat={{ id: "completed", label: "Completed", kind: "count", variant: "strip", value: String(done) }}
           icon={CheckCircle2}
-          iconTone="emerald"
           compact
         />
       </StatStripGroup>

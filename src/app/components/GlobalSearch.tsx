@@ -34,7 +34,7 @@ export function GlobalSearch() {
 
   return (
     <div className="relative w-full" ref={rootRef}>
-      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted pointer-events-none" />
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-ink-muted pointer-events-none" />
       <input
         type="text"
         value={query}
@@ -42,7 +42,7 @@ export function GlobalSearch() {
         onFocus={() => { if (trimmed) setOpen(true); }}
         onKeyDown={(e) => { if (e.key === "Escape") close(); }}
         placeholder="Search patients, staff…"
-        className="w-full h-11 pl-4 pr-7 border border-divider rounded-card text-sm outline-none focus:border-border-strong bg-surface"
+        className="w-full h-11 pl-9 pr-7 border border-divider rounded-card text-sm outline-none focus:border-border-strong bg-surface"
       />
       {trimmed && (
         <button

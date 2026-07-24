@@ -46,7 +46,7 @@ function RoomRow({ room, index, total, devices, onOpen, onEdit, onDeactivate, on
   const inactive = room.status === "inactive";
   return (
     <tr className={`transition-colors cursor-pointer ${inactive ? "bg-surface-page/40 hover:bg-surface-hover" : "hover:bg-surface-hover/60"}`} onClick={onOpen}>
-      <td className="px-3 py-3.5 w-10" onClick={(e) => e.stopPropagation()}>
+      <td className="px-3 py-2.5 w-10" onClick={(e) => e.stopPropagation()}>
         <div className="flex flex-col">
           <button disabled={index === 0} onClick={() => reorderRoom(room.id, "up")} aria-label={`Move ${room.name} up`}
             className="p-0.5 text-ink-muted hover:text-ink-soft disabled:text-ink-muted disabled:opacity-50 disabled:cursor-not-allowed">
@@ -58,17 +58,17 @@ function RoomRow({ room, index, total, devices, onOpen, onEdit, onDeactivate, on
           </button>
         </div>
       </td>
-      <td className="px-4 py-3.5">
+      <td className="px-3 py-2.5">
         <span className={`text-sm font-bold ${inactive ? "text-ink-muted" : "text-ink"}`}>{room.name}</span>
       </td>
-      <td className="px-4 py-3.5 text-sm text-ink-soft">{room.type}</td>
-      <td className="px-4 py-3.5"><DeviceChips devices={devices} onOpen={onOpenDevice} /></td>
-      <td className="px-4 py-3.5">
+      <td className="px-3 py-2.5 text-sm text-ink-soft">{room.type}</td>
+      <td className="px-3 py-2.5"><DeviceChips devices={devices} onOpen={onOpenDevice} /></td>
+      <td className="px-3 py-2.5">
         {inactive ? <Pill tone="gray"><span className="w-1.5 h-1.5 rounded-full bg-ink-muted" /> Inactive</Pill>
           : <Pill tone="emerald"><span className="w-1.5 h-1.5 rounded-full bg-success-ink" /> Active</Pill>}
       </td>
-      <td className="px-4 py-3.5 text-xs text-ink-muted max-w-[220px]"><span className="line-clamp-1">{room.notes || "—"}</span></td>
-      <td className="px-3 py-3.5 text-right" onClick={(e) => e.stopPropagation()}>
+      <td className="px-3 py-2.5 text-xs text-ink-muted max-w-[220px]"><span className="line-clamp-1">{room.notes || "—"}</span></td>
+      <td className="px-3 py-2.5 text-right" onClick={(e) => e.stopPropagation()}>
         <OverflowMenu
           ariaLabel={`Actions for ${room.name}`}
           items={[
@@ -107,7 +107,7 @@ export function RoomsPage() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden bg-surface">
-      <div className="px-6 py-6 border-b border-divider shrink-0 flex justify-between items-start bg-surface">
+      <div className="px-4 py-4 border-b border-divider shrink-0 flex justify-between items-start bg-surface">
         <div>
           <div className="flex items-center gap-1.5 text-xs font-medium text-ink-muted mb-2">
             <Link to="/clinic-settings" className="hover:text-ink-soft hover:underline">Clinic Settings</Link>
@@ -128,7 +128,7 @@ export function RoomsPage() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto px-4 py-4">
         {state === "loading" ? (
           <LoadingState />
         ) : state === "error" ? (
@@ -145,13 +145,13 @@ export function RoomsPage() {
             <table className="w-full text-left">
               <thead className="bg-surface-page">
                 <tr className="text-xs font-bold text-ink-muted uppercase tracking-wider">
-                  <th className="px-3 py-3 border-b border-divider w-10" aria-label="Reorder" />
-                  <th className="px-4 py-3 border-b border-divider">Room</th>
-                  <th className="px-4 py-3 border-b border-divider">Type</th>
-                  <th className="px-4 py-3 border-b border-divider">Assigned devices</th>
-                  <th className="px-4 py-3 border-b border-divider">Status</th>
-                  <th className="px-4 py-3 border-b border-divider">Notes</th>
-                  <th className="px-3 py-3 border-b border-divider text-right">Actions</th>
+                  <th className="px-3 py-2.5 border-b border-divider w-10" aria-label="Reorder" />
+                  <th className="px-3 py-2.5 border-b border-divider">Room</th>
+                  <th className="px-3 py-2.5 border-b border-divider">Type</th>
+                  <th className="px-3 py-2.5 border-b border-divider">Assigned devices</th>
+                  <th className="px-3 py-2.5 border-b border-divider">Status</th>
+                  <th className="px-3 py-2.5 border-b border-divider">Notes</th>
+                  <th className="px-3 py-2.5 border-b border-divider text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-divider bg-surface">

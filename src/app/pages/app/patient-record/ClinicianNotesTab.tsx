@@ -134,7 +134,7 @@ export function ClinicianNotesTab() {
   };
 
   return (
-    <div className="p-4">
+    <div className="px-4 py-4">
       {canAdd && (
         <div className="flex justify-end mb-5">
           <button onClick={() => setModalOpen(true)} className="px-4 py-2 bg-ink text-white text-sm font-bold rounded-control hover:bg-ink flex items-center gap-1.5"><Plus className="w-4 h-4" /> Add Note</button>
@@ -144,7 +144,7 @@ export function ClinicianNotesTab() {
       {notes.length === 0 ? (
         <div className="text-center text-ink-muted italic">No clinician notes yet.</div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {notes.map((n) => (
             <NoteCard key={n.id} note={n} canManage={role === "Clinician" && n.authorId === CURRENT_CLINICIAN_ID && n.editable} onDelete={() => setNotes((prev) => prev.filter((x) => x.id !== n.id))} />
           ))}

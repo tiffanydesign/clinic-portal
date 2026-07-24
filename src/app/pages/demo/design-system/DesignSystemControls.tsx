@@ -58,8 +58,36 @@ export function DesignSystemControls() {
         <HitAreaOverlay><Button variant="secondary">Secondary</Button></HitAreaOverlay>
         <HitAreaOverlay><Button variant="ghost">Ghost</Button></HitAreaOverlay>
         <HitAreaOverlay><Button variant="destructive">Destructive</Button></HitAreaOverlay>
-        <HitAreaOverlay><Button variant="primary" size="sm">Compact 32px</Button></HitAreaOverlay>
+        <HitAreaOverlay><Button variant="primary" size="sm">Compact 36px</Button></HitAreaOverlay>
+        <HitAreaOverlay><Button variant="secondary" size="icon" aria-label="Icon button"><Info className="w-4 h-4" /></Button></HitAreaOverlay>
         <HitAreaOverlay><Button variant="secondary" disabled disabledReason="Complete step 1 first">Disabled (explicable)</Button></HitAreaOverlay>
+      </div>
+
+      <h3 className="text-section text-ink-soft mb-2">Button — 4 states (Primary)</h3>
+      <p className="text-label text-ink-muted mb-2 px-0.5">The four states every button must support, per B2B convention. Rest is blue-500 (a deeper, more muted resting tone); Hover moves UP to blue-400 — the ramp's main/most-saturated brand blue — so hovering visibly "wakes up" the button. No separate Active/pressed colour — pressing just holds the hover fill. White-text contrast: 10.5:1 (rest) / 6.5:1 (hover) — both comfortably clear the 4.5:1 WCAG AA minimum. Disabled swaps the fill for a flat neutral grey (never a dimmed brand colour) and blocks clicks. Loading also blocks clicks but keeps full colour and swaps in a spinner instead of dimming — "in progress" must never look like "unavailable". Hover below is forced via inline style for documentation — it is a static swatch, not a live hover target.</p>
+      <div className="bg-surface rounded-card border border-divider p-4 mb-6 flex flex-wrap gap-6">
+        <div className="text-center">
+          <div className="pointer-events-none inline-block"><Button variant="primary">Save</Button></div>
+          <div className="text-label text-ink-muted mt-2">Normal</div>
+        </div>
+        <div className="text-center">
+          <div className="pointer-events-none inline-block">
+            <Button variant="primary" style={{ backgroundColor: "var(--phenome-blue-400)" }}>Save</Button>
+          </div>
+          <div className="text-label text-ink-muted mt-2">Hover</div>
+        </div>
+        <div className="text-center">
+          <div className="pointer-events-none inline-block">
+            <Button variant="primary" disabled disabledReason="Complete required fields first">Save</Button>
+          </div>
+          <div className="text-label text-ink-muted mt-2">Disabled</div>
+        </div>
+        <div className="text-center">
+          <div className="pointer-events-none inline-block">
+            <Button variant="primary" loading>Save</Button>
+          </div>
+          <div className="text-label text-ink-muted mt-2">Loading</div>
+        </div>
       </div>
 
       <h3 className="text-section text-ink-soft mb-2">Overlays — which one, when</h3>
@@ -122,7 +150,7 @@ export function DesignSystemControls() {
       <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)} title="Example drawer" width="lg" footer={
         <Button variant="primary" onClick={() => setDrawerOpen(false)}>Done</Button>
       }>
-        <p className="text-sm text-ink-soft">Drawer body content — --space-4 padding, same as Modal.</p>
+        <p className="text-sm text-ink-soft">Drawer body content — --space-5 (20px) padding; Modal uses --space-6 (24px), the two are no longer the same tier.</p>
       </Drawer>
     </section>
   );
