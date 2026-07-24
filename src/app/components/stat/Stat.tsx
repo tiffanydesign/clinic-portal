@@ -74,6 +74,16 @@ const PILL_DOT_CLASS: Record<StatTone, string> = {
   red: "bg-danger-ink",
 };
 
+// Solid-fill counterpart to ICON_TONE_CLASS's tinted chip, for `strip`
+// `compact` mode's tone dot (see below).
+const ICON_TONE_DOT_CLASS: Record<StatIconTone, string> = {
+  emerald: "bg-success-ink",
+  amber: "bg-warning-ink",
+  blue: "bg-info-ink",
+  red: "bg-danger-ink",
+  slate: "bg-ink-muted",
+};
+
 // Dev-only nudge when a call site breaks the semantics -> tier mapping.
 function useDisciplineWarning(stat: StatConfig) {
   const violation = statDisciplineViolation(stat.kind, stat.variant);
@@ -100,6 +110,10 @@ export type StatProps = {
   dot?: boolean;
   /** T3 only — active item gets an accent underline. */
   active?: boolean;
+  /** T3 only — narrow-container layout: value stacked above label instead of
+   * inline, icon swapped for a small tone dot. Use where a strip group sits
+   * in a fixed-width sidebar column rather than the main content area. */
+  compact?: boolean;
   /** T1 only — drill-down handler; receives stat.route. */
   onOpen?: (route?: string) => void;
 };
@@ -218,7 +232,7 @@ function StatTile({ stat }: StatProps) {
  */
 export function StatStripGroup({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`flex items-stretch bg-surface rounded-card divide-x divide-divider overflow-hidden shrink-0 ${className}`}>
+    <div className={`flex items-stretch bg-surface rounded-card shadow-sm divide-x divide-divider overflow-hidden shrink-0 ${className}`}>
       {children}
     </div>
   );
@@ -227,18 +241,41 @@ export function StatStripGroup({ children, className = "" }: { children: React.R
 // --- T3 `strip` (<=56px) -----------------------------------------------------
 // Single-row counter. 20px/600 number + 12px label + optional suffix/icon.
 // Clickable items filter or deep-link; the active item gets an accent underline.
-function StatStripItem({ stat, icon, iconTone, active }: StatProps) {
+function StatStripItem({ stat, icon, iconTone, active, compact }: StatProps) {
   const nav = useNavigate();
   const onActivate = stat.onClick ?? (stat.route ? () => nav(stat.route!) : undefined);
   const Icon = icon;
   const Tag = onActivate ? "button" : "div";
+  const activeCls = active ? "border-ink" : "border-transparent";
+  const hoverCls = onActivate ? "hover:bg-surface-hover cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-info focus-visible:ring-inset" : "";
+
+  // A 3-4 wide strip group in a fixed sidebar column doesn't have the width
+  // for icon + inline number + label — that combination truncates the label
+  // (see My Patients Today). Stacking the label under the value instead of
+  // beside it gives the label its own full-width line, and a tone dot
+  // replaces the 28px icon chip.
+  if (compact) {
+    return (
+      <Tag
+        onClick={onActivate}
+        className={`flex-1 min-w-0 min-h-[52px] max-h-14 flex flex-col justify-center gap-0.5 text-left px-3 py-2 border-b-2 transition-colors ${activeCls} ${hoverCls}`}
+      >
+        <span className="flex items-center gap-1.5">
+          <span className={`text-xl font-semibold tabular-nums leading-none ${stat.alert ? "text-warning-ink" : "text-ink"}`}>
+            {stat.value}
+          </span>
+          {iconTone && <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${ICON_TONE_DOT_CLASS[iconTone]}`} aria-hidden />}
+          {stat.alert && <span className="w-1.5 h-1.5 rounded-full bg-warning-ink shrink-0" aria-hidden />}
+        </span>
+        <span className="text-xs font-medium text-ink-muted truncate">{stat.label}</span>
+      </Tag>
+    );
+  }
 
   return (
     <Tag
       onClick={onActivate}
-      className={`flex-1 min-w-0 min-h-[52px] max-h-14 flex items-center gap-2.5 text-left px-4 py-2 border-b-2 transition-colors ${
-        active ? "border-ink" : "border-transparent"
-      } ${onActivate ? "hover:bg-surface-hover cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-info focus-visible:ring-inset" : ""}`}
+      className={`flex-1 min-w-0 min-h-[52px] max-h-14 flex items-center gap-2.5 text-left px-4 py-2 border-b-2 transition-colors ${activeCls} ${hoverCls}`}
     >
       {Icon && (
         <span className={`w-7 h-7 rounded-control flex items-center justify-center shrink-0 ${ICON_TONE_CLASS[iconTone ?? "slate"]}`}>

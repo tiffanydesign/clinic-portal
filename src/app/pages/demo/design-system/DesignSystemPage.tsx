@@ -1,10 +1,11 @@
 import React from "react";
 import { useNavigate } from "react-router";
-import { X } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { DesignSystemLogo } from "./DesignSystemLogo";
 import { DesignSystemColors } from "./DesignSystemColors";
 import { DesignSystemTypography } from "./DesignSystemTypography";
 import { DesignSystemSpacing } from "./DesignSystemSpacing";
+import { DesignSystemLayout } from "./DesignSystemLayout";
 import { DesignSystemControls } from "./DesignSystemControls";
 import { DesignSystemCards } from "./DesignSystemCards";
 import { DesignSystemLegacy } from "./DesignSystemLegacy";
@@ -14,6 +15,7 @@ const SECTIONS = [
   { id: "colors", label: "Colors" },
   { id: "typography", label: "Typography" },
   { id: "spacing", label: "Spacing / Radius" },
+  { id: "layout", label: "Page Layout" },
   { id: "controls", label: "Controls" },
   { id: "cards", label: "Cards" },
   { id: "legacy", label: "Legacy inventory" },
@@ -28,15 +30,18 @@ export function DesignSystemPage() {
   const navigate = useNavigate();
   return (
     <div className="h-full overflow-y-auto bg-surface-page">
-      <div className="sticky top-0 z-10 h-12 px-4 border-b border-divider bg-surface flex items-center justify-between">
-        <h1 className="text-sm font-bold text-ink">Design System</h1>
+      <div className="sticky top-0 z-10 h-12 px-4 border-b border-divider bg-surface flex items-center gap-3">
+        {/* Full-page nav, not a modal — matches the app's own Back
+            convention (JourneyDetailPage, PatientHeader) rather than a
+            corner X, which reads as "close" not "return to where I was". */}
         <button
           onClick={() => navigate(-1)}
-          aria-label="Back to Demo Controls"
-          className="touch-extend p-2 text-ink-muted hover:text-ink-soft hover:bg-surface-hover rounded-full transition-colors"
+          className="touch-extend flex items-center gap-1 text-sm font-bold text-ink-muted hover:text-ink transition-colors shrink-0"
         >
-          <X className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4" /> Back
         </button>
+        <div className="w-px h-5 bg-divider shrink-0" />
+        <h1 className="text-sm font-bold text-ink">Design System</h1>
       </div>
       <div className="flex">
         <nav className="w-44 shrink-0 h-[calc(100vh-3rem)] sticky top-12 overflow-y-auto p-4 border-r border-divider bg-surface">
@@ -49,6 +54,7 @@ export function DesignSystemPage() {
           <DesignSystemColors />
           <DesignSystemTypography />
           <DesignSystemSpacing />
+          <DesignSystemLayout />
           <DesignSystemControls />
           <DesignSystemCards />
           <DesignSystemLegacy />

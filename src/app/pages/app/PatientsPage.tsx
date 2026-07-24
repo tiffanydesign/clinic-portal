@@ -226,14 +226,14 @@ export function PatientsPage() {
 
   const KPICards = () => {
     if (role === 'Admin') return <KpiStrip items={[
-      { id: "total-patients", value: "247", label: "Total Patients", sub: "12 new this month", icon: Users, tone: "slate" },
+      { id: "total-patients", value: "247", label: "Total Patients", sub: "+12 this month", icon: Users, tone: "slate" },
       { id: "active-patients", value: "189", label: "Active Patients", sub: "76% of total", icon: UserCheck, tone: "emerald" },
-      { id: "unassigned", value: "3", label: "Unassigned", sub: "no clinician assigned", icon: UserX, tone: "amber", alert: true },
-      { id: "pending-onboarding", value: "8", label: "Pending Onboarding", sub: "registered but no first visit", icon: Clock, tone: "blue" },
+      { id: "unassigned", value: "3", label: "Unassigned", sub: "no clinician", icon: UserX, tone: "amber", alert: true },
+      { id: "pending-onboarding", value: "8", label: "Pending Onboarding", sub: "no first visit yet", icon: Clock, tone: "blue" },
     ]} />;
 
     if (role === 'Reception') return <KpiStrip items={[
-      { id: "todays-appointments", value: "14", label: "Today's Appointments", sub: "6 checked in · 3 waiting · 5 upcoming", icon: CalendarCheck, tone: "blue" },
+      { id: "todays-appointments", value: "14", label: "Today's Appointments", sub: "6 in · 3 waiting · 5 upcoming", icon: CalendarCheck, tone: "blue" },
       { id: "awaiting-check-in", value: "3", label: "Awaiting Check-in", sub: "consent or payment pending", icon: Clock, tone: "amber" },
       { id: "new-registrations", value: "2", label: "New Registrations Today", sub: "registered today", icon: UserPlus, tone: "emerald" },
     ]} />;
@@ -261,7 +261,7 @@ export function PatientsPage() {
       {/* Table Area — grows with content; the page (AppShell) is the only
           scroll surface, so the card never grows its own inner scrollbar. */}
       <div className="px-6 pb-4 flex flex-col relative">
-        <div className="bg-surface rounded-card overflow-hidden flex flex-col relative">
+        <div className="bg-surface border border-divider rounded-card shadow-sm overflow-hidden flex flex-col relative">
           
           {/* Bulk Actions Bar (Admin only) */}
           {selectedIds.size > 0 && role === 'Admin' && (

@@ -99,7 +99,9 @@ function FeedbackCard({ item, compact, isSelected, onClick }: {
 
       <div className="w-28 shrink-0 pl-3 flex items-center gap-1.5">
         {isGoogle && <GoogleG className="w-3.5 h-3.5 shrink-0" />}
-        <span className="text-overline text-ink-soft truncate">{item.source}</span>
+        {/* The Google "G" glyph already says the source; "Review" is
+            redundant and is what pushed this past the column's 112px width. */}
+        <span className="text-overline text-ink-soft truncate">{isGoogle ? "Google" : item.source}</span>
       </div>
 
       {!isGoogle && (

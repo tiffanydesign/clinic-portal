@@ -170,6 +170,7 @@ export function StaffListPage() {
             icon={Users}
             iconTone="slate"
             active={roleFilter.size === 0 && todayFilter === "All"}
+            compact
           />
           {ROLE_GROUP_ORDER.map((role) => {
             const count = allStaff.filter((s) => s.role === role).length;
@@ -183,6 +184,7 @@ export function StaffListPage() {
                 icon={ROLE_META[role].icon}
                 iconTone={ROLE_META[role].tone}
                 active={roleFilter.size === 1 && roleFilter.has(role)}
+                compact
               />
             );
           })}
@@ -192,6 +194,7 @@ export function StaffListPage() {
             icon={UserCheck}
             iconTone="emerald"
             active={todayFilter === "On Duty"}
+            compact
           />
           <Stat
             stat={{ id: "off-today", label: "Off", kind: "count", variant: "strip",
@@ -199,6 +202,7 @@ export function StaffListPage() {
             icon={Moon}
             iconTone="slate"
             active={todayFilter === "Off Today"}
+            compact
           />
           {onLeave > 0 && (
             <Stat
@@ -207,6 +211,7 @@ export function StaffListPage() {
               icon={Plane}
               iconTone="amber"
               active={todayFilter === "On Leave"}
+              compact
             />
           )}
         </StatStripGroup>

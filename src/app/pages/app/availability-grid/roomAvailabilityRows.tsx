@@ -12,6 +12,8 @@ import type { Appt } from "../dashboard/dashboardData";
 import { DAY_START_HOUR, DAY_END_HOUR } from "../dashboard/dashboardData";
 import type { Room } from "../clinic-settings/roomsData";
 import { roomBookedRanges, roomUtilisationPct } from "../clinic-settings/roomAvailability";
+import type { RoomBlock } from "../clinic-settings/roomBlocksData";
+import { roomBlockedRangesOnDate, roomBlocksOnDate, mergeMinuteRanges, blockReasonAbbrev } from "../clinic-settings/roomBlocksData";
 import type { GridCell, GridRow } from "./types";
 
 function fmt(min: number): string {
@@ -20,13 +22,15 @@ function fmt(min: number): string {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 }
 
-// Inverts a room's booked ranges against the clinic's open window to get
-// this-day's free slots, then formats them the same way the People tab's
-// shift-time primary text is formatted.
-function freeSlotSummary(roomId: string, appts: Appt[]): { lines: string[]; freeRatio: number; freeHours: number; isFull: boolean } {
+// Inverts a room's booked + blocked ranges against the clinic's open window
+// to get this-day's free slots, then formats them the same way the People
+// tab's shift-time primary text is formatted. Blocked time counts the same
+// as booked time here — it isn't available either — so "free" always means
+// "actually bookable right now".
+function freeSlotSummary(roomId: string, appts: Appt[], blockedRanges: [number, number][]): { lines: string[]; freeRatio: number; freeHours: number; isFull: boolean } {
   const openStart = DAY_START_HOUR * 60;
   const openEnd = DAY_END_HOUR * 60;
-  const booked = roomBookedRanges(roomId, appts);
+  const booked = mergeMinuteRanges([...roomBookedRanges(roomId, appts), ...blockedRanges]);
 
   const gaps: [number, number][] = [];
   let cursor = openStart;
@@ -49,13 +53,24 @@ function freeSlotSummary(roomId: string, appts: Appt[]): { lines: string[]; free
   return { lines: [summary], freeRatio, freeHours, isFull: false };
 }
 
-function dayToCell(room: Room, dayIndex: number, appts: Appt[], onClick: (e: React.MouseEvent) => void): GridCell {
-  const isWeekend = dayIndex === 5 || dayIndex === 6;
+function dayToCell(room: Room, dateISO: string, isWeekend: boolean, appts: Appt[], blocks: RoomBlock[], onClick: (e: React.MouseEvent) => void): GridCell {
   if (isWeekend) return { status: "off", offLabel: "Closed" };
 
-  const { lines, freeRatio, freeHours, isFull } = freeSlotSummary(room.id, appts);
+  const blockedRanges = roomBlockedRangesOnDate(blocks, room.id, dateISO);
+  const wholeWindowBlocked = blockedRanges.some(([s, e]) => s <= DAY_START_HOUR * 60 && e >= DAY_END_HOUR * 60);
+  if (wholeWindowBlocked) {
+    const reasons = roomBlocksOnDate(blocks, room.id, dateISO).map((b) => blockReasonAbbrev(b.reason));
+    return { status: "blocked", blockedLabel: `Blocked · ${reasons[0] ?? "Maintenance"}`, onClick };
+  }
+
+  const { lines, freeRatio, freeHours, isFull } = freeSlotSummary(room.id, appts, blockedRanges);
   if (isFull) return { status: "full", onClick };
-  return { status: "normal", freeRatio, freeHours, lines, onClick };
+  const cell: GridCell = { status: "normal", freeRatio, freeHours, lines, onClick };
+  if (blockedRanges.length > 0) {
+    const reasons = roomBlocksOnDate(blocks, room.id, dateISO).map((b) => blockReasonAbbrev(b.reason));
+    cell.blocked = [{ label: `🔧 ${reasons[0] ?? "Maintenance"}` }];
+  }
+  return cell;
 }
 
 function RoomRowHeader({ room }: { room: Room }) {
@@ -67,16 +82,28 @@ function RoomRowHeader({ room }: { room: Room }) {
   );
 }
 
+// dates: one ISO date per grid column, in display order (matches AvailabilityPage's DAYS).
+// Weekend detection stays positional (last 2 of 7 columns) — unchanged from
+// before this feature — rather than derived from the ISO dates: the app's
+// display labels (Mon..Sun) and its real ANCHOR_DATE are already a day off
+// from each other elsewhere (a pre-existing mismatch, out of this feature's
+// scope), so real date math here would silently shift which columns render
+// as Closed. `dates` exists only to match room blocks to a column.
+function isWeekendCol(dayIndex: number, dayCount: number): boolean {
+  return dayIndex === dayCount - 2 || dayIndex === dayCount - 1;
+}
+
 export function buildRoomRows(
   rooms: Room[],
   appts: Appt[],
-  dayCount: number,
+  blocks: RoomBlock[],
+  dates: string[],
   onCellClick: (room: Room, dayIndex: number, e: React.MouseEvent) => void
 ): GridRow[] {
   return rooms.map((room) => ({
     id: room.id,
     header: <RoomRowHeader room={room} />,
-    utilPct: roomUtilisationPct(room, appts),
-    cells: Array.from({ length: dayCount }, (_, i) => dayToCell(room, i, appts, (e) => onCellClick(room, i, e))),
+    utilPct: roomUtilisationPct(room, appts, blocks),
+    cells: dates.map((iso, i) => dayToCell(room, iso, isWeekendCol(i, dates.length), appts, blocks, (e) => onCellClick(room, i, e))),
   }));
 }

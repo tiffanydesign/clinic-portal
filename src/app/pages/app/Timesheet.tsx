@@ -208,7 +208,7 @@ export function TimesheetPage() {
 
   // Overview strip: state-driven icon tone so the bar signals at a glance.
   // Tone always rides alongside the suffix text, never carrying meaning alone.
-  const varianceText = variance < 0 ? `${Math.abs(variance)}h under scheduled` : variance > 0 ? `${variance}h over scheduled` : "on track with schedule";
+  const varianceText = variance < 0 ? `${Math.abs(variance)}h under` : variance > 0 ? `${variance}h over` : "on track";
   const recordedTone: StatIconTone = variance < 0 ? "red" : variance > 0 ? "amber" : "emerald";
   const attendanceTone: StatIconTone = attendanceRate >= 100 ? "emerald" : attendanceRate >= 80 ? "amber" : "red";
   const staffCount = selectedStaff.length;
@@ -472,7 +472,7 @@ export function TimesheetPage() {
             </button>
           </div>
         ) : (
-          <div className="flex-1 bg-surface rounded-card overflow-hidden flex flex-col relative">
+          <div className="flex-1 bg-surface border border-divider rounded-card shadow-sm overflow-hidden flex flex-col relative">
             <div className="flex-1 overflow-auto relative">
               <table className="w-full text-left border-collapse text-sm whitespace-nowrap">
                 <thead className="bg-surface-page sticky top-0 z-20 shadow-[0_1px_0_var(--border-strong)]">

@@ -108,7 +108,7 @@ export function CalendarWidget({ onAdd }: { onAdd?: () => void } = {}) {
   };
 
   return (
-    <div className="rounded-card bg-surface flex flex-col h-full min-h-0">
+    <div className="rounded-card bg-surface shadow-sm flex flex-col h-full min-h-0">
       {/* Header */}
       <div className="h-12 border-b border-divider bg-surface-page/70 px-4 flex items-center justify-between shrink-0 gap-3">
         <div className="flex items-center gap-2 min-w-0 shrink-0">

@@ -20,11 +20,13 @@ import type { StatConfig, StatKind, RangeValue, TimeRange } from "../../../compo
 import { APPTS } from "./dashboardData";
 import { getSchedulableRoomsSnapshot } from "../clinic-settings/roomsStore";
 import { clinicUtilisationPct } from "../clinic-settings/roomAvailability";
+import { getRoomBlocksSnapshot } from "../clinic-settings/roomBlocksStore";
 
 // Same rooms + same appts + same pure function as the Availability page's
 // Rooms tab — this card and that tab's row-end % can never show two
-// different numbers for "how busy is the clinic".
-const TODAY_UTILISATION_PCT = clinicUtilisationPct(getSchedulableRoomsSnapshot(), APPTS);
+// different numbers for "how busy is the clinic". Blocked rooms come out of
+// the denominator the same way on both surfaces too.
+const TODAY_UTILISATION_PCT = clinicUtilisationPct(getSchedulableRoomsSnapshot(), APPTS, getRoomBlocksSnapshot());
 
 // Shape now comes from the unified Stat family (components/stat) — this
 // module stays pure data. `variant` is deliberately omitted: the tier is a
@@ -62,7 +64,7 @@ const ADMIN_LOCKED: Kpi[] = [
     id: "appts-today", label: "Appointments Today", kind: "period",
     desc: "Total booked appointments across the clinic.", route: "/calendar/schedule",
     byRange: {
-      today: { value: "14", deltaText: "3 vs last Friday", trend: "up", spark: [10, 12, 11, 13, 12, 11, 14] },
+      today: { value: "14", deltaText: "3 vs last Friday", trend: "up", spark: [10, 12, 11, 13, 12, 11, 14], label: "Appointments" },
       "7d": { value: "89", deltaText: "6 vs previous 7 days", trend: "up", spark: [72, 75, 80, 78, 83, 85, 83, 89], label: "Appointments" },
       "30d": { value: "372", deltaText: "14 vs previous 30 days", trend: "down", spark: [340, 355, 360, 365, 386, 372], label: "Appointments" },
     },
@@ -71,9 +73,9 @@ const ADMIN_LOCKED: Kpi[] = [
     id: "results-pending", label: "Results Pending Review", kind: "live", inverse: true,
     desc: "Results awaiting clinician sign-off.", route: "/patients",
     byRange: {
-      today: { value: "7", deltaText: "2 vs last Friday", trend: "down", spark: [11, 10, 9, 9, 8, 8, 7] },
-      "7d": { value: "7", deltaText: "avg 6.4 over period", trend: "flat", informational: true, spark: [9, 8.5, 8, 7.8, 7.2, 7, 6.8, 6.4] },
-      "30d": { value: "7", deltaText: "avg 7.1 over period", trend: "flat", informational: true, spark: [8.5, 8, 7.8, 7.5, 7.2, 7.1] },
+      today: { value: "7", deltaText: "2 vs last Friday", trend: "down", spark: [11, 10, 9, 9, 8, 8, 7], label: "Results Pending" },
+      "7d": { value: "7", deltaText: "avg 6.4 over period", trend: "flat", informational: true, spark: [9, 8.5, 8, 7.8, 7.2, 7, 6.8, 6.4], label: "Results Pending" },
+      "30d": { value: "7", deltaText: "avg 7.1 over period", trend: "flat", informational: true, spark: [8.5, 8, 7.8, 7.5, 7.2, 7.1], label: "Results Pending" },
     },
   },
 ];

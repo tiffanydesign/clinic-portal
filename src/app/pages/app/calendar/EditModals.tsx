@@ -6,6 +6,8 @@ import {
   Appt, ApptOverride, CLINICIANS, NURSES, useSchedulableRooms, roomName, APPT_TYPES, DURATION_OPTIONS,
   clockToMin, minToClock, fmtRange,
 } from "./scheduleData";
+import { useRoomBlocks } from "../clinic-settings/roomBlocksStore";
+import { roomBlockedRangesOnDate, TODAY_ISO } from "../clinic-settings/roomBlocksData";
 
 const inputCls = "w-full px-3 py-2 border border-divider rounded-control text-sm text-ink bg-surface outline-none focus:border-border-strong";
 
@@ -63,6 +65,7 @@ export function EditAppointmentModal({ appt, onClose, onApply }: { appt: Appt; o
 
 export function ReassignModal({ appt, onClose, onApply }: { appt: Appt; onClose: () => void; onApply: (ov: ApptOverride) => void }) {
   const rooms = useSchedulableRooms();
+  const roomBlocks = useRoomBlocks();
   const [doctorId, setDoctorId] = useState(appt.doctorId);
   const [nurse, setNurse] = useState(appt.nurse ?? "");
   const [room, setRoom] = useState(appt.room);
@@ -83,7 +86,23 @@ export function ReassignModal({ appt, onClose, onApply }: { appt: Appt; onClose:
       <div className="space-y-4">
         <Field label="Clinician"><select value={doctorId} onChange={(e) => setDoctorId(e.target.value)} className={inputCls}>{CLINICIANS.map((c) => <option key={c.id} value={c.id}>{c.name}{c.onLeave ? " (on leave)" : ""}</option>)}</select></Field>
         <Field label="Nurse"><select value={nurse} onChange={(e) => setNurse(e.target.value)} className={inputCls}><option value="">— None —</option>{NURSES.map((n) => <option key={n} value={n}>{n}</option>)}</select></Field>
-        <Field label="Room"><select value={room} onChange={(e) => setRoom(e.target.value)} className={inputCls}>{!rooms.some((r) => r.id === room) && <option value={room}>{roomName(room)}</option>}{rooms.map((r) => <option key={r.id} value={r.id}>{r.name} · {r.type}</option>)}</select></Field>
+        <Field label="Room">
+          <select value={room} onChange={(e) => setRoom(e.target.value)} className={inputCls}>
+            {!rooms.some((r) => r.id === room) && <option value={room}>{roomName(room)}</option>}
+            {rooms.map((r) => {
+              // Hard block, not a soft warning — a room genuinely under
+              // maintenance can't be physically used, unlike a clinician
+              // double-booking, which stays a same-list conflict elsewhere.
+              const apptEnd = appt.startMin + appt.durationMin;
+              const overlapping = roomBlockedRangesOnDate(roomBlocks, r.id, TODAY_ISO).find(([s, e]) => appt.startMin < e && s < apptEnd);
+              return (
+                <option key={r.id} value={r.id} disabled={!!overlapping}>
+                  {r.name} · {r.type}{overlapping ? ` — Blocked until ${minToClock(overlapping[1])}` : ""}
+                </option>
+              );
+            })}
+          </select>
+        </Field>
       </div>
     </ModalShell>
   );

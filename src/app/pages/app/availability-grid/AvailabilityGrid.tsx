@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Plane, Pencil } from "lucide-react";
+import { Plane, Pencil, Wrench } from "lucide-react";
 import { FloatingPopover } from "../../../components/glass/FloatingPopover";
 import { Stat } from "../../../components/stat";
 import type { GridCell, GridDay, GridRow } from "./types";
@@ -69,6 +69,22 @@ function Cell({ cell, isToday }: { cell: GridCell; isToday: boolean }) {
       </div>
     );
   }
+  if (cell.status === "blocked") {
+    // Same stripe token the calendar grid (DayGrid.tsx/MyScheduleGrid.tsx)
+    // already uses for staff Blocked Time segments — one visual language for
+    // "unavailable, someone did this on purpose" everywhere it appears.
+    return (
+      <div
+        className={`${base} ${interactivity} flex items-center gap-1.5`}
+        style={{ backgroundImage: "repeating-linear-gradient(45deg,var(--surface-hover),var(--surface-hover) 6px,var(--border-strong) 6px,var(--border-strong) 12px)" }}
+        onClick={cell.onClick}
+      >
+        {isToday && <div className="absolute inset-0 bg-surface-sunken/[0.03] pointer-events-none" />}
+        <Wrench className="w-3.5 h-3.5 text-ink-soft shrink-0" />
+        <span className="text-xs font-semibold text-ink-soft truncate">{cell.blockedLabel ?? "Blocked"}</span>
+      </div>
+    );
+  }
   if (cell.status === "leave") {
     return (
       <div className={`${base} ${interactivity} bg-warning/15 flex items-center gap-1.5`} onClick={cell.onClick}>
@@ -111,7 +127,7 @@ function Cell({ cell, isToday }: { cell: GridCell; isToday: boolean }) {
       {cell.blocked && cell.blocked.length > 0 && (
         <div className="flex items-center gap-1 mt-0.5">
           <span className="w-2.5 h-2.5 rounded-control shrink-0" style={hatchStyle("rgba(100,116,139,0.35)")} />
-          <span className="text-label text-ink-muted truncate">{cell.blocked[0].label}</span>
+          <span className="text-label text-ink-muted truncate" title={cell.blocked[0].title}>{cell.blocked[0].label}</span>
         </div>
       )}
     </div>

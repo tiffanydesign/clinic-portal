@@ -5,10 +5,14 @@ import type { StepRenderState, StepRow } from "./journeyEngine";
 import type { JourneyEngine } from "./useJourneyEngine";
 import { ExitConfirmPopover, GoBackDialog, NotePopover, SkipDialog } from "./JourneyDialogs";
 
+// Pure-color fills with nothing on top (a thin bar, a dot) only need
+// WCAG's 3:1 non-text floor, not the 4.5:1 text tier — -fill clears that
+// with real margin and reads noticeably more alive than -ink. (-warning
+// alone was actually under 3:1 here before this: 2.03:1 against white.)
 const SEGMENT_CLASS: Record<StepRenderState, string> = {
-  done: "bg-success-ink",
-  prog: "bg-info-ink motion-safe:animate-pulse",
-  wait: "bg-warning",
+  done: "bg-success-fill",
+  prog: "bg-info-fill motion-safe:animate-pulse",
+  wait: "bg-warning-fill",
   up: "bg-surface-sunken",
   skip: "bg-[repeating-linear-gradient(45deg,var(--surface-sunken),var(--surface-sunken)_3px,var(--surface-hover)_3px,var(--surface-hover)_6px)]",
 };
@@ -22,14 +26,14 @@ function ProgressBar({ segments }: { segments: StepRenderState[] }) {
 }
 
 function StepNode({ state }: { state: StepRenderState }) {
-  if (state === "done") return <div className="w-6 h-6 rounded-full bg-success-ink text-white flex items-center justify-center shrink-0"><Check className="w-3.5 h-3.5" strokeWidth={3} /></div>;
+  if (state === "done") return <div className="w-6 h-6 rounded-full bg-success-fill text-white flex items-center justify-center shrink-0"><Check className="w-3.5 h-3.5" strokeWidth={3} /></div>;
   if (state === "skip") return <div className="w-6 h-6 rounded-card bg-surface-hover border border-divider text-ink-muted flex items-center justify-center shrink-0"><SkipForward className="w-3.5 h-3.5" /></div>;
   if (state === "prog") {
     return (
       <div className="relative w-6 h-6 shrink-0 flex items-center justify-center">
         <div className="absolute inset-0 rounded-full bg-info/40 motion-safe:animate-ping" />
         <div className="relative w-6 h-6 rounded-full bg-surface border-2 border-info flex items-center justify-center">
-          <div className="w-1.5 h-1.5 rounded-full bg-info-ink" />
+          <div className="w-1.5 h-1.5 rounded-full bg-info-fill" />
         </div>
       </div>
     );
@@ -46,15 +50,23 @@ function StepBody({ row }: { row: StepRow }) {
   return (
     <div className={`flex-1 min-w-0 ${row.notLast ? "pb-4" : "pb-1"}`}>
       {row.showWaited && (
-        <div className="inline-block text-label font-semibold text-warning-ink bg-warning/10 px-1.5 py-0.5 rounded-control mb-1">
-          Waited {row.waited} min
-        </div>
+        row.waitedOverSla ? (
+          <div className="inline-block text-label font-semibold text-warning-ink bg-warning/10 px-1.5 py-0.5 rounded-control mb-1">
+            Waited {row.waited} min
+          </div>
+        ) : (
+          <div className="text-xs text-ink-muted font-medium mb-1">Waited {row.waited} min</div>
+        )
       )}
       <div className="flex items-baseline gap-1.5">
         <span className={`min-w-0 truncate text-sm ${nameCls}`}>{row.name}</span>
         {row.subtitle && <span className="shrink-0 text-xs font-medium text-ink-muted truncate">({row.subtitle})</span>}
         {row.showOwner && <span className="shrink-0 text-label font-extrabold uppercase tracking-wide text-ink-muted bg-surface-hover px-1.5 py-0.5 rounded-control">{row.owner}</span>}
-        {row.showWaitLive && <span className="shrink-0 inline-flex items-center gap-1 text-label font-bold text-warning-ink bg-warning/10 px-2 py-0.5 rounded-full">◷ Waiting · {row.waitLive} min</span>}
+        {row.showWaitLive && (
+          <span className={`shrink-0 inline-flex items-center gap-1 text-label font-bold px-2 py-0.5 rounded-full ${row.waitLiveOverSla ? "text-warning-ink bg-warning/10" : "text-ink-muted bg-surface-hover"}`}>
+            ◷ Waiting · {row.waitLive} min
+          </span>
+        )}
         <span className="ml-auto shrink-0 text-xs font-bold text-ink-muted tabular-nums">
           {row.showTime && row.timeTxt}
           {row.showDur && row.durTxt}
@@ -159,8 +171,6 @@ export function PatientJourneyCard({
   }
   if (engine.paused) primaryLabel = "Resume Journey";
 
-  const primaryBtnClass = engine.paused ? "bg-success-ink hover:opacity-90" : "bg-info-ink hover:opacity-90";
-
   return (
     <div className="h-full bg-surface rounded-card flex flex-col overflow-hidden">
       {/* Identity bar */}
@@ -206,15 +216,20 @@ export function PatientJourneyCard({
       ) : (
         <>
           <div className="flex-1 overflow-y-auto px-5 py-4 min-h-0">
+            {/* Capped so each step's name and timestamp stay in one glance —
+                on a wide desktop card, an uncapped flex row strands the
+                timestamp far from the name it belongs to. */}
+            <div className="max-w-[520px]">
             {journey.rows.map((row) => (
               <div key={row.id} className="flex gap-3">
                 <div className="flex flex-col items-center shrink-0">
                   <StepNode state={row.state} />
-                  {row.notLast && <div className={`w-0.5 flex-1 min-h-[20px] my-0.5 ${row.state === "done" ? "bg-success" : "bg-surface-sunken"}`} />}
+                  {row.notLast && <div className={`w-0.5 flex-1 min-h-[20px] my-0.5 ${row.state === "done" ? "bg-success-fill" : "bg-surface-sunken"}`} />}
                 </div>
                 <StepBody row={row} />
               </div>
             ))}
+            </div>
           </div>
 
           {/* Action bar */}
@@ -229,7 +244,12 @@ export function PatientJourneyCard({
             )}
             {engine.paused && <div className="text-center text-xs font-extrabold text-warning-ink mb-1.5">Journey paused — timers stopped</div>}
 
-            <button onClick={engine.primaryTap} className={`w-full h-12 rounded-control text-white text-sm font-extrabold tracking-tight transition-colors ${primaryBtnClass}`}>
+            {/* Fixed-width, centered — a full-bleed CTA on a wide desktop
+                card reads as heavy rather than considered. Always the one
+                brand primary color (.btn-primary / Phenome Blue 400), same
+                as every other primary action in the portal — not a
+                state-dependent color. */}
+            <button onClick={engine.primaryTap} className="btn-primary flex items-center justify-center mx-auto h-12 min-w-[240px] px-8 rounded-control text-sm font-extrabold tracking-tight transition-colors">
               {primaryLabel}
             </button>
 

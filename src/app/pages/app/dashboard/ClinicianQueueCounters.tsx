@@ -62,7 +62,7 @@ export function ClinicianQueueCounters({
           kind: "count",
           variant: "strip",
           value: String(todaysCount),
-          suffix: nextTimeLabel ? `next ${nextTimeLabel}` : "day complete",
+          suffix: nextTimeLabel ?? "done",
           onClick: onJumpToSchedule,
         }}
         icon={CalendarClock}

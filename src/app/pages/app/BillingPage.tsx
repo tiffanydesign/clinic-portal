@@ -31,7 +31,7 @@ function BillingKpi({ icon: Icon, tone, label, value, sub, accent }: {
   accent?: { text: string; tone: "red" | "green" };
 }) {
   return (
-    <div className="bg-surface rounded-card border border-divider p-3 flex items-center gap-3 min-w-0">
+    <div className="bg-surface rounded-card border border-divider shadow-sm p-3 flex items-center gap-3 min-w-0">
       <div className={`w-9 h-9 rounded-card flex items-center justify-center shrink-0 ${KPI_TONE[tone]}`}>
         <Icon className="w-4 h-4" />
       </div>
@@ -161,17 +161,20 @@ export function BillingPage() {
           empty grid cells. */}
       <div className={`px-6 py-3 shrink-0 grid gap-3 ${isAdmin ? "grid-cols-4" : "grid-cols-2"}`}>
         <BillingKpi icon={Wallet} tone="emerald" label="Today's Collections" value="₺12,400" sub="8 payments received" />
-        <BillingKpi icon={Clock} tone="amber" label="Awaiting Payment" value="3" sub="₺4,200 outstanding" accent={{ text: "2 due before check-in", tone: "red" }} />
+        <BillingKpi icon={Clock} tone="amber" label="Awaiting Payment" value="3" sub="₺4,200 total" accent={{ text: "2 due before check-in", tone: "red" }} />
         {isAdmin && (
           <>
             <BillingKpi icon={TrendingUp} tone="blue" label="Monthly Revenue" value="₺186,500" sub="Jul 2026" accent={{ text: "↑ 8% vs Jun", tone: "green" }} />
-            <BillingKpi icon={AlertCircle} tone="red" label="Outstanding Balance" value="₺24,800" sub="across 14 patients" accent={{ text: "3 overdue > 30 days", tone: "red" }} />
+            <BillingKpi icon={AlertCircle} tone="red" label="Outstanding Balance" value="₺24,800" sub="14 patients" accent={{ text: "3 overdue > 30 days", tone: "red" }} />
           </>
         )}
       </div>
 
-      {/* Main Layout */}
-      <div className="flex items-stretch border-t border-divider">
+      {/* Main Layout — px-6 pb-6 inset + rounded-card wrapper, matching the
+          same table-card pattern PatientsPage/StaffListPage already use,
+          instead of running the table edge-to-edge with no page padding. */}
+      <div className="px-6 pb-6 border-t border-divider pt-6">
+      <div className="flex items-stretch rounded-card border border-divider shadow-sm overflow-hidden">
 
         {/* Left Table (Flex remaining width) */}
         <div className="flex-1 border-r border-divider bg-surface flex flex-col min-w-0">
@@ -456,6 +459,7 @@ export function BillingPage() {
             </div>
           </div>
         )}
+      </div>
       </div>
 
     </div>

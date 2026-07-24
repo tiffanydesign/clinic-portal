@@ -7,7 +7,7 @@ function QueueRow({ item, locked, onStart }: { item: QueueItem; locked: boolean;
   return (
     <div className="flex items-center justify-between px-4 py-2.5 gap-2">
       <div className="min-w-0">
-        <div className="text-sm font-semibold text-ink truncate">{item.name}</div>
+        <div className="text-sm font-bold text-ink truncate">{item.name}</div>
         <div className="text-xs text-ink-muted font-medium mt-0.5">{item.time} · {item.type}</div>
       </div>
       <button

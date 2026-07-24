@@ -82,10 +82,13 @@ export function fmtRange(startMin: number, durationMin: number): string {
   return `${minToClock(startMin)} – ${minToClock(startMin + durationMin)}`;
 }
 
-// --- blocked time (clinician "Block Time") ---
+// --- blocked time (clinician "Block Time", or a Room Block rendered into
+//     the same column-keyed shape when the grid is grouped By Room) ---
 export type TimeBlock = {
   id: string;
-  doctorId: string;
+  doctorId?: string; // present for kind "staff" (default); absent for "room"
+  kind?: "staff" | "room";
+  roomId?: string; // present for kind "room"
   startMin: number;
   durationMin: number;
   reason: string;

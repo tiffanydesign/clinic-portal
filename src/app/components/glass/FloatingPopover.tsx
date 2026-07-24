@@ -11,7 +11,7 @@ import { createPortal } from "react-dom";
 export function FloatingPopover({
   anchorRef, onClose, children, align = "right",
 }: {
-  anchorRef: React.RefObject<HTMLElement>;
+  anchorRef: React.RefObject<HTMLElement | null>;
   onClose: () => void;
   children: React.ReactNode;
   align?: "left" | "right";

@@ -18,6 +18,8 @@ import {
   TimeBlock, clockToMin, fmtRange, minToClock,
   hasClinicianConflict, hasRoomConflict, hasNurseConflict, DAY_START_HOUR, DAY_END_HOUR,
 } from "./scheduleData";
+import { useRoomBlocks } from "../clinic-settings/roomBlocksStore";
+import { roomBlockedDuring } from "../clinic-settings/roomBlocksData";
 
 // Shared modal chrome — thin wrapper over the shared Modal. The three width
 // strings this shim's consumers pass ("max-w-sm"/"max-w-md"/default
@@ -76,7 +78,11 @@ function roomKindForType(type: string): string | null {
 const TODAY_DATE = new Date(2026, 6, 3);
 const DATE_OPTIONS = Array.from({ length: 14 }, (_, i) => {
   const d = addDays(TODAY_DATE, i);
-  return { value: format(d, "d MMM yyyy"), label: i === 0 ? `Today · ${format(d, "EEE d MMM")}` : format(d, "EEE, d MMM") };
+  return {
+    value: format(d, "d MMM yyyy"),
+    label: i === 0 ? `Today · ${format(d, "EEE d MMM")}` : format(d, "EEE, d MMM"),
+    iso: format(d, "yyyy-MM-dd"),
+  };
 });
 
 export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults }: {
@@ -86,6 +92,7 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
   defaults?: { doctorId?: string; room?: string; startMin?: number; patientName?: string };
 }) {
   const rooms = useSchedulableRooms();
+  const roomBlocks = useRoomBlocks();
   const PATIENTS = useBookablePatients();
   // Mid-booking registration runs as a modal-over-modal: this component stays
   // mounted underneath, so every field already filled here survives.
@@ -115,6 +122,7 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
   const duration = DURATION_DEFAULTS[type] ?? 30;
   const roomKind = roomKindForType(type);
   const dateIsToday = manualDate === DATE_OPTIONS[0].value;
+  const dateISO = DATE_OPTIONS.find((o) => o.value === manualDate)?.iso ?? DATE_OPTIONS[0].iso;
   // Every conflict check below is skipped for any date other than today,
   // since this prototype only models appointments for the single mocked day
   // — every other date is genuinely wide open.
@@ -129,12 +137,14 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
       const startMin = clockToMin(t);
       if (startMin + duration > DAY_END_HOUR * 60) return false;
       const clinicianOk = CLINICIANS.some((c) => !c.onLeave && !hasClinicianConflict(conflicts, c.id, startMin, duration));
-      const roomOk = roomKind === null || rooms.some((r) => r.type === roomKind && !hasRoomConflict(conflicts, r.id, startMin, duration));
+      const roomOk = roomKind === null || rooms.some((r) =>
+        r.type === roomKind && !hasRoomConflict(conflicts, r.id, startMin, duration) && !roomBlockedDuring(roomBlocks, r.id, dateISO, startMin, duration)
+      );
       const nurseOk = NURSES.some((n) => !hasNurseConflict(conflicts, n, startMin, duration));
       return clinicianOk && roomOk && nurseOk;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [type, duration, roomKind, dateIsToday, rooms]);
+  }, [type, duration, roomKind, dateIsToday, dateISO, rooms, roomBlocks]);
 
   const time = manualTime && availableTimeOptions.includes(manualTime) ? manualTime : (availableTimeOptions[0] ?? TIME_OPTIONS[0]);
   const startMin = clockToMin(time);
@@ -148,8 +158,10 @@ export function NewAppointmentModal({ onClose, onCreate, currentAppts, defaults 
   const doctor = CLINICIANS.find((c) => c.id === doctorId)!;
 
   const availableRooms = useMemo(
-    () => (roomKind === null ? [] : rooms.filter((r) => r.type === roomKind && !hasRoomConflict(conflicts, r.id, startMin, duration))),
-    [conflicts, roomKind, startMin, duration, rooms]
+    () => (roomKind === null ? [] : rooms.filter((r) =>
+      r.type === roomKind && !hasRoomConflict(conflicts, r.id, startMin, duration) && !roomBlockedDuring(roomBlocks, r.id, dateISO, startMin, duration)
+    )),
+    [conflicts, roomKind, startMin, duration, rooms, roomBlocks, dateISO]
   );
   const room = roomKind === null ? "Video" : (availableRooms[0]?.id ?? "");
 

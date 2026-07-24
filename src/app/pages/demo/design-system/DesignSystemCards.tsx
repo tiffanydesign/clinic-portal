@@ -15,7 +15,7 @@ export function DesignSystemCards() {
         <div className="grid grid-cols-4 gap-4">
           <Stat
             stat={{ id: "ds-appts", label: "Appointments Today", kind: "period", variant: "card", byRange: {
-              today: { value: "14", trend: "up", deltaText: "3 vs last Friday", spark: [4, 6, 5, 8, 7, 9, 14] },
+              today: { value: "14", trend: "up", deltaText: "3 vs last Friday", spark: [4, 6, 5, 8, 7, 9, 14], label: "Appointments" },
               "7d": { value: "68", trend: "up", deltaText: "5 vs last week", spark: [50, 55, 60, 58, 62, 65, 68] },
               "30d": { value: "290", trend: "flat", deltaText: "same as last month", spark: [280, 285, 288, 290, 289, 291, 290] },
             } }}

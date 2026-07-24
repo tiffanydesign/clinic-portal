@@ -1,8 +1,13 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { BookedAppt, bookingLabel } from "./availabilityData";
 import { Modal } from "../../../components/ui/modal";
 import { Button } from "../../../components/ui/button";
+
+// A conflicting booking, pre-formatted to a single display line by the
+// caller — decoupled from any one feature's own appointment shape so this
+// modal can gate staff Blocked Time, Room Block, or anything else that needs
+// the same "resolve every conflict before saving" behavior.
+export type ConflictBooking = { label: string };
 
 // "schedule" and "blocked-time" are blocking: every conflicting booking must
 // be individually resolved (Reschedule/Cancel) before Confirm unlocks, since
@@ -11,7 +16,7 @@ import { Button } from "../../../components/ui/button";
 // real Admin decision, so conflicts are shown for awareness but don't block
 // submission.
 export function ConflictModal({ bookings, context, onCancel, onConfirm }: {
-  bookings: BookedAppt[];
+  bookings: ConflictBooking[];
   context: "schedule" | "blocked-time" | "leave";
   onCancel: () => void;
   onConfirm: () => void;
@@ -54,7 +59,7 @@ export function ConflictModal({ bookings, context, onCancel, onConfirm }: {
               const isResolved = resolvedIdx.has(i);
               return (
                 <div key={i} className={`flex items-center justify-between gap-3 rounded-card border px-3 py-2 ${isResolved ? "bg-success/10 border-success/30" : "bg-danger/10 border-danger/30"}`}>
-                  <span className={`text-data font-medium ${isResolved ? "text-success-ink line-through" : "text-danger-ink"}`}>{bookingLabel(b)}</span>
+                  <span className={`text-data font-medium ${isResolved ? "text-success-ink line-through" : "text-danger-ink"}`}>{b.label}</span>
                   {isResolved ? (
                     <span className="text-overline text-success-ink shrink-0">Resolved</span>
                   ) : (
@@ -72,7 +77,7 @@ export function ConflictModal({ bookings, context, onCancel, onConfirm }: {
         <>
           <div className="space-y-1.5 mb-4 bg-surface-page border border-divider rounded-card p-3">
             {shown.map((b, i) => (
-              <div key={i} className="text-data text-ink-soft font-medium">{bookingLabel(b)}</div>
+              <div key={i} className="text-data text-ink-soft font-medium">{b.label}</div>
             ))}
             {extra > 0 && <div className="text-data text-ink-muted">and {extra} more</div>}
           </div>

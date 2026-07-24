@@ -19,6 +19,8 @@ import { EmptySlotPopover, type EmptySlotTarget } from "./EmptySlotPopover";
 import { useAppointments, addAppointment } from "../dashboard/appointmentsStore";
 import { useAvailabilityStore } from "../availability/availabilityStore";
 import { DAYS, timeToMinutes } from "../availability/availabilityData";
+import { useRoomBlocks } from "../clinic-settings/roomBlocksStore";
+import { roomBlocksOnDate, blockRangeOnDate, blockReasonAbbrev } from "../clinic-settings/roomBlocksData";
 
 type ModalState =
   | { kind: "none" }
@@ -122,10 +124,29 @@ export function SchedulePage() {
       .filter((p) => keys.has(p.colKey));
   }, [scoped, columns, role, byRoom]);
 
+  // By Room shows room blocks (maintenance/cleaning/etc.), never staff
+  // Blocked Time — the two are different columns' concepts and don't mix.
+  const selectedDateISO = format(selectedDate, "yyyy-MM-dd");
+  const roomBlocks = useRoomBlocks();
   const placedBlocks: PlacedBlock[] = useMemo(() => {
     const keys = new Set(columns.map((c) => c.key));
-    return blocks.map((b) => ({ block: b, colKey: b.doctorId })).filter((p) => keys.has(p.colKey));
-  }, [blocks, columns]);
+    if (byRoom) {
+      return activeRooms
+        .filter((r) => keys.has(r.id))
+        .flatMap((r) =>
+          roomBlocksOnDate(roomBlocks, r.id, selectedDateISO).map((b) => {
+            const range = blockRangeOnDate(b, selectedDateISO)!;
+            const block: TimeBlock = {
+              id: b.id, kind: "room", roomId: r.id,
+              startMin: range[0], durationMin: range[1] - range[0],
+              reason: blockReasonAbbrev(b.reason),
+            };
+            return { block, colKey: r.id };
+          })
+        );
+    }
+    return blocks.map((b) => ({ block: b, colKey: b.doctorId! })).filter((p) => keys.has(p.colKey));
+  }, [blocks, columns, byRoom, activeRooms, roomBlocks, selectedDateISO]);
 
   const [slotTarget, setSlotTarget] = useState<EmptySlotTarget | null>(null);
   const availability = useAvailabilityStore();
@@ -283,7 +304,7 @@ export function SchedulePage() {
         onBlock={() => setModal({ kind: "block" })}
       />
 
-      <div className="flex-1 min-h-0 p-4 bg-surface-page/80">
+      <div className="flex-1 min-h-0 px-6 py-4 bg-surface-page/80">
         {isList ? (
           <ListView appts={scoped} onRowClick={openAppt} selectedDate={selectedDate} />
         ) : effView === "week" ? (

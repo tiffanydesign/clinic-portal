@@ -43,6 +43,12 @@ export const JOURNEY_STEPS: JourneyStepConfig[] = [
 
 export const SKIP_REASONS = ["Patient declined", "Not applicable for this package", "Clinician's decision", "Rescheduled", "Other"] as const;
 
+// Normal transit time between stations reads as routine, not a clinical
+// problem — only a wait past this threshold should escalate to a warning
+// color. Keeps the timeline's cool, low-saturation tone intact for the
+// common 1-6 minute gaps between stations.
+export const WAIT_SLA_MIN = 20;
+
 export type StepEntry = { at?: number; enter?: number; exit?: number; skipped?: boolean; reason?: string; note?: string };
 export type JourneyEntries = Record<string, StepEntry>;
 
@@ -104,8 +110,8 @@ export type StepRow = {
   showInfo: boolean; infoTxt: string;
   showTime: boolean; timeTxt: string;
   showSkip: boolean; skipCap: string;
-  showWaited: boolean; waited: number;
-  showWaitLive: boolean; waitLive: number;
+  showWaited: boolean; waited: number; waitedOverSla: boolean;
+  showWaitLive: boolean; waitLive: number; waitLiveOverSla: boolean;
   showOwner: boolean; owner: string;
   note?: string;
 };
@@ -160,7 +166,8 @@ export function buildJourneyRows(entries: JourneyEntries, clock: number) {
     return {
       id: s.id, state, name: s.name, subtitle: s.subtitle, notLast: i < JOURNEY_STEPS.length - 1, isStation: s.kind === "station",
       showDur, durTxt, showProg, progTxt, showInfo, infoTxt, showTime, timeTxt, showSkip, skipCap,
-      showWaited, waited, showWaitLive: state === "wait" && waitLive > 0, waitLive,
+      showWaited, waited, waitedOverSla: waited > WAIT_SLA_MIN,
+      showWaitLive: state === "wait" && waitLive > 0, waitLive, waitLiveOverSla: waitLive > WAIT_SLA_MIN,
       showOwner: !!s.owner, owner: s.owner || "",
       note: r.note,
     };

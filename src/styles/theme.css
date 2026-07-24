@@ -27,7 +27,12 @@
   --ring: oklch(0.708 0 0);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
+  /* D-11: was the one dull outlier of the 5 (L .398/C .07 vs siblings'
+     L .6-.83/C .12-.22) — reads flat next to them in the Staff appointment-
+     type chart. Lightened and raised chroma to sit in the same envelope,
+     hue held so it stays a distinct blue against the set's orange/teal/
+     yellow-green/amber slices. */
+  --chart-3: oklch(0.55 0.15 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
   --radius: 0.625rem;
@@ -128,7 +133,7 @@
   --phenome-blue-900: #0A1E57;
   --phenome-blue-700: #142B6E;
   --phenome-blue-500: #203A85;
-  --phenome-blue-400: #435BA1;
+  --phenome-blue-400: #435BA1;  /* Primary button fill — the one primary CTA color, every prototype */
   --phenome-blue-300: #7185BD;
   --phenome-blue-200: #A9B5D9;
   --phenome-blue-100: #E6E9F2;
@@ -160,7 +165,7 @@
   --status-warning: #F5A623;
   --status-danger: #FF383C;
   --status-info: #2394CC;
-  --status-special: #CB30E0;
+  --status-special: #2D6CEB; /* deep cobalt blue — was purple #CB30E0; kept a distinct hue/saturation from --status-info so the two remain tellable apart when shown side by side (e.g. staff role tags) */
 
   --ink-900: #10214B;
   --ink-600: #4A5578;
@@ -242,14 +247,33 @@
        danger   (red)    -> STRICTLY blocked / overdue / needs the clinician
                             to act right now — never decorative
        info     (blue)   -> neutral "in progress / active now"
-       special  (purple) -> a distinct category marker (e.g. Leave requests)
+       special  (cobalt blue, distinct from info) -> a distinct category marker (e.g. Leave requests)
      Routine/expected states (Booked, Active, Completed, etc.) get NO
      colour — plain grey/ink. Colour is spent only on the exceptions above. */
   --status-success-ink: #177245;  /* 5.95 white · 5.27 on /15 */
   --status-warning-ink: #8F4E05;  /* 6.44 white · 5.82 on /15 · 6.0 on /10 — deepened from #A15C07 (borderline 4.3-4.8 once tints composite over off-white rows) */
   --status-danger-ink:  #B91C1C;  /* 6.47 white · 5.28 on /15 */
   --status-info-ink:    #12658F;  /* 6.39 white · 5.42 on /15 */
-  --status-special-ink: #8B1FA0;  /* 7.50 white · 6.07 on /15 */
+  --status-special-ink: #164FBE;  /* 7.25 white · 5.95 on /15 */
+
+  /* D-11: a THIRD status tier, for small non-text fills only — icon-circle
+     backgrounds behind a white glyph, thin progress-bar segments, live dots.
+     Neither existing tier fits: --status-* (the "signal" tier) only clears
+     2.0-4.2:1 against white — several fall short of WCAG 1.4.11's 3:1
+     non-text floor outright (e.g. --status-warning at 2.03:1, currently
+     used as a timeline progress segment with nothing else behind it). And
+     --status-*-ink is tuned for 4.5:1 TEXT contrast, which is more
+     darkening than a graphical-only fill needs, and reads muted next to it.
+     This tier targets 3.3-4.0:1 against white and >=3.2:1 against
+     --surface-page — real margin over the 3:1 floor, genuinely more vivid
+     than -ink, never used where a text label or icon needs the 4.5:1 tier.
+     Rule: icon-circle fill / progress segment / live dot -> --status-*-fill.
+     Button label, body text, badge text -> --status-*-ink (unchanged). */
+  --status-success-fill: #00943e;  /* 3.96 white · 3.66 surface-page */
+  --status-warning-fill: #ba6d00;  /* 3.98 white · 3.68 surface-page */
+  --status-danger-fill:  #ff0008;  /* 4.00 white · 3.70 surface-page */
+  --status-info-fill:    #0083e0;  /* 3.95 white · 3.65 surface-page */
+  --status-special-fill: #1A7CF0;  /* 4.05 white · 3.75 surface-page */
   --surface-page:   #F4F6FB;                 /* (re-stated; matches v2) page bg */
   --surface-card:   #FFFFFF;                 /* card / panel surface */
   /* --divider (rgba(32,58,133,.08)) already defined above — default borders. */
@@ -313,6 +337,12 @@
   --color-danger-ink: var(--status-danger-ink);
   --color-info-ink: var(--status-info-ink);
   --color-special-ink: var(--status-special-ink);
+  /* fill tier — small non-text graphical fills only, see --status-*-fill above */
+  --color-success-fill: var(--status-success-fill);
+  --color-warning-fill: var(--status-warning-fill);
+  --color-danger-fill: var(--status-danger-fill);
+  --color-info-fill: var(--status-info-fill);
+  --color-special-fill: var(--status-special-fill);
   /* brand (D-5): auth ramp unifies onto the existing phenome-blue scale */
   --color-brand-ink: var(--phenome-blue-900); /* #0A1E57 dark navy */
   /* Identity colours — bg-identity-1..8 (avatar rings, calendar-event
@@ -345,6 +375,26 @@
   --font-sans:  "TeX Gyre Heros", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-serif: "TeX Gyre Heros", "Helvetica Neue", Helvetica, Arial, sans-serif;
   --font-mono:  "TeX Gyre Heros", "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+  /* D-12: re-tints Tailwind's entire built-in shadow-* scale (shadow-sm
+     through shadow-2xl, plus shadow/shadow-inner) from its default flat
+     black to the brand's own navy ink (#10214B / rgb(16,33,75) — same
+     --ink-900 the hand-authored --shadow-card/--shadow-elevated/
+     --shadow-raised tokens above already use), at low opacity, single soft
+     layer instead of Tailwind's harsher double-stacked default. This is a
+     single override point: every existing shadow-sm/md/lg/xl/2xl class
+     across the app (~90 files) picks it up automatically, no per-file edit.
+     Sizes/opacities still step up tier to tier so elevation hierarchy reads
+     the same as before — only the color and softness changed. */
+  --shadow-2xs:  0 1px 2px rgba(16, 33, 75, 0.04);
+  --shadow-xs:   0 1px 3px rgba(16, 33, 75, 0.05);
+  --shadow-sm:   0 2px 6px rgba(16, 33, 75, 0.06);
+  --shadow:      0 2px 8px rgba(16, 33, 75, 0.07);
+  --shadow-md:   0 4px 12px rgba(16, 33, 75, 0.08);
+  --shadow-lg:   0 8px 20px rgba(16, 33, 75, 0.10);
+  --shadow-xl:   0 14px 32px rgba(16, 33, 75, 0.12);
+  --shadow-2xl:  0 22px 48px rgba(16, 33, 75, 0.16);
+  --shadow-inner: inset 0 2px 4px rgba(16, 33, 75, 0.05);
 }
 
 /* ====================================================================
@@ -453,13 +503,6 @@
   background: rgba(244, 246, 251, 0.6);
 }
 
-.frosted-gradient-text {
-  background: var(--gradient-brand);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
 @keyframes frosted-stagger-in {
   from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
@@ -494,6 +537,13 @@
     /* Single portal typeface — every element inherits Helvetica Neue,
        including popovers/drawers portaled outside the font-sans shells. */
     font-family: var(--font-sans);
+    /* TeX Gyre Heros (the license-clean Helvetica clone) renders thinner
+       and fuzzier than Helvetica Neue at regular/light weight and small
+       sizes without this — load-bearing for the low-saturation gray text
+       this design relies on across clinic displays. */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 
   h1 {

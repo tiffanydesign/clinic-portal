@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
+import { Info } from "lucide-react";
 import { Input } from "../../../components/ui/input";
 import { Textarea } from "../../../components/ui/textarea";
 import { Button } from "../../../components/ui/button";
 import { Modal } from "../../../components/ui/modal";
 import { Drawer } from "../../../components/ui/drawer";
 import { FilterSelect } from "../../../components/FilterSelect";
+import { FloatingPopover } from "../../../components/glass/FloatingPopover";
 
 // Wraps any interactive demo element with a semi-transparent overlay sized
 // to the REAL rendered hit area (post .touch-extend), so ≥44pt compliance
@@ -19,10 +21,19 @@ function HitAreaOverlay({ children }: { children: React.ReactNode }) {
   );
 }
 
+const OVERLAY_GUIDE = [
+  { name: "Tooltip (hover)", when: "One line of non-critical context on a single control — an icon's meaning, a truncated value. Never contains an action." },
+  { name: "Popover (click)", when: "A small structured info panel anchored to one element — \"who changed this, when\", a day's booking list. Dismisses on outside click; no action required." },
+  { name: "Modal", when: "A focused task that must block the rest of the page until resolved — confirm, a short form, a conflict that needs a decision. Centered, narrow." },
+  { name: "Drawer", when: "A richer detail or edit view — many fields, a record's full detail, something that feels like \"open a page within the page\". Right-anchored, taller." },
+];
+
 export function DesignSystemControls() {
   const [modalOpen, setModalOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectVal, setSelectVal] = useState("Option A");
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const popoverAnchor = useRef<HTMLButtonElement>(null);
 
   return (
     <section id="controls" className="scroll-mt-16">
@@ -49,6 +60,48 @@ export function DesignSystemControls() {
         <HitAreaOverlay><Button variant="destructive">Destructive</Button></HitAreaOverlay>
         <HitAreaOverlay><Button variant="primary" size="sm">Compact 32px</Button></HitAreaOverlay>
         <HitAreaOverlay><Button variant="secondary" disabled disabledReason="Complete step 1 first">Disabled (explicable)</Button></HitAreaOverlay>
+      </div>
+
+      <h3 className="text-section text-ink-soft mb-2">Overlays — which one, when</h3>
+      <p className="text-label text-ink-muted mb-2 px-0.5">Rarity intent, cheapest to most disruptive: Tooltip (hover, free) → Popover (click, dismissable) → Modal (blocking) → Drawer (blocking, richer). Reach for the cheapest one that actually fits.</p>
+      <div className="bg-surface rounded-card border border-divider p-4 mb-3">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-2 mb-4">
+          {OVERLAY_GUIDE.map((o) => (
+            <div key={o.name} className="text-xs">
+              <span className="font-bold text-ink">{o.name}</span>
+              <span className="text-ink-muted"> — {o.when}</span>
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-divider">
+          {/* Tooltip: the codebase's real recipe is a plain group-hover pair,
+              not the vendored Radix Tooltip (that one's still on the unused
+              legacy --primary tokens) — documented here as the pattern to
+              copy, not as a shared component to import. */}
+          <div className="group relative inline-flex">
+            <button className="touch-extend p-2 text-ink-muted hover:text-ink-soft rounded-control hover:bg-surface-hover" aria-label="What is this?">
+              <Info className="w-4 h-4" />
+            </button>
+            <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 bg-ink text-white text-xs p-2.5 rounded-control shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+              Tooltip — hover this icon. Plain group/group-hover, no shared component.
+            </div>
+            <span className="text-xs text-ink-muted self-center ml-1">← hover</span>
+          </div>
+
+          <div className="relative">
+            <button ref={popoverAnchor} onClick={() => setPopoverOpen((v) => !v)} className="touch-extend px-3 py-2 rounded-control text-xs font-bold text-ink-soft border border-divider bg-surface hover:bg-surface-hover">
+              Click for Popover
+            </button>
+            {popoverOpen && (
+              <FloatingPopover anchorRef={popoverAnchor} onClose={() => setPopoverOpen(false)}>
+                <div className="w-56 bg-surface border border-divider rounded-card shadow-xl p-3.5">
+                  <div className="text-label font-bold text-ink-muted uppercase tracking-wider mb-1">FloatingPopover</div>
+                  <div className="text-xs text-ink-soft">Click-anchored, portal-rendered, closes on outside click/scroll.</div>
+                </div>
+              </FloatingPopover>
+            )}
+          </div>
+        </div>
       </div>
 
       <h3 className="text-section text-ink-soft mb-2">Modal / Drawer (click to open)</h3>

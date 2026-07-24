@@ -277,10 +277,6 @@ function blockedHours(blockedTime?: BlockedTimeEntry[]): number {
   return (blockedTime ?? []).reduce((sum, b) => sum + (toMin(b.end) - toMin(b.start)) / 60, 0);
 }
 
-function abbreviateReason(reason: string): string {
-  return `Blocked · ${reason}`;
-}
-
 function dayToCell(day: DaySchedule, onClick: (e: React.MouseEvent) => void): GridCell {
   if (day.off) return { status: "off" };
   if (day.onLeave) return { status: "leave" };
@@ -302,7 +298,7 @@ function dayToCell(day: DaySchedule, onClick: (e: React.MouseEvent) => void): Gr
     freeLabel: `${freeHours}h free`,
     lines: availabilityWindows(day.blocks).map((w) => `${w.start} – ${w.end}`),
     override: day.override,
-    blocked: day.blockedTime?.map((b) => ({ label: `${abbreviateReason(b.reason)} · ${b.start}–${b.end}` })),
+    blocked: day.blockedTime?.map((b) => ({ label: b.reason, title: `${b.reason} · ${b.start}–${b.end}` })),
     onClick,
   };
 }

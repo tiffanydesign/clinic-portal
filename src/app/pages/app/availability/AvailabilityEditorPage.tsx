@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import {
   DAYS, WeekSchedule, LeaveDuration, LeaveReason,
   cloneSchedule, scheduleEquals, classifyWeekChange,
-  checkLeaveConflicts, ChangeDirection, BookedAppt, blockedTimeConflicts,
+  checkLeaveConflicts, ChangeDirection, BookedAppt, blockedTimeConflicts, bookingLabel,
 } from "./availabilityData";
 import { useAvailabilityStore, availabilityActions, getPendingRequests } from "./availabilityStore";
 import { RequestCentreModal } from "./RequestCentreModal";
@@ -379,7 +379,7 @@ export function AvailabilityEditorPage() {
 
       {conflictModal && (
         <ConflictModal
-          bookings={conflictModal.conflicts}
+          bookings={conflictModal.conflicts.map((c) => ({ label: bookingLabel(c) }))}
           context={conflictModal.kind === "leave" ? "leave" : conflictModal.kind === "schedule" ? "schedule" : "blocked-time"}
           onCancel={() => setConflictModal(null)}
           onConfirm={confirmConflict}
