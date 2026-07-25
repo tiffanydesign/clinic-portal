@@ -49,6 +49,20 @@ export function staticNotificationsForRole(role: Role): NotificationItem[] {
   return STATIC_NOTIFICATIONS.filter((n) => n.roles.includes(role));
 }
 
+// Which kinds a role can ever receive, independent of whether a live item
+// currently exists for it — a role's scope tab must stay visible even after
+// every live item in that kind gets resolved (e.g. Admin's one pending
+// Approval request gets decided), or that whole category becomes
+// permanently unreachable from the tab bar. Mirrors STATIC_NOTIFICATIONS'
+// role tags above plus the live-only "approval"/"system" sources
+// synthesized in notificationsSelectors.ts.
+export const ROLE_NOTIFICATION_KINDS: Record<Role, NotificationKind[]> = {
+  Admin: ["appointment", "result", "approval", "payment", "system"],
+  Reception: ["appointment", "payment", "system"],
+  Clinician: ["appointment", "result", "approval"],
+  Nurse: ["appointment", "result"],
+};
+
 // Approximates a real calendar date from a notification's free-text time
 // label ("08:52", "Yesterday", "3 days ago", ...), anchored to the same
 // mock "today" (Fri 3 Jul 2026) every other dashboard surface uses — enough

@@ -1,10 +1,8 @@
 import React, { useMemo, useState } from "react";
-import { UserPlus, CalendarPlus } from "lucide-react";
+import { CalendarPlus } from "lucide-react";
 import { useNavigate, useParams } from "react-router";
-import { RegisterPatientModal } from "../patients/RegisterPatientModal";
 import { NewAppointmentModal } from "../calendar/CreateModals";
 import { addAppointment, useAppointments } from "./appointmentsStore";
-import type { Patient } from "../patientsData";
 import { TODAY_LABEL, ROLE_GREETING } from "./dashboardData";
 import { AppointmentDrawer } from "./AppointmentDrawer";
 import { CalendarWidget } from "./CalendarWidget";
@@ -15,19 +13,14 @@ import { PAGE_TITLE_CLASS } from "../../../components/PageTitleIcon";
 
 // Reads/writes the shared appointmentsStore rather than local overrides, so
 // a check-in here and a nurse checkout on the Nurse dashboard actually agree
-// with each other. Today's Schedule and Front Desk Queue each carry a small
-// "+" quick-add in their header (New Booking / Register Patient); the queue
-// column renders at its natural content height and the page itself scrolls.
+// with each other. The queue column renders at its natural content height
+// and the page itself scrolls.
 export function ReceptionDashboardBody() {
   const navigate = useNavigate();
   const { apptId } = useParams();
   const appts = useAppointments();
   const [tab, setTab] = useState<QueueGroup>("needs-action");
-  const [registerOpen, setRegisterOpen] = useState(false);
   const [bookingOpen, setBookingOpen] = useState(false);
-  // Walk-in closure: register -> "Book first appointment" hands the new
-  // patient straight into the booking modal, already selected.
-  const [bookFor, setBookFor] = useState<Patient | null>(null);
   // Called unconditionally like Admin's DashboardPage — Reception now uses
   // the exact same KpiBar cards/config (KPI_CONFIG.Reception) and the same
   // greeting-row + controls layout Admin's dashboard uses.
@@ -41,23 +34,17 @@ export function ReceptionDashboardBody() {
           left, KPI range/customise controls on the right of that same row. */}
       <div className="px-4 pt-6">
         <div className="flex items-center justify-between gap-4 mb-3 flex-wrap">
-          {/* Greeting + the two front-desk quick actions sit together on the
-              left; KPI range/customise controls stay on the far right. Buttons
-              reuse the same modal state the panel "+" quick-adds already drive
-              (one source of truth). New Booking is primary, New Patient
-              secondary. Wraps gracefully at narrow iPad widths. */}
+          {/* Greeting + the front-desk quick action sit together on the
+              left; KPI range/customise controls stay on the far right. Button
+              reuses the same modal state the panel "+" quick-add already
+              drives (one source of truth). Wraps gracefully at narrow iPad
+              widths. */}
           <div className="flex items-center gap-x-4 gap-y-2 flex-wrap min-w-0">
             <div className="shrink-0">
               <h1 className={`${PAGE_TITLE_CLASS} whitespace-nowrap`}>Good morning, {ROLE_GREETING.Reception}</h1>
               <p className="text-sm text-ink-muted mt-1 whitespace-nowrap">{TODAY_LABEL} · Istanbul Clinic</p>
             </div>
             <div className="flex items-center gap-2 shrink-0">
-              <button
-                onClick={() => setRegisterOpen(true)}
-                className="inline-flex items-center gap-2 h-9 px-3.5 rounded-control text-sm font-medium text-ink-soft border border-divider bg-surface hover:bg-surface-hover hover:text-ink transition-colors"
-              >
-                <UserPlus className="w-4 h-4" /> New Patient
-              </button>
               <button
                 onClick={() => setBookingOpen(true)}
                 className="inline-flex items-center gap-2 h-9 px-3.5 btn-primary rounded-control text-sm font-bold transition-colors"
@@ -103,19 +90,11 @@ export function ReceptionDashboardBody() {
 
       {appt && <AppointmentDrawer appt={appt} role="Reception" />}
 
-      {registerOpen && (
-        <RegisterPatientModal
-          onClose={() => setRegisterOpen(false)}
-          onBookFirst={(p) => setBookFor(p)}
-        />
-      )}
-
-      {(bookingOpen || bookFor) && (
+      {bookingOpen && (
         <NewAppointmentModal
-          onClose={() => { setBookingOpen(false); setBookFor(null); }}
+          onClose={() => setBookingOpen(false)}
           onCreate={addAppointment}
           currentAppts={appts}
-          defaults={bookFor ? { patientName: bookFor.name } : undefined}
         />
       )}
     </div>

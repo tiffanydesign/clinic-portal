@@ -225,13 +225,14 @@ export function StaffListPage() {
           narrow-sidebar `compact` variant: this strip runs the full content
           width, so it gets the same colour-chip-per-segment richness. */}
       <div className="px-4 py-4 shrink-0">
-        <StatStripGroup>
+        <StatStripGroup divided={false}>
           <Stat
             stat={{ id: "total-staff", label: "Total Staff", kind: "count", variant: "strip",
                     value: String(allStaff.length), onClick: clearRosterFilters }}
             icon={Users}
             iconTone="slate"
             active={roleFilter.size === 0 && todayFilter === "All"}
+            activeTint
           />
           {ROLE_GROUP_ORDER.map((role) => {
             const count = allStaff.filter((s) => s.role === role).length;
@@ -245,6 +246,7 @@ export function StaffListPage() {
                 icon={ROLE_META[role].icon}
                 iconTone={ROLE_META[role].tone}
                 active={roleFilter.size === 1 && roleFilter.has(role)}
+                activeTint
               />
             );
           })}
@@ -254,6 +256,7 @@ export function StaffListPage() {
             icon={UserCheck}
             iconTone="emerald"
             active={todayFilter === "On Duty"}
+            activeTint
           />
           <Stat
             stat={{ id: "off-today", label: "Off", kind: "count", variant: "strip",
@@ -261,6 +264,7 @@ export function StaffListPage() {
             icon={Moon}
             iconTone="slate"
             active={todayFilter === "Off Today"}
+            activeTint
           />
           {onLeave > 0 && (
             <Stat
@@ -269,6 +273,7 @@ export function StaffListPage() {
               icon={Plane}
               iconTone="amber"
               active={todayFilter === "On Leave"}
+              activeTint
             />
           )}
         </StatStripGroup>

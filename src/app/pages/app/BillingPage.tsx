@@ -212,11 +212,10 @@ export function BillingPage() {
 
                   let rowBg = "bg-surface hover:bg-surface-hover";
                   if (isSelected) rowBg = "bg-surface-hover";
-                  else if (rec.isToday) rowBg = "bg-surface-page hover:bg-surface-hover";
 
                   return (
                     <tr key={rec.id} className={`group relative ${rowBg}`}>
-                      <td className={`p-4 border-r border-divider sticky left-0 z-10 shadow-[1px_0_0_var(--border-strong)] transition-colors ${isSelected ? 'bg-surface-hover' : (rec.isToday ? 'bg-surface-page group-hover:bg-surface-hover' : 'bg-surface group-hover:bg-surface-hover')}`}>
+                      <td className={`p-4 border-r border-divider sticky left-0 z-10 shadow-[1px_0_0_var(--border-strong)] transition-colors ${isSelected ? 'bg-surface-hover' : 'bg-surface group-hover:bg-surface-hover'}`}>
                         <div className="flex items-center">
                           <div className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center text-xs font-bold text-ink-soft shrink-0 mr-3">
                             {rec.avatar}

@@ -113,6 +113,10 @@ export type StatProps = {
   dot?: boolean;
   /** T3 only — active item gets an accent underline. */
   active?: boolean;
+  /** T3 only — additionally paint the active item's background with its own
+   * icon tone, instead of leaving the underline as the only switch feedback.
+   * Opt-in (default off) so existing strip groups keep their current look. */
+  activeTint?: boolean;
   /** T3 only — narrow-container layout: value stacked above label instead of
    * inline, icon swapped for a small tone dot. Use where a strip group sits
    * in a fixed-width sidebar column rather than the main content area. */
@@ -231,11 +235,12 @@ function StatTile({ stat }: StatProps) {
 
 /**
  * T3 container — a single bordered bar; children are `strip` Stats.
- * Items are separated by hairlines and stretch to equal width.
+ * Items are separated by hairlines and stretch to equal width. Pass
+ * `divided={false}` to drop the hairlines for a plainer, borderless strip.
  */
-export function StatStripGroup({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+export function StatStripGroup({ children, className = "", divided = true }: { children: React.ReactNode; className?: string; divided?: boolean }) {
   return (
-    <div className={`flex items-stretch bg-surface rounded-card shadow-sm divide-x divide-divider overflow-hidden shrink-0 ${className}`}>
+    <div className={`flex items-stretch bg-surface rounded-card shadow-sm ${divided ? "divide-x divide-divider" : ""} overflow-hidden shrink-0 ${className}`}>
       {children}
     </div>
   );
@@ -243,13 +248,18 @@ export function StatStripGroup({ children, className = "" }: { children: React.R
 
 // --- T3 `strip` (<=56px) -----------------------------------------------------
 // Single-row counter. 20px/600 number + 12px label + optional suffix/icon.
-// Clickable items filter or deep-link; the active item gets an accent underline.
-function StatStripItem({ stat, icon, iconTone, active, compact }: StatProps) {
+// Clickable items filter or deep-link; the active item gets an accent
+// underline, plus (opt-in via `activeTint`) its own icon-tone background —
+// so switching between items reads as a real state change, not just a thin
+// line at the bottom.
+function StatStripItem({ stat, icon, iconTone, active, activeTint, compact }: StatProps) {
   const nav = useNavigate();
   const onActivate = stat.onClick ?? (stat.route ? () => nav(stat.route!) : undefined);
   const Icon = icon;
   const Tag = onActivate ? "button" : "div";
+  const tone = iconTone ?? "slate";
   const activeCls = active ? "border-ink" : "border-transparent";
+  const activeBgCls = active && activeTint ? ICON_TONE_CLASS[tone].split(" ")[0] : "";
   const hoverCls = onActivate ? "hover:bg-surface-hover cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-info focus-visible:ring-inset" : "";
 
   // A 3-4 wide strip group in a fixed sidebar column doesn't have the width
@@ -261,7 +271,7 @@ function StatStripItem({ stat, icon, iconTone, active, compact }: StatProps) {
     return (
       <Tag
         onClick={onActivate}
-        className={`flex-1 min-w-0 min-h-[52px] max-h-14 flex flex-col justify-center gap-0.5 text-left px-3 py-2 border-b-2 transition-colors ${activeCls} ${hoverCls}`}
+        className={`flex-1 min-w-0 min-h-[52px] max-h-14 flex flex-col justify-center gap-0.5 text-left px-3 py-2 border-b-2 transition-colors ${activeCls} ${activeBgCls} ${hoverCls}`}
       >
         <span className="flex items-center gap-1.5">
           <span className={`text-xl font-semibold tabular-nums leading-none ${stat.alert ? "text-warning-ink" : "text-ink"}`}>
@@ -278,7 +288,7 @@ function StatStripItem({ stat, icon, iconTone, active, compact }: StatProps) {
   return (
     <Tag
       onClick={onActivate}
-      className={`flex-1 min-w-0 min-h-[52px] max-h-14 flex items-center gap-2.5 text-left px-4 py-2 border-b-2 transition-colors ${activeCls} ${hoverCls}`}
+      className={`flex-1 min-w-0 min-h-[52px] max-h-14 flex items-center gap-2.5 text-left px-4 py-2 border-b-2 transition-colors ${activeCls} ${activeBgCls} ${hoverCls}`}
     >
       {Icon && (
         <span className={`w-7 h-7 rounded-control flex items-center justify-center shrink-0 ${ICON_TONE_CLASS[iconTone ?? "slate"]}`}>

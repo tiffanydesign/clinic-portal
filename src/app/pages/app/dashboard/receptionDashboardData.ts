@@ -20,19 +20,13 @@ export function isSettled(a: Appt): boolean {
   return a.status === "Completed" || a.status === "Cancelled" || a.status === "No Show";
 }
 
-// A patient waiting noticeably longer than the front desk would expect for
-// a simple gate fix — worth an Icon-only Call quick-action on their row.
-export function isLate(a: Appt): boolean {
-  return a.status === "Arrived" && (a.waitMinutes ?? 0) >= 15;
-}
-
 // --- queue grouping: "all" (every row, chronological) plus 3 gate-triage
 // sections, in this fixed order, no "awaiting checkout" group ---
 export type QueueGroup = "all" | "needs-action" | "upcoming" | "in-clinic";
 
 export const GROUP_LABEL: Record<QueueGroup, string> = {
   all: "All",
-  "needs-action": "Needs Action",
+  "needs-action": "Todo",
   upcoming: "Upcoming",
   "in-clinic": "In Clinic",
 };

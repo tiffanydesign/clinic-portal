@@ -10,7 +10,7 @@ import { useAppContext } from "../../context/AppContext";
 import { Stat } from "../../components/stat";
 import { RangeDatePicker } from "../../components/RangeDatePicker";
 import { Skeleton } from "../../components/ui/skeleton";
-import { NotificationItem, NotificationKind, KIND_LABEL, notificationDate, MOCK_TODAY } from "./notificationsData";
+import { NotificationItem, NotificationKind, KIND_LABEL, ROLE_NOTIFICATION_KINDS, notificationDate, MOCK_TODAY } from "./notificationsData";
 import { useNotificationItems } from "./notificationsSelectors";
 import { useReadIds, markRead, markAllRead, markUnread } from "./notificationsStore";
 import { PAGE_TITLE_CLASS } from "../../components/PageTitleIcon";
@@ -59,8 +59,13 @@ function dayLabel(d: Date): string {
   return format(d, "d MMM yyyy");
 }
 
-// --- L2: Scope tabs — underline style, role-scoped (a kind with zero items
-// for this role never renders a tab for it) ---
+// --- L2: Scope tabs — underline style, role-scoped (a kind a role can never
+// receive at all never renders a tab for it — see ROLE_NOTIFICATION_KINDS.
+// This is a STATIC eligibility check, not a live "does it currently have any
+// items" check: a kind whose only source is live/transient (Admin's
+// Approval tab, fed by pending requests) must stay visible even once every
+// pending item is resolved, or the whole category becomes permanently
+// unreachable the moment its last live item is actioned) ---
 
 // The count rides in the Stat family's T4 `pill` tier. It stays tone-neutral:
 // category identity is already carried by the tab's coloured icon, and an
@@ -218,7 +223,7 @@ function FeedRow({ item, unread, menuOpen, onOpen, onToggleMenu, onMarkRead, onM
       {/* Unread status — a small red dot on the icon (no blue row wash / spine) */}
       <span className={`relative w-9 h-9 rounded-full flex items-center justify-center shrink-0 ring-1 ring-black/[0.03] ${style.chipBg}`}>
         <Icon className={`w-4 h-4 ${style.iconColor}`} />
-        {unread && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-info-ink ring-2 ring-surface" aria-hidden />}
+        {unread && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-[color:var(--phenome-blue-500)] ring-2 ring-surface" aria-hidden />}
       </span>
       <span className="flex-1 min-w-0">
         <span className={`text-sm block leading-snug ${unread ? "font-semibold text-ink" : "font-normal text-ink-soft"}`}>{item.text}</span>
@@ -329,7 +334,8 @@ export function NotificationsPage() {
     return counts;
   }, [allItems, readIds]);
 
-  const visibleKinds = KIND_FILTERS.filter((k) => k === "All" || kindCounts[k].total > 0);
+  const roleKinds = ROLE_NOTIFICATION_KINDS[role];
+  const visibleKinds = KIND_FILTERS.filter((k) => k === "All" || roleKinds.includes(k));
 
   const effectiveRange = datePreset === "Custom range" ? customRange : presetToRange(datePreset);
 
@@ -376,7 +382,7 @@ export function NotificationsPage() {
           <span className="relative w-11 h-11 rounded-card bg-[color:var(--phenome-blue-500)]/10 text-[color:var(--phenome-blue-500)] flex items-center justify-center shrink-0">
             <Bell className="w-5 h-5" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 flex items-center justify-center rounded-full bg-[color:var(--phenome-blue-400)] text-white text-label font-bold ring-2 ring-white tabular-nums">
+              <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 flex items-center justify-center rounded-full bg-[color:var(--phenome-blue-500)] text-white text-label font-bold ring-2 ring-white tabular-nums">
                 {unreadCount > 99 ? "99+" : unreadCount}
               </span>
             )}
@@ -385,8 +391,8 @@ export function NotificationsPage() {
             <h1 className={`${PAGE_TITLE_CLASS} leading-tight`}>Notifications</h1>
             <div className="mt-1">
               {unreadCount > 0 ? (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--phenome-blue-400)]/10 text-[color:var(--phenome-blue-400)] px-2.5 py-0.5 text-xs font-semibold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[color:var(--phenome-blue-400)]" />
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-[color:var(--phenome-blue-500)]/10 text-[color:var(--phenome-blue-500)] px-2.5 py-0.5 text-xs font-semibold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[color:var(--phenome-blue-500)]" />
                   {unreadCount} unread
                 </span>
               ) : (
@@ -407,87 +413,89 @@ export function NotificationsPage() {
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pt-4">
-        {/* L2 — Scope tabs (left) share one row + underline with the two
-            filters (right): category nav and its filters read as a single
-            control band, and the feed panel below starts clean. */}
-        <div className="border-b border-divider flex items-center justify-between gap-4">
-          <nav className="flex items-center gap-6 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {visibleKinds.map((k) => (
-              <ScopeTab
-                key={k}
-                label={k === "All" ? "All" : KIND_LABEL[k]}
-                icon={k === "All" ? Bell : KIND_STYLE[k].icon}
-                unread={kindCounts[k].unread}
-                active={kindFilter === k}
-                onClick={() => setKindFilter(k)}
+      <div className="flex-1 overflow-y-auto">
+        <div className="px-4 pt-4">
+          {/* L2 — Scope tabs (left) share one row + underline with the two
+              filters (right): category nav and its filters read as a single
+              control band, and the feed panel below starts clean. */}
+          <div className="border-b border-divider flex items-center justify-between gap-4">
+            <nav className="flex items-center gap-6 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {visibleKinds.map((k) => (
+                <ScopeTab
+                  key={k}
+                  label={k === "All" ? "All" : KIND_LABEL[k]}
+                  icon={k === "All" ? Bell : KIND_STYLE[k].icon}
+                  unread={kindCounts[k].unread}
+                  active={kindFilter === k}
+                  onClick={() => setKindFilter(k)}
+                />
+              ))}
+            </nav>
+            <div className="flex items-center gap-1 shrink-0">
+              <label className="flex items-center gap-2 h-11 px-1 text-sm text-ink-soft cursor-pointer select-none">
+                <ToggleSwitch checked={unreadOnly} onChange={() => setUnreadOnly((v) => !v)} />
+                Unread only
+              </label>
+              <DateFilterControl
+                preset={datePreset}
+                customRange={customRange}
+                onSelectPreset={setDatePreset}
+                onApplyCustom={(start, end) => { setCustomRange({ start, end }); setDatePreset("Custom range"); }}
               />
-            ))}
-          </nav>
-          <div className="flex items-center gap-1 shrink-0">
-            <label className="flex items-center gap-2 h-11 px-1 text-sm text-ink-soft cursor-pointer select-none">
-              <ToggleSwitch checked={unreadOnly} onChange={() => setUnreadOnly((v) => !v)} />
-              Unread only
-            </label>
-            <DateFilterControl
-              preset={datePreset}
-              customRange={customRange}
-              onSelectPreset={setDatePreset}
-              onApplyCustom={(start, end) => { setCustomRange({ start, end }); setDatePreset("Custom range"); }}
-            />
+            </div>
           </div>
         </div>
-      </div>
 
-      <div className="px-4 pb-4">
-        {/* Feed panel — a white surface on the pale page, matching the app's
-            card-on-surface-page pattern. */}
-        <div className="bg-surface rounded-card mt-4 px-4 pt-2 pb-2">
-        {/* L3 — Feed, grouped by day (filters now live in the tab row above) */}
-        {loading ? (
-          <div>{Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)}</div>
-        ) : allItems.length === 0 ? (
-          <EmptyState tone="positive" title="You're all caught up" subtitle="New notifications will appear here." />
-        ) : filtered.length === 0 ? (
-          <EmptyState
-            title={unreadOnly ? "No unread notifications in this period" : "No notifications match these filters"}
-            subtitle="Try a different category or date range."
-            action={<button onClick={clearFilters} className="text-sm font-medium text-ink-soft hover:text-ink underline">Clear filters</button>}
-          />
-        ) : (
-          <div>
-            {grouped.map((group) => (
-              <div key={group.label}>
-                <DayHeader label={group.label} count={group.items.length} />
-                {group.items.map((item) => {
-                  const unread = !readIds.has(item.id);
-                  return (
-                    <FeedRow
-                      key={item.id}
-                      item={item}
-                      unread={unread}
-                      menuOpen={menuOpenId === item.id}
-                      onOpen={() => openItem(item)}
-                      onToggleMenu={() => setMenuOpenId((v) => (v === item.id ? null : item.id))}
-                      onMarkRead={() => { markRead(item.id); setMenuOpenId(null); }}
-                      onMarkUnread={() => { markUnread(item.id); setMenuOpenId(null); }}
-                    />
-                  );
-                })}
-              </div>
-            ))}
-            {hasMore && (
-              <div className="flex justify-center pt-6">
-                <button
-                  onClick={() => setVisibleCount((v) => v + PAGE_SIZE)}
-                  className="px-4 py-2 rounded-control text-sm font-medium text-ink-soft border border-divider hover:bg-surface-hover transition-colors"
-                >
-                  Load more
-                </button>
-              </div>
-            )}
+        <div className="px-4 pb-4">
+          {/* Feed panel — a white surface on the pale page, matching the app's
+              card-on-surface-page pattern. */}
+          <div className="bg-surface rounded-card mt-4 px-4 pt-2 pb-2">
+          {/* L3 — Feed, grouped by day (filters now live in the tab row above) */}
+          {loading ? (
+            <div>{Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)}</div>
+          ) : allItems.length === 0 ? (
+            <EmptyState tone="positive" title="You're all caught up" subtitle="New notifications will appear here." />
+          ) : filtered.length === 0 ? (
+            <EmptyState
+              title={unreadOnly ? "No unread notifications in this period" : "No notifications match these filters"}
+              subtitle="Try a different category or date range."
+              action={<button onClick={clearFilters} className="text-sm font-medium text-ink-soft hover:text-ink underline">Clear filters</button>}
+            />
+          ) : (
+            <div>
+              {grouped.map((group) => (
+                <div key={group.label}>
+                  <DayHeader label={group.label} count={group.items.length} />
+                  {group.items.map((item) => {
+                    const unread = !readIds.has(item.id);
+                    return (
+                      <FeedRow
+                        key={item.id}
+                        item={item}
+                        unread={unread}
+                        menuOpen={menuOpenId === item.id}
+                        onOpen={() => openItem(item)}
+                        onToggleMenu={() => setMenuOpenId((v) => (v === item.id ? null : item.id))}
+                        onMarkRead={() => { markRead(item.id); setMenuOpenId(null); }}
+                        onMarkUnread={() => { markUnread(item.id); setMenuOpenId(null); }}
+                      />
+                    );
+                  })}
+                </div>
+              ))}
+              {hasMore && (
+                <div className="flex justify-center pt-6">
+                  <button
+                    onClick={() => setVisibleCount((v) => v + PAGE_SIZE)}
+                    className="px-4 py-2 rounded-control text-sm font-medium text-ink-soft border border-divider hover:bg-surface-hover transition-colors"
+                  >
+                    Load more
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
           </div>
-        )}
         </div>
       </div>
     </div>

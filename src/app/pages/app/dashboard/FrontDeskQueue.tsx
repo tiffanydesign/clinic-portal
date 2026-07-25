@@ -1,14 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { CreditCard, MapPin, XCircle, Clock, Stethoscope, LogIn } from "lucide-react";
+import { CreditCard, MapPin, XCircle, Stethoscope, LogIn } from "lucide-react";
 import { toast } from "sonner";
 import { Appt } from "./dashboardData";
 import { JourneyProgressChip } from "./journey/JourneyProgress";
 import { StartTransactionModal } from "../../../components/StartTransactionModal";
-import { Stat } from "../../../components/stat";
 import {
   QueueGroup, GROUP_LABEL, groupQueue, primaryActionFor,
-  consentOk, paymentOk, isLate, isReadOnlyInClinic,
+  consentOk, paymentOk, isReadOnlyInClinic,
 } from "./receptionDashboardData";
 import { markArrived, checkIn, recordPayment } from "./appointmentsStore";
 import { Modal } from "../../../components/ui/modal";
@@ -143,7 +142,6 @@ function QueueRow({ appt, readOnly, selected, onOpen, onMarkArrived }: {
   const navigate = useNavigate();
   const [transactionOpen, setTransactionOpen] = useState(false);
   const [confirmCheckIn, setConfirmCheckIn] = useState(false);
-  const late = isLate(appt);
   const rowRef = useRef<HTMLDivElement>(null);
 
   // When this row becomes the freshly-arrived selection (from Mark Arrived
@@ -168,12 +166,9 @@ function QueueRow({ appt, readOnly, selected, onOpen, onMarkArrived }: {
       }`}
     >
       <div className="flex items-start gap-3 min-w-0">
-        {/* Left: time — late is carried by the small clock glyph alone
-            (amber), not a separate LATE chip and not the time text itself,
-            which stays the row's normal ink colour either way. */}
+        {/* Left: time */}
         <div className="w-11 shrink-0 flex flex-col items-start pt-0.5">
-          <span className="inline-flex items-center gap-1 text-data font-bold tabular-nums text-ink-soft">
-            {late && <Clock className="w-3 h-3 shrink-0 text-warning-ink" />}
+          <span className="text-data font-bold tabular-nums text-ink-soft">
             {appt.timeLabel.slice(0, 5)}
           </span>
         </div>
@@ -292,20 +287,27 @@ function QueueList({ group, appts, unpaidOnly, selectedId, onOpen, onMarkArrived
   );
 }
 
-// Queue-group count rides in the Stat family's T4 `pill` tier, sitting to
-// the right of the label on the same line — the tab supplies the visible
-// label, the pill supplies the number. `min-w-0` + `truncate` on the label
-// span (missing in an earlier inline version, which is what let four tabs
-// force this ~320px column wider than its card) let the label itself clip
-// with an ellipsis under pressure instead of the row ever overflowing.
+// Equal-width columns (`flex-1`), not content-hugging — 4 tabs sharing one
+// ~300px row evenly, so the bar reads as one balanced segmented control
+// instead of a raggedly-sized cluster stuck to the left with dead space on
+// the right. Label rides at `text-micro` (11px, the smallest tier the type
+// scale has — the calendar's micro-pill tier, reused here for the same
+// reason: too much content competing for too little width). The count gets
+// its own tiny local pill rather than the shared Stat family's T4 `pill`
+// tier — that tier's 13px font + padding is tuned for its many other call
+// sites app-wide and isn't this tab bar's to shrink; `min-w-0` + `truncate`
+// on the label is the last-resort safety net if a label still can't fit.
 function QueueTab({ label, count, active, onClick }: { label: string; count: number; active: boolean; onClick: () => void }) {
   return (
     <button
       onClick={onClick}
-      className={`flex-1 min-w-0 px-2 py-1.5 rounded-control transition-all flex items-center justify-center gap-1.5 ${active ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted hover:text-ink-soft"}`}
+      className={`flex-1 min-w-0 px-1 py-0.5 rounded-control transition-all flex items-center justify-center gap-1 ${active ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted hover:text-ink-soft"}`}
     >
-      <span className="min-w-0 truncate text-label font-bold">{label}</span>
-      <Stat stat={{ id: `queue-${label}`, label, kind: "count", variant: "pill", value: String(count) }} />
+      <span className="min-w-0 truncate text-micro">{label}</span>
+      <span className="shrink-0 inline-flex items-center px-1 rounded-full text-micro font-bold tabular-nums bg-surface-hover text-ink-soft">
+        {count}
+        <span className="sr-only"> {label}</span>
+      </span>
     </button>
   );
 }
@@ -347,10 +349,12 @@ export function FrontDeskQueue({ appts, tab, onTabChange, unpaidOnly = false, on
     <div className="h-full rounded-card bg-surface flex flex-col">
       <div className="border-b border-divider shrink-0">
         <div className="h-11 px-4 flex items-center gap-2">
-          <h3 className="font-bold text-ink text-section">Front Desk Queue</h3>
+          <h3 className="font-bold text-ink text-data">Front Desk Queue</h3>
         </div>
-        <div className="px-3 pb-3">
-          <div className="flex bg-surface-hover p-0.5 rounded-card border border-divider">
+        <div className="px-1 pb-3">
+          {/* Single row, all 4 tabs at equal width (see QueueTab) — evenly
+              filling the bar rather than clustering to the left. */}
+          <div className="flex items-center gap-0.5 bg-surface-hover p-0.5 rounded-card border border-divider">
             {(["all", "needs-action", "upcoming", "in-clinic"] as QueueGroup[]).map((g) => (
               <QueueTab key={g} label={GROUP_LABEL[g]} count={grouped[g].length} active={tab === g} onClick={() => selectTab(g)} />
             ))}
