@@ -36,7 +36,7 @@ function DrawerShell({ title, subtitle, avatar, onClose, children, footer, banne
   return (
     <div className="fixed inset-0 z-40" role="dialog" aria-modal>
       <div className="absolute inset-0 bg-surface-sunken/20 backdrop-blur-[1px]" onClick={onClose} />
-      <div className="absolute top-0 right-0 h-full w-[500px] bg-surface border-l border-divider shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
+      <div className="absolute top-0 right-0 h-full w-[560px] bg-surface border-l border-divider shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
         <div className="px-5 py-4 border-b border-divider flex items-start justify-between shrink-0 bg-surface-page">
           {headerBody ?? (
             <div className="flex items-center gap-3 min-w-0">

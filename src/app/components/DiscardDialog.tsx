@@ -26,7 +26,8 @@ export function DiscardDialog({
 }) {
   return (
     <div
-      className="fixed inset-0 bg-surface-sunken/40 backdrop-blur-sm flex items-center justify-center z-[70] p-6"
+      className="fixed inset-0 flex items-center justify-center z-[70] p-6"
+      style={{ backgroundColor: "rgba(16,33,75,.35)" }}
       onClick={onKeepEditing}
     >
       <div
