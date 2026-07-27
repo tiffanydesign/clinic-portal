@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { getStaff } from "./staff/staffData";
 import { Input } from "../../components/ui/input";
 import { PageTitleIcon, PAGE_TITLE_CLASS } from "../../components/PageTitleIcon";
+import { Pagination, PAGE_SIZE } from "../../components/Pagination";
 
 // --- Types ---
 type Role = 'Clinician' | 'Nurse' | 'Receptionist';
@@ -142,6 +143,7 @@ export function TimesheetPage() {
   const [exportOpen, setExportOpen] = useState(false);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [dateRange, setDateRange] = useState({ start: new Date(2026, 6, 1), end: new Date(2026, 6, 7), preset: "This Week" });
+  const [page, setPage] = useState(1);
 
   const pickerRef = useRef<HTMLDivElement>(null);
   const exportRef = useRef<HTMLDivElement>(null);
@@ -162,6 +164,19 @@ export function TimesheetPage() {
   const nurses = ALL_STAFF.filter(s => s.role === 'Nurse' && s.name.toLowerCase().includes(search.toLowerCase()));
   const receptionists = ALL_STAFF.filter(s => s.role === 'Receptionist' && s.name.toLowerCase().includes(search.toLowerCase()));
   const selectedStaff = ALL_STAFF.filter(s => selectedIds.includes(s.id));
+
+  // Flattened per-day rows across every selected staff member — the real
+  // pagination unit for Daily view (a handful of staff over a real date
+  // range easily clears 20 rows, unlike the fixed 7-day mock week here).
+  const dailyRows = selectedStaff.flatMap(staff => staff.dailyRecords.map(rec => ({ staff, rec })));
+  const totalRows = view === 'Daily' ? dailyRows.length : selectedStaff.length;
+  const pageCount = Math.max(1, Math.ceil(totalRows / PAGE_SIZE));
+  const pagedDailyRows = dailyRows.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const pagedWeeklyStaff = selectedStaff.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // Filters/view changed underneath the current page — snap back to page 1
+  // rather than showing a stale/out-of-range page.
+  useEffect(() => { setPage(1); }, [view, selectedIds, dateRange]);
 
   const toggleStaff = (id: string) => {
     if (selectedIds.includes(id)) {
@@ -478,7 +493,7 @@ export function TimesheetPage() {
                   {view === 'Daily' ? (
                     <tr>
                       <th className="p-4 font-bold text-ink-soft border-b border-divider sticky left-0 z-30 bg-surface-page w-[200px] shadow-[1px_0_0_var(--border-strong)]">Staff</th>
-                      <th className="p-4 font-bold text-ink-soft border-b border-divider hover:bg-surface-hover cursor-pointer">Date</th>
+                      <th className="p-4 font-bold text-ink-soft border-b border-divider">Date</th>
                       <th className="p-4 font-bold text-ink-soft border-b border-divider">Schedule Type</th>
                       <th className="p-4 font-bold text-ink-soft border-b border-divider">Scheduled</th>
                       <th className="p-4 font-bold text-ink-soft border-b border-divider text-right">Sched. Hours</th>
@@ -508,9 +523,11 @@ export function TimesheetPage() {
                 </thead>
                 
                 <tbody className="divide-y divide-divider">
-                  {view === 'Daily' && selectedStaff.flatMap(staff => 
-                    staff.dailyRecords.map((rec, i) => {
-                      const isFirst = i === 0;
+                  {view === 'Daily' && pagedDailyRows.map(({ staff, rec }, i) => {
+                      // Recomputed against this page's slice (not the staff's
+                      // own record index) so identity still renders correctly
+                      // when a staff's block is split across a page boundary.
+                      const isFirst = i === 0 || pagedDailyRows[i - 1].staff.id !== staff.id;
                       let bgClass = "bg-surface";
                       if (rec.type === 'On Leave') bgClass = "bg-danger/10";
                       else if (rec.type === 'Day Off') bgClass = "bg-surface-hover";
@@ -569,10 +586,9 @@ export function TimesheetPage() {
                           <td className="p-4 text-ink-muted italic max-w-xs truncate" title={rec.notes}>{rec.notes}</td>
                         </tr>
                       );
-                    })
-                  )}
+                  })}
 
-                  {view === 'Weekly' && selectedStaff.map(staff => {
+                  {view === 'Weekly' && pagedWeeklyStaff.map(staff => {
                     const ws = staff.weeklySummary;
                     const varColor = ws.totalVariance > 0 ? "text-success-ink font-bold" : ws.totalVariance < 0 ? "text-danger-ink font-bold" : "text-ink-muted";
                     
@@ -614,16 +630,7 @@ export function TimesheetPage() {
             </div>
 
             {/* Footer / Pagination */}
-            <div className="h-12 border-t border-divider bg-surface-page flex items-center justify-between px-6 shrink-0">
-              <div className="text-xs text-ink-muted font-medium">
-                {view === 'Daily' ? `Showing 1–${selectedStaff.length * 7} of ${selectedStaff.length * 7} records` : `Showing 1–${selectedStaff.length} of ${selectedStaff.length} records`}
-              </div>
-              <div className="flex items-center space-x-1">
-                <button className="px-2 py-1 text-xs font-bold text-ink-muted hover:text-ink-soft border border-transparent hover:bg-surface-sunken rounded-control transition-colors" disabled>Previous</button>
-                <button className="px-2 py-1 text-xs font-bold text-ink-soft border border-divider bg-surface rounded-control shadow-sm">1</button>
-                <button className="px-2 py-1 text-xs font-bold text-ink-muted hover:text-ink-soft border border-transparent hover:bg-surface-sunken rounded-control transition-colors" disabled>Next</button>
-              </div>
-            </div>
+            <Pagination page={page} pageCount={pageCount} totalCount={totalRows} onPageChange={setPage} itemLabel="records" />
           </div>
         )}
       </div>

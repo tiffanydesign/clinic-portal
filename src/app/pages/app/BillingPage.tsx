@@ -1,13 +1,16 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router";
-import { Search, ChevronDown, Download, MoreHorizontal, FileText, ArrowRight, CreditCard, Ticket, RefreshCcw, Calendar as CalendarIcon, CheckCircle2, AlertCircle, X, Wallet, Clock, TrendingUp } from "lucide-react";
+import { Search, ChevronDown, Download, MoreHorizontal, FileText, ArrowRight, ArrowUpDown, CreditCard, Ticket, RefreshCcw, Calendar as CalendarIcon, CheckCircle2, AlertCircle, X, Wallet, Clock, TrendingUp } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useAppContext } from "../../context/AppContext";
 import { FilterSelect } from "../../components/FilterSelect";
-import { MOCK_BILLING_DATA as MOCK_DATA } from "./billingData";
+import { MOCK_BILLING_DATA as MOCK_DATA, type BillingRecord } from "./billingData";
 import { Input } from "../../components/ui/input";
 import { PageTitleIcon, PAGE_TITLE_CLASS } from "../../components/PageTitleIcon";
+import { Pagination, PAGE_SIZE } from "../../components/Pagination";
+
+type BillingSortKey = "patient" | "appt" | "clinician" | "amount" | "paid" | "date";
 
 const formatCurrency = (amount: number) => `₺${amount.toLocaleString()}`;
 
@@ -61,6 +64,18 @@ export function BillingPage() {
   const [exportOpen, setExportOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("Status: All");
   const [methodFilter, setMethodFilter] = useState("Method: All");
+  const [sortKey, setSortKey] = useState<BillingSortKey | null>(null);
+  const [sortAsc, setSortAsc] = useState(true);
+  const [page, setPage] = useState(1);
+
+  const toggleSort = (key: BillingSortKey) => {
+    if (sortKey === key) setSortAsc((a) => !a);
+    else { setSortKey(key); setSortAsc(true); }
+  };
+
+  const SortIcon = ({ column }: { column: BillingSortKey }) => (
+    <ArrowUpDown className={`w-3 h-3 ml-1 inline shrink-0 ${sortKey === column ? "text-ink-soft" : "text-ink-muted"}`} />
+  );
 
   const exportRef = useRef<HTMLDivElement>(null);
 
@@ -88,6 +103,22 @@ export function BillingPage() {
   const totalAmount = MOCK_DATA.reduce((sum, r) => sum + r.totalAmount, 0);
   const totalPaid = MOCK_DATA.reduce((sum, r) => sum + r.paidAmount, 0);
   const totalBalance = MOCK_DATA.reduce((sum, r) => sum + r.balance, 0);
+
+  const sorted: BillingRecord[] = sortKey ? [...MOCK_DATA].sort((a, b) => {
+    let cmp = 0;
+    switch (sortKey) {
+      case "patient": cmp = a.patientName.localeCompare(b.patientName); break;
+      case "appt": cmp = a.apptType.localeCompare(b.apptType); break;
+      case "clinician": cmp = a.clinician.localeCompare(b.clinician); break;
+      case "amount": cmp = a.totalAmount - b.totalAmount; break;
+      case "paid": cmp = a.paidAmount - b.paidAmount; break;
+      case "date": cmp = new Date(a.fullDate).getTime() - new Date(b.fullDate).getTime(); break;
+    }
+    return sortAsc ? cmp : -cmp;
+  }) : MOCK_DATA;
+
+  const pageCount = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const paged = sorted.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div className="flex flex-col min-h-full bg-surface-page">
@@ -187,22 +218,22 @@ export function BillingPage() {
             <table className="w-full text-left border-collapse text-sm [&_th]:!px-3 [&_td]:!px-3 [&_th]:!py-2.5 [&_td]:!py-2.5">
               <thead className="bg-surface-page sticky top-0 z-20 shadow-[0_1px_0_var(--border-strong)]">
                 <tr>
-                  <th className="p-4 font-bold text-ink-soft border-b border-divider sticky left-0 z-30 bg-surface-page w-[200px] shadow-[1px_0_0_var(--border-strong)] cursor-pointer hover:bg-surface-hover">Patient</th>
-                  <th className="p-4 font-bold text-ink-soft border-b border-divider cursor-pointer hover:bg-surface-hover w-[140px]">Appointment</th>
-                  <th className="p-4 font-bold text-ink-soft border-b border-divider cursor-pointer hover:bg-surface-hover w-[100px]">Clinician</th>
-                  <th className="p-4 font-bold text-ink-soft border-b border-divider text-right cursor-pointer hover:bg-surface-hover w-[90px]">Amount</th>
-                  <th className="p-4 font-bold text-ink-soft border-b border-divider text-right cursor-pointer hover:bg-surface-hover w-[90px]">Paid</th>
+                  <th onClick={() => toggleSort("patient")} className="p-4 font-bold text-ink-soft border-b border-divider sticky left-0 z-30 bg-surface-page w-[200px] shadow-[1px_0_0_var(--border-strong)] cursor-pointer hover:bg-surface-hover select-none">Patient<SortIcon column="patient" /></th>
+                  <th onClick={() => toggleSort("appt")} className="p-4 font-bold text-ink-soft border-b border-divider cursor-pointer hover:bg-surface-hover select-none w-[140px]">Appointment<SortIcon column="appt" /></th>
+                  <th onClick={() => toggleSort("clinician")} className="p-4 font-bold text-ink-soft border-b border-divider cursor-pointer hover:bg-surface-hover select-none w-[100px]">Clinician<SortIcon column="clinician" /></th>
+                  <th onClick={() => toggleSort("amount")} className="p-4 font-bold text-ink-soft border-b border-divider text-right cursor-pointer hover:bg-surface-hover select-none w-[90px]">Amount<SortIcon column="amount" /></th>
+                  <th onClick={() => toggleSort("paid")} className="p-4 font-bold text-ink-soft border-b border-divider text-right cursor-pointer hover:bg-surface-hover select-none w-[90px]">Paid<SortIcon column="paid" /></th>
                   <th className="p-4 font-bold text-ink-soft border-b border-divider w-[80px]">Voucher</th>
                   <th className="p-4 font-bold text-ink-soft border-b border-divider w-[110px]">Payment Status</th>
                   <th className="p-4 font-bold text-ink-soft border-b border-divider w-[90px]">Method</th>
                   <th className="p-4 font-bold text-ink-soft border-b border-divider w-[100px]">Transaction</th>
                   <th className="p-4 font-bold text-ink-soft border-b border-divider w-[70px] text-center">Invoice</th>
-                  <th className="p-4 font-bold text-ink-soft border-b border-divider cursor-pointer hover:bg-surface-hover w-[90px]">Date ▼</th>
+                  <th onClick={() => toggleSort("date")} className="p-4 font-bold text-ink-soft border-b border-divider cursor-pointer hover:bg-surface-hover select-none w-[90px]">Date<SortIcon column="date" /></th>
                   <th className="p-4 font-bold text-ink-soft border-b border-divider w-[60px] text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-divider">
-                {MOCK_DATA.map(rec => {
+                {paged.map(rec => {
                   const isSelected = selectedRecordId === rec.id;
 
                   let statusBg = "bg-surface-hover text-ink-soft border-divider";
@@ -293,14 +324,7 @@ export function BillingPage() {
           </div>
 
           {/* Footer / Pagination */}
-          <div className="h-12 border-t border-divider bg-surface flex items-center justify-between px-6 shrink-0">
-            <div className="text-xs text-ink-muted font-medium">Showing 1–8 of 89 records</div>
-            <div className="flex items-center space-x-1">
-              <button className="px-2 py-1 text-xs font-bold text-ink-muted hover:text-ink-soft border border-transparent hover:bg-surface-sunken rounded-control transition-colors" disabled>Previous</button>
-              <button className="px-2 py-1 text-xs font-bold text-ink-soft border border-divider bg-surface-page rounded-control shadow-sm">1</button>
-              <button className="px-2 py-1 text-xs font-bold text-ink-soft hover:text-ink border border-transparent hover:bg-surface-sunken rounded-control transition-colors">Next</button>
-            </div>
-          </div>
+          <Pagination page={page} pageCount={pageCount} totalCount={sorted.length} onPageChange={setPage} itemLabel="records" />
         </div>
 
         {/* Right Detail Panel (approx 380px) */}

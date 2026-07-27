@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import {
-  Search, ChevronDown, Download, Plus, FileText, Phone, Mail, UserPlus, X, Filter, Check, ArrowRight,
+  Search, ChevronDown, Download, Plus, FileText, Phone, Mail, UserPlus, X, Filter, Check, ArrowRight, ArrowUpDown,
   Users, UserCheck, UserX, Clock, CalendarCheck, CalendarClock, FlaskConical, Activity, Flag, AlertTriangle, Eye, type LucideIcon,
 } from "lucide-react";
+import { Pagination, PAGE_SIZE } from "../../components/Pagination";
 import { Stat, StatStripGroup, type StatIconTone } from "../../components/stat";
 import { toast } from "sonner";
 import { useAppContext, Role } from "../../context/AppContext";
@@ -93,6 +94,8 @@ export function PatientsPage() {
   // Clinician quick-filter driven by the KPI strip: clicking a stat card
   // ("Results to Review" / "Follow-ups Due") filters the table to those rows.
   const [quickFilter, setQuickFilter] = useState<null | "review" | "followup">(null);
+  const [sortAsc, setSortAsc] = useState<boolean | null>(null); // null = unsorted (registry order)
+  const [page, setPage] = useState(1);
 
   // Filters based on Role. Reads the live registry (not the static
   // MOCK_PATIENTS array) so a patient registered a second ago is immediately
@@ -118,6 +121,19 @@ export function PatientsPage() {
         : p.reviewStatus === 'Follow-up Due'
     );
   }
+
+  if (sortAsc !== null) {
+    patients = [...patients].sort((a, b) => sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name));
+  }
+
+  const pageCount = Math.max(1, Math.ceil(patients.length / PAGE_SIZE));
+  const pagePatients = patients.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // Filters changed underneath the current page — snap back to page 1 rather
+  // than showing a stale/out-of-range page.
+  React.useEffect(() => { setPage(1); }, [role, search, clinicianFilter, nurseFilter, quickFilter]);
+
+  const toggleSortName = () => setSortAsc((a) => (a === null ? true : a === true ? false : null));
 
   const toggleSelectAll = () => {
     if (selectedIds.size === patients.length) setSelectedIds(new Set());
@@ -289,7 +305,13 @@ export function PatientsPage() {
               <thead className="bg-surface-page sticky top-0 z-30 shadow-[0_1px_0_var(--border-strong)]">
                 <tr>
                   {role === 'Admin' && <th className="p-4 w-[40px] border-b border-divider sticky left-0 z-40 bg-surface-page shadow-[1px_0_0_var(--border-strong)]"><input type="checkbox" onChange={toggleSelectAll} checked={selectedIds.size === patients.length && patients.length > 0} className="rounded-control text-ink-soft focus:ring-info" /></th>}
-                  <th className={`p-4 font-bold text-ink-soft border-b border-divider sticky left-[${role==='Admin'?'40px':'0px'}] z-40 bg-surface-page w-[180px] shadow-[1px_0_0_var(--border-strong)] cursor-pointer hover:bg-surface-hover`}>Patient</th>
+                  <th
+                    onClick={toggleSortName}
+                    className={`p-4 font-bold text-ink-soft border-b border-divider sticky left-[${role==='Admin'?'40px':'0px'}] z-40 bg-surface-page w-[180px] shadow-[1px_0_0_var(--border-strong)] cursor-pointer hover:bg-surface-hover select-none`}
+                  >
+                    Patient
+                    <ArrowUpDown className={`w-3 h-3 ml-1 inline shrink-0 ${sortAsc !== null ? "text-ink-soft" : "text-ink-muted"}`} />
+                  </th>
                   
                   {role === 'Admin' && (
                     <>
@@ -363,7 +385,7 @@ export function PatientsPage() {
                       )}
                     </td>
                   </tr>
-                ) : patients.map(p => {
+                ) : pagePatients.map(p => {
                   const isSelected = selectedIds.has(p.id);
                   let rowBg = "bg-surface hover:bg-surface-hover";
                   if (isSelected) rowBg = "bg-surface-page";
@@ -538,14 +560,7 @@ export function PatientsPage() {
           
           {/* Footer / Pagination */}
           {patients.length > 0 && (
-            <div className="h-12 border-t border-divider bg-surface flex items-center justify-between px-4 shrink-0">
-              <div className="text-xs text-ink-muted font-medium">Showing 1–{patients.length} of {patients.length} patients</div>
-              <div className="flex items-center space-x-1">
-                <button className="px-2 py-1 text-xs font-bold text-ink-muted hover:text-ink-soft border border-transparent hover:bg-surface-sunken rounded-control transition-colors" disabled>Previous</button>
-                <button className="px-2 py-1 text-xs font-bold text-ink-soft border border-divider bg-surface-page rounded-control shadow-sm">1</button>
-                <button className="px-2 py-1 text-xs font-bold text-ink-soft hover:text-ink border border-transparent hover:bg-surface-sunken rounded-control transition-colors">Next</button>
-              </div>
-            </div>
+            <Pagination page={page} pageCount={pageCount} totalCount={patients.length} onPageChange={setPage} itemLabel="patients" />
           )}
         </div>
       </div>
