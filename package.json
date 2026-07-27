@@ -6,6 +6,7 @@
   "scripts": {
     "build": "vite build",
     "build:official": "cross-env VITE_DEMO_BUILD=false vite build",
+    "build:pages": "cross-env GITHUB_PAGES=1 vite build && node scripts/copy-404.mjs",
     "dev": "vite",
     "typecheck": "tsc --noEmit",
     "audit:tokens": "node scripts/audit-tokens.mjs",
