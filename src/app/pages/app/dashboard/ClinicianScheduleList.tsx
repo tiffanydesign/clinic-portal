@@ -28,8 +28,13 @@ function clinicianDotClass(status: ApptStatus): string {
   if (status === "No Show") return "bg-danger";
   return "bg-ink-muted/50";
 }
-function clinicianPillType(status: ApptStatus): "default" | "error" {
-  return status === "No Show" ? "error" : "default";
+// Arrived earns success green — the patient is physically here, which is the
+// one routine state that changes what the nurse does next. Everything else
+// still reads as plain grey; red stays reserved for No Show.
+function clinicianPillType(status: ApptStatus): "default" | "error" | "success" {
+  if (status === "No Show") return "error";
+  if (status === "Arrived") return "success";
+  return "default";
 }
 function clinicianBlockClass(status: ApptStatus): string {
   if (status === "In Clinic") return "bg-info/10 border border-info/30";
@@ -85,30 +90,41 @@ function ScheduleRow({ appt, isActive, hasActiveSession, onOpen, onJoin }: {
   onJoin: (id: string) => void;
 }) {
   const settled = appt.status === "Completed" || appt.status === "Cancelled" || appt.status === "No Show";
+
+  // One grid, four tracks — time · dot · detail · status — so the times and
+  // the status pills each line up in their own column all the way down the
+  // list, instead of every row negotiating its own flex widths. The active
+  // row keeps a blue left rule so "who is in the room right now" is findable
+  // without scanning the pills.
   return (
     <div
       onClick={() => onOpen(appt.id)}
-      className={`px-4 py-3 cursor-pointer transition-colors ${isActive ? "bg-info/5 hover:bg-info/5" : "hover:bg-surface-hover"}`}
+      className={`grid grid-cols-[42px_8px_minmax(0,1fr)_auto] items-center gap-x-2.5 px-4 py-2.5 cursor-pointer transition-colors border-l-[3px] ${
+        isActive ? "bg-info/5 hover:bg-info/5 border-l-info-fill" : "border-l-transparent hover:bg-surface-hover"
+      }`}
     >
-      <div className="flex items-center gap-3">
-        <span className="text-xs font-bold text-ink-muted w-11 shrink-0 tabular-nums">{appt.timeLabel.slice(0, 5)}</span>
-        <span className={`w-2 h-2 rounded-full shrink-0 ${clinicianDotClass(appt.status)}`} />
-        <div className={`min-w-0 flex-1 ${settled ? "opacity-60" : ""}`}>
-          <div className={`text-data font-bold text-ink truncate ${appt.status === "Completed" ? "line-through" : ""}`}>{appt.patient.name}</div>
-          <div className="text-xs text-ink-muted flex items-center gap-1 truncate">
-            {appt.isVideo ? <Video className="w-3 h-3 shrink-0" /> : <MapPin className="w-3 h-3 shrink-0" />}
-            {typeLabel(appt)}
-          </div>
+      <span className={`text-xs font-bold tabular-nums ${isActive ? "text-info-ink" : "text-ink-muted"}`}>
+        {appt.timeLabel.slice(0, 5)}
+      </span>
+      <span className={`w-2 h-2 rounded-full ${clinicianDotClass(appt.status)}`} />
+      <div className={`min-w-0 ${settled ? "opacity-60" : ""}`}>
+        <div className={`text-data font-bold text-ink truncate ${appt.status === "Completed" ? "line-through" : ""}`}>{appt.patient.name}</div>
+        <div className="text-xs text-ink-muted flex items-center gap-1 truncate">
+          {appt.isVideo ? <Video className="w-3 h-3 shrink-0" /> : <MapPin className="w-3 h-3 shrink-0" />}
+          {typeLabel(appt)}
         </div>
-        {/* Non-active statuses are compact (pill / Join button) so they sit
-            fine at the row's end. The active-session chip's text length
-            varies with the journey's station name, so it gets its own line
-            below instead of fighting the name for the same row's width. */}
-        {!isActive && <StatusCell appt={appt} isActive={isActive} hasActiveSession={hasActiveSession} onJoin={onJoin} />}
       </div>
+      {isActive
+        ? <StatusPill status="In progress" type="info" />
+        : <StatusCell appt={appt} isActive={false} hasActiveSession={hasActiveSession} onJoin={onJoin} />}
+
+      {/* The active row's journey chip grows with the station name, so it
+          takes its own grid row spanning the detail AND status columns.
+          Nested inside the detail column it was competing with the pill for
+          width and got truncated mid-station-name. */}
       {isActive && (
-        <div className="pl-[76px] mt-1">
-          <StatusCell appt={appt} isActive={isActive} hasActiveSession={hasActiveSession} onJoin={onJoin} />
+        <div className="col-start-3 col-span-2 min-w-0 mt-0.5">
+          <StatusCell appt={appt} isActive hasActiveSession={hasActiveSession} onJoin={onJoin} />
         </div>
       )}
     </div>
@@ -141,7 +157,7 @@ function ScheduleListView({ appts, activeApptId, hasActiveSession, onOpen, onJoi
   const nowDividerIndex = sorted.findIndex((a) => a.startMin > NOW_MINUTES);
 
   return (
-    <div className={`divide-y divide-divider ${scrollable ? "flex-1 overflow-y-auto" : ""}`}>
+    <div className={`divide-y divide-divider ${scrollable ? "grow basis-0 min-h-0 overflow-y-auto" : ""}`}>
       {sorted.map((appt, i) => (
         <React.Fragment key={appt.id}>
           {i === nowDividerIndex && <NowDivider />}
@@ -201,7 +217,7 @@ function ScheduleCalendarView({ appts, activeApptId, onOpen, scrollable }: {
   const sorted = [...appts].sort((a, b) => a.startMin - b.startMin);
 
   return (
-    <div className={scrollable ? "flex-1 overflow-y-auto" : ""}>
+    <div className={scrollable ? "grow basis-0 min-h-0 overflow-y-auto" : ""}>
       <div className="flex" style={{ height: gridHeight }}>
         <div className="w-14 shrink-0 relative border-r border-divider bg-surface-page/30">
           {hours.map((h, i) => i % 2 === 1 && (
@@ -281,7 +297,19 @@ export function ClinicianScheduleList({ appts, activeApptId, hasActiveSession, o
   const [view, setView] = useState<ScheduleView>("list");
 
   return (
-    <div className={`border border-divider rounded-card shadow-sm bg-surface flex flex-col ${scrollable ? "flex-1 min-h-0" : "shrink-0"}`}>
+    // `grow basis-0`, not `flex-1`: flex-1's `flex-basis: 0%` resolves back to
+    // the item's CONTENT height whenever the flex container's own height is
+    // indefinite — which is exactly the case on the Nurse Dashboard, where the
+    // page has no fixed height. That made a ten-row day push the whole rail
+    // (and with it the page) taller instead of scrolling inside this card.
+    // `basis-0` is a definite length, so the card contributes nothing to the
+    // column's natural height and simply fills whatever the column is given.
+    // min-h-[260px] is a floor, not a size: on a short day the column it
+    // lives in can shrink to the point where the list would show two rows
+    // and a scrollbar, which is worse than no list at all. The floor keeps
+    // roughly four rows visible and is the one thing here that DOES feed
+    // back into the column's height.
+    <div className={`border border-divider rounded-card shadow-sm bg-surface flex flex-col ${scrollable ? "grow basis-0 min-h-[260px]" : "shrink-0"}`}>
       <div
         onClick={() => navigate("/calendar/schedule")}
         role="button"

@@ -11,7 +11,6 @@ import { useJourneyEngine } from "./journey/useJourneyEngine";
 import { PatientJourneyCard, EmptyJourney } from "./journey/PatientJourneyCard";
 import { AppointmentDrawer } from "./AppointmentDrawer";
 import { ClinicianScheduleList } from "./ClinicianScheduleList";
-import { UpNextPanel } from "./UpNextPanel";
 import { MyPatientsTodayCard } from "./MyPatientsTodayCard";
 import { nurseCheckOutByName, nurseMarkPatientArrived, useAppointments } from "./appointmentsStore";
 import { NURSE_SELF_NAME } from "../calendar/scheduleData";
@@ -152,11 +151,12 @@ export function NurseDashboardPage() {
   };
 
   return (
-    // No forced page height anywhere — the whole page scrolls as a unit, and
-    // neither column is stretched to match the other's height (plain
-    // `items-start`): each card now simply sizes to its own natural content,
-    // including Today's Schedule which renders the full day inline with no
-    // nested scrollbar of its own (see ClinicianScheduleList's `scrollable`).
+    // The two columns are stretched to a common height (`items-stretch`) so
+    // the rail's bottom edge lands on the journey card's, instead of the two
+    // ending at unrelated heights. The journey card is what sets that height:
+    // Today's Schedule is `flex-1 min-h-0`, i.e. flex-basis 0, so its own row
+    // count contributes nothing to the column's natural height and the full
+    // day scrolls inside the card rather than pushing the page down.
     <div className="bg-surface-page">
       <div className="px-4 pt-6">
         <div className="flex items-start justify-between gap-4 mb-3">
@@ -170,7 +170,7 @@ export function NurseDashboardPage() {
         </div>
       </div>
 
-      <div className="flex items-start gap-5 px-4 py-4">
+      <div className="flex items-stretch gap-5 px-4 py-4">
         <div className="flex-1 min-w-0">
           {identity ? (
             <PatientJourneySection
@@ -192,16 +192,22 @@ export function NurseDashboardPage() {
           )}
         </div>
 
-        <div className="w-[396px] shrink-0 flex flex-col gap-5">
-          <MyPatientsTodayCard scheduled={upNext.length} inProgress={identity ? 1 : 0} done={completedToday.length} />
-          <UpNextPanel queue={upNext} completed={completedToday} locked={locked} onStart={handleStartNext} />
+        <div className="w-[396px] shrink-0 flex flex-col gap-5 min-h-0">
+          <MyPatientsTodayCard
+            scheduled={upNext.length}
+            inProgress={identity ? 1 : 0}
+            done={completedToday.length}
+            next={upNext[0] ?? null}
+            locked={locked}
+            onStart={handleStartNext}
+            completed={completedToday}
+          />
           <ClinicianScheduleList
             appts={nurseAppts}
             activeApptId={identity ? nurseAppts.find((a) => a.patient.name === identity.name)?.id : undefined}
             hasActiveSession={false}
             onOpen={(id) => navigate(`/dashboard/appointment/${id}`)}
             onJoin={() => {}}
-            scrollable={false}
           />
         </div>
       </div>
