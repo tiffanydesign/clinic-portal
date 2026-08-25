@@ -7,6 +7,7 @@
 // the rail cards (schedule, queue, completed).
 
 import { NOW_MINUTES } from "./dashboardData";
+import { currentStep } from "./journey/journeyEngine";
 import type { JourneyEntries } from "./journey/journeyEngine";
 
 export type PatientIdentity = {
@@ -121,7 +122,7 @@ export function nextUpcomingAppointment(schedule: ScheduleItem[]): { name: strin
 // the shared dashboardData.ts NOW_MINUTES stays untouched (other roles'
 // pages read it too); only this page's own `clock` shifts per scenario.
 
-export type DemoMoment = "day-start" | "mid-shift" | "day-wrap";
+export type DemoMoment = "day-start" | "handoff" | "mid-shift" | "day-wrap";
 
 export type NurseDemoScenario = {
   label: string;
@@ -145,11 +146,35 @@ const DAY_START_SCHEDULE: ScheduleItem[] = [
   { time: "14:30", name: "Defne Korkut", type: "Body Scan", doctor: "Dr. Ebru Reis", room: "Room 3", duration: "90 min", status: "upcoming" },
 ];
 
+// No patient is mid-visit in these scenarios, so no schedule row may still
+// read "in progress" — same normalization the live checkout applies.
+function withoutInProgress(schedule: ScheduleItem[]): ScheduleItem[] {
+  return schedule.map((item) => (item.status === "in-progress" ? { ...item, status: "upcoming" as ScheduleStatus } : item));
+}
+
+// The handoff beat between two patients: Ece's visit has just been checked
+// out, so the journey card sits on its "Patient Checked Out" screen while
+// Up Next's Start button has this second come back to life for Hakan. Her
+// package skipped Machine 2 and the second draw, which is what lets the
+// whole visit close inside the 08:00-09:31 block.
+const HANDOFF_ENTRIES: JourneyEntries = {
+  signed: { at: 480 },
+  pickup: { at: 484 },
+  changing: { enter: 485, exit: 489 },
+  "arrived-room": { at: 490 },
+  scan1: { enter: 491, exit: 504 },
+  scan2: { enter: 506, exit: 517 },
+  machine1: { enter: 519, exit: 543 },
+  machine2: { skipped: true, reason: "Not applicable for this package" },
+  sample1: { enter: 545, exit: 552 },
+  sample2: { skipped: true, reason: "Not applicable for this package" },
+  consult: { enter: 554, exit: 570 },
+  checkout: { at: 571 },
+};
+
 // End of shift: everyone assigned today has been checked out, so no
 // schedule row should still read "in progress".
-const DAY_WRAP_SCHEDULE: ScheduleItem[] = INITIAL_SCHEDULE.map((item) =>
-  item.status === "in-progress" ? { ...item, status: "upcoming" as ScheduleStatus } : item
-);
+const DAY_WRAP_SCHEDULE: ScheduleItem[] = withoutInProgress(INITIAL_SCHEDULE);
 const DAY_WRAP_COMPLETED: CompletedItem[] = [
   { name: "Ceyda Aksu", type: "Consultation", time: "07:40" },
   { name: "Emir Tekin", type: "Body Scan", time: "07:55" },
@@ -157,6 +182,14 @@ const DAY_WRAP_COMPLETED: CompletedItem[] = [
   { name: "Ece Yıldırım", type: "Body Scan", time: "09:20" },
   { name: "Hakan Bulut", type: "Consultation", time: "10:05" },
 ];
+
+// Up Next stays locked only while the patient on screen still has a live
+// journey. A checked-out patient keeps the card (that's the "Patient Checked
+// Out" screen) but no longer holds the queue, so the Start button is already
+// lit when the scenario loads — no post-mount flicker from disabled to lit.
+export function isQueueLocked(scenario: NurseDemoScenario): boolean {
+  return !!scenario.patient && currentStep(scenario.entries).mode !== "done";
+}
 
 export const NURSE_DEMO_SCENARIOS: Record<DemoMoment, NurseDemoScenario> = {
   "day-start": {
@@ -167,6 +200,18 @@ export const NURSE_DEMO_SCENARIOS: Record<DemoMoment, NurseDemoScenario> = {
     schedule: DAY_START_SCHEDULE,
     upNext: [],
     completedToday: [],
+  },
+  handoff: {
+    label: "Handoff",
+    patient: INITIAL_PATIENT,
+    entries: HANDOFF_ENTRIES,
+    clock: 573, // 09:33, two minutes past Ece's 09:31 check-out
+    schedule: withoutInProgress(INITIAL_SCHEDULE),
+    upNext: INITIAL_UP_NEXT,
+    // Ece is deliberately absent here: the journey card reports her own
+    // check-out as it mounts (PatientJourneySection's onComplete), which
+    // prepends her to this list exactly as a live checkout would.
+    completedToday: INITIAL_COMPLETED_TODAY,
   },
   "mid-shift": {
     label: "Mid-Shift",

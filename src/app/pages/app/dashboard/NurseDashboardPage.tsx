@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { getAppt, TODAY_LABEL, ROLE_GREETING } from "./dashboardData";
 import {
   PatientIdentity, ScheduleItem, QueueItem, CompletedItem, DemoMoment,
-  NURSE_DEMO_SCENARIOS, nextUpcomingAppointment, buildPatientFromQueueItem,
+  NURSE_DEMO_SCENARIOS, nextUpcomingAppointment, buildPatientFromQueueItem, isQueueLocked,
 } from "./nurseDashboardData";
 import type { JourneyEntries } from "./journey/journeyEngine";
 import { useJourneyEngine } from "./journey/useJourneyEngine";
@@ -16,7 +16,7 @@ import { nurseCheckOutByName, nurseMarkPatientArrived, useAppointments } from ".
 import { NURSE_SELF_NAME } from "../calendar/scheduleData";
 import { PAGE_TITLE_CLASS } from "../../../components/PageTitleIcon";
 
-const DEMO_MOMENTS: DemoMoment[] = ["day-start", "mid-shift", "day-wrap"];
+const DEMO_MOMENTS: DemoMoment[] = ["day-start", "handoff", "mid-shift", "day-wrap"];
 
 // QA/demo-only toggle: swaps which mock scenario the page initializes from,
 // so all three "no active patient" states are reachable without editing
@@ -98,7 +98,7 @@ export function NurseDashboardPage() {
   const [identity, setIdentity] = useState<PatientIdentity | null>(initialScenario.patient);
   const [entries, setEntries] = useState<JourneyEntries>(initialScenario.entries);
   const [clock, setClock] = useState(initialScenario.clock);
-  const [locked, setLocked] = useState(!!initialScenario.patient); // Up Next stays locked while a patient's journey is active
+  const [locked, setLocked] = useState(isQueueLocked(initialScenario)); // Up Next stays locked while a patient's journey is active
 
   const [schedule, setSchedule] = useState<ScheduleItem[]>(initialScenario.schedule);
   const [upNext, setUpNext] = useState<QueueItem[]>(initialScenario.upNext);
@@ -110,7 +110,7 @@ export function NurseDashboardPage() {
     setIdentity(scenario.patient);
     setEntries(scenario.entries);
     setClock(scenario.clock);
-    setLocked(!!scenario.patient);
+    setLocked(isQueueLocked(scenario));
     setSchedule(scenario.schedule);
     setUpNext(scenario.upNext);
     setCompletedToday(scenario.completedToday);
@@ -193,9 +193,13 @@ export function NurseDashboardPage() {
         </div>
 
         <div className="w-[396px] shrink-0 flex flex-col gap-5 min-h-0">
+          {/* Both the "In progress" counter and the schedule's active row are
+              keyed off `locked` rather than `identity`: after a check-out the
+              patient stays on the journey card (that's its "Patient Checked
+              Out" screen) but is no longer a patient in progress. */}
           <MyPatientsTodayCard
             scheduled={upNext.length}
-            inProgress={identity ? 1 : 0}
+            inProgress={locked ? 1 : 0}
             done={completedToday.length}
             next={upNext[0] ?? null}
             locked={locked}
@@ -204,7 +208,7 @@ export function NurseDashboardPage() {
           />
           <ClinicianScheduleList
             appts={nurseAppts}
-            activeApptId={identity ? nurseAppts.find((a) => a.patient.name === identity.name)?.id : undefined}
+            activeApptId={locked && identity ? nurseAppts.find((a) => a.patient.name === identity.name)?.id : undefined}
             hasActiveSession={false}
             onOpen={(id) => navigate(`/dashboard/appointment/${id}`)}
             onJoin={() => {}}
