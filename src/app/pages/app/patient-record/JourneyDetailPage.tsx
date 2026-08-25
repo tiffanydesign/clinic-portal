@@ -5,12 +5,47 @@ import { toast } from "sonner";
 import { usePatientOutletContext } from "./PatientRecordLayout";
 import { JourneyStep, journeyStatusPillType, journeyProgress } from "./patientRecordData";
 import { StatusPill } from "../dashboard/DashboardShared";
+import { JOURNEY_TONE, recordStepState, waitPillClass } from "../dashboard/journey/journeyStatus";
+import { WAIT_SLA_MIN } from "../dashboard/journey/journeyEngine";
 
+// Same status vocabulary as the Nurse Dashboard's stepper and the Journeys
+// tab's station bar (journeyStatus.ts): green done, blue in progress, gray
+// for everything not yet started.
+//
+// The previous version painted white icons onto bg-surface-sunken for both
+// In Progress and Skipped — white on a near-white fill, invisible in
+// practice — and gave the active step a gray ring where every other surface
+// gives it blue.
 function StepIcon({ status }: { status: JourneyStep["status"] }) {
-  if (status === "Completed") return <div className="w-8 h-8 rounded-full bg-success-ink flex items-center justify-center shrink-0"><Check className="w-4 h-4 text-white" /></div>;
-  if (status === "In Progress") return <div className="w-8 h-8 rounded-full bg-surface-sunken ring-4 ring-divider flex items-center justify-center shrink-0 animate-pulse"><Clock className="w-4 h-4 text-white" /></div>;
-  if (status === "Skipped") return <div className="w-8 h-8 rounded-full bg-surface-sunken flex items-center justify-center shrink-0"><SkipForward className="w-4 h-4 text-white" /></div>;
-  return <div className="w-8 h-8 rounded-full border-2 border-divider bg-surface flex items-center justify-center shrink-0"><Circle className="w-3 h-3 text-ink-muted" /></div>;
+  if (status === "Completed") {
+    return (
+      <div className="w-8 h-8 rounded-full bg-success-fill text-white flex items-center justify-center shrink-0">
+        <Check className="w-4 h-4" strokeWidth={3} />
+      </div>
+    );
+  }
+  if (status === "In Progress") {
+    return (
+      <div className="relative w-8 h-8 shrink-0 flex items-center justify-center">
+        <div className="absolute inset-0 rounded-full bg-info/25 motion-safe:animate-ping" />
+        <div className="relative w-8 h-8 rounded-full bg-surface border-2 border-info-fill text-info-ink flex items-center justify-center">
+          <Clock className="w-4 h-4" />
+        </div>
+      </div>
+    );
+  }
+  if (status === "Skipped") {
+    return (
+      <div className="w-8 h-8 rounded-full bg-surface-hover border-[1.5px] border-border-strong text-ink-muted flex items-center justify-center shrink-0">
+        <SkipForward className="w-4 h-4" />
+      </div>
+    );
+  }
+  return (
+    <div className="w-8 h-8 shrink-0 flex items-center justify-center">
+      <div className="w-3 h-3 rounded-full bg-surface-sunken border border-border-strong" />
+    </div>
+  );
 }
 
 function StepNode({ step, isLast, nurseControls, onMarkStarted, onMarkComplete, onSkip }: {
@@ -19,24 +54,34 @@ function StepNode({ step, isLast, nurseControls, onMarkStarted, onMarkComplete, 
 }) {
   const [expanded, setExpanded] = useState(step.status === "In Progress");
   const [note, setNote] = useState("");
-  const muted = step.status === "Pending" || step.status === "Skipped";
+  const tone = JOURNEY_TONE[recordStepState(step.status)];
 
   return (
     <div className="flex gap-4">
       <div className="flex flex-col items-center">
         <StepIcon status={step.status} />
-        {!isLast && <div className={`w-0.5 flex-1 min-h-[24px] ${step.status === "Completed" ? "bg-success" : "bg-surface-sunken"}`} />}
+        {/* Trail, not state: the leg below a node is only travelled once that
+            step is done, so an in-progress step's leg stays gray. */}
+        {!isLast && <div className={`w-0.5 flex-1 min-h-[24px] rounded-full ${step.status === "Completed" ? "bg-success-fill" : "bg-surface-sunken"}`} />}
       </div>
       <div className="flex-1 pb-6 min-w-0">
         <button onClick={() => setExpanded((e) => !e)} className="w-full text-left">
           <div className="flex items-center justify-between gap-2">
-            <span className={`text-sm font-bold ${muted ? "text-ink-muted" : "text-ink"}`}>{step.name}</span>
-            <span className="text-xs font-medium text-ink-muted shrink-0">{step.status}</span>
+            <span className={`text-sm ${tone.label}`}>{step.name}</span>
+            <span
+              className={`shrink-0 inline-flex items-center gap-1.5 text-label font-bold rounded-full px-2 py-0.5 ${tone.chip}`}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${tone.chipDot}`} />
+              {step.status}
+            </span>
           </div>
           {step.status === "Skipped" && step.skipReason && <div className="text-xs text-ink-muted mt-0.5">{step.skipReason}</div>}
           {step.at && <div className="text-xs text-ink-muted mt-0.5">{step.by} · {step.at}</div>}
+          {/* A one-minute walk between rooms is routine, not a problem. Only
+              a wait past WAIT_SLA_MIN escalates to warning colour — same rule
+              the Nurse Dashboard's timeline applies. */}
           {step.waitedMin != null && step.waitedMin > 0 && (
-            <span className="inline-flex items-center text-label font-bold text-warning-ink bg-warning/10 border border-warning/30 rounded-control px-1.5 py-0.5 mt-1">
+            <span className={`inline-flex items-center text-label font-bold rounded-control px-1.5 py-0.5 mt-1 ${waitPillClass(step.waitedMin > WAIT_SLA_MIN)}`}>
               Waited {step.waitedMin} min
             </span>
           )}
@@ -119,11 +164,23 @@ export function JourneyDetailPage() {
         <h2 className="text-xl font-bold text-ink">{journey.name}</h2>
         <StatusPill status={journey.status} type={journeyStatusPillType(journey.status)} />
       </div>
+      {/* One segment per step, coloured by that step's own state — the same
+          bar the Nurse Dashboard and the Journeys tab draw. A single
+          gray-filled percentage bar told you how far along without telling
+          you whether anything was actually running. */}
       <div className="flex items-center gap-3 mb-8">
-        <div className="flex-1 h-2 bg-surface-hover rounded-full overflow-hidden">
-          <div className="h-full bg-ink-muted rounded-full" style={{ width: `${total === 0 ? 0 : Math.round((done / total) * 100)}%` }} />
+        <div className="flex gap-1 flex-1 min-w-0">
+          {steps.map((s, i) => {
+            const state = recordStepState(s.status);
+            return (
+              <div
+                key={`${s.name}-${i}`}
+                className={`flex-1 h-2 rounded-full ${JOURNEY_TONE[state].bar} ${state === "prog" ? "motion-safe:animate-pulse" : ""}`}
+              />
+            );
+          })}
         </div>
-        <span className="text-xs font-bold text-ink-muted shrink-0">{done}/{total} steps</span>
+        <span className="text-xs font-bold text-ink-muted shrink-0 tabular-nums">{done}/{total} steps</span>
       </div>
 
       {!nurseControls && (

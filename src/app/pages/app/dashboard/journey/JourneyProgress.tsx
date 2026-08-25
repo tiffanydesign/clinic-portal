@@ -3,6 +3,7 @@ import { Check } from "lucide-react";
 import { Appt } from "../dashboardData";
 import { journeyStepsFor, journeyChipInfo } from "./journeyTemplates";
 import { journeyTimingCaption } from "../AppointmentDrawerShared";
+import { JOURNEY_TONE } from "./journeyStatus";
 
 // The two read-only densities of the unified Journey Progress system (see
 // journeyTemplates.ts for the shared station model). `timeline` is not a
@@ -59,7 +60,7 @@ export function JourneyProgressStrip({ steps, current, isDone, caption, onOpen, 
     >
       <div className="flex items-center gap-3 min-h-11">
         <div className="flex items-center gap-1 min-w-0 flex-1 text-xs text-ink-muted font-semibold truncate">
-          <Check className="w-3 h-3 text-success-ink shrink-0" />
+          <Check className="w-3 h-3 text-success-ink shrink-0" strokeWidth={3} />
           <span className="truncate">{isDone ? steps[steps.length - 1] : prevName}</span>
         </div>
 
@@ -80,20 +81,24 @@ export function JourneyProgressStrip({ steps, current, isDone, caption, onOpen, 
           {!isDone && (
             <>
               <span className="truncate">{nextName}</span>
-              <span className="w-1.5 h-1.5 rounded-full border border-divider shrink-0" />
+              <span className="w-1.5 h-1.5 rounded-full bg-surface-sunken border border-border-strong shrink-0" />
             </>
           )}
         </div>
       </div>
 
       <div className="flex items-center gap-2 mt-1.5">
-        <div className="flex-1 h-1 bg-surface-hover rounded-full overflow-hidden">
-          {/* Same status colors as the text above it: emerald once done,
-              blue while a step is actively in progress — not a fixed gray
-              regardless of where the journey actually stands. */}
-          <div className={`h-full rounded-full transition-all ${isDone ? "bg-success" : "bg-info"}`} style={{ width: `${pct}%` }} />
+        {/* Track and fill both come from the one journey vocabulary: the
+            unrun remainder is the same gray as an unstarted stepper node,
+            the fill is success once the visit is closed and info blue while
+            it is still running. */}
+        <div className={`flex-1 h-1 rounded-full overflow-hidden ${JOURNEY_TONE.up.bar}`}>
+          <div
+            className={`h-full rounded-full transition-all ${isDone ? JOURNEY_TONE.done.bar : JOURNEY_TONE.prog.bar}`}
+            style={{ width: `${pct}%` }}
+          />
         </div>
-        <span className="text-label font-bold text-ink-muted shrink-0">{x} of {steps.length}</span>
+        <span className="text-label font-bold text-ink-muted shrink-0 tabular-nums">{x} of {steps.length}</span>
       </div>
     </Wrapper>
   );

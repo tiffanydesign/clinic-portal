@@ -4,22 +4,7 @@ import { LayoutGrid, List } from "lucide-react";
 import { usePatientOutletContext } from "./PatientRecordLayout";
 import { Journey, journeyStatusPillType, journeyProgress } from "./patientRecordData";
 import { StatusPill } from "../dashboard/DashboardShared";
-import { JourneyProgressStrip } from "../dashboard/journey/JourneyProgress";
-
-// Adapts patientRecordData.ts's own Journey/JourneyStep model (a separate
-// shape from dashboard/journey's Appt-based model — see JourneyDetailPage.tsx
-// for why) into the strip's plain steps/current/isDone/caption contract.
-function journeyStripProps(journey: Journey) {
-  const { currentIndex } = journeyProgress(journey);
-  const current = journey.steps[currentIndex];
-  const captionParts = current ? [current.status, current.by, current.at].filter(Boolean) : [];
-  return {
-    steps: journey.steps.map((s) => s.name),
-    current: currentIndex,
-    isDone: journey.status === "Completed",
-    caption: captionParts.length > 0 ? captionParts.join(" · ") : undefined,
-  };
-}
+import { JourneyStationBar, journeyTally } from "./JourneyStationBar";
 
 function ProgressBar({ done, total }: { done: number; total: number }) {
   const pct = total === 0 ? 0 : Math.round((done / total) * 100);
@@ -33,28 +18,46 @@ function ProgressBar({ done, total }: { done: number; total: number }) {
   );
 }
 
-// Same unified stepper used on every dashboard card and drawer — done/
-// current/next for this journey's full step list, not just a bare % bar, so
-// "where is this patient right now" reads the same way everywhere it's asked.
-function JourneyCard({ journey, patientId, showOpen }: { journey: Journey; patientId: string; showOpen: boolean }) {
+// One journey, read as a whole: what it is and how far along (header), where
+// it stands right now (banner), the shape of the whole visit (station bar),
+// and who owns it (footer, inside JourneyStationBar).
+//
+// Open Journey is the card's primary affordance for an active journey and a
+// secondary one for a finished journey — a completed visit is something you
+// consult, not something you go and work on. It shows for every role: the
+// detail page is read-only unless you're the assigned nurse, and the card no
+// longer carries a clickable strip, so hiding the button would leave
+// Clinician and Reception with no way into the journey at all.
+function JourneyCard({ journey, patientId }: { journey: Journey; patientId: string }) {
   const navigate = useNavigate();
+  const { done, total } = journeyProgress(journey);
+  const tally = journeyTally(journey.steps);
+  const isActive = journey.status === "Active";
+  const open = () => navigate(`/patients/${patientId}/journeys/${journey.id}`);
+
   return (
-    <div className="rounded-card bg-surface p-5 border border-divider">
-      <div className="flex items-start justify-between mb-4">
-        <h3 className="text-sm font-bold text-ink">{journey.name}</h3>
+    <div className="rounded-card bg-surface border border-divider overflow-hidden">
+      <div className="flex items-center gap-3 flex-wrap px-4 py-3 border-b border-divider">
+        <h3 className="text-section font-bold text-ink">{journey.name}</h3>
         <StatusPill status={journey.status} type={journeyStatusPillType(journey.status)} />
-      </div>
-      <JourneyProgressStrip {...journeyStripProps(journey)} onOpen={() => navigate(`/patients/${patientId}/journeys/${journey.id}`)} />
-      <div className="flex items-center justify-between mt-4 pt-3 border-t border-divider text-xs text-ink-muted">
-        <span>
-          {journey.startedAt && <>Started {journey.startedAt} · </>}
-          {journey.assignedClinician ?? "—"} · {journey.assignedNurse ?? "—"}
+        <span className="ml-auto flex items-baseline gap-1.5 shrink-0">
+          <span className={`text-xs font-bold tabular-nums ${isActive ? "text-info-ink" : "text-success-ink"}`}>
+            {done + tally.active} of {total}
+          </span>
+          <span className="text-xs text-ink-muted">stations</span>
         </span>
-        {showOpen && (
-          <button onClick={() => navigate(`/patients/${patientId}/journeys/${journey.id}`)} className="px-3 py-1.5 bg-ink text-white text-xs font-bold rounded-control hover:bg-ink">
+        <button
+            onClick={open}
+            className={`shrink-0 min-h-11 px-4 rounded-control text-xs font-bold transition-colors ${
+              isActive ? "btn-primary" : "border border-divider bg-surface text-ink-soft hover:bg-surface-hover"
+            }`}
+          >
             Open Journey
           </button>
-        )}
+      </div>
+
+      <div className="px-4 py-3.5">
+        <JourneyStationBar journey={journey} />
       </div>
     </div>
   );
@@ -90,7 +93,7 @@ export function JourneysTab() {
     return (
       <div className="px-4 py-4 space-y-3">
         {patient.journeys.map((j) => (
-          <JourneyCard key={j.id} journey={j} patientId={patientId!} showOpen={role === "Nurse"} />
+          <JourneyCard key={j.id} journey={j} patientId={patientId!} />
         ))}
       </div>
     );
@@ -128,7 +131,7 @@ export function JourneysTab() {
         </div>
       ) : (
         <div className="space-y-3">
-          {patient.journeys.map((j) => <JourneyCard key={j.id} journey={j} patientId={patientId!} showOpen={role === "Admin"} />)}
+          {patient.journeys.map((j) => <JourneyCard key={j.id} journey={j} patientId={patientId!} />)}
         </div>
       )}
     </div>

@@ -46,9 +46,13 @@ function EventBlock({ item, role, dimmed, past, onClick, onLong }: {
       </div>
       <div className="text-label text-ink-soft truncate mt-0.5">{typeShort(a.type)} · {a.durationMin} min</div>
       <div className="text-label text-ink-muted truncate">{a.room} · {a.doctor}</div>
+      {/* Only rendered for a patient actually In Clinic / Checked In — i.e. a
+          journey that is genuinely running — so this is info blue like every
+          other "in progress" marker, not the amber it used to be. Amber is
+          reserved for something needing attention. */}
       {showJourney && (
-        <div className="text-label font-semibold text-warning-ink truncate mt-0.5">
-          → <JourneyProgressChip appt={a} className="!text-warning-ink" />
+        <div className="text-label font-semibold text-info-ink truncate mt-0.5">
+          → <JourneyProgressChip appt={a} className="!text-info-ink" />
         </div>
       )}
       {a.isVideo && role === "Clinician" && (

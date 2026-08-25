@@ -49,12 +49,15 @@ export function StatusPill({
   type = "default",
 }: {
   status: string;
-  type?: "default" | "success" | "warning" | "error";
+  type?: "default" | "success" | "warning" | "error" | "info";
 }) {
   let style = "bg-surface-hover border-divider text-ink-soft";
   if (type === "success") style = "bg-success/10 border-success/30 text-success-ink";
   if (type === "warning") style = "bg-warning/10 border-warning/30 text-warning-ink";
   if (type === "error") style = "bg-danger/10 border-danger/30 text-danger-ink";
+  // info — "happening right now". Same blue as the journey stepper's active
+  // node and the progress strip's active segment.
+  if (type === "info") style = "bg-info/10 border-info/30 text-info-ink";
   return (
     <span className={`px-2 py-0.5 border rounded-control text-overline whitespace-nowrap ${style}`}>
       {status}

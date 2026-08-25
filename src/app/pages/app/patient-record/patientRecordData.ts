@@ -5,6 +5,7 @@
 import type { Role } from "../../../context/AppContext";
 import { MOCK_PATIENTS, Patient as RosterPatient } from "../patientsData";
 import { buildJourneyRows } from "../dashboard/journey/journeyEngine";
+import { journeyStatusPill, type JourneyPillType } from "../dashboard/journey/journeyStatus";
 import { INITIAL_ENTRIES, INITIAL_CLOCK } from "../dashboard/nurseDashboardData";
 
 export type TabKey = "overview" | "results" | "journeys" | "signed-forms" | "notes" | "appointments";
@@ -54,6 +55,15 @@ export type JourneyStep = {
   skipReason?: string;
   notes?: string[];
   attachments?: string[];
+  // Compact labels for the Journeys tab's station bar, where each station
+  // gets ~90px and the full `at` string ("08:20 → 08:35 · 15 min") cannot
+  // fit. Carried through from real recorded timings rather than parsed back
+  // out of `at` — and left undefined whenever no such timing exists, so a
+  // station with no data renders blank instead of a plausible invention.
+  timeLabel?: string;      // milestone clock stamp, e.g. "08:00"
+  durationLabel?: string;  // station elapsed, e.g. "15 min"
+  // Live elapsed on the one in-progress step, e.g. "16 min".
+  progressLabel?: string;
 };
 export type JourneyStatus = "Active" | "Completed" | "Not Started";
 export type Journey = {
@@ -85,6 +95,9 @@ function journeyStepsFromNurseEngine(): JourneyStep[] {
       status,
       by: status === "Completed" || status === "In Progress" ? "Berna Koç" : undefined,
       at: r.showTime ? r.timeTxt : r.showDur ? r.durTxt : undefined,
+      timeLabel: r.showTime ? r.timeTxt : undefined,
+      durationLabel: r.showDur ? r.durMinTxt : undefined,
+      progressLabel: r.showProg ? r.progMinTxt : undefined,
       waitedMin: r.showWaited ? r.waited : undefined,
       skipReason: r.showSkip ? r.skipCap : undefined,
     };
@@ -187,9 +200,9 @@ const MACKENZIE: PatientRecord = {
       assignedNurse: "Berna Koç",
       assignedClinician: "Dr. Ebru Reis",
       steps: [
-        { name: "Checked In", status: "Completed", by: "Elif Yıldız", at: "18 Mar 2025, 09:00" },
-        { name: "Results Consultation", status: "Completed", by: "Dr. Ebru Reis", at: "18 Mar 2025, 09:30" },
-        { name: "Check Out", status: "Completed", by: "Berna Koç", at: "18 Mar 2025, 10:00" },
+        { name: "Checked In", status: "Completed", by: "Elif Yıldız", at: "18 Mar 2025, 09:00", timeLabel: "09:00" },
+        { name: "Results Consultation", status: "Completed", by: "Dr. Ebru Reis", at: "18 Mar 2025, 09:30", timeLabel: "09:30" },
+        { name: "Check Out", status: "Completed", by: "Berna Koç", at: "18 Mar 2025, 10:00", timeLabel: "10:00" },
       ],
     },
   ],
@@ -314,10 +327,13 @@ export function formStatusPillType(status: FormStatus): "success" | "warning" | 
   return "default";
 }
 
-export function journeyStatusPillType(status: JourneyStatus): "success" | "default" | "warning" {
-  if (status === "Active") return "success";
-  if (status === "Completed") return "default";
-  return "warning";
+// Delegates to the one journey status vocabulary (dashboard/journey/
+// journeyStatus.ts) so this model and the Nurse Dashboard's can never drift:
+// Active = info blue (happening now), Completed = success green, Not Started
+// = neutral. This inverts the previous mapping, which painted Active green
+// and Completed gray — the reverse of what every other journey surface says.
+export function journeyStatusPillType(status: JourneyStatus): JourneyPillType {
+  return journeyStatusPill(status);
 }
 
 export function journeyProgress(j: Journey): { done: number; total: number; currentIndex: number } {
