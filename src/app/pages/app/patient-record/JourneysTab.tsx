@@ -82,35 +82,38 @@ function JourneyTableRow({ journey, patientId }: { journey: Journey; patientId: 
 export function JourneysTab() {
   const { patient, role } = usePatientOutletContext();
   const { patientId } = useParams();
-  const [view, setView] = useState<"cards" | "table">(role === "Admin" ? "table" : "cards");
+  // The card — header, current/outcome banner, station bar, owners and legend
+  // — is what a journey *is* on this page, so every role opens on it. Admin
+  // previously landed on the table and never saw the designed surface at all;
+  // the toggle still gets them to the compact many-journeys read, but that is
+  // now the alternate view rather than the front door.
+  const [view, setView] = useState<"cards" | "table">("cards");
 
   if (patient.journeys.length === 0) {
     return <div className="px-4 py-4 text-center text-ink-muted italic">No journeys started yet.</div>;
   }
 
-  // Nurse: card-based work queue. Clinician/Reception: compact read-oriented list.
-  if (role === "Nurse" || (role !== "Admin" && view === "cards")) {
-    return (
-      <div className="px-4 py-4 space-y-3">
-        {patient.journeys.map((j) => (
-          <JourneyCard key={j.id} journey={j} patientId={patientId!} />
-        ))}
-      </div>
-    );
-  }
+  // Nurse works the journey one station at a time and has no use for a
+  // spreadsheet of it, so she is never offered the table.
+  const canSwitchView = role === "Admin";
+  const asCards = !canSwitchView || view === "cards";
 
   return (
     <div className="px-4 py-4">
-      {role === "Admin" && (
+      {canSwitchView && (
         <div className="flex justify-end mb-4">
           <div className="inline-flex bg-surface-hover rounded-control p-0.5 border border-divider">
-            <button onClick={() => setView("table")} className={`px-3 py-1 text-xs font-bold rounded-control flex items-center gap-1.5 ${view === "table" ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted"}`}><List className="w-3.5 h-3.5" /> Table</button>
             <button onClick={() => setView("cards")} className={`px-3 py-1 text-xs font-bold rounded-control flex items-center gap-1.5 ${view === "cards" ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted"}`}><LayoutGrid className="w-3.5 h-3.5" /> Cards</button>
+            <button onClick={() => setView("table")} className={`px-3 py-1 text-xs font-bold rounded-control flex items-center gap-1.5 ${view === "table" ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted"}`}><List className="w-3.5 h-3.5" /> Table</button>
           </div>
         </div>
       )}
 
-      {view === "table" ? (
+      {asCards ? (
+        <div className="space-y-3">
+          {patient.journeys.map((j) => <JourneyCard key={j.id} journey={j} patientId={patientId!} />)}
+        </div>
+      ) : (
         <div className="rounded-card bg-surface overflow-hidden">
           <table className="w-full text-sm text-left">
             <thead className="bg-surface-page border-b border-divider text-ink-soft">
@@ -128,10 +131,6 @@ export function JourneysTab() {
               {patient.journeys.map((j) => <JourneyTableRow key={j.id} journey={j} patientId={patientId!} />)}
             </tbody>
           </table>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {patient.journeys.map((j) => <JourneyCard key={j.id} journey={j} patientId={patientId!} />)}
         </div>
       )}
     </div>

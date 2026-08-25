@@ -115,11 +115,16 @@ function JourneyBanner({ journey, tally }: { journey: Journey; tally: JourneyTal
         <span className="w-1.5 h-1.5 rounded-full bg-info-fill" />
         In Progress{active.by ? ` · ${active.by}` : ""}
       </span>
+      {/* Elapsed and what's next are the banner's right-hand pair: the reader
+          scans "Current <station> — In Progress" on the left and picks up the
+          clock and the handoff together on the right. Whichever of the two
+          exists takes the gap, so a journey missing either one still reads as
+          one bar rather than a left-hugged fragment. */}
       {active.progressLabel && (
-        <span className="text-xs font-bold text-info-ink tabular-nums">{active.progressLabel}</span>
+        <span className="ml-auto shrink-0 text-xs font-bold text-info-ink tabular-nums">{active.progressLabel}</span>
       )}
       {next && (
-        <span className="ml-auto shrink-0 text-label font-bold text-ink-soft bg-surface border border-info/25 rounded-chip px-2 py-0.5">
+        <span className={`${active.progressLabel ? "" : "ml-auto "}shrink-0 text-label font-bold text-ink-soft bg-surface border border-info/25 rounded-chip px-2 py-0.5`}>
           Next · {next.name}
         </span>
       )}
