@@ -96,6 +96,19 @@ export function prevStationOf(step: JourneyStepConfig, entries: JourneyEntries):
   return null;
 }
 
+// What the action rail names under "Next up" — the first step after `step`
+// the nurse will actually reach, so an already-skipped station never gets
+// announced as the thing coming next.
+export function nextStepOf(step: JourneyStepConfig, entries: JourneyEntries): JourneyStepConfig | null {
+  const idx = JOURNEY_STEPS.findIndex((x) => x.id === step.id);
+  for (let i = idx + 1; i < JOURNEY_STEPS.length; i++) {
+    const s = JOURNEY_STEPS[i];
+    if (entries[s.id]?.skipped) continue;
+    return s;
+  }
+  return null;
+}
+
 export type StepRenderState = "done" | "prog" | "up" | "wait" | "skip";
 
 export type StepRow = {
@@ -105,8 +118,18 @@ export type StepRow = {
   subtitle?: string;
   notLast: boolean;
   isStation: boolean;
+  isCurrent: boolean; // the one step the action rail is currently addressing
+  room: string;
   showDur: boolean; durTxt: string;
+  // Just the elapsed part of durTxt ("15 min"), for surfaces too narrow for
+  // the full "08:20 → 08:35 · 15 min" — e.g. Patient Record's station bar,
+  // where one station gets ~90px. Derived, never fabricated: it is empty
+  // whenever the step has no real enter/exit pair.
+  durMinTxt: string;
   showProg: boolean; progTxt: string;
+  // Elapsed alone ("16 min"), for surfaces that already say "In Progress"
+  // in words and only need the number — see durMinTxt.
+  progMinTxt: string;
   showInfo: boolean; infoTxt: string;
   showTime: boolean; timeTxt: string;
   showSkip: boolean; skipCap: string;
@@ -138,13 +161,14 @@ export function buildJourneyRows(entries: JourneyEntries, clock: number) {
     let waitLive = 0;
     if (state === "wait" && prevEnd != null) waitLive = Math.max(0, clock - prevEnd);
 
-    let showDur = false, durTxt = "", showProg = false, progTxt = "", showInfo = false, infoTxt = "";
+    let showDur = false, durTxt = "", durMinTxt = "", showProg = false, progTxt = "", progMinTxt = "", showInfo = false, infoTxt = "";
     let showTime = false, timeTxt = "", showSkip = false, skipCap = "", showWaited = false;
 
     if (state === "done") {
       if (s.kind === "station") {
         showDur = true;
-        durTxt = `${fmtClock(r.enter!)} → ${fmtClock(r.exit!)} · ${r.exit! - r.enter!} min`;
+        durMinTxt = `${r.exit! - r.enter!} min`;
+        durTxt = `${fmtClock(r.enter!)} → ${fmtClock(r.exit!)} · ${durMinTxt}`;
         if (waited > 0) showWaited = true;
       } else {
         showTime = true;
@@ -153,7 +177,8 @@ export function buildJourneyRows(entries: JourneyEntries, clock: number) {
     } else if (state === "prog") {
       showProg = true;
       const elapsed = Math.max(0, clock - r.enter!);
-      progTxt = `In progress · ${elapsed} min`;
+      progMinTxt = `${elapsed} min`;
+      progTxt = `In progress · ${progMinTxt}`;
       showInfo = true;
       infoTxt = s.room ?? "";
     } else if (state === "skip") {
@@ -165,7 +190,8 @@ export function buildJourneyRows(entries: JourneyEntries, clock: number) {
 
     return {
       id: s.id, state, name: s.name, subtitle: s.subtitle, notLast: i < JOURNEY_STEPS.length - 1, isStation: s.kind === "station",
-      showDur, durTxt, showProg, progTxt, showInfo, infoTxt, showTime, timeTxt, showSkip, skipCap,
+      isCurrent, room: s.room ?? "",
+      showDur, durTxt, durMinTxt, showProg, progTxt, progMinTxt, showInfo, infoTxt, showTime, timeTxt, showSkip, skipCap,
       showWaited, waited, waitedOverSla: waited > WAIT_SLA_MIN,
       showWaitLive: state === "wait" && waitLive > 0, waitLive, waitLiveOverSla: waitLive > WAIT_SLA_MIN,
       showOwner: !!s.owner, owner: s.owner || "",

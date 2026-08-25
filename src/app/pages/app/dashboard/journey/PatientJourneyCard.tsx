@@ -1,87 +1,38 @@
 import React from "react";
 import { Link, useNavigate } from "react-router";
-import { ArrowRight, Check, Clock, Flag, PauseCircle, PlayCircle, SkipForward, StickyNote, Undo2, UserRound } from "lucide-react";
-import type { StepRenderState, StepRow } from "./journeyEngine";
+import { ArrowRight, Check, Clock, UserRound } from "lucide-react";
+import type { StepRenderState } from "./journeyEngine";
 import type { JourneyEngine } from "./useJourneyEngine";
+import { JOURNEY_TONE } from "./journeyStatus";
+import { JourneyTimeline } from "./JourneyTimeline";
+import { JourneyActionRail } from "./JourneyActionRail";
 import { ExitConfirmPopover, GoBackDialog, NotePopover, SkipDialog } from "./JourneyDialogs";
 
-// Pure-color fills with nothing on top (a thin bar, a dot) only need
-// WCAG's 3:1 non-text floor, not the 4.5:1 text tier — -fill clears that
-// with real margin and reads noticeably more alive than -ink. (-warning
-// alone was actually under 3:1 here before this: 2.03:1 against white.)
-const SEGMENT_CLASS: Record<StepRenderState, string> = {
-  done: "bg-success-fill",
-  prog: "bg-info-fill motion-safe:animate-pulse",
-  wait: "bg-warning-fill",
-  up: "bg-surface-sunken",
-  skip: "bg-[repeating-linear-gradient(45deg,var(--surface-sunken),var(--surface-sunken)_3px,var(--surface-hover)_3px,var(--surface-hover)_6px)]",
-};
-
+// Segments read their fill from the shared status vocabulary — the bar can
+// no longer disagree with the stepper node or the legend chip below it.
 function ProgressBar({ segments }: { segments: StepRenderState[] }) {
   return (
-    <div className="flex gap-1">
-      {segments.map((s, i) => <div key={i} className={`flex-1 h-1.5 rounded-full ${SEGMENT_CLASS[s]}`} />)}
+    // Fixed, modest width: this is a shape to read at a glance, not a
+    // ruler. Stretched across a wide card each segment turns into a slab
+    // and the strip stops reading as one progress object.
+    <div className="flex gap-1 w-full max-w-[240px] shrink-0">
+      {segments.map((s, i) => (
+        <div
+          key={i}
+          className={`flex-1 h-1.5 rounded-full ${JOURNEY_TONE[s].bar} ${s === "prog" ? "motion-safe:animate-pulse" : ""}`}
+        />
+      ))}
     </div>
   );
 }
 
-function StepNode({ state }: { state: StepRenderState }) {
-  if (state === "done") return <div className="w-6 h-6 rounded-full bg-success-fill text-white flex items-center justify-center shrink-0"><Check className="w-3.5 h-3.5" strokeWidth={3} /></div>;
-  if (state === "skip") return <div className="w-6 h-6 rounded-card bg-surface-hover border border-divider text-ink-muted flex items-center justify-center shrink-0"><SkipForward className="w-3.5 h-3.5" /></div>;
-  if (state === "prog") {
-    return (
-      <div className="relative w-6 h-6 shrink-0 flex items-center justify-center">
-        <div className="absolute inset-0 rounded-full bg-info/40 motion-safe:animate-ping" />
-        <div className="relative w-6 h-6 rounded-full bg-surface border-2 border-info flex items-center justify-center">
-          <div className="w-1.5 h-1.5 rounded-full bg-info-fill" />
-        </div>
-      </div>
-    );
-  }
-  return <div className="w-[18px] h-[18px] m-[3px] rounded-full border-2 border-divider bg-surface shrink-0" />;
-}
-
-function StepBody({ row }: { row: StepRow }) {
-  const nameCls =
-    row.state === "done" ? "text-ink-muted font-semibold" :
-    row.state === "prog" ? "font-extrabold text-ink" :
-    row.state === "skip" ? "text-ink-muted line-through decoration-gray-300 font-semibold" :
-    "text-ink-muted font-semibold";
+function LegendChip({ state, count, label }: { state: StepRenderState; count: number; label: string }) {
+  const tone = JOURNEY_TONE[state];
   return (
-    <div className={`flex-1 min-w-0 ${row.notLast ? "pb-4" : "pb-1"}`}>
-      {row.showWaited && (
-        row.waitedOverSla ? (
-          <div className="inline-block text-label font-semibold text-warning-ink bg-warning/10 px-1.5 py-0.5 rounded-control mb-1">
-            Waited {row.waited} min
-          </div>
-        ) : (
-          <div className="text-xs text-ink-muted font-medium mb-1">Waited {row.waited} min</div>
-        )
-      )}
-      <div className="flex items-baseline gap-1.5">
-        <span className={`min-w-0 truncate text-sm ${nameCls}`}>{row.name}</span>
-        {row.subtitle && <span className="shrink-0 text-xs font-medium text-ink-muted truncate">({row.subtitle})</span>}
-        {row.showOwner && <span className="shrink-0 text-label font-extrabold uppercase tracking-wide text-ink-muted bg-surface-hover px-1.5 py-0.5 rounded-control">{row.owner}</span>}
-        {row.showWaitLive && (
-          <span className={`shrink-0 inline-flex items-center gap-1 text-label font-bold px-2 py-0.5 rounded-full ${row.waitLiveOverSla ? "text-warning-ink bg-warning/10" : "text-ink-muted bg-surface-hover"}`}>
-            ◷ Waiting · {row.waitLive} min
-          </span>
-        )}
-        <span className="ml-auto shrink-0 text-xs font-bold text-ink-muted tabular-nums">
-          {row.showTime && row.timeTxt}
-          {row.showDur && row.durTxt}
-        </span>
-      </div>
-      {row.showProg && <div className="text-xs font-extrabold text-info-ink tabular-nums mt-0.5">{row.progTxt}</div>}
-      {row.showInfo && <div className="mt-1.5 inline-block text-xs font-semibold text-info-ink bg-info/10 border border-info/30 rounded-card px-3 py-2">{row.infoTxt}</div>}
-      {row.showSkip && <div className="text-xs text-ink-muted font-semibold mt-1">{row.skipCap}</div>}
-      {row.note && (
-        <div className="mt-1.5 flex items-start gap-1.5 text-xs text-ink-soft bg-surface-page border border-divider rounded-card px-2.5 py-1.5">
-          <StickyNote className="w-3 h-3 mt-0.5 text-ink-muted shrink-0" />
-          <span>{row.note}</span>
-        </div>
-      )}
-    </div>
+    <span className={`inline-flex items-center gap-1.5 text-label font-bold rounded-full px-2 py-0.5 whitespace-nowrap ${tone.chip}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${tone.chipDot}`} />
+      {count} {label}
+    </span>
   );
 }
 
@@ -150,6 +101,51 @@ export function EmptyJourney({
   );
 }
 
+// Identity bar. The meta string arrives as "Body Scan · 08:00 · Dr. Ebru Reis
+// · Room 3"; the procedure leads it and is what the nurse scans for, so it
+// carries the weight and the rest stays a quiet dotted trail.
+function PatientHeader({
+  patientName, patientTag, patientMeta, patientRoute, flagged,
+}: {
+  patientName: string; patientTag: string; patientMeta: string; patientRoute: string; flagged: boolean;
+}) {
+  const initials = patientName.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
+  const [procedure, ...rest] = patientMeta.split(" · ");
+
+  return (
+    <header className="flex items-center gap-3 px-5 py-3 border-b border-divider shrink-0">
+      <div className="w-10 h-10 rounded-full bg-surface-hover text-ink-soft flex items-center justify-center text-sm font-bold shrink-0">
+        {initials}
+      </div>
+
+      <div className="min-w-0 flex flex-col gap-0.5">
+        <div className="flex items-baseline gap-2 flex-wrap">
+          <h2 className="text-section font-bold text-ink truncate">{patientName}</h2>
+          <span className="text-xs font-semibold text-ink-muted shrink-0">{patientTag}</span>
+          {flagged && <span className="text-label font-bold text-white bg-danger-ink rounded-full px-2 py-0.5 shrink-0">⚑ Flagged</span>}
+        </div>
+        <div className="text-xs text-ink-muted flex items-center gap-1.5 flex-wrap">
+          <span className="font-semibold text-ink-soft">{procedure}</span>
+          {rest.map((part) => (
+            <React.Fragment key={part}>
+              <span className="text-ink-muted/50">·</span>
+              <span>{part}</span>
+            </React.Fragment>
+          ))}
+        </div>
+      </div>
+
+      <Link
+        to={patientRoute}
+        className="ml-auto shrink-0 inline-flex items-center gap-1.5 min-h-11 px-3 rounded-control border border-divider bg-surface text-xs font-bold text-ink-soft hover:bg-surface-hover transition-colors"
+      >
+        Open Patient Record
+        <ArrowRight className="w-3.5 h-3.5" />
+      </Link>
+    </header>
+  );
+}
+
 export function PatientJourneyCard({
   engine, patientName, patientTag, patientMeta, patientRoute,
 }: {
@@ -161,49 +157,32 @@ export function PatientJourneyCard({
 }) {
   const { journey, cur } = engine;
   const isDoneAll = cur.mode === "done";
-  const initials = patientName.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
-
-  let primaryLabel = "";
-  if (cur.step) {
-    if (cur.mode === "enter") primaryLabel = `Start — ${cur.step.name}`;
-    else if (cur.mode === "exit") primaryLabel = `Complete — ${cur.step.name}`;
-    else if (cur.mode === "milestone") primaryLabel = `Confirm — ${cur.step.name}`;
-  }
-  if (engine.paused) primaryLabel = "Resume Journey";
 
   return (
     <div className="h-full bg-surface rounded-card flex flex-col overflow-hidden">
-      {/* Identity bar */}
-      <div className="p-5 border-b border-divider flex items-start justify-between gap-4 shrink-0">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 rounded-full bg-surface-sunken text-ink-soft flex items-center justify-center text-sm font-bold shrink-0">{initials}</div>
-          <div className="min-w-0">
-            <div className="flex items-baseline gap-2 flex-wrap">
-              <h2 className="text-sm font-bold text-ink truncate">{patientName}</h2>
-              <span className="text-xs font-semibold text-ink-muted shrink-0">{patientTag}</span>
-              {engine.flagged && <span className="text-label font-extrabold text-white bg-danger-ink rounded-full px-2 py-0.5 shrink-0">⚑ Flagged</span>}
-            </div>
-            <div className="text-xs text-ink-muted font-medium mt-0.5 truncate">{patientMeta}</div>
-          </div>
-        </div>
-        <Link to={patientRoute} className="flex items-center gap-1 text-xs font-bold text-ink-soft hover:underline shrink-0">
-          Open Patient Record <ArrowRight className="w-3 h-3" />
-        </Link>
-      </div>
+      <PatientHeader
+        patientName={patientName}
+        patientTag={patientTag}
+        patientMeta={patientMeta}
+        patientRoute={patientRoute}
+        flagged={engine.flagged}
+      />
 
-      {/* Panel head: progress bar + chips */}
-      <div className="px-5 py-3 border-b border-divider flex items-center justify-between gap-6 shrink-0">
-        <div>
-          <div className="text-sm font-bold text-ink">Patient Journey</div>
-          <div className="text-xs font-semibold text-ink-muted mt-0.5">{journey.doneN} of {journey.totalStations} stations complete · {journey.progressPct}%</div>
+      {/* Progress strip — one horizontal read of the whole visit before the
+          eye ever reaches the step list. */}
+      <div className="flex items-center gap-4 flex-wrap px-5 py-2.5 bg-surface-page border-b border-divider shrink-0">
+        <div className="flex items-baseline gap-2 shrink-0">
+          <span className="text-sm font-bold text-ink">Patient Journey</span>
+          <span className="text-xs font-semibold text-ink-muted tabular-nums">
+            {journey.doneN} of {journey.totalStations} stations · {journey.progressPct}%
+          </span>
         </div>
-        <div className="flex flex-col gap-2 flex-1 max-w-[400px]">
-          <ProgressBar segments={journey.segments} />
-          <div className="flex gap-1.5 justify-end">
-            <span className="inline-flex items-center gap-1 text-label font-bold text-ink-soft bg-surface-hover rounded-full px-2 py-0.5"><span className="w-1.5 h-1.5 rounded-full bg-success-ink" />{journey.doneN} done</span>
-            <span className="inline-flex items-center gap-1 text-label font-bold text-ink-soft bg-surface-hover rounded-full px-2 py-0.5"><span className="w-1.5 h-1.5 rounded-full bg-info-ink" />{journey.progN} active</span>
-            <span className="inline-flex items-center gap-1 text-label font-bold text-ink-soft bg-surface-hover rounded-full px-2 py-0.5"><span className="w-1.5 h-1.5 rounded-full bg-warning-ink" />{journey.remainN} to go</span>
-          </div>
+        <ProgressBar segments={journey.segments} />
+        <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+          <LegendChip state="done" count={journey.doneN} label="done" />
+          {journey.progN > 0 && <LegendChip state="prog" count={journey.progN} label="active" />}
+          {journey.remainN > 0 && <LegendChip state="up" count={journey.remainN} label="to go" />}
+          {journey.skipN > 0 && <LegendChip state="skip" count={journey.skipN} label="skipped" />}
         </div>
       </div>
 
@@ -214,66 +193,31 @@ export function PatientJourneyCard({
           <p className="text-sm text-ink-muted mt-1">{patientName}'s visit is complete.</p>
         </div>
       ) : (
-        <>
-          <div className="flex-1 overflow-y-auto px-5 py-4 min-h-0">
-            {/* Capped so each step's name and timestamp stay in one glance —
-                on a wide desktop card, an uncapped flex row strands the
-                timestamp far from the name it belongs to. */}
-            <div className="max-w-[520px]">
-            {journey.rows.map((row) => (
-              <div key={row.id} className="flex gap-3">
-                <div className="flex flex-col items-center shrink-0">
-                  <StepNode state={row.state} />
-                  {row.notLast && <div className={`w-0.5 flex-1 min-h-[20px] my-0.5 ${row.state === "done" ? "bg-success-fill" : "bg-surface-sunken"}`} />}
-                </div>
-                <StepBody row={row} />
-              </div>
-            ))}
+        // Timeline and actions side by side. The rail is a fixed column so
+        // the CTA lands in the same place for every patient and every step —
+        // muscle memory matters more here than a fluid width.
+        //
+        // The breakpoints are measured, not guessed: this card is whatever
+        // the viewport has left after the 245px nav and the 396px side
+        // column, so it only clears ~700px at a 1440px viewport. Below that
+        // a fixed rail would starve the timeline to ~190px, so the rail
+        // stacks underneath instead.
+        <div className="grid grid-cols-1 min-[1440px]:grid-cols-[minmax(0,1fr)_320px] min-[1720px]:grid-cols-[minmax(0,1fr)_360px] flex-1 min-h-0">
+          <div className="overflow-y-auto px-5 py-3 min-h-0">
+            {/* Capped measure: each step's name and its timestamp have to
+                stay in one glance. Uncapped on a wide desktop card, the row
+                stretches until the time is stranded a screen away from the
+                station it belongs to. */}
+            <div className="max-w-[680px]">
+              <JourneyTimeline rows={journey.rows} />
             </div>
           </div>
-
-          {/* Action bar */}
-          <div className="relative px-5 pt-3.5 pb-4 border-t border-divider bg-surface-page/70 shrink-0">
-            {engine.exitPopover && cur.step && <ExitConfirmPopover engine={engine} step={cur.step} />}
-            {engine.notePopover && <NotePopover engine={engine} />}
-
-            {cur.mode === "exit" && (
-              <div className="text-center text-xs font-extrabold text-info-ink tabular-nums mb-1.5">
-                {Math.max(0, engine.clock - (engine.entries[cur.step!.id]?.enter ?? engine.clock))} min
-              </div>
-            )}
-            {engine.paused && <div className="text-center text-xs font-extrabold text-warning-ink mb-1.5">Journey paused — timers stopped</div>}
-
-            {/* Fixed-width, centered — a full-bleed CTA on a wide desktop
-                card reads as heavy rather than considered. Always the one
-                brand primary color (.btn-primary / Phenome Blue 400), same
-                as every other primary action in the portal — not a
-                state-dependent color. */}
-            <button onClick={engine.primaryTap} className="btn-primary flex items-center justify-center mx-auto h-12 min-w-[240px] px-8 rounded-control text-sm font-extrabold tracking-tight transition-colors">
-              {primaryLabel}
-            </button>
-
-            {cur.mode === "enter" && (
-              <div className="flex items-center gap-1 mt-2.5">
-                <button onClick={engine.openSkip} className="flex items-center gap-1.5 h-11 px-3 rounded-control text-xs font-bold text-ink-soft hover:bg-surface-hover"><SkipForward className="w-3.5 h-3.5" /> Skip this station</button>
-                <button onClick={engine.openNote} className="flex items-center gap-1.5 h-11 px-3 rounded-control text-xs font-bold text-ink-soft hover:bg-surface-hover"><StickyNote className="w-3.5 h-3.5" /> Add Note</button>
-              </div>
-            )}
-            {cur.mode === "exit" && (
-              <div className="flex items-center gap-1 mt-2.5">
-                <button onClick={engine.openNote} className="flex items-center gap-1.5 h-11 px-3 rounded-control text-xs font-bold text-ink-soft hover:bg-surface-hover"><StickyNote className="w-3.5 h-3.5" /> Add Note</button>
-                <button onClick={engine.toggleFlag} className={`flex items-center gap-1.5 h-11 px-3 rounded-control text-xs font-bold hover:bg-surface-hover ${engine.flagged ? "text-danger-ink" : "text-ink-soft"}`}><Flag className="w-3.5 h-3.5" /> {engine.flagged ? "Unflag" : "Flag Issue"}</button>
-                <button onClick={engine.togglePause} className="flex items-center gap-1.5 h-11 px-3 rounded-control text-xs font-bold text-ink-soft hover:bg-surface-hover">{engine.paused ? <PlayCircle className="w-3.5 h-3.5" /> : <PauseCircle className="w-3.5 h-3.5" />} {engine.paused ? "Resume" : "Pause Journey"}</button>
-                <div className="w-px h-6 bg-surface-sunken mx-1 ml-auto" />
-                {engine.prevStation && (
-                  <button onClick={engine.openGoBack} className="flex items-center gap-1.5 h-11 px-3 rounded-control text-label font-bold text-ink-muted hover:bg-surface-hover"><Undo2 className="w-3 h-3" /> Go Back</button>
-                )}
-              </div>
-            )}
-          </div>
-        </>
+          <JourneyActionRail engine={engine} />
+        </div>
       )}
 
+      {engine.exitPopover && cur.step && <ExitConfirmPopover engine={engine} step={cur.step} />}
+      {engine.notePopover && <NotePopover engine={engine} />}
       {engine.dialog?.kind === "skip" && cur.step && <SkipDialog engine={engine} stepName={cur.step.name} />}
       {engine.dialog?.kind === "goback" && cur.step && <GoBackDialog engine={engine} prevName={engine.prevStation?.name ?? "the previous station"} curName={cur.step.name} />}
     </div>
