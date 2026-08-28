@@ -155,8 +155,13 @@ export function StationDetailDrawer({ journey }: { journey: StationJourney }) {
         // 400px = the shared Drawer's `sm` tier. 380px was an invented width,
         // and DESIGN.md allows exactly two (400 / 560). Flush, no radius:
         // it is anchored to the panel's own right edge.
-        className={`absolute top-0 right-0 bottom-0 w-[400px] max-w-full bg-surface border-l border-divider shadow-2xl z-30 flex flex-col transition-transform duration-200 ease-out ${
-          open ? "translate-x-0" : "translate-x-full"
+        // The shadow is tied to `open`, not baked into the base class: while
+        // closed this panel is parked at translate-x-full just outside the
+        // card's right edge, and shadow-2xl's blur still spills ~13px back
+        // INSIDE it — a black smear over the journey list's scrollbar, on a
+        // drawer nobody had opened. Off when closed, on once it slides in.
+        className={`absolute top-0 right-0 bottom-0 w-[400px] max-w-full bg-surface border-l border-divider z-30 flex flex-col transition-transform duration-200 ease-out ${
+          open ? "translate-x-0 shadow-2xl" : "translate-x-full shadow-none"
         }`}
       >
         {/* surface-page-tinted header bar — the header/footer contract Drawer
