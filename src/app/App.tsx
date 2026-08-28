@@ -17,6 +17,7 @@ import { ConsentSignPage } from "./pages/app/consent-sign/ConsentSignPage";
 
 // App components
 import { AppShell } from "./components/AppShell";
+import { useScrollbarReveal } from "./components/useScrollbarReveal";
 import { Dashboard } from "./components/Dashboard";
 import {
   AppointmentDrawerSkeleton, PatientsPage, PatientRecordLayout, PatientRecordRedirect,
@@ -94,6 +95,11 @@ function StaffDetailRedirect() {
 }
 
 export default function App() {
+  // Scrollbars stay invisible until their own surface moves — one document-
+  // level listener covers every scroll container in the portal, so it is
+  // installed once here rather than per page.
+  useScrollbarReveal();
+
   return (
     <AppProvider>
       <Toaster position="top-center" />

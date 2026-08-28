@@ -468,6 +468,33 @@
   --shadow-xl:   0 14px 32px rgba(16, 33, 75, 0.12);
   --shadow-2xl:  0 22px 48px rgba(16, 33, 75, 0.16);
   --shadow-inner: inset 0 2px 4px rgba(16, 33, 75, 0.05);
+
+  /* scrollbar — role tokens for the scrollbar defined further down.
+     These continue the portal's NAVY LINE SERIES, the same rgb(32 58 133)
+     tint every rule in the product is already drawn with:
+
+         --grid-line       .05   calendar hour hairlines
+         --divider         .08   the default border/rule
+         --border-strong   .16   emphasised borders
+         --scrollbar-thumb .26   <- the next step in the same series
+
+     Revision (2026-08-28): rest was --phenome-blue-200 (#A9B5D9), which is
+     off this line — solve for it and it lands near a .37 navy tint but
+     with extra blue, so it read as a periwinkle accent laid over the UI
+     rather than as more of the product's own ruling. Staying on the line
+     is what makes a scrollbar look like it belongs to this system; being
+     one step past --border-strong is what keeps it readable as the one
+     line in the family you can actually grab. Never a status hue: a
+     scrollbar is chrome, and borrowing `info` for it would put the
+     "in progress" colour on furniture.
+
+     Semi-transparent on purpose — like every other line in the series it
+     takes the tint of whatever surface it sits on, so the same thumb
+     reads correctly on a white card and on the page's blue-grey. */
+  --scrollbar-size: 10px;              /* gutter; the visible pill is size - 2*border */
+  --scrollbar-thumb: rgba(32, 58, 133, 0.26);         /* rest     */
+  --scrollbar-thumb-hover: rgba(32, 58, 133, 0.42);   /* hover    */
+  --scrollbar-thumb-active: rgba(32, 58, 133, 0.58);  /* dragging */
 }
 
 /* ====================================================================
@@ -602,6 +629,99 @@
 @media (prefers-reduced-motion: reduce) {
   .frosted-stagger {
     animation: none;
+  }
+}
+
+/* ====================================================================
+   Scrollbars — brand-tinted, and only present while you are scrolling
+   --------------------------------------------------------------------
+   The platform scrollbar is the one surface in this portal that shipped
+   with nobody's design system: a 15px grey slab with arrow buttons,
+   drawn by Windows, sitting inside every card we spent a shadow ramp
+   getting right. It is replaced here with a 4px pill in the brand's own
+   tint ramp, and it stays invisible until the surface it belongs to is
+   actually moving.
+
+   Reveal is driven by --sb-alpha, written per element by
+   useScrollbarReveal (components/useScrollbarReveal.ts): 1 the moment a
+   scroll starts, then eased back to 0 a beat after it stops.
+
+   It has to inherit — a scrollbar pseudo-element reads it off its
+   originating element, and `inherits: false` leaves the pseudo on the
+   initial value, i.e. permanently invisible (verified 2026-08-28). But
+   plain inheritance would then cascade past the element that scrolled
+   into every scroll container nested inside it, so scrolling the page
+   column would light up the table and list scrollbars within it too.
+   The `* { --sb-alpha: 0 }` reset below is what bounds it: every element
+   declares its own 0, which outranks any inherited value, while the
+   inline 1 the hook writes outranks that for the one element actually
+   scrolling. One element scrolls, one scrollbar answers.
+
+   The fade is animated in JS rather than by a CSS transition because
+   Chrome does not transition ::-webkit-scrollbar-* properties (verified,
+   2026-08-28 — a 3s transition still snapped instantly); it does repaint
+   the scrollbar when a custom property it reads changes, which is the
+   hook the reveal hangs on.
+
+   No pointer/media gate: per the 2026-08-28 review this is deliberately
+   uniform across desktop and iPad, accepting that styling the scrollbar
+   turns iPadOS's overlay scrollbar into a space-reserving one and costs
+   each scroll container ~10px of width, in exchange for one scrollbar
+   that looks the same on every device the portal runs on.
+   ==================================================================== */
+@property --sb-alpha {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
+}
+
+/* Scoping reset — see the note above. Declaring a custom property on `*`
+   costs nothing and collides with nothing; it exists purely to stop one
+   surface's reveal inheriting into the scroll containers inside it. */
+* { --sb-alpha: 0; }
+
+::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+/* No track fill and no arrow buttons: the gutter reads as part of the
+   surface it sits on, so a card's white and the page's blue-grey each
+   run all the way to their own edge. */
+::-webkit-scrollbar-track,
+::-webkit-scrollbar-corner { background: transparent; }
+::-webkit-scrollbar-button { display: none; }
+
+/* The transparent border + padding-box clip is what turns the 10px gutter
+   into a pill with breathing room on both sides — the border is inset,
+   not drawn. 2px leaves a 6px thumb rather than the 4px a 3px inset would
+   give: the resting tint is deliberately faint, so it needs the extra
+   area to register at all under clinic lighting. Hover/drag trade another
+   pixel of inset for thickness (6px -> 8px), so the thumb thickens toward
+   the cursor reaching for it as it darkens. */
+::-webkit-scrollbar-thumb {
+  background-color: color-mix(in srgb, var(--scrollbar-thumb) calc(var(--sb-alpha) * 100%), transparent);
+  background-clip: padding-box;
+  border: 2px solid transparent;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+  border-width: 1px;
+}
+::-webkit-scrollbar-thumb:active {
+  background-color: var(--scrollbar-thumb-active);
+  border-width: 1px;
+}
+
+/* Firefox has no ::-webkit-scrollbar pseudos and ignores the block above;
+   it gets the same two colours through the standard properties. Guarded
+   by @supports so Chrome never sees `scrollbar-color` — setting it there
+   makes Chrome drop every ::-webkit-scrollbar rule for that element. */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--scrollbar-thumb) calc(var(--sb-alpha) * 100%), transparent) transparent;
   }
 }
 
