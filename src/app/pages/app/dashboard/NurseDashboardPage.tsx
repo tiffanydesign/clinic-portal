@@ -3,12 +3,13 @@ import { useNavigate, useParams } from "react-router";
 import { toast } from "sonner";
 import { getAppt, TODAY_LABEL, ROLE_GREETING } from "./dashboardData";
 import {
-  PatientIdentity, ScheduleItem, QueueItem, CompletedItem, DemoMoment,
+  PatientIdentity, ScheduleItem, QueueItem, CompletedItem, DemoMoment, NurseJourneyStart,
   NURSE_DEMO_SCENARIOS, nextUpcomingAppointment, buildPatientFromQueueItem, isQueueLocked,
 } from "./nurseDashboardData";
-import type { JourneyEntries } from "./journey/journeyEngine";
-import { useJourneyEngine } from "./journey/useJourneyEngine";
-import { PatientJourneyCard, EmptyJourney } from "./journey/PatientJourneyCard";
+import { IN_ROOM_STATION } from "./journey/stationJourney";
+import { useStationJourney } from "./journey/useStationJourney";
+import { StationJourneyCard } from "./journey/StationJourneyCard";
+import { EmptyJourney } from "./journey/JourneyEmptyStates";
 import { AppointmentDrawer } from "./AppointmentDrawer";
 import { ClinicianScheduleList } from "./ClinicianScheduleList";
 import { MyPatientsTodayCard } from "./MyPatientsTodayCard";
@@ -41,20 +42,21 @@ function DemoMomentSwitcher({ value, onChange }: { value: DemoMoment; onChange: 
   );
 }
 
-// Owns the journey engine for one patient. Remounted (via `key` in the
+// Owns the station journey for one patient. Remounted (via `key` in the
 // parent) whenever a new patient starts, so each patient gets a fresh
-// entries/clock state rather than one hook instance threading through many.
+// cursor/clock state rather than one hook instance threading through many.
 function PatientJourneySection({
-  identity, initialEntries, initialClock, onComplete,
+  identity, initialJourney, onComplete,
 }: {
   identity: PatientIdentity;
-  initialEntries: JourneyEntries;
-  initialClock: number;
+  initialJourney: NurseJourneyStart;
   onComplete: (identity: PatientIdentity) => void;
 }) {
-  const engine = useJourneyEngine(initialEntries, initialClock);
-  const isDoneAll = engine.cur.mode === "done";
-  const hasArrived = !!engine.entries["arrived-room"]?.at;
+  const journey = useStationJourney(initialJourney);
+  const isDoneAll = journey.mode === "complete";
+  // Diagnostic-room intake logged = the patient is physically in their
+  // assigned room, which is the gate the Clinician Dashboard's Start waits on.
+  const hasArrived = journey.state.cursor > IN_ROOM_STATION;
 
   useEffect(() => {
     if (isDoneAll) onComplete(identity);
@@ -70,8 +72,8 @@ function PatientJourneySection({
   }, [hasArrived]);
 
   return (
-    <PatientJourneyCard
-      engine={engine}
+    <StationJourneyCard
+      journey={journey}
       patientName={identity.name}
       patientTag={identity.tag}
       patientMeta={identity.meta}
@@ -96,8 +98,7 @@ export function NurseDashboardPage() {
 
   const [patientKey, setPatientKey] = useState(0);
   const [identity, setIdentity] = useState<PatientIdentity | null>(initialScenario.patient);
-  const [entries, setEntries] = useState<JourneyEntries>(initialScenario.entries);
-  const [clock, setClock] = useState(initialScenario.clock);
+  const [journeyStart, setJourneyStart] = useState<NurseJourneyStart>(initialScenario.journey);
   const [locked, setLocked] = useState(isQueueLocked(initialScenario)); // Up Next stays locked while a patient's journey is active
 
   const [schedule, setSchedule] = useState<ScheduleItem[]>(initialScenario.schedule);
@@ -108,8 +109,7 @@ export function NurseDashboardPage() {
     const scenario = NURSE_DEMO_SCENARIOS[moment];
     setDemoMoment(moment);
     setIdentity(scenario.patient);
-    setEntries(scenario.entries);
-    setClock(scenario.clock);
+    setJourneyStart(scenario.journey);
     setLocked(isQueueLocked(scenario));
     setSchedule(scenario.schedule);
     setUpNext(scenario.upNext);
@@ -118,8 +118,8 @@ export function NurseDashboardPage() {
   };
 
   // Checkout confirmed: unlock Up Next and log completion, but leave
-  // `identity` in place — the Patient Journey card shows its own "Patient
-  // Checked Out" screen until the nurse taps Start on the next patient.
+  // `identity` in place — the Patient Journey panel shows its own "Journey
+  // complete" state until the nurse taps Start on the next patient.
   // Also flips the matching appointment in the shared store to Completed —
   // this page's own patient/schedule model is name-only (see
   // nurseDashboardData.ts) and isn't otherwise wired to Appt ids, so this
@@ -137,9 +137,9 @@ export function NurseDashboardPage() {
     if (upNext.length === 0 || locked) return;
     const [next, ...rest] = upNext;
     setUpNext(rest);
-    const { identity: nextIdentity, entries: nextEntries } = buildPatientFromQueueItem(next, clock);
+    const { identity: nextIdentity, journey: nextJourney } = buildPatientFromQueueItem(next, journeyStart.clock);
     setIdentity(nextIdentity);
-    setEntries(nextEntries);
+    setJourneyStart(nextJourney);
     setLocked(true);
     setPatientKey((k) => k + 1);
     setSchedule((prev) => prev.map((item) => {
@@ -151,14 +151,16 @@ export function NurseDashboardPage() {
   };
 
   return (
-    // The two columns are stretched to a common height (`items-stretch`) so
-    // the rail's bottom edge lands on the journey card's, instead of the two
-    // ending at unrelated heights. The journey card is what sets that height:
-    // Today's Schedule is `flex-1 min-h-0`, i.e. flex-basis 0, so its own row
-    // count contributes nothing to the column's natural height and the full
-    // day scrolls inside the card rather than pushing the page down.
-    <div className="bg-surface-page">
-      <div className="px-4 pt-6">
+    // The page fills the shell's scroll region exactly (h-full + min-h-0),
+    // and the two columns are stretched to that one height (`items-stretch`)
+    // so both edges land together. Each column then scrolls inside itself:
+    // the journey panel's body, and Today's Schedule (`flex-1 min-h-0`, i.e.
+    // flex-basis 0, so its own row count never contributes to the height).
+    // Without the cap the now card — sixteen-station rail, nine measurement
+    // sub-steps, the action row — pushes the page down and strands the one
+    // CTA below the fold, which is the exact failure this redesign fixes.
+    <div className="bg-surface-page h-full min-h-0 flex flex-col">
+      <div className="px-4 pt-6 shrink-0">
         <div className="flex items-start justify-between gap-4 mb-3">
           <div>
             <h1 className={PAGE_TITLE_CLASS}>Good morning, {ROLE_GREETING.Nurse}</h1>
@@ -170,14 +172,13 @@ export function NurseDashboardPage() {
         </div>
       </div>
 
-      <div className="flex items-stretch gap-5 px-4 py-4">
-        <div className="flex-1 min-w-0">
+      <div className="flex items-stretch gap-5 px-4 py-4 flex-1 min-h-0">
+        <div className="flex-1 min-w-0 min-h-0">
           {identity ? (
             <PatientJourneySection
               key={patientKey}
               identity={identity}
-              initialEntries={entries}
-              initialClock={clock}
+              initialJourney={journeyStart}
               onComplete={handleComplete}
             />
           ) : (

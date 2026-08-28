@@ -49,9 +49,12 @@ function StationColumn({ step, isNext }: { step: JourneyStep; isNext: boolean })
   return (
     <div className="flex flex-col items-center gap-1.5 min-w-0">
       {/* Fixed label height keeps every bar on one baseline whether its name
-          wraps to one line or two — without it the row combs up and down. */}
+          wraps to one line or two — without it the row combs up and down.
+          `break-words` is load-bearing: a sixteen-station journey leaves each
+          column ~66px, narrower than single words like "examination", and
+          without it the clamp clips those mid-word with no ellipsis. */}
       <div className={`text-label text-center leading-tight h-8 flex items-end justify-center w-full ${labelCls}`}>
-        <span className="line-clamp-2">{step.name}</span>
+        <span className="line-clamp-2 break-words">{step.name}</span>
       </div>
       <div
         className={`w-full h-2 rounded-full ${tone.bar} ${

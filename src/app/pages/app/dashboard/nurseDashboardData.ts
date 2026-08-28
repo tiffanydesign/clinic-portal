@@ -2,18 +2,17 @@
 // It shares the standard KPI bar (KPI_CONFIG.Nurse, in kpiData.ts) with every
 // other role, but below that header this page has its own dedicated model
 // built around one question: what does this nurse do right now, and who's
-// next. The Patient Journey card's own step/state-machine model lives in
-// ./journey/journeyEngine.ts; this file only carries patient identity plus
+// next. The Patient Journey panel's own station model lives in
+// ./journey/stationJourney.ts; this file only carries patient identity plus
 // the rail cards (schedule, queue, completed).
 
 import { NOW_MINUTES } from "./dashboardData";
-import { currentStep } from "./journey/journeyEngine";
-import type { JourneyEntries } from "./journey/journeyEngine";
+import { DAY_START_CLOCK, FULL_DAY_STATIONS, journeyMode } from "./journey/stationJourney";
 
 export type PatientIdentity = {
   name: string;
   tag: string; // "34 · F"
-  meta: string; // "Body Scan · 08:00 · Dr. Ebru Reis · Room 3"
+  meta: string; // "Full-day assessment · 08:00 · Berna Koç · Diagnostic Room A"
   route: string;
 };
 
@@ -44,24 +43,25 @@ export type CompletedItem = {
 export const INITIAL_PATIENT: PatientIdentity = {
   name: "Ece Yıldırım",
   tag: "34 · F",
-  meta: "Body Scan · 08:00 · Dr. Ebru Reis · Room 3",
+  meta: "Full-day assessment · 08:00 · Berna Koç · Diagnostic Room A",
   route: "/patients/P-001",
 };
 
-// Clock is in minutes-from-midnight, sharing NOW_MINUTES with the rest of
-// the dashboard so the journey's "now" agrees with the schedule rail below
-// it. The entries below tell a mid-flow story ending in machine1: signed,
-// picked up, two scans done, and 16 of 27 min into the third station.
+// Where a scenario drops the nurse into the sixteen-station full-day
+// assessment: `cursor` is the station in progress (-1 before the first,
+// FULL_DAY_STATIONS.length once checked out) and `clock` is minutes from
+// midnight, sharing NOW_MINUTES with the rest of the dashboard so the
+// journey's "now" agrees with the schedule rail beside it.
+export type NurseJourneyStart = { cursor: number; clock: number };
+
 export const INITIAL_CLOCK = NOW_MINUTES;
-export const INITIAL_ENTRIES: JourneyEntries = {
-  signed: { at: 480 },
-  pickup: { at: 495 },
-  changing: { enter: 496, exit: 499 },
-  "arrived-room": { at: 499 },
-  scan1: { enter: 500, exit: 515 },
-  scan2: { enter: 521, exit: 533 },
-  machine1: { enter: 538 },
-};
+
+const MEASUREMENTS_INDEX = FULL_DAY_STATIONS.findIndex((s) => s.id === "measurements");
+const ALL_STATIONS_DONE = FULL_DAY_STATIONS.length;
+
+// The mid-flow story: reception and preparation logged, and the measurement
+// block running since 08:15 with its nine-step sequence still open.
+export const MID_SHIFT_JOURNEY: NurseJourneyStart = { cursor: MEASUREMENTS_INDEX, clock: INITIAL_CLOCK };
 
 // Every station is a real 60-120 min block and the whole day is strictly
 // sequential — a nurse's own supervised list is never room-scoped like the
@@ -93,14 +93,13 @@ export const INITIAL_COMPLETED_TODAY: CompletedItem[] = [
   { name: "İpek Sarıkaya", type: "Check-in", time: "08:10" },
 ];
 
-// Starting the next patient from the queue: consent & payment are already
-// settled by the time the nurse takes over, but Patient Intake is left
-// unconfirmed — the nurse's journey always starts with her manually
-// confirming intake before the journey engine will advance to Preparation.
-export function buildPatientFromQueueItem(item: QueueItem, clock: number): { identity: PatientIdentity; entries: JourneyEntries } {
+// Starting the next patient from the queue: nothing is logged yet, so the
+// panel opens on its not-started state and the nurse's first tap is the
+// explicit "Start journey" on the first station.
+export function buildPatientFromQueueItem(item: QueueItem, clock: number): { identity: PatientIdentity; journey: NurseJourneyStart } {
   return {
     identity: { name: item.name, tag: "—", meta: `${item.type} · ${item.time}`, route: "/patients/P-001" },
-    entries: { signed: { at: clock } },
+    journey: { cursor: -1, clock },
   };
 }
 
@@ -127,8 +126,7 @@ export type DemoMoment = "day-start" | "handoff" | "mid-shift" | "day-wrap";
 export type NurseDemoScenario = {
   label: string;
   patient: PatientIdentity | null;
-  entries: JourneyEntries;
-  clock: number;
+  journey: NurseJourneyStart;
   schedule: ScheduleItem[];
   upNext: QueueItem[];
   completedToday: CompletedItem[];
@@ -146,31 +144,18 @@ const DAY_START_SCHEDULE: ScheduleItem[] = [
   { time: "14:30", name: "Defne Korkut", type: "Body Scan", doctor: "Dr. Ebru Reis", room: "Room 3", duration: "90 min", status: "upcoming" },
 ];
 
+// The whole day still ahead of her, Ece's own 08:00 slot included — at day
+// start the queue is the schedule.
+const DAY_START_UP_NEXT: QueueItem[] = [
+  { name: "Ece Yıldırım", time: "08:00", type: "Full-day assessment" },
+  ...INITIAL_UP_NEXT.slice(0, 4),
+];
+
 // No patient is mid-visit in these scenarios, so no schedule row may still
 // read "in progress" — same normalization the live checkout applies.
 function withoutInProgress(schedule: ScheduleItem[]): ScheduleItem[] {
   return schedule.map((item) => (item.status === "in-progress" ? { ...item, status: "upcoming" as ScheduleStatus } : item));
 }
-
-// The handoff beat between two patients: Ece's visit has just been checked
-// out, so the journey card sits on its "Patient Checked Out" screen while
-// Up Next's Start button has this second come back to life for Hakan. Her
-// package skipped Machine 2 and the second draw, which is what lets the
-// whole visit close inside the 08:00-09:31 block.
-const HANDOFF_ENTRIES: JourneyEntries = {
-  signed: { at: 480 },
-  pickup: { at: 484 },
-  changing: { enter: 485, exit: 489 },
-  "arrived-room": { at: 490 },
-  scan1: { enter: 491, exit: 504 },
-  scan2: { enter: 506, exit: 517 },
-  machine1: { enter: 519, exit: 543 },
-  machine2: { skipped: true, reason: "Not applicable for this package" },
-  sample1: { enter: 545, exit: 552 },
-  sample2: { skipped: true, reason: "Not applicable for this package" },
-  consult: { enter: 554, exit: 570 },
-  checkout: { at: 571 },
-};
 
 // End of shift: everyone assigned today has been checked out, so no
 // schedule row should still read "in progress".
@@ -188,24 +173,32 @@ const DAY_WRAP_COMPLETED: CompletedItem[] = [
 // Out" screen) but no longer holds the queue, so the Start button is already
 // lit when the scenario loads — no post-mount flicker from disabled to lit.
 export function isQueueLocked(scenario: NurseDemoScenario): boolean {
-  return !!scenario.patient && currentStep(scenario.entries).mode !== "done";
+  return !!scenario.patient && journeyMode(scenario.journey.cursor) !== "complete";
 }
 
 export const NURSE_DEMO_SCENARIOS: Record<DemoMoment, NurseDemoScenario> = {
+  // Nobody is on the panel yet, so it shows the shift's own empty state and
+  // the whole day sits in Up Next. Tapping Start there puts the first patient
+  // on the panel in its not-started state ("Start journey — <first
+  // station>"), which is the moment the old card had no way to show at all.
   "day-start": {
     label: "Day Start",
     patient: null,
-    entries: {},
-    clock: 7 * 60 + 30, // 07:30, before the 08:00 opening appointment
+    journey: { cursor: -1, clock: DAY_START_CLOCK },
     schedule: DAY_START_SCHEDULE,
-    upNext: [],
+    upNext: DAY_START_UP_NEXT,
     completedToday: [],
   },
   handoff: {
     label: "Handoff",
     patient: INITIAL_PATIENT,
-    entries: HANDOFF_ENTRIES,
-    clock: 573, // 09:33, two minutes past Ece's 09:31 check-out
+    // All sixteen stations logged: the panel sits on its "Journey complete"
+    // state while Up Next's Start button comes back to life for Hakan. The
+    // clock is two minutes past the plan's own 12:12 checkout — a full-day
+    // assessment cannot close inside the old twelve-station journey's 90
+    // minutes, and the panel's own clock has always been per-scenario (see
+    // Day Wrap's 17:00) rather than the page-wide NOW_MINUTES now-line.
+    journey: { cursor: ALL_STATIONS_DONE, clock: 12 * 60 + 14 }, // 12:14
     schedule: withoutInProgress(INITIAL_SCHEDULE),
     upNext: INITIAL_UP_NEXT,
     // Ece is deliberately absent here: the journey card reports her own
@@ -216,8 +209,7 @@ export const NURSE_DEMO_SCENARIOS: Record<DemoMoment, NurseDemoScenario> = {
   "mid-shift": {
     label: "Mid-Shift",
     patient: INITIAL_PATIENT,
-    entries: INITIAL_ENTRIES,
-    clock: INITIAL_CLOCK,
+    journey: MID_SHIFT_JOURNEY,
     schedule: INITIAL_SCHEDULE,
     upNext: INITIAL_UP_NEXT,
     completedToday: INITIAL_COMPLETED_TODAY,
@@ -225,8 +217,7 @@ export const NURSE_DEMO_SCENARIOS: Record<DemoMoment, NurseDemoScenario> = {
   "day-wrap": {
     label: "Day Wrap",
     patient: null,
-    entries: {},
-    clock: 17 * 60, // 17:00, after the last 14:00 appointment
+    journey: { cursor: ALL_STATIONS_DONE, clock: 17 * 60 }, // 17:00
     schedule: DAY_WRAP_SCHEDULE,
     upNext: [],
     completedToday: DAY_WRAP_COMPLETED,

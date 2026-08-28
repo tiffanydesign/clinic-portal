@@ -4,9 +4,10 @@
 
 import type { Role } from "../../../context/AppContext";
 import { MOCK_PATIENTS, Patient as RosterPatient } from "../patientsData";
-import { buildJourneyRows } from "../dashboard/journey/journeyEngine";
 import { journeyStatusPill, type JourneyPillType } from "../dashboard/journey/journeyStatus";
-import { INITIAL_ENTRIES, INITIAL_CLOCK } from "../dashboard/nurseDashboardData";
+import { fmtSpan, stationStatus, stationTiming } from "../dashboard/journey/stationJourney";
+import { buildStationView } from "../dashboard/journey/stationJourneyView";
+import { MID_SHIFT_JOURNEY } from "../dashboard/nurseDashboardData";
 
 export type TabKey = "overview" | "results" | "journeys" | "signed-forms" | "notes" | "appointments";
 
@@ -77,29 +78,37 @@ export type Journey = {
   assignedClinician?: string;
 };
 
-// Derives Ece Yıldırım's active journey via the exact same buildJourneyRows()
-// the Nurse Dashboard's own Patient Journey card uses (see useJourneyEngine.ts),
-// fed the same nurseDashboardData.ts entries — not an independently-authored
-// second fiction of "where she is right now." Station names, status, timing
-// text, and wait durations therefore can never drift from what the nurse
-// actually recorded.
+// Derives Ece Yıldırım's active journey from the exact same station model the
+// Nurse Dashboard's own Patient Journey panel runs on (stationJourney.ts), at
+// the same mid-shift cursor and clock — not an independently-authored second
+// fiction of "where she is right now." Station names, status, timing text and
+// wait durations therefore can never drift from what the nurse recorded.
 function journeyStepsFromNurseEngine(): JourneyStep[] {
-  const { rows } = buildJourneyRows(INITIAL_ENTRIES, INITIAL_CLOCK);
-  return rows.map((r): JourneyStep => {
+  const state = { ...MID_SHIFT_JOURNEY, log: {}, subs: {} };
+  const view = buildStationView(state);
+  return view.stations.map((station, i): JourneyStep => {
+    const state_ = stationStatus(state.cursor, i);
+    const timing = stationTiming(state, i);
     const status: JourneyStepStatus =
-      r.state === "done" ? "Completed" :
-      r.state === "prog" ? "In Progress" :
-      r.state === "skip" ? "Skipped" : "Pending";
+      state_ === "done" ? "Completed" : state_ === "active" ? "In Progress" : "Pending";
+    // Who ran it: the named person when the station's role carries one
+    // ("Clinician · Dr. Ebru Reis"), the bare role when it doesn't
+    // ("Receptionist"), and the signed-in nurse for her own stations.
+    const roleParts = station.role?.split(" · ");
+    const owner = roleParts ? roleParts[1] ?? roleParts[0] : "Berna Koç";
+    const durTxt = timing.dur != null ? fmtSpan(timing.dur) : undefined;
     return {
-      name: r.name,
+      name: station.name,
       status,
-      by: status === "Completed" || status === "In Progress" ? "Berna Koç" : undefined,
-      at: r.showTime ? r.timeTxt : r.showDur ? r.durTxt : undefined,
-      timeLabel: r.showTime ? r.timeTxt : undefined,
-      durationLabel: r.showDur ? r.durMinTxt : undefined,
-      progressLabel: r.showProg ? r.progMinTxt : undefined,
-      waitedMin: r.showWaited ? r.waited : undefined,
-      skipReason: r.showSkip ? r.skipCap : undefined,
+      by: status === "Pending" ? undefined : owner,
+      at:
+        state_ === "done" && timing.start && timing.end
+          ? `${timing.start} → ${timing.end}${durTxt ? ` · ${durTxt}` : ""}`
+          : undefined,
+      timeLabel: state_ === "done" ? timing.start ?? undefined : undefined,
+      durationLabel: state_ === "done" ? durTxt : undefined,
+      progressLabel: state_ === "active" ? durTxt : undefined,
+      waitedMin: undefined,
     };
   });
 }
