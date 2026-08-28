@@ -67,8 +67,12 @@ function StackedRow({ icon, label, value }: { icon: React.ReactNode; label: stri
 
 export function StationWhereStacked({ cfg }: { cfg: StationConfig }) {
   if (!hasWhere(cfg)) return null;
+  // No container: the icon-plus-label rows already structure themselves, and
+  // a third --surface-page box stacked under the drawer's tinted header and
+  // its tinted timing well made the whole panel one tone. Instructions below
+  // carries no box either, so the two sections now read as one rhythm.
   return (
-    <div className="flex flex-col gap-3 bg-surface-page rounded-control px-3 py-3">
+    <div className="flex flex-col gap-3">
       {cfg.room && (
         <StackedRow
           icon={<MapPin className="w-4 h-4 text-[color:var(--phenome-blue-500)]" />}

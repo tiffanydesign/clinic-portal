@@ -112,7 +112,7 @@ export function MyPatientsTodayCard({
   const pct = total === 0 ? 0 : Math.round((seen / total) * 100);
 
   return (
-    <div className="bg-surface rounded-card border border-divider shrink-0 overflow-hidden">
+    <div className="bg-surface rounded-card border border-divider shadow-sm shrink-0 overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-2">
         <h3 className="text-sm font-bold text-ink">My Patients Today</h3>
         <span className="ml-auto text-xs text-ink-muted tabular-nums">{total} total</span>

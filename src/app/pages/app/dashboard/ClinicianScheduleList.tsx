@@ -265,7 +265,15 @@ function ViewToggle({ view, onChange }: { view: ScheduleView; onChange: (v: Sche
         <button
           key={v}
           onClick={() => onChange(v)}
-          className={`px-1.5 py-1 text-label font-bold capitalize border-b-2 transition-colors ${view === v ? "text-ink border-ink" : "text-ink-muted border-transparent hover:text-ink-soft"}`}
+          // Brand blue on the selected tab. Brand blue is the ramp reserved
+          // for structure, identity and wayfinding — never a status meaning —
+          // so spending it on "which view am I in" costs the status vocabulary
+          // nothing and gives the control a colour to be selected IN.
+          className={`px-1.5 py-1 text-label font-bold capitalize border-b-2 transition-colors ${
+            view === v
+              ? "text-[color:var(--phenome-blue-500)] border-[color:var(--phenome-blue-500)]"
+              : "text-ink-muted border-transparent hover:text-ink-soft"
+          }`}
         >
           {v}
         </button>

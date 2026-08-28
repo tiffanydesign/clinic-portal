@@ -1,7 +1,7 @@
 import React from "react";
 import {
   ArrowRight, Check, CheckCircle2, ChevronLeft, ChevronRight, Circle, ClipboardList,
-  Clock, ListChecks, StickyNote, X,
+  Clock, ListChecks, StickyNote, UserRound, X,
 } from "lucide-react";
 import { WAIT_SLA_MIN } from "./journeyEngine";
 import { FULL_DAY_STATIONS, fmtSpan, stationStatus, stationTiming, subsOf, waitBefore } from "./stationJourney";
@@ -20,9 +20,9 @@ import { StationWhereStacked, hasWhere } from "./StationWhere";
 // the one amber line findable.
 
 const STATUS: Record<StationStatus, { label: string; icon: React.ElementType; tint: string; ink: string }> = {
-  done: { label: "Done", icon: CheckCircle2, tint: "bg-success/10 text-success-ink", ink: "text-success-ink" },
-  active: { label: "In progress", icon: Clock, tint: "bg-info/10 text-info-ink", ink: "text-info-ink" },
-  todo: { label: "Planned", icon: Circle, tint: "bg-surface-hover text-ink-muted", ink: "text-ink-muted" },
+  done: { label: "Done", icon: CheckCircle2, tint: "bg-success/10 border-success/30 text-success-ink", ink: "text-success-ink" },
+  active: { label: "In progress", icon: Clock, tint: "bg-info/10 border-info/30 text-info-ink", ink: "text-info-ink" },
+  todo: { label: "Planned", icon: Circle, tint: "bg-surface-hover border-divider text-ink-muted", ink: "text-ink-muted" },
 };
 
 function IconButton({
@@ -68,7 +68,7 @@ function TimingRow({
 }) {
   const mark = status === "todo" ? "~" : "";
   return (
-    <div className="flex items-stretch bg-surface-page rounded-control overflow-hidden">
+    <div className="flex items-stretch bg-surface-page border border-divider rounded-control overflow-hidden">
       <div className="flex-1 min-w-0 px-3 py-2.5">
         <div className="text-xs text-ink-muted">Start</div>
         <div className="text-section text-ink tabular-nums mt-0.5">{start ? `${mark}${start}` : "—"}</div>
@@ -139,22 +139,30 @@ export function StationDetailDrawer({ journey }: { journey: StationJourney }) {
       <div
         onClick={closeDrawer}
         aria-hidden
-        className={`absolute inset-0 bg-ink/15 z-40 transition-opacity duration-200 ${
+        // The one canonical overlay scrim: flat --ink-900 at 35%, no blur.
+        // 15% was too weak to read as "the panel behind this is inert".
+        className={`absolute inset-0 bg-ink/35 z-40 transition-opacity duration-200 ${
           open ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       />
       <aside
         aria-hidden={!open}
-        className={`absolute top-0 right-0 bottom-0 w-[380px] max-w-full bg-surface border-l border-divider shadow-2xl z-50 flex flex-col transition-transform duration-200 ease-out ${
+        // 400px = the shared Drawer's `sm` tier. 380px was an invented width,
+        // and DESIGN.md allows exactly two (400 / 560). Flush, no radius:
+        // it is anchored to the panel's own right edge.
+        className={`absolute top-0 right-0 bottom-0 w-[400px] max-w-full bg-surface border-l border-divider shadow-2xl z-50 flex flex-col transition-transform duration-200 ease-out ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <header className="px-4 py-3.5 border-b border-divider shrink-0">
+        {/* surface-page-tinted header bar — the header/footer contract Drawer
+            and Modal share across the product, which this panel's drawer was
+            the only one not following. */}
+        <header className="px-4 py-3.5 border-b border-divider bg-surface-page shrink-0">
           <div className="flex items-start gap-3">
             {/* Status as a tinted icon chip, not a word: it is the first thing
                 read, and it wears the same green/blue/grey as this station's
                 own tick on the rail, so the two agree on sight. */}
-            <span className={`w-9 h-9 rounded-control flex items-center justify-center shrink-0 ${tone.tint}`}>
+            <span className={`w-9 h-9 rounded-control border flex items-center justify-center shrink-0 ${tone.tint}`}>
               <StatusIcon className="w-4 h-4" strokeWidth={status === "todo" ? 2 : 2.4} />
             </span>
             <div className="flex-1 min-w-0">
@@ -171,7 +179,8 @@ export function StationDetailDrawer({ journey }: { journey: StationJourney }) {
               </div>
               <h3 className="text-section text-ink mt-0.5 leading-snug">{config.name}</h3>
               {config.role && (
-                <span className="inline-block mt-1.5 text-xs font-semibold text-ink-muted bg-surface-page rounded-full px-2 py-0.5">
+                <span className="inline-flex items-center gap-1 mt-1.5 text-xs font-bold text-ink-muted bg-surface border border-divider rounded-full px-2 py-0.5">
+                  <UserRound className="w-3 h-3 shrink-0" />
                   {config.role}
                 </span>
               )}

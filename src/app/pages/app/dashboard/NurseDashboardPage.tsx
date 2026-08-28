@@ -32,7 +32,13 @@ function DemoMomentSwitcher({ value, onChange }: { value: DemoMoment; onChange: 
           <button
             key={m}
             onClick={() => onChange(m)}
-            className={`px-3 py-1 text-xs font-bold rounded-control transition-all ${value === m ? "bg-surface text-ink-soft shadow-sm" : "text-ink-muted hover:text-ink-soft"}`}
+            // Same brand-blue selection language as the schedule's own tabs,
+            // so "which thing is selected" reads identically in both controls.
+            className={`px-3 py-1 text-xs font-bold rounded-control transition-all ${
+              value === m
+                ? "bg-surface text-[color:var(--phenome-blue-500)] shadow-sm"
+                : "text-ink-muted hover:text-ink-soft"
+            }`}
           >
             {NURSE_DEMO_SCENARIOS[m].label}
           </button>

@@ -1,5 +1,5 @@
 import React from "react";
-import { Check, MoreHorizontal } from "lucide-react";
+import { Check, ListChecks, MoreHorizontal, UserRound } from "lucide-react";
 import { FULL_DAY_STATIONS, fmtSpan } from "./stationJourney";
 import type { StationJourney } from "./useStationJourney";
 import { StationWhereInline } from "./StationWhere";
@@ -10,14 +10,19 @@ import { StationWhereInline } from "./StationWhere";
 // it. Before this redesign all of that was one row in a sixteen-row list,
 // indistinguishable from the fifteen rows she cannot act on.
 
+// Bordered + tinted, the same recipe DESIGN.md fixes for every in-row pill —
+// an unbordered tint reads as a wash, which is exactly how these looked. The
+// fill stays NEUTRAL, never a status hue: a role marks WHO, and the
+// Identity/Status Wall Rule forbids an identity marker being read as a state.
 function RolePill({ role, quiet = false }: { role?: string; quiet?: boolean }) {
   if (!role) return null;
   return (
     <span
-      className={`shrink-0 text-xs font-bold whitespace-nowrap rounded-full px-2 py-0.5 ${
-        quiet ? "bg-surface-page text-ink-muted" : "bg-surface-hover text-ink-soft"
+      className={`shrink-0 inline-flex items-center gap-1 text-xs font-bold whitespace-nowrap rounded-full border px-2 py-0.5 ${
+        quiet ? "bg-surface-page border-divider text-ink-muted" : "bg-surface-hover border-border-strong text-ink-soft"
       }`}
     >
+      <UserRound className="w-3 h-3 shrink-0" />
       {role}
     </span>
   );
@@ -35,16 +40,27 @@ function StepChecklist({ journey }: { journey: StationJourney }) {
 
   const pct = view.activeSubs.length ? (view.stepsDone / view.activeSubs.length) * 100 : 0;
 
+  const complete = view.stepsDone === view.activeSubs.length;
+
+  // A full-bleed section of the now card, bounded by hairlines — not a third
+  // bordered box nested inside a bordered card inside a bordered panel. The
+  // negative margins pull it to the card's own edges so the two-column grid
+  // gets the full width its nine rows need.
   return (
-    <div className="mt-4 border border-divider rounded-card bg-surface overflow-hidden">
-      <div className="flex items-center gap-2.5 px-3 py-2.5 bg-surface-page border-b border-divider">
+    <div className="-mx-5 mt-4 border-y border-divider bg-surface">
+      <div className="flex items-center gap-2.5 px-5 py-2.5 bg-surface-page border-b border-divider">
+        <ListChecks className={`w-3.5 h-3.5 shrink-0 ${complete ? "text-success-ink" : "text-ink-muted"}`} />
         <span className="text-overline text-ink-soft whitespace-nowrap">
           {active.config.stepsTitle ?? "Steps"}
         </span>
         <div className="flex-1 max-w-[220px] h-1 rounded-full bg-surface-sunken overflow-hidden">
           <div className="h-full rounded-full bg-success-fill transition-all" style={{ width: `${pct}%` }} />
         </div>
-        <span className="ml-auto text-xs text-ink-muted tabular-nums whitespace-nowrap">
+        <span
+          className={`ml-auto text-xs tabular-nums whitespace-nowrap font-bold ${
+            complete ? "text-success-ink" : "text-ink-muted"
+          }`}
+        >
           {view.stepsDone} of {view.activeSubs.length} done
         </span>
       </div>
@@ -63,7 +79,7 @@ function StepChecklist({ journey }: { journey: StationJourney }) {
               type="button"
               onClick={() => toggleSub(active.index, k)}
               aria-pressed={on}
-              className={`flex items-start gap-2.5 p-3 text-left transition-colors hover:bg-surface-page ${
+              className={`flex items-start gap-2.5 px-5 py-3 min-[1240px]:px-4 text-left transition-colors hover:bg-surface-page ${
                 k > 1 ? "border-t border-divider" : ""
               } ${k % 2 === 0 ? "min-[1240px]:border-r min-[1240px]:border-divider" : ""}`}
             >
@@ -176,7 +192,7 @@ function IdleCard({ journey }: { journey: StationJourney }) {
   const { view, mode } = journey;
   const complete = mode === "complete";
   return (
-    <div className="shrink-0 border border-border-strong rounded-card bg-surface-page p-5">
+    <div className="shrink-0 border border-divider rounded-card bg-surface shadow-sm p-5">
       <div className="text-overline text-ink-muted">{complete ? "Journey complete" : "Not started"}</div>
       <div className="text-page-title text-ink mt-2">
         {complete
@@ -199,7 +215,7 @@ export function StationNowCard({ journey }: { journey: StationJourney }) {
   if (!active) return <IdleCard journey={journey} />;
 
   return (
-    <div className="shrink-0 border border-border-strong rounded-card bg-surface p-5 shadow-sm">
+    <div className="shrink-0 border border-divider rounded-card bg-surface shadow-sm p-5">
       <div className="flex items-start gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">

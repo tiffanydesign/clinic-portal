@@ -76,7 +76,11 @@ export function StationJourneyCard({
   patientRoute: string;
 }) {
   return (
-    <div className="relative h-full bg-surface rounded-card flex flex-col overflow-hidden">
+    // border + shadow-sm, per DESIGN.md's own "flat / shadow-sm" tier: the
+    // near-invisible resting shadow is what makes a card read as an object on
+    // the page rather than a flat rectangle. The panel had neither, which is
+    // most of why it read washed-out.
+    <div className="relative h-full bg-surface rounded-card border border-divider shadow-sm flex flex-col overflow-hidden">
       <PatientHeader
         patientName={patientName}
         patientTag={patientTag}
@@ -87,7 +91,11 @@ export function StationJourneyCard({
 
       <StationPhaseRail journey={journey} />
 
-      <div className="flex-1 min-h-0 overflow-y-auto p-5 flex flex-col gap-3">
+      {/* The body is the recessed field; the three blocks in it are white
+          objects sitting on top. Depth communicates hierarchy here rather
+          than another border: on a flat white body the live card had nothing
+          to be raised above. */}
+      <div className="flex-1 min-h-0 overflow-y-auto p-5 flex flex-col gap-3 bg-surface-page">
         <StationDoneGroup journey={journey} />
         <StationNowCard journey={journey} />
         <StationNextGroup journey={journey} />
