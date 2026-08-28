@@ -140,8 +140,13 @@ export function StationDetailDrawer({ journey }: { journey: StationJourney }) {
         onClick={closeDrawer}
         aria-hidden
         // The one canonical overlay scrim: flat --ink-900 at 35%, no blur.
-        // 15% was too weak to read as "the panel behind this is inert".
-        className={`absolute inset-0 bg-ink/35 z-40 transition-opacity duration-200 ${
+        //
+        // z-20/z-30 (not 40/50): this drawer lives INSIDE the journey panel and
+        // only ever needs to layer above the panel's own content. At 40/50 it
+        // reached the tier the page-blocking Drawer/Modal own, and its
+        // composited transition layers painted through the Appointment drawer
+        // that opens over this whole page. An in-card layer stays under 40.
+        className={`absolute inset-0 bg-ink/35 z-20 transition-opacity duration-200 ${
           open ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       />
@@ -150,7 +155,7 @@ export function StationDetailDrawer({ journey }: { journey: StationJourney }) {
         // 400px = the shared Drawer's `sm` tier. 380px was an invented width,
         // and DESIGN.md allows exactly two (400 / 560). Flush, no radius:
         // it is anchored to the panel's own right edge.
-        className={`absolute top-0 right-0 bottom-0 w-[400px] max-w-full bg-surface border-l border-divider shadow-2xl z-50 flex flex-col transition-transform duration-200 ease-out ${
+        className={`absolute top-0 right-0 bottom-0 w-[400px] max-w-full bg-surface border-l border-divider shadow-2xl z-30 flex flex-col transition-transform duration-200 ease-out ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >

@@ -33,9 +33,19 @@ function DrawerShell({ title, subtitle, avatar, onClose, children, footer, banne
   children: React.ReactNode; footer?: React.ReactNode; banner?: React.ReactNode;
   headerBody?: React.ReactNode;
 }) {
+  // z-50, not z-40: this is a page-BLOCKING surface, and z-50 is the tier the
+  // canonical shared Drawer/Modal use (components/ui/drawer.tsx). At z-40 it
+  // lost to in-page components that legitimately layer at 40/50 inside their
+  // own card — the Nurse dashboard's journey panel, whose composited
+  // transition layers then painted straight through this drawer's opaque body.
   return (
-    <div className="fixed inset-0 z-40" role="dialog" aria-modal>
-      <div className="absolute inset-0 bg-surface-sunken/20 backdrop-blur-[1px]" onClick={onClose} />
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal>
+      {/* The one canonical overlay scrim: flat --ink-900 at 35%, no blur, same
+          as components/ui/drawer.tsx. The old bg-surface-sunken/20 +
+          backdrop-blur-[1px] is a 20% LIGHT GREY, so the page behind barely
+          dimmed and read as "the drawer is transparent" — DESIGN.md records
+          this exact divergence as resolved everywhere else. */}
+      <div className="absolute inset-0 bg-ink/35" onClick={onClose} />
       <div className="absolute top-0 right-0 h-full w-[560px] bg-surface border-l border-divider shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
         <div className="px-5 py-4 border-b border-divider flex items-start justify-between shrink-0 bg-surface-page">
           {headerBody ?? (
