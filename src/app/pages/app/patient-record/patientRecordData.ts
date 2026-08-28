@@ -91,11 +91,9 @@ function journeyStepsFromNurseEngine(): JourneyStep[] {
     const timing = stationTiming(state, i);
     const status: JourneyStepStatus =
       state_ === "done" ? "Completed" : state_ === "active" ? "In Progress" : "Pending";
-    // Who ran it: the named person when the station's role carries one
-    // ("Clinician · Dr. Ebru Reis"), the bare role when it doesn't
-    // ("Receptionist"), and the signed-in nurse for her own stations.
-    const roleParts = station.role?.split(" · ");
-    const owner = roleParts ? roleParts[1] ?? roleParts[0] : "Berna Koç";
+    // Who ran it: the station's own named staff member, falling back to the
+    // role when only a role is known (e.g. a radiology team).
+    const owner = station.staff ?? station.role;
     const durTxt = timing.dur != null ? fmtSpan(timing.dur) : undefined;
     return {
       name: station.name,

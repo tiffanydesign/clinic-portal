@@ -33,8 +33,16 @@ export type StationConfig = {
   phase: StationPhase;
   /** Role pill — set only when the station is NOT the nurse's own to run. */
   role?: string;
-  /** Room · devices · staff, in that order. */
-  loc?: string;
+  // Where the station happens, kept as three fields rather than one
+  // "Room · Device · Device · Person" string. The string was the source
+  // system's format and it forced every reader to parse it back apart — the
+  // drawer cannot put a pin on the room and a person icon on the nurse if all
+  // it has is seven dot-separated fragments, and a station whose only
+  // fragment is a person ("Berna Koç") is indistinguishable from one whose
+  // only fragment is a room.
+  room?: string;
+  devices?: string[];
+  staff?: string;
   /** The instruction the nurse follows at this station. */
   desc?: string;
   /** Planned wall-clock start/end, minutes from midnight. Absent = unplanned. */
@@ -74,40 +82,46 @@ const H8 = 8 * 60;
 export const FULL_DAY_STATIONS: StationConfig[] = [
   {
     id: "payment", name: "Payment not required", phase: "Reception", role: "Receptionist",
+    room: "Front Desk", staff: "Elif Yıldız",
     planStart: H8, planEnd: H8, est: 0,
   },
   {
     id: "forms", name: "Required forms signed", phase: "Reception", role: "Receptionist",
-    loc: "1 signed form",
+    room: "Front Desk", staff: "Elif Yıldız",
+    desc: "One consent form signed and on file — nothing outstanding at the desk.",
     planStart: H8, planEnd: H8 + 1, est: 1,
   },
   {
     id: "pickup", name: "Pick up from reception", phase: "Reception",
-    loc: "Front Desk · Berna Koç",
+    room: "Front Desk", staff: "Berna Koç",
     desc: "Meet the patient at reception and escort them into the hallway toward the assigned diagnostic room.",
     planStart: H8 + 1, planEnd: H8 + 3, est: 2,
   },
   {
     id: "slippers", name: "Slippers and coat drop", phase: "Preparation",
-    loc: "Berna Koç",
+    staff: "Berna Koç",
     desc: "Confirm slippers are on, store the patient coat and accompany the patient to the diagnostic room.",
     planStart: H8 + 3, planEnd: H8 + 6, est: 3,
   },
   {
     id: "intake", name: "Diagnostic-room intake and patient history", phase: "Preparation",
-    loc: "Diagnostic Room A · Berna Koç",
+    room: "Diagnostic Room A", staff: "Berna Koç",
     desc: "Explain the visit, record the anamnesis and complete the patient date of birth and sex fields.",
     planStart: H8 + 6, planEnd: H8 + 12, est: 6,
   },
   {
     id: "gown", name: "Change into gown", phase: "Preparation",
-    loc: "Changing Room · Berna Koç",
+    room: "Changing Room", staff: "Berna Koç",
     desc: "Escort the patient to the changing room and confirm they are ready in a gown.",
     planStart: H8 + 12, planEnd: H8 + 15, est: 3,
   },
   {
     id: "measurements", name: "Measurements", phase: "Diagnostics",
-    loc: "Diagnostic Room A · Generic Tonometer · Generic Vital Signs Monitor · Generic ECG System · Generic ABI System · Generic Indirect Calorimeter · Berna Koç",
+    room: "Diagnostic Room A", staff: "Berna Koç",
+    devices: [
+      "Generic Tonometer", "Generic Vital Signs Monitor", "Generic ECG System",
+      "Generic ABI System", "Generic Indirect Calorimeter",
+    ],
     desc: "Complete the measurement sequence in order while preserving the rest periods required for EKG, ABI and RMR.",
     planStart: H8 + 15, planEnd: H8 + 60, est: 45,
     stepsTitle: "Measurement sequence",
@@ -125,57 +139,68 @@ export const FULL_DAY_STATIONS: StationConfig[] = [
   },
   {
     id: "radiology", name: "Radiology", phase: "Diagnostics", role: "Radiologist",
-    loc: "Diagnostic Room A · Bindex · Generic Ultrasound · Radiology team",
+    room: "Diagnostic Room A", staff: "Radiology team", devices: ["Bindex", "Generic Ultrasound"],
     desc: "The radiologist performs the REMS or Bindex bone scan and ultrasound in the diagnostic room.",
     planStart: H8 + 60, planEnd: H8 + 85, est: 25,
   },
   {
-    id: "gp", name: "GP examination", phase: "Diagnostics", role: "Clinician · Dr. Ebru Reis",
-    loc: "Diagnostic Room A · Generic Dermatoscope · Dr. Ebru Reis",
+    id: "gp", name: "GP examination", phase: "Diagnostics", role: "Clinician",
+    room: "Diagnostic Room A", staff: "Dr. Ebru Reis", devices: ["Generic Dermatoscope"],
     desc: "Complete the general physical and neurological examination, dermoscopy and the cognitive tests included in the patient package.",
     planStart: H8 + 85, planEnd: H8 + 125, est: 40,
   },
   {
     id: "imaging", name: "Body imaging", phase: "Diagnostics",
-    loc: "Body Scan Room · FotoFinder Total Body Mapping · Visbody 3D Body Composition · Berna Koç",
+    room: "Body Scan Room", staff: "Berna Koç",
+    devices: ["FotoFinder Total Body Mapping", "Visbody 3D Body Composition"],
     desc: "Complete FotoFinder total-body skin mapping and the Visbody 3D body-composition scan.",
     planStart: H8 + 125, planEnd: H8 + 155, est: 30,
   },
   {
     id: "stool", name: "Stool-sample request", phase: "Diagnostics",
-    loc: "Sample Room · Berna Koç",
+    room: "Sample Room", staff: "Berna Koç",
     desc: "Ask for the stool sample. If it is unavailable, arrange home pickup for another day.",
     planStart: H8 + 155, planEnd: H8 + 160, est: 5,
   },
   {
     id: "dressed", name: "Get dressed", phase: "Checkout",
-    loc: "Changing Room · Berna Koç",
+    room: "Changing Room", staff: "Berna Koç",
     desc: "Escort the patient to the changing room and wait until they are ready to continue.",
     planStart: H8 + 160, planEnd: H8 + 165, est: 5,
   },
   {
-    id: "results", name: "Same-day results consultation", phase: "Checkout", role: "Clinician · Dr. Ebru Reis",
-    loc: "Consult Room A · Dr. Ebru Reis",
+    id: "results", name: "Same-day results consultation", phase: "Checkout", role: "Clinician",
+    room: "Consult Room A", staff: "Dr. Ebru Reis",
     desc: "Provide drinks and snacks, then present the measurements available the same day, including vitals, body composition and imaging.",
     planStart: H8 + 165, planEnd: H8 + 210, est: 45,
   },
   {
     id: "dietitian", name: "Dietitian consultation", phase: "Checkout", role: "Dietitian",
-    loc: "Consult Room A · Dietitian on duty",
+    room: "Consult Room A", staff: "Dietitian on duty",
     desc: "Review nutrition priorities and introduce the relevant rings, bands and monitoring plan.",
     planStart: H8 + 210, planEnd: H8 + 240, est: 30,
   },
   {
-    id: "reception-checkout", name: "Reception checkout", phase: "Checkout", role: "Receptionist · Elif Yıldız",
-    loc: "Front Desk · Elif Yıldız",
+    id: "reception-checkout", name: "Reception checkout", phase: "Checkout", role: "Receptionist",
+    room: "Front Desk", staff: "Elif Yıldız",
     desc: "Return the patient coat, collect the slippers and book the second visit for approximately two weeks later.",
     planStart: H8 + 240, planEnd: H8 + 250, est: 10,
   },
   {
-    id: "checkout", name: "Check out", phase: "Checkout", role: "Nurse",
+    // No role pill: the pill marks a station the nurse does NOT own, and
+    // this one is hers.
+    id: "checkout", name: "Check out", phase: "Checkout",
+    staff: "Berna Koç",
     planStart: H8 + 250, planEnd: H8 + 252, est: 2,
   },
 ];
+
+/** The compact one-line "where" for a tight row: room and staff only, never
+ *  the device list — five device names in a 320px row is noise, and the
+ *  drawer is where devices belong. */
+export function locSummary(cfg: StationConfig): string {
+  return [cfg.room, cfg.staff].filter(Boolean).join(" · ");
+}
 
 /** The station index whose completion means the patient is physically in
  *  their assigned diagnostic room — the gate the Clinician Dashboard's own

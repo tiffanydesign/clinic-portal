@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CalendarClock, Activity, CheckCircle2, ChevronRight } from "lucide-react";
+import { CalendarClock, Activity, CheckCircle2, ChevronRight, Play } from "lucide-react";
 import { Stat, StatStripGroup } from "../../../components/stat";
 import type { QueueItem, CompletedItem } from "./nurseDashboardData";
 import { CompletedTodayDrawer } from "./CompletedTodayDrawer";
@@ -13,7 +13,10 @@ import { CompletedTodayDrawer } from "./CompletedTodayDrawer";
 // The three counters stay the Stat family's T3 `strip` tier (same counter bar
 // as the Clinician queue and the Staff / Timesheet summaries); their
 // semantics ride on `iconTone`, which is the sanctioned channel — slate "not
-// started", blue "in progress", emerald "done".
+// started", blue "in progress", emerald "done". The strip runs full-bleed
+// between two hairlines rather than inside its own bordered box: a bordered
+// card nested one border deep inside another card spends ~10px of the rail's
+// width on chrome that draws no distinction the hairlines don't already make.
 
 function ProgressProportion({ done, inProgress, remaining }: { done: number; inProgress: number; remaining: number }) {
   const total = done + inProgress + remaining;
@@ -37,6 +40,61 @@ function ProgressProportion({ done, inProgress, remaining }: { done: number; inP
   );
 }
 
+// Up next — the card's own foot, on the SAME white as the card above it.
+// It used to be filled with --surface-page, which is the exact colour of the
+// page behind the rail: the card appeared to end after the counters and this
+// block read as loose furniture floating on the background, with a
+// --surface-hover Start button on it that was near-invisible against the fill.
+// White keeps the card one solid object, so the only thing carrying emphasis
+// down here is the button itself.
+function UpNext({
+  next, locked, onStart,
+}: {
+  next: QueueItem | null; locked: boolean; onStart: () => void;
+}) {
+  if (!next) {
+    return (
+      <div className="px-4 py-2.5 border-t border-divider flex items-center gap-2">
+        <span className="text-label font-bold text-ink-muted">Up next</span>
+        <span className="text-sm text-ink-muted">Nothing checked in yet</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="px-4 py-2.5 border-t border-divider flex items-center gap-3">
+      {/* Two lines, not three: the label rides above, and the name and its
+          time/type share one line the way the schedule rows below already
+          pair them. */}
+      <div className="min-w-0 flex flex-col gap-0.5">
+        <span className="text-label font-bold text-ink-muted">Up next</span>
+        <span className="flex items-baseline gap-2 min-w-0">
+          <span className="text-sm font-bold text-ink truncate">{next.name}</span>
+          <span className="text-xs text-ink-muted tabular-nums truncate">{next.time} · {next.type}</span>
+        </span>
+      </div>
+      <button
+        onClick={onStart}
+        disabled={locked}
+        title={locked ? "Requires next patient check-in and current journey completion." : undefined}
+        className={`ml-auto shrink-0 inline-flex items-center gap-1.5 min-h-11 px-4 rounded-control text-xs font-bold transition-colors ${
+          locked
+            // Button.tsx's own DISABLED_CLASS verbatim, so this reads as the
+            // same disabled control as every other button in the portal. It
+            // only looked invisible before because the strip behind it was
+            // filled --surface-page, a shade off --surface-hover; on the
+            // card's white it lands correctly.
+            ? "bg-surface-hover text-ink-muted border border-divider cursor-not-allowed"
+            : "btn-primary shadow-sm"
+        }`}
+      >
+        {!locked && <Play className="w-3.5 h-3.5" fill="currentColor" strokeWidth={0} />}
+        Start
+      </button>
+    </div>
+  );
+}
+
 export function MyPatientsTodayCard({
   scheduled, inProgress, done, next, locked, onStart, completed,
 }: {
@@ -55,18 +113,18 @@ export function MyPatientsTodayCard({
 
   return (
     <div className="bg-surface rounded-card border border-divider shrink-0 overflow-hidden">
-      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-divider">
+      <div className="flex items-center gap-2 px-4 py-2">
         <h3 className="text-sm font-bold text-ink">My Patients Today</h3>
         <span className="ml-auto text-xs text-ink-muted tabular-nums">{total} total</span>
       </div>
 
-      <div className="px-4 py-3 flex flex-col gap-2.5">
-        <StatStripGroup className="!shadow-none border border-divider">
-          <Stat stat={{ id: "scheduled", label: "Scheduled", kind: "count", variant: "strip", value: String(scheduled) }} icon={CalendarClock} iconTone="slate" compact />
-          <Stat stat={{ id: "in-progress", label: "In progress", kind: "count", variant: "strip", value: String(inProgress) }} icon={Activity} iconTone="blue" compact />
-          <Stat stat={{ id: "completed", label: "Completed", kind: "count", variant: "strip", value: String(done) }} icon={CheckCircle2} iconTone="emerald" compact />
-        </StatStripGroup>
+      <StatStripGroup className="!shadow-none !rounded-none border-y border-divider">
+        <Stat stat={{ id: "scheduled", label: "Scheduled", kind: "count", variant: "strip", value: String(scheduled) }} icon={CalendarClock} iconTone="slate" compact />
+        <Stat stat={{ id: "in-progress", label: "In progress", kind: "count", variant: "strip", value: String(inProgress) }} icon={Activity} iconTone="blue" compact />
+        <Stat stat={{ id: "completed", label: "Completed", kind: "count", variant: "strip", value: String(done) }} icon={CheckCircle2} iconTone="emerald" compact />
+      </StatStripGroup>
 
+      <div className="px-4 py-2.5 flex flex-col gap-2">
         <ProgressProportion done={done} inProgress={inProgress} remaining={scheduled} />
 
         <div className="flex items-center justify-between gap-2">
@@ -81,35 +139,7 @@ export function MyPatientsTodayCard({
         </div>
       </div>
 
-      {/* Up next — a tinted footer strip rather than its own card. The Start
-          button is the rail's one primary action, so it sits at the card's
-          foot where the eye lands after reading the counters. */}
-      <div className="flex items-center gap-3 px-4 py-3 bg-surface-page border-t border-divider">
-        {next ? (
-          <>
-            <div className="min-w-0 flex flex-col gap-0.5">
-              <span className="text-label font-bold text-ink-muted">Up next</span>
-              <span className="text-sm font-bold text-ink truncate">{next.name}</span>
-              <span className="text-xs text-ink-muted truncate">{next.time} · {next.type}</span>
-            </div>
-            <button
-              onClick={onStart}
-              disabled={locked}
-              title={locked ? "Requires next patient check-in and current journey completion." : undefined}
-              className={`ml-auto shrink-0 min-h-11 px-5 rounded-control text-xs font-bold transition-colors ${
-                locked ? "bg-surface-hover text-ink-muted border border-divider cursor-not-allowed" : "btn-primary"
-              }`}
-            >
-              Start
-            </button>
-          </>
-        ) : (
-          <div className="flex flex-col gap-0.5">
-            <span className="text-label font-bold text-ink-muted">Up next</span>
-            <span className="text-sm text-ink-muted">Nothing checked in yet</span>
-          </div>
-        )}
-      </div>
+      <UpNext next={next} locked={locked} onStart={onStart} />
 
       {drawerOpen && <CompletedTodayDrawer items={completed} onClose={() => setDrawerOpen(false)} />}
     </div>

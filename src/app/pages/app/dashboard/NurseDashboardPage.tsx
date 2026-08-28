@@ -172,7 +172,7 @@ export function NurseDashboardPage() {
         </div>
       </div>
 
-      <div className="flex items-stretch gap-5 px-4 py-4 flex-1 min-h-0">
+      <div className="flex items-stretch gap-3 px-4 py-4 flex-1 min-h-0">
         <div className="flex-1 min-w-0 min-h-0">
           {identity ? (
             <PatientJourneySection
@@ -193,7 +193,11 @@ export function NurseDashboardPage() {
           )}
         </div>
 
-        <div className="w-[396px] shrink-0 flex flex-col gap-5 min-h-0">
+        {/* 360px, and gap-3 between the cards inside it — --card-gap (12px),
+            the documented gap between sibling cards, where this used to use
+            --section-gap (20px). Both trims hand the journey panel width and
+            height it has better uses for than rail padding. */}
+        <div className="w-[360px] shrink-0 flex flex-col gap-3 min-h-0">
           {/* Both the "In progress" counter and the schedule's active row are
               keyed off `locked` rather than `identity`: after a check-out the
               patient stays on the journey card (that's its "Patient Checked

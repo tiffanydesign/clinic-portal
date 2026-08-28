@@ -5,7 +5,7 @@
 
 import {
   FULL_DAY_STATIONS, PHASE_LABEL, PHASE_ORDER, StationConfig, StationJourneyState, StationPhase,
-  StationStatus, StationTiming, fmtSpan, journeyMode, stationStatus, stationTiming, subsOf, waitBefore,
+  StationStatus, StationTiming, fmtSpan, journeyMode, locSummary, stationStatus, stationTiming, subsOf, waitBefore,
 } from "./stationJourney";
 
 export type PhaseTick = { index: number; status: StationStatus; name: string };
@@ -58,13 +58,13 @@ export function buildStationView(state: StationJourneyState) {
   const inClinicMin = firstStartAbs != null ? Math.max(0, anchorEnd - firstStartAbs) : null;
 
   const doneRows: StationRow[] = doneIdx.map((i) => ({
-    index: i, name: stations[i].name, role: stations[i].role, loc: stations[i].loc,
+    index: i, name: stations[i].name, role: stations[i].role, loc: locSummary(stations[i]),
     timing: stationTiming(state, i),
   }));
 
   const todoIdx = stations.map((_, i) => i).filter((i) => stationStatus(state.cursor, i) === "todo");
   const todoRows: StationRow[] = todoIdx.map((i) => ({
-    index: i, name: stations[i].name, role: stations[i].role, loc: stations[i].loc,
+    index: i, name: stations[i].name, role: stations[i].role, loc: locSummary(stations[i]),
     timing: stationTiming(state, i),
   }));
 
@@ -112,7 +112,7 @@ export function railReadout(view: StationView, state: StationJourneyState, hover
         ? `${timing.start ?? "—"} → ${timing.end ?? "—"} · ${fmtSpan(timing.dur)}`
         : status === "active"
           ? `in progress · ${fmtSpan(timing.dur)}`
-          : cfg.role ?? cfg.loc ?? "not started";
+          : cfg.role || locSummary(cfg) || "not started";
     return { title: cfg.name, meta };
   }
   if (view.mode === "not-started") {

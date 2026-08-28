@@ -1,7 +1,8 @@
 import React from "react";
-import { Check, MapPin, MoreHorizontal } from "lucide-react";
+import { Check, MoreHorizontal } from "lucide-react";
 import { FULL_DAY_STATIONS, fmtSpan } from "./stationJourney";
 import type { StationJourney } from "./useStationJourney";
+import { StationWhereInline } from "./StationWhere";
 
 // The panel's one loud object: the station happening right now, with
 // everything the nurse needs to run it — who owns it, which room and devices,
@@ -223,12 +224,7 @@ export function StationNowCard({ journey }: { journey: StationJourney }) {
         </div>
       </div>
 
-      {active.config.loc && (
-        <div className="flex items-start gap-2 mt-3 bg-surface-hover rounded-control px-3 py-2.5">
-          <MapPin className="w-3.5 h-3.5 text-ink-soft shrink-0 mt-0.5" />
-          <span className="text-label font-bold text-ink-soft leading-relaxed text-pretty">{active.config.loc}</span>
-        </div>
-      )}
+      <StationWhereInline cfg={active.config} />
 
       {active.config.desc && (
         <p className="text-label text-ink-muted leading-relaxed mt-3 text-pretty">{active.config.desc}</p>
